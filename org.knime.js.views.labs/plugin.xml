@@ -13,6 +13,17 @@
             deprecated="false"
             factory-class="org.knime.js.base.node.viz.tagCloud.TagCloudViewNodeFactory">
       </node>
+      <node
+            category-path="/labs/optics"
+            deprecated="false"
+            factory-class="org.knime.base.node.mine.optics.compute.OPTICSComputeNodeFactory">
+      </node>
+      <node
+            after="org.knime.base.node.mine.optics.compute.OPTICSComputeNodeFactory"
+            category-path="/labs/optics"
+            deprecated="false"
+            factory-class="org.knime.base.node.mine.optics.assigner.OPTICSAssignerNodeFactory">
+      </node>
    </extension>
    <extension
          point="org.knime.workbench.repository.categories">
@@ -23,6 +34,22 @@
             name="JavaScript Views (Labs)"
             path="/labs">
       </category>
+      <category
+            icon="icons/optics.png"
+            level-id="optics"
+            locked="true"
+            name="Optics Clustering"
+            path="/labs">
+      </category>
+   </extension>
+   <extension point="org.knime.core.PortType">
+      <portType
+            hidden="true"
+            name="OPTICS Clustering Port"
+            objectClass="org.knime.base.node.mine.optics.OPTICSPortObject"
+            objectSerializer="org.knime.base.node.mine.optics.OPTICSPortObject$Serializer"
+            specClass="org.knime.core.data.DataTableSpec">
+      </portType>
    </extension>
    <extension
          point="org.knime.js.core.webResources">
@@ -163,6 +190,32 @@
                webResourceBundleID="KnimeTable_1.0.0">
          </webDependency>
       </webResourceBundle>
+      <webResourceBundle
+            debug="true"
+            name="OPTICS"
+            usesDefine="false"
+            version="1.0.0"
+            webResourceBundleID="org.knime.base.node.mine.optics.bundle">
+         <webResource
+               relativePathSource="js-src/org/knime/base/node/mine/optics/"
+               relativePathTarget="org/knime/base/node/mine/optics/">
+         </webResource>
+         <webDependency
+               webResourceBundleID="jsFreeChart_0.5">
+         </webDependency>
+         <importResource
+               relativePath="org/knime/base/node/mine/optics/knime-optics.js"
+               type="JAVASCRIPT">
+         </importResource>
+         <importResource
+               relativePath="org/knime/base/node/mine/optics/optics.css"
+               type="CSS">
+         </importResource>
+         <importResource
+               relativePath="org/knime/base/node/mine/optics/virtualscroller.js"
+               type="JAVASCRIPT">
+         </importResource>
+      </webResourceBundle>
    </extension>
    <extension
          point="org.knime.js.core.javascriptComponents">
@@ -222,6 +275,15 @@
             name="Tag Cloud"
             namespace="knime_tag_cloud"
             setValidationError-method-name="setValidationError"
+            validate-method-name="validate">
+      </javascriptComponent>
+      <javascriptComponent
+            getComponentValue-method-name="getComponentValue"
+            implementationBundleID="org.knime.base.node.mine.optics.bundle"
+            init-method-name="init"
+            javascriptComponentID="org_knime_base_node_mine_optics"
+            name="OPTICS"
+            namespace="optics_namespace"
             validate-method-name="validate">
       </javascriptComponent>
    </extension>

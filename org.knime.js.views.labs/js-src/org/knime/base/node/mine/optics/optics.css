@@ -1,0 +1,49 @@
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
+.eps text {
+    font-size: 12px;
+}
+
+.overlay {
+    fill: lightgray;
+	opacity: 0.6;
+    pointer-events: all;
+}
+
+.label rect{
+  fill: white;
+  stroke: white;
+  opacity: 0.9;
+}
+
+.viewport {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            overflow-y: auto;
+            width: 280px;
+            height: 400px;
+            background-color: #ffffff;
+            border: 1px solid #AAAAAA;
+            border-radius: 2px;
+}
+.scroll-svg {
+
+}
+.longscroll .row {
+            font-family: Arial;
+            font-size: 11px;
+            height: 19px;
+            padding: 0 8px;
+            border-bottom: solid #eee 1px;
+}

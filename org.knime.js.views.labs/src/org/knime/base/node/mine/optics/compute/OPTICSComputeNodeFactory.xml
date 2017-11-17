@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./optics.png" type="Learner" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+    <name>OPTICS Cluster Compute</name>
+    
+    <shortDescription>
+      OPTICS (Ordering Points To Identify the Clustering Structure) is a distance-based clustering algorithm. This node computes reachability distance table, based on which clustering is then performed.
+    </shortDescription>
+    
+    <fullDescription>
+	    <intro>
+		    <p>The implementation of the OPTICS algorithm in KNIME consists of two nodes: the OPTICS Cluster Compute node and the OPTICS Cluster Assigner node.  Here you will find a brief description of the algorithm, followed by a description of the OPTICS Cluster Compute node.</p>
+		<p><a href="https://en.wikipedia.org/wiki/OPTICS_algorithm">OPTICS</a> is an algorithm for finding clusters in spatial data.  It was
+first described in <a href="http://fogo.dbs.ifi.lmu.de/Publikationen/Papers/OPTICS.pdf">Mihael Ankerst, Markus M. Breunig, Hans-Peter Kriegel, Jörg Sander (1999). "OPTICS: Ordering Points To Identify the Clustering Structure". 
+        ACM SIGMOD international conference on Management of data. ACM Press. pp. 49–60</a> and is based on DBSCAN.  Like DBSCAN,
+it is a <i>density-based</i> clustering algorithm, that is, it groups data points that are densely packed together in some
+contiguous region of the data space into
+clusters.  Unlike DBSCAN, it can detect
+clusters of varying density.</p>
+
+<p>The basic idea shared by DBSCAN and OPTICS is that a data point <i>p</i>
+belongs to a cluster if it has sufficiently many sufficiently close
+neighbors. "Sufficiently close" is modeled with a parameter <b>epsilon</b> (the
+neighborhood radius of <i>p</i>), "sufficiently many" with a parameter <b>Minimum
+	Points</b> (the minimum number of points that must be within <b>epsilon</b> of <i>p</i> in
+order for <i>p</i> to belong to the core of a cluster.)</p>
+
+<p>DBSCAN first checks the epsilon-neighborhood of each point in the data
+	set.  If there are more than <b>Minimum Points</b> points in the
+	epsilon-neighborhood of a point <i>p</i>, these points form a cluster. DBSCAN
+then checks the epsilon-neighborhoods of these points to see if they in
+turn contain more than <b>Minimum Points</b> data points. If they do, these
+data points also become part of the cluster.  DBSCAN continues in this
+way until no new point can be added to the cluster.</p>
+
+<p>While this algorithm will find all the clusters with the density
+determined by the the chosen values for <b>epsilon</b> and <b>Minimum Points</b>, it
+may miss higher-density clusters that are contained in these
+clusters. These higher-density clusters become visible only at some
+<b>epsilon-prime</b> &lt;e epsilon. The problem is that there is no way of knowing these
+<b>epsilon-prime</b> values in advance, so all one can do is run DBSCAN for as many
+<b>epsilon-prime</b> values as feasible.</p>
+
+<p>OPTICS solves this problem by ordering the points in the data set and by
+associating with each point two values: its core-distance and its
+reachability distance (for definitions, see the link above). This
+information is enough to find all density-based clusters in the data set
+for any <b>epsilon-prime</b> &lt;e <b>epsilon</b> (for details on the algorithm, see the link
+above).</p>
+
+<p>Since both core-distance and reachability-distance are ultimately
+defined in terms of <b>epsilon</b> and <b>Minimum Points</b>, the only inputs needed
+to run OPTICS are values for these parameters.</p>
+        </intro>
+                
+        <option name="Distance Selection">Optional. When the distance port is not connected, select the distance metric to be used.</option>
+        <option name="Select Column" >Optional. When the distance port is not connected, select the columns for which distance is to be calculated.  Columns can be selected manually or by means of regular expressions.  Columns listed in the left (red) pane will be excluded, columns in the right (green) pane will be included.  Use the buttons in the center to move columns from one pane to the other.</option>
+	<option name="Minimum points">The minimum number of points within <b>epsilon</b> of a point <i>p</i> in order for <i>p</i> to belong to the core of a cluster.</option>
+	<option name="Epsilon">The neighborhood radius of a point <i>p</i>.  Points within this distance of each other are considered neighbors.</option>
+    </fullDescription>
+    <ports>
+        <inPort index="0" name="Data Port">The input data.</inPort>
+        <inPort index="1" name="Distance Model Port">Optional. The configured distance model from one of the Distances nodes.</inPort>    
+        <outPort index="0" name="Model Port">The calculated model to be used in OPTICS Cluster Assigner.</outPort>
+    </ports> 
+</knimeNode>
