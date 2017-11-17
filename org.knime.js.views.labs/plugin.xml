@@ -9,7 +9,7 @@
       </node>
    -->
       <node
-            category-path="/labs/interactiveView"
+            category-path="/labs/js-views"
             deprecated="false"
             factory-class="org.knime.js.base.node.viz.tagCloud.TagCloudViewNodeFactory">
       </node>
@@ -27,13 +27,6 @@
    </extension>
    <extension
          point="org.knime.workbench.repository.categories">
-      <category
-            icon="icons/js.png"
-            level-id="interactiveView"
-            locked="true"
-            name="JavaScript Views (Labs)"
-            path="/labs">
-      </category>
       <category
             icon="icons/optics.png"
             level-id="optics"
