@@ -46,7 +46,7 @@
  * History
  *   2 Oct 2017 (albrecht): created
  */
-package org.knime.js.base.node.viz.tagCloud;
+package org.knime.js.base.node.viz.tagcloud;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

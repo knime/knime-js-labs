@@ -44,57 +44,44 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   3 Oct 2017 (albrecht): created
+ *   2 Oct 2017 (albrecht): created
  */
-package org.knime.js.base.node.viz.tagCloud;
+package org.knime.js.base.node.viz.tagcloud;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeView;
+import org.knime.core.node.wizard.WizardNodeFactoryExtension;
 
 /**
+ * Node factory for the tag cloud view
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
-@JsonAutoDetect
-public enum TagCloudSpiralType {
+public class TagCloudViewNodeFactory extends NodeFactory<TagCloudViewNodeModel>
+    implements WizardNodeFactoryExtension<TagCloudViewNodeModel, TagCloudViewRepresentation, TagCloudViewValue> {
 
-    ARCHIMEDEAN,
-    RECTANGULAR;
-
-    private static Map<String, TagCloudSpiralType> namesMap = new HashMap<String, TagCloudSpiralType>(2);
-
-    static {
-        namesMap.put("archimedean", ARCHIMEDEAN);
-        namesMap.put("rectangular", RECTANGULAR);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TagCloudViewNodeModel createNodeModel() {
+        return new TagCloudViewNodeModel(getInteractiveViewName());
     }
 
     /**
-     * @param value the string representation to retrieve an enum type for
-     * @return an enum type for a given string, or null
+     * {@inheritDoc}
      */
-    @JsonCreator
-    public static TagCloudSpiralType forValue(final String value) {
-        return namesMap.get(StringUtils.lowerCase(value));
+    @Override
+    protected int getNrNodeViews() {
+        return 0;
     }
 
     /**
-     * @return the string representation of this enum type
+     * {@inheritDoc}
      */
-    @JsonValue
-    public String toValue() {
-        for (Entry<String, TagCloudSpiralType> entry : namesMap.entrySet()) {
-            if (entry.getValue() == this) {
-                return entry.getKey();
-            }
-        }
-        // this does not happen, unless namesMap is not in synch with enum
+    @Override
+    public NodeView<TagCloudViewNodeModel> createNodeView(final int viewIndex, final TagCloudViewNodeModel nodeModel) {
         return null;
     }
 
@@ -102,8 +89,16 @@ public enum TagCloudSpiralType {
      * {@inheritDoc}
      */
     @Override
-    public String toString() {
-        return toValue();
+    protected boolean hasDialog() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected NodeDialogPane createNodeDialogPane() {
+        return new TagCloudViewNodeDialogPane();
     }
 
 }

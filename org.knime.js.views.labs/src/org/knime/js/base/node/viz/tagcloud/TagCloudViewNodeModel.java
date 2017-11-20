@@ -46,7 +46,7 @@
  * History
  *   2 Oct 2017 (albrecht): created
  */
-package org.knime.js.base.node.viz.tagCloud;
+package org.knime.js.base.node.viz.tagcloud;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,7 +159,7 @@ public class TagCloudViewNodeModel
      */
     @Override
     public String getJavascriptObjectID() {
-        return "org.knime.js.base.node.viz.tagCloud";
+        return "org.knime.js.base.node.viz.tagcloud";
     }
 
     /**

@@ -46,7 +46,7 @@
  * History
  *   2 Oct 2017 (albrecht): created
  */
-package org.knime.js.base.node.viz.tagCloud;
+package org.knime.js.base.node.viz.tagcloud;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;

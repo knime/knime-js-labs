@@ -11,7 +11,7 @@
       <node
             category-path="/labs/js-views"
             deprecated="false"
-            factory-class="org.knime.js.base.node.viz.tagCloud.TagCloudViewNodeFactory">
+            factory-class="org.knime.js.base.node.viz.tagcloud.TagCloudViewNodeFactory">
       </node>
       <node
             category-path="/labs/optics"
@@ -167,13 +167,13 @@
             name="Tag Cloud"
             usesDefine="false"
             version="1.0"
-            webResourceBundleID="org.knime.js.base.node.viz.tagCloud.bundle">
+            webResourceBundleID="org.knime.js.base.node.viz.tagcloud.bundle">
          <webResource
-               relativePathSource="js-src/org/knime/js/base/node/viz/tagCloud/"
-               relativePathTarget="org/knime/js/base/node/viz/tagCloud/">
+               relativePathSource="js-src/org/knime/js/base/node/viz/tagcloud/"
+               relativePathTarget="org/knime/js/base/node/viz/tagcloud/">
          </webResource>
          <importResource
-               relativePath="org/knime/js/base/node/viz/tagCloud/tagCloud.js"
+               relativePath="org/knime/js/base/node/viz/tagcloud/tagCloud.js"
                type="JAVASCRIPT">
          </importResource>
          <webDependency
@@ -262,9 +262,9 @@
 -->
       <javascriptComponent
             getComponentValue-method-name="getComponentValue"
-            implementationBundleID="org.knime.js.base.node.viz.tagCloud.bundle"
+            implementationBundleID="org.knime.js.base.node.viz.tagcloud.bundle"
             init-method-name="init"
-            javascriptComponentID="org.knime.js.base.node.viz.tagCloud"
+            javascriptComponentID="org.knime.js.base.node.viz.tagcloud"
             name="Tag Cloud"
             namespace="knime_tag_cloud"
             setValidationError-method-name="setValidationError"
