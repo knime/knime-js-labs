@@ -2,12 +2,6 @@
 <?eclipse version="3.2"?>
 <plugin>
    <extension point="org.knime.workbench.repository.nodes">
-   <!--
-      <node
-            category-path="/labs/interactiveView"
-            factory-class="org.knime.js.base.node.viz.tableEditor.TableEditorViewNodeFactory">
-      </node>
-   -->
       <node
             category-path="/labs/js-views"
             deprecated="false"
@@ -23,6 +17,10 @@
             category-path="/labs/optics"
             deprecated="false"
             factory-class="org.knime.base.node.mine.optics.assigner.OPTICSAssignerNodeFactory">
+      </node>
+      <node
+            category-path="/labs/js-views"
+            factory-class="org.knime.js.base.node.viz.tableeditor.TableEditorViewNodeFactory">
       </node>
    </extension>
    <extension
@@ -138,7 +136,7 @@
             name="Table Editor"
             usesDefine="false"
             version="0.0.2"
-            webResourceBundleID="org.knime.js.base.node.viz.tableEditor.bundle">
+            webResourceBundleID="org.knime.js.base.node.viz.tableeditor.bundle">
          <webResource
                relativePathSource="js-src/org/knime/js/base/node/viz/tableEditor/"
                relativePathTarget="org/knime/js/base/node/viz/tableEditor/">
@@ -209,6 +207,34 @@
                type="JAVASCRIPT">
          </importResource>
       </webResourceBundle>
+      <webResourceBundle
+            debug="true"
+            name="Table Editor"
+            usesDefine="false"
+            version="0.0.2"
+            webResourceBundleID="org.knime.js.base.node.viz.tableeditor.bundle">
+         <webResource
+               relativePathSource="js-src/org/knime/js/base/node/viz/tableeditor/"
+               relativePathTarget="org/knime/js/base/node/viz/tableeditor/">
+         </webResource>
+         <importResource
+               relativePath="org/knime/js/base/node/viz/tableeditor/table-editor.js"
+               type="JAVASCRIPT">
+         </importResource>
+         <importResource
+               relativePath="org/knime/js/base/node/viz/tableeditor/table-editor.css"
+               type="CSS">
+         </importResource>
+         <webDependency
+               webResourceBundleID="KnimeTable_1.0.0">
+         </webDependency>
+         <webDependency
+               webResourceBundleID="moment_timezone_locales_2_17">
+         </webDependency>
+         <webDependency
+               webResourceBundleID="dataTables_1_10_11_bootstrap">
+         </webDependency>
+      </webResourceBundle>
    </extension>
    <extension
          point="org.knime.js.core.javascriptComponents">
@@ -251,9 +277,9 @@
       </javascriptComponent>
       <javascriptComponent
             getComponentValue-method-name="getComponentValue"
-            implementationBundleID="org.knime.js.base.node.viz.tableEditor.bundle"
+            implementationBundleID="org.knime.js.base.node.viz.tableeditor.bundle"
             init-method-name="init"
-            javascriptComponentID="org.knime.js.base.node.viz.tableEditor"
+            javascriptComponentID="org.knime.js.base.node.viz.tableeditor"
             name="Table Editor"
             namespace="table_editor"
             setValidationError-method-name="setValidationError"
@@ -277,6 +303,16 @@
             javascriptComponentID="org_knime_base_node_mine_optics"
             name="OPTICS"
             namespace="optics_namespace"
+            validate-method-name="validate">
+      </javascriptComponent>
+      <javascriptComponent
+            getComponentValue-method-name="getComponentValue"
+            implementationBundleID="org.knime.js.base.node.viz.tableeditor.bundle"
+            init-method-name="init"
+            javascriptComponentID="org.knime.js.base.node.viz.tableeditor"
+            name="Table Editor"
+            namespace="table_editor"
+            setValidationError-method-name="setValidationError"
             validate-method-name="validate">
       </javascriptComponent>
    </extension>
