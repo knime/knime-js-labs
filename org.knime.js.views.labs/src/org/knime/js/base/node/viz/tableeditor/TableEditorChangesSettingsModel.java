@@ -49,8 +49,11 @@
 package org.knime.js.base.node.viz.tableeditor;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -85,21 +88,22 @@ public class TableEditorChangesSettingsModel extends SettingsModel {
         }
         m_configName = configName;
 
-        m_changes = new HashMap<String, Map<String, Object>>();
+        m_changes = new LinkedHashMap<String, Map<String, Object>>();
     }
 
     /**
      * Serialization constructor. Do not use!
      */
     public TableEditorChangesSettingsModel() {
-        m_configName = null;
+        //m_configName = null;
+        m_configName = TableEditorViewConfig.CFG_EDITOR_CHANGES;
     }
 
     /**
      * Erase all the editor changes
      */
     public void reset() {
-        m_changes = new HashMap<String, Map<String, Object>>();
+        m_changes = new LinkedHashMap<String, Map<String, Object>>();
     }
 
     /**
@@ -200,7 +204,7 @@ public class TableEditorChangesSettingsModel extends SettingsModel {
     private void loadSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         NodeSettingsRO editChangesSettings = settings.getNodeSettings(m_configName);
         int numRows = editChangesSettings.getInt("numRows");
-        m_changes = new HashMap<String, Map<String, Object>>(numRows);
+        m_changes = new LinkedHashMap<String, Map<String, Object>>(numRows);
         for (int i = 0; i < numRows; i++) {
             NodeSettingsRO rowSettings = editChangesSettings.getNodeSettings("rowEntry" + i);
             String rowKey = rowSettings.getString("rowKey");
@@ -268,6 +272,38 @@ public class TableEditorChangesSettingsModel extends SettingsModel {
     @Override
     public String toString() {
         return getClass().getSimpleName() + " ('" + m_configName + "')";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        TableEditorChangesSettingsModel other = (TableEditorChangesSettingsModel)obj;
+        return new EqualsBuilder()
+                .append(m_configName, other.m_configName)
+                .append(m_changes, other.m_changes)
+                .isEquals();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(m_configName)
+                .append(m_changes)
+                .toHashCode();
     }
 
 }
