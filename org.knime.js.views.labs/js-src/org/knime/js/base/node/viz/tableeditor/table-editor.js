@@ -809,6 +809,10 @@ table_editor = function() {
 			editorComponent.off('keyup');
 		}
 		
+		$td.empty()
+			.append(editorComponent);
+		editorComponent.focus();
+		
 		editorComponent.on('focusout', editFinishCallback);
 		editorComponent.on('keyup', function(e) {
 			if (e.key == "Enter") {
@@ -817,10 +821,6 @@ table_editor = function() {
 				editCancelCallback();
 			}
 		})
-		
-		$td.empty()
-			.append(editorComponent);
-		editorComponent.focus();
 	}
 	
 	createCellEditor = function(cell) {
