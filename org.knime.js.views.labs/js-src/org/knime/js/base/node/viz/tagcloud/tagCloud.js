@@ -276,9 +276,13 @@ knime_tag_cloud = function() {
 					+ ")";
 			})
 			.style("cursor", "pointer")
+			.style("-webkit-user-select", "none")
+			.style("-moz-user-select", "none")
+			.style("-ms-user-select", "none")
+			.style("user-select", "none")
 			.on("click", function(d) {
 				var selection = _value.selection || [];
-				if (event.ctrlKey || event.metaKey) {
+				if (d3.event.ctrlKey || d3.event.metaKey) {
 					if (d.selected) {
 						for (var i = 0; i < d.rowIDs.length; i++) {
 							var index = selection.indexOf(d.rowIDs[i]);
