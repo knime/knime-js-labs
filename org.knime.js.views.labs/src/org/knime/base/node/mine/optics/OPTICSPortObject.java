@@ -67,7 +67,7 @@ import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.PortTypeRegistry;
 
 /**
- * @author Anastasia Zhukova, University of Konstanz
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
  */
 public class OPTICSPortObject implements PortObject {
 
@@ -78,8 +78,10 @@ public class OPTICSPortObject implements PortObject {
 
     private OptPoint[] m_optPoints;
 
+    private double m_eps;
+
     /**
-     * @author Anastasia Zhukova, University of Konstanz
+     * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
      */
     public static final class Serializer extends PortObjectSerializer<OPTICSPortObject>{
 
@@ -90,6 +92,7 @@ public class OPTICSPortObject implements PortObject {
         public void savePortObject(final OPTICSPortObject portObject, final PortObjectZipOutputStream out, final ExecutionMonitor exec)
             throws IOException, CanceledExecutionException {
             DataOutputStream dout = new DataOutputStream(out);
+            dout.writeDouble(portObject.getEps());
             OptPoint[] optPoints = portObject.getOptPoints();
             dout.writeInt(optPoints.length);
             for (OptPoint p : optPoints) {
@@ -107,6 +110,7 @@ public class OPTICSPortObject implements PortObject {
         public OPTICSPortObject loadPortObject(final PortObjectZipInputStream in, final PortObjectSpec spec, final ExecutionMonitor exec)
             throws IOException, CanceledExecutionException {
             DataInputStream din = new DataInputStream(in);
+            double eps = din.readDouble();
             OptPoint[] optPoints = new OptPoint[din.readInt()];
             OptPoint p = null;
             for (int i = 0; i < optPoints.length; i++) {
@@ -115,7 +119,7 @@ public class OPTICSPortObject implements PortObject {
                 p.setReachdist(din.readDouble());
                 optPoints[i] = p;
             }
-            return new OPTICSPortObject((DataTableSpec)spec, optPoints);
+            return new OPTICSPortObject((DataTableSpec)spec, optPoints, eps);
         }
     }
 
@@ -123,10 +127,12 @@ public class OPTICSPortObject implements PortObject {
      * A constructor
      * @param spec
      * @param optPoints
+     * @param eps
      */
-    public OPTICSPortObject(final DataTableSpec spec, final OptPoint[] optPoints){
+    public OPTICSPortObject(final DataTableSpec spec, final OptPoint[] optPoints, final double eps){
         this.m_optPoints = optPoints;
         this.m_spec = spec;
+        this.m_eps = eps;
     }
 
     /**
@@ -160,5 +166,13 @@ public class OPTICSPortObject implements PortObject {
      */
     public OptPoint[] getOptPoints() {
         return m_optPoints;
+    }
+
+    /**
+     * Get epsilon value
+     * @return epsilon
+     */
+    public double getEps() {
+        return m_eps;
     }
 }

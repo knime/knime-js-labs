@@ -141,7 +141,7 @@ final class OPTICSComputeNodeDialog extends NodeDialogPane {
         } catch (InvalidSettingsException e) {
             e.printStackTrace();
         }
-        m_eps.setValue(config.geteps());
+        m_eps.setValue(config.getEps());
         m_minPTS.setValue(config.getminPTS());
         //if a distance function is plugged in hide the distance configuration pain
         m_distanceSelectionPanel.loadConfiguration(config.getDistanceSelectionPanelConfig(), spec);

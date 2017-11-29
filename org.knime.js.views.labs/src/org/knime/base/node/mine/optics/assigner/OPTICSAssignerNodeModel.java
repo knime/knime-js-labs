@@ -93,9 +93,9 @@ import org.knime.js.core.node.AbstractSVGWizardNodeModel;
 /**
  * This is the model implementation of OPTICS.
  *
- * @author Anastasia Zhukova, University of Konstanz, Germany
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
  * @author Oliver Sampson, University of Konstanz, Germany
- * @author Christian Albrecht, KNIME AG, Zurich, Switzerland, University of Konstanz
+ * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
 public class OPTICSAssignerNodeModel
     extends AbstractSVGWizardNodeModel<OPTICSAssignerViewRepresentation, OPTICSAssignerViewValue>
@@ -114,6 +114,10 @@ public class OPTICSAssignerNodeModel
     private BufferedDataTable m_summary;
 
     private OPTICSAssignerViewConfig m_config;
+
+    double m_epsPrime;
+
+    double m_eps;
 
     /**
      * Constructor for the node model.
@@ -165,18 +169,22 @@ public class OPTICSAssignerNodeModel
                 + String.valueOf(dataTable.size()) + " != " + String.valueOf(modelData.getOptPoints().length) + ")");
         }
 
-        double eps_prime = 0;
+        m_eps = modelData.getEps();
 
         switch (m_config.getEpsCalcMethod()) {
-            case OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEAN:
-                eps_prime = meanEpsPrime(modelData.getOptPoints());
+            case OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEAN:
+                m_epsPrime = meanEpsPrime(modelData.getOptPoints());
                 break;
-            case OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEDIAN:
-                eps_prime = medianEpsPrime(modelData.getOptPoints());
+            case OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEDIAN:
+                m_epsPrime = medianEpsPrime(modelData.getOptPoints());
                 break;
-            case OPTICSAssignerViewConfig.MANUAL_EPS_PRIME:
-                eps_prime = m_config.getEpsPrime();
+            case OPTICSAssignerViewConfig.CFG_MANUAL_EPS_PRIME:
+                m_epsPrime = m_config.getEpsPrime();
                 break;
+        }
+
+        if (m_epsPrime > m_eps) {
+            throw new InvalidSettingsException("Epsilon-prime is greater than epsilon: " + m_epsPrime + " > " + m_eps);
         }
 
         long n = dataTable.size();
@@ -206,8 +214,8 @@ public class OPTICSAssignerNodeModel
         //int idd = 0;
         for (OptPoint p : intermediateTable) {
 
-            if (p.getReachdist() > eps_prime) {
-                if (p.getCoredist() <= eps_prime) {
+            if (p.getReachdist() > m_epsPrime) {
+                if (p.getCoredist() <= m_epsPrime) {
                     if (!new_cluster.isEmpty()) {
                         // write a previous cluster to an array
                         clusters.add(new_cluster);
@@ -264,9 +272,10 @@ public class OPTICSAssignerNodeModel
 
         if (representation.getKeyedDataset() == null) {
             // create dataset for view
-            copyConfigToView(eps_prime);
+            copyConfigToView(m_epsPrime);
             representation.setKeyedDataset(dataset);
         }
+        representation.setEps(m_eps);
     }
 
     /**

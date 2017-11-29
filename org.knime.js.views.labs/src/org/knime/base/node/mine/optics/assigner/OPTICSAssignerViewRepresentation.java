@@ -60,8 +60,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * @author Anastasia Zhukova, University of Konstanz
- * @author Christian Albrecht, KNIME AG, Zurich, Switzerland, University of Konstanz
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
+ * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  * @since 3.4
  */
 @JsonAutoDetect
@@ -82,9 +82,10 @@ public final class OPTICSAssignerViewRepresentation extends JSONViewContent {
     private int m_imageWidth;
     private int m_imageHeight;
     private int m_maxBins;
-    private boolean m_wasRedrawn = false;
+    private boolean m_wasRedrawn = OPTICSAssignerViewConfig.DEFAULT_WAS_REDRAWN;
     private boolean m_showWarningInView;
     private JSONWarnings m_warnings = new JSONWarnings();
+    private double m_eps;
 
     /**
      * @return the keyedDataset
@@ -296,43 +297,72 @@ public final class OPTICSAssignerViewRepresentation extends JSONViewContent {
         m_maxBins = maxBins;
     }
 
+    /**
+     * @return the wasRedrawn
+     */
+    public boolean getWasRedrawn() {
+        return m_wasRedrawn;
+    }
+
+    /**
+     * @param wasRedrawn the wasRedrawn to set
+     */
+    public void setWasRedrawn(final boolean wasRedrawn) {
+        m_wasRedrawn = wasRedrawn;
+    }
+
+    /**
+     * @return the m_eps
+     */
+    public double getEps() {
+        return m_eps;
+    }
+
+    /**
+     * @param eps the m_eps to set
+     */
+    public void setEps(final double eps) {
+        this.m_eps = eps;
+    }
+
 	@Override
 	public void saveToNodeSettings(final NodeSettingsWO settings) {
 	    settings.addBoolean(OPTICSAssignerViewConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, getDisplayFullscreenButton());
-	    settings.addBoolean(OPTICSAssignerViewConfig.RESIZE_TO_WINDOW, getResizeToWindow());
-	    settings.addBoolean(OPTICSAssignerViewConfig.ENABLE_TTILE_CHANGE, getEnableTitleChange());
+	    settings.addBoolean(OPTICSAssignerViewConfig.CFG_RESIZE_TO_WINDOW, getResizeToWindow());
+	    settings.addBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_TTILE_CHANGE, getEnableTitleChange());
 	    settings.addBoolean(OPTICSAssignerViewConfig.ENABLE_EPSILON_PRIME_CHANGE, getEnableEpsilonPrimeChange());
-	    settings.addBoolean(OPTICSAssignerViewConfig.ENABLE_CONFIG, getEnableViewConfiguration());
-	    settings.addBoolean(OPTICSAssignerViewConfig.ENABLE_SELECTION, getEnableSelection());
-	    settings.addBoolean(OPTICSAssignerViewConfig.ENABLE_RECTANGLE_SELECTION, getEnableRectangleSelection());
+	    settings.addBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_CONFIG, getEnableViewConfiguration());
+	    settings.addBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_SELECTION, getEnableSelection());
+	    settings.addBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_RECTANGLE_SELECTION, getEnableRectangleSelection());
 	    settings.addBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_SHOW_SELECTED_ONLY, getEnableShowSelectedOnly());
-        settings.addInt(OPTICSAssignerViewConfig.IMAGE_WIDTH, getImageWidth());
-        settings.addInt(OPTICSAssignerViewConfig.IMAGE_HEIGHT, getImageHeight());
-        settings.addInt(OPTICSAssignerViewConfig.MAX_ROWS, getMaxBins());
-        settings.addBoolean(OPTICSAssignerViewConfig.WAS_REDRAWN, getWasRedrawn());
+        settings.addInt(OPTICSAssignerViewConfig.CFG_IMAGE_WIDTH, getImageWidth());
+        settings.addInt(OPTICSAssignerViewConfig.CFG_IMAGE_HEIGHT, getImageHeight());
+        settings.addInt(OPTICSAssignerViewConfig.CFG_MAX_ROWS, getMaxBins());
+        settings.addBoolean(OPTICSAssignerViewConfig.CFG_WAS_REDRAWN, getWasRedrawn());
         settings.addBoolean("hasDataset", m_keyedDataset != null);
         if (m_keyedDataset != null) {
             NodeSettingsWO datasetSettings = settings.addNodeSettings("dataset");
             m_keyedDataset.saveToNodeSettings(datasetSettings);
         }
-        settings.addBoolean(OPTICSAssignerViewConfig.SHOW_WARNING_IN_VIEW, getShowWarningInView());
+        settings.addBoolean(OPTICSAssignerViewConfig.CFG_SHOW_WARNING_IN_VIEW, getShowWarningInView());
+        settings.addDouble(OPTICSAssignerViewConfig.EPSILON, getEps());
         m_warnings.saveToNodeSettings(settings);
 	}
 
 	@Override
 	public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
 	    setDisplayFullscreenButton(settings.getBoolean(OPTICSAssignerViewConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, OPTICSAssignerViewConfig.DEFAULT_DISPLAY_FULLSCREEN_BUTTON));
-	    setResizeToWindow(settings.getBoolean(OPTICSAssignerViewConfig.RESIZE_TO_WINDOW));
-	    setEnableViewConfiguration(settings.getBoolean(OPTICSAssignerViewConfig.ENABLE_CONFIG));
-	    setEnableTitleChange(settings.getBoolean(OPTICSAssignerViewConfig.ENABLE_TTILE_CHANGE));
+	    setResizeToWindow(settings.getBoolean(OPTICSAssignerViewConfig.CFG_RESIZE_TO_WINDOW));
+	    setEnableViewConfiguration(settings.getBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_CONFIG));
+	    setEnableTitleChange(settings.getBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_TTILE_CHANGE));
 	    setEnableEpsilonPrimeChange(settings.getBoolean(OPTICSAssignerViewConfig.ENABLE_EPSILON_PRIME_CHANGE));
-	    setEnableSelection(settings.getBoolean(OPTICSAssignerViewConfig.ENABLE_SELECTION));
-	    setEnableRectangleSelection(settings.getBoolean(OPTICSAssignerViewConfig.ENABLE_RECTANGLE_SELECTION));
+	    setEnableSelection(settings.getBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_SELECTION));
+	    setEnableRectangleSelection(settings.getBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_RECTANGLE_SELECTION));
 	    setEnableShowSelectedOnly(settings.getBoolean(OPTICSAssignerViewConfig.CFG_ENABLE_SHOW_SELECTED_ONLY));
-	    setImageWidth(settings.getInt(OPTICSAssignerViewConfig.IMAGE_WIDTH));
-	    setImageHeight(settings.getInt(OPTICSAssignerViewConfig.IMAGE_HEIGHT));
-	    setMaxBins(settings.getInt(OPTICSAssignerViewConfig.MAX_ROWS));
-	    setWasRedrawn(settings.getBoolean(OPTICSAssignerViewConfig.WAS_REDRAWN));
+	    setImageWidth(settings.getInt(OPTICSAssignerViewConfig.CFG_IMAGE_WIDTH));
+	    setImageHeight(settings.getInt(OPTICSAssignerViewConfig.CFG_IMAGE_HEIGHT));
+	    setMaxBins(settings.getInt(OPTICSAssignerViewConfig.CFG_MAX_ROWS));
+	    setWasRedrawn(settings.getBoolean(OPTICSAssignerViewConfig.CFG_WAS_REDRAWN));
 	    m_keyedDataset = null;
         boolean hasDataset = settings.getBoolean("hasDataset");
         if (hasDataset) {
@@ -340,7 +370,8 @@ public final class OPTICSAssignerViewRepresentation extends JSONViewContent {
             m_keyedDataset = new JSONKeyedValues2DDataset();
             m_keyedDataset.loadFromNodeSettings(datasetSettings);
         }
-        setShowWarningInView(settings.getBoolean(OPTICSAssignerViewConfig.SHOW_WARNING_IN_VIEW, OPTICSAssignerViewConfig.DEFAULT_SHOW_WARNING_IN_VIEW));
+        setShowWarningInView(settings.getBoolean(OPTICSAssignerViewConfig.CFG_SHOW_WARNING_IN_VIEW, OPTICSAssignerViewConfig.DEFAULT_SHOW_WARNING_IN_VIEW));
+        setEps(settings.getDouble(OPTICSAssignerViewConfig.EPSILON));
         m_warnings.loadFromNodeSettings(settings);
 	}
 
@@ -372,6 +403,7 @@ public final class OPTICSAssignerViewRepresentation extends JSONViewContent {
             .append(m_enableViewConfiguration, other.m_enableViewConfiguration)
             .append(m_maxBins, other.m_maxBins)
             .append(m_wasRedrawn, other.m_wasRedrawn)
+            .append(m_eps, other.m_eps)
             .isEquals();
     }
 
@@ -393,21 +425,10 @@ public final class OPTICSAssignerViewRepresentation extends JSONViewContent {
             .append(m_enableViewConfiguration)
             .append(m_maxBins)
             .append(m_wasRedrawn)
+            .append(m_eps)
             .toHashCode();
     }
 
-    /**
-     * @return the wasRedrawn
-     */
-    public boolean getWasRedrawn() {
-        return m_wasRedrawn;
-    }
 
-    /**
-     * @param wasRedrawn the wasRedrawn to set
-     */
-    public void setWasRedrawn(final boolean wasRedrawn) {
-        m_wasRedrawn = wasRedrawn;
-    }
 
 }

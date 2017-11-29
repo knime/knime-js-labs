@@ -57,8 +57,8 @@ import org.knime.distance.DistanceMeasureConfig;
 /**
  * Settings proxy for distance matrix calculate node.
  *
- * @author Anastasia Zhukova, University of Konstanz
- * @author Christian Albrecht, KNIME AG, Zurich, Switzerland, University of Konstanz
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
+ * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
 final class OPTICSComputeViewConfig {
 
@@ -85,7 +85,7 @@ final class OPTICSComputeViewConfig {
      * @param settings To write to.
      */
     void saveConfiguration(final NodeSettingsWO settings) {
-        settings.addString(EPSILON, geteps().toString());
+        settings.addString(EPSILON, getEps().toString());
         settings.addString(MIN_POINTS, getminPTS().toString());
         m_distanceSelectionPanelConfig.saveConfiguration(settings);
     }
@@ -140,7 +140,7 @@ final class OPTICSComputeViewConfig {
     /**
      * @return the m_eps
      */
-    Double geteps() {
+    Double getEps() {
         return m_eps;
     }
 

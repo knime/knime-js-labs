@@ -51,7 +51,7 @@ import org.knime.core.node.NodeView;
 /**
  * <code>NodeFactory</code> for the "OPTICS" Node.
  *
- * @author Anastasia Zhukova, University of Konstanz, Germany
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
  */
 public final class OPTICSComputeNodeFactory extends NodeFactory<OPTICSComputeNodeModel> {
 

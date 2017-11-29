@@ -15,13 +15,14 @@
     var rows;
     var pseudo_infinity;
     var resizeCounter = 0;
-    var yScale, yScaleInv, xScale;
+    var yScale, xScale;
     var cluster_id = -1;
     var color;
     var tooBigEpsPr = false;
     var selection = [];
     var binnedWarning = false;
     var initEpsPrime;
+    var allNoise = false;
 	
 	optics.init = function(representation, value) {  
 		if ((!representation.keyedDataset)
@@ -173,20 +174,25 @@
     }
 
     tooBigEpsMessage = function() {
-        if (tooBigEpsPr) {
-                alert("Epsilon prime is too big to plot: the value is reduced but leads to the same results as the previous.")
+        if (allNoise) {
+                //alert("Epsilon prime is too big to plot: the value is reduced but leads to the same results as the previous.")
+                alert("All points are noise points.")
             }
-        tooBigEpsPr = false;
+        allNoise = false;
     }
     
     dataTransformation = function() {
         rows = _keyedDataset.data.rows;
-        pseudo_infinity = 1.3*max_val;
+        pseudo_infinity = _representation.eps < 1.3*max_val || max_val == 0? _representation.eps : 1.3*max_val;
+        if (max_val == 0) {
+            allNoise = true;
+            
+        }
         dataset = [];
         cluster_id = -1;
         for (var r = 0; r<rows.length;r++ ){
             dataset.push({key: rows[r].key.replace(/ /i, ""),
-                      value: rows[r].values[2] == Infinity? pseudo_infinity : rows[r].values[2],
+                      value: rows[r].values[2] == Infinity || rows[r].values[2] > _representation.eps ? 1.005*pseudo_infinity : rows[r].values[2],
                       coredist: rows[r].values[1],
                       cluster: clusterCount(rows[r].values[2], rows[r].values[1], _value.epsPrime),
                       incl_points: []});
@@ -310,13 +316,18 @@
             .tickSize(Math.min(3, svgWidth/500));
 
         var vis_hist = svg.append("g")
+            .attr("class", "barchartGroup")
             .attr("transform", "translate(" + [(margin.left), margin.top] + ")");
 
         var axis = svg.append("g")
             .attr("transform", "translate(" + [(0.9*margin.left), margin.top] + ")")
-            .attr("class", "axis")
+            .attr("class", "axisY")
             .style("font-size", Math.round(Math.min(svgHeight/50, 12))+"px")
             .call(yAxis);
+        
+        if (allNoise) {
+            d3.selectAll(".axisY").selectAll("text").remove();
+        }
         
         //plot histogram bars
         var rec = vis_hist
@@ -331,7 +342,7 @@
                 return yScale(d.value);})
             .attr("width", xScale.rangeBand())
             .attr("height", function (d) {
-                return (svgHeight  - margin.top - margin.bottom) - yScale(d.value);
+                return (svgHeight  -margin.top - margin.bottom) - yScale(d.value);
             })
             .attr("fill", function (d) {
                 return colorFill(d.cluster)
@@ -505,26 +516,29 @@
                 
             });
             
-        var epsLine = vis_hist
-            .append("rect")
-            .attr("id", "epsPrimeLine")
-            .attr("transform", "translate(" + [-0.1 * margin.left, yScale(_value.epsPrime)] + ")")
-            .attr("width", svgWidth - margin.left)
-            .attr("height", Math.min(3, svgHeight/300))
-            .style("fill", "red")
-            .style("cursor","ns-resize")
-          .call(drag);
+        if (!allNoise) {
+            var epsLine = vis_hist
+                .append("rect")
+                .attr("id", "epsPrimeLine")
+                .attr("transform", "translate(" + [-0.1 * margin.left, yScale(_value.epsPrime)] + ")")
+                .attr("width", svgWidth - margin.left)
+                .attr("height", Math.min(3, svgHeight/300))
+                .style("fill", "red")
+                .style("cursor","ns-resize")
+              .call(drag);
 
-        var epsText = vis_hist
-            .append("text")
-            .attr("id", "epsPrimeText")
-            .attr("y", setYforEpsText(_value.epsPrime, yScale(_value.epsPrime) - margin.bottom))
-            .attr("x", svgWidth - 1.9 * margin.right)
-            .attr("dy", ".35em")
-            .attr("fill", "black")
-            .style("font-size", Math.round(Math.min(svgHeight/50, 12))+"px")
-            .text(_value.epsPrime)  
+            var epsText = vis_hist
+                .append("text")
+                .attr("id", "epsPrimeText")
+                .attr("y", setYforEpsText(_value.epsPrime, yScale(_value.epsPrime) - margin.bottom))
+                .attr("x", svgWidth - 1.9 * margin.right)
+                .attr("dy", ".35em")
+                .attr("fill", "black")
+                .style("font-size", Math.round(Math.min(svgHeight/50, 12))+"px")
+                .text(_value.epsPrime)  
         
+        }
+
 
 // The code is not finished yet: implementation of the information scrolling window for binned data
 //        if (binnedWarning) {

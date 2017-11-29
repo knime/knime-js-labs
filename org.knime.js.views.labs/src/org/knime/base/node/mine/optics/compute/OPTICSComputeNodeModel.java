@@ -89,9 +89,9 @@ import org.knime.js.core.layout.bs.JSONLayoutViewContent;
 /**
  * This is the model implementation of OPTICS.
  *
- * @author Anastasia Zhukova, University of Konstanz, Germany
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
  * @author Oliver Sampson, University of Konstanz, Germany
- * @author Christian Albrecht, KNIME AG, Zurich, Switzerland, University of Konstanz
+ * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
 final class OPTICSComputeNodeModel extends NodeModel implements FlowVariableProvider, LayoutTemplateProvider {
 
@@ -143,7 +143,7 @@ final class OPTICSComputeNodeModel extends NodeModel implements FlowVariableProv
             distMat = new DistanceMeasurePortObject(m_config.createDistanceConfig(inDataSpec));
         }
 
-        final double eps = m_config.geteps();
+        final double eps = m_config.getEps();
         final int minPts = m_config.getminPTS();
 
         DistanceMeasure<?> distMeas = distMat.createDistanceMeasure(inDataSpec, this);
@@ -236,7 +236,7 @@ final class OPTICSComputeNodeModel extends NodeModel implements FlowVariableProv
         m_intermediateTable = container2.getTable();
         m_optPointContainer = intermediateTable;
         return new PortObject[]{new OPTICSPortObject(m_intermediateTable.getSpec(),
-            m_optPointContainer.toArray(new OptPoint[m_optPointContainer.size()]))};
+            m_optPointContainer.toArray(new OptPoint[m_optPointContainer.size()]), m_config.getEps())};
     }
 
     /**

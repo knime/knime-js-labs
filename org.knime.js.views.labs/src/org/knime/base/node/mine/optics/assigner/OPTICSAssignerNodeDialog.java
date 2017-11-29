@@ -80,8 +80,8 @@ import org.knime.core.node.port.PortObjectSpec;
  * This node dialog derives from {@link DefaultNodeSettingsPane} which allows creation of a simple dialog with standard
  * components.
  *
- * @author Anastasia Zhukova, University of Konstanz, Germany
- * @author Christian Albrecht, KNIME AG, Zurich, Switzerland, University of Konstanz
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
+ * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
 final class OPTICSAssignerNodeDialog extends NodeDialogPane {
 
@@ -426,13 +426,13 @@ final class OPTICSAssignerNodeDialog extends NodeDialogPane {
 
     private void setEpsCalcMethod(final String method) {
         switch (method) {
-            case OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEDIAN:
+            case OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEDIAN:
                 m_epsGroup.setSelectedIndex(1);
                 break;
-            case OPTICSAssignerViewConfig.MANUAL_EPS_PRIME:
+            case OPTICSAssignerViewConfig.CFG_MANUAL_EPS_PRIME:
                 m_epsGroup.setSelectedIndex(2);
                 break;
-            case OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEAN:
+            case OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEAN:
             default:
                 m_epsGroup.setSelectedIndex(0);
                 break;
@@ -442,11 +442,11 @@ final class OPTICSAssignerNodeDialog extends NodeDialogPane {
     private String getEpsCalcMethod() {
         switch (m_epsGroup.getSelectedIndex()) {
             case 0:
-                return OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEAN;
+                return OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEAN;
             case 1:
-                return OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEDIAN;
+                return OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEDIAN;
             case 2:
-                return OPTICSAssignerViewConfig.MANUAL_EPS_PRIME;
+                return OPTICSAssignerViewConfig.CFG_MANUAL_EPS_PRIME;
         }
         return null;
     }

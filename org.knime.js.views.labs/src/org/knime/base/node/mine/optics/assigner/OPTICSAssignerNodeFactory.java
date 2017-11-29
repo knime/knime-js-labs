@@ -53,7 +53,7 @@ import org.knime.core.node.wizard.WizardNodeFactoryExtension;
  * <code>NodeFactory</code> for the "OPTICS" Node.
  *
  *
- * @author Anastasia Zhukova, University of Konstanz, Germany
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
  */
 public final class OPTICSAssignerNodeFactory extends NodeFactory<OPTICSAssignerNodeModel> implements
     WizardNodeFactoryExtension<OPTICSAssignerNodeModel, OPTICSAssignerViewRepresentation, OPTICSAssignerViewValue> {

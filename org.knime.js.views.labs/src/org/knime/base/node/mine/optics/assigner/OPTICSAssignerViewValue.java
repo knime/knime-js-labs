@@ -58,8 +58,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * @author Anastasia Zhukova, University of Konstanz
- * @author Christian Albrecht, KNIME AG, Zurich, Switzerland, University of Konstanz
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
+ * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  * @since 3.4
  */
 @JsonAutoDetect
@@ -85,14 +85,14 @@ public class OPTICSAssignerViewValue extends JSONViewContent {
 
 	@Override
 	public void saveToNodeSettings(final NodeSettingsWO settings) {
-		settings.addString(OPTICSAssignerViewConfig.EPSILON_PR,
+		settings.addString(OPTICSAssignerViewConfig.CFG_EPSILON_PR,
 				getEpsPrime() == null ? null : getEpsPrime().toString());
-		settings.addBoolean(OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEAN, getCalcEpsPrimeMean());
-		settings.addBoolean(OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEDIAN, getCalcEpsPrimeMedian());
-		settings.addBoolean(OPTICSAssignerViewConfig.MANUAL_EPS_PRIME, getManualEpsPrime());
-		settings.addString(OPTICSAssignerViewConfig.EPS_CALC_METHOD, getEpsCalcMethod());
-        settings.addString(OPTICSAssignerViewConfig.CHART_TITLE, getChartTitle());
-        settings.addString(OPTICSAssignerViewConfig.CHART_SUBTITLE, getChartSubtitle());
+		settings.addBoolean(OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEAN, getCalcEpsPrimeMean());
+		settings.addBoolean(OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEDIAN, getCalcEpsPrimeMedian());
+		settings.addBoolean(OPTICSAssignerViewConfig.CFG_MANUAL_EPS_PRIME, getManualEpsPrime());
+		settings.addString(OPTICSAssignerViewConfig.CFG_EPS_CALC_METHOD, getEpsCalcMethod());
+        settings.addString(OPTICSAssignerViewConfig.CFG_CHART_TITLE, getChartTitle());
+        settings.addString(OPTICSAssignerViewConfig.CFG_CHART_SUBTITLE, getChartSubtitle());
         settings.addStringArray(SELECTED_KEYS, m_selection);
         settings.addBoolean(OPTICSAssignerViewConfig.CFG_PUBLISH_SELECTION, getPublishSelection());
         settings.addBoolean(OPTICSAssignerViewConfig.CFG_SUBSCRIBE_SELECTION, getSubscribeSelection());
@@ -101,13 +101,13 @@ public class OPTICSAssignerViewValue extends JSONViewContent {
 
     @Override
 	public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-		setEpsPrime(Double.parseDouble(settings.getString(OPTICSAssignerViewConfig.EPSILON_PR)));
-		setCalcEpsPrimeMean(settings.getBoolean(OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEAN));
-		setCalcEpsPrimeMedian(settings.getBoolean(OPTICSAssignerViewConfig.CALC_EPS_PRIME_MEDIAN));
-		setManualEpsPrime(settings.getBoolean(OPTICSAssignerViewConfig.MANUAL_EPS_PRIME));
-		setEpsCalcMethod(settings.getString(OPTICSAssignerViewConfig.EPS_CALC_METHOD));
-        setChartTitle(settings.getString(OPTICSAssignerViewConfig.CHART_TITLE));
-        setChartSubtitle(settings.getString(OPTICSAssignerViewConfig.CHART_SUBTITLE));
+		setEpsPrime(Double.parseDouble(settings.getString(OPTICSAssignerViewConfig.CFG_EPSILON_PR)));
+		setCalcEpsPrimeMean(settings.getBoolean(OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEAN));
+		setCalcEpsPrimeMedian(settings.getBoolean(OPTICSAssignerViewConfig.CFG_CALC_EPS_PRIME_MEDIAN));
+		setManualEpsPrime(settings.getBoolean(OPTICSAssignerViewConfig.CFG_MANUAL_EPS_PRIME));
+		setEpsCalcMethod(settings.getString(OPTICSAssignerViewConfig.CFG_EPS_CALC_METHOD));
+        setChartTitle(settings.getString(OPTICSAssignerViewConfig.CFG_CHART_TITLE));
+        setChartSubtitle(settings.getString(OPTICSAssignerViewConfig.CFG_CHART_SUBTITLE));
         setSelectedKeys(settings.getStringArray(SELECTED_KEYS));
         setPublishSelection(settings.getBoolean(OPTICSAssignerViewConfig.CFG_PUBLISH_SELECTION, OPTICSAssignerViewConfig.DEFAULT_PUBLISH_SELECTION));
         setSubscribeSelection(settings.getBoolean(OPTICSAssignerViewConfig.CFG_SUBSCRIBE_SELECTION, OPTICSAssignerViewConfig.DEFAULT_SUBSCRIBE_SELECTION));

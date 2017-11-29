@@ -57,76 +57,105 @@ import org.knime.core.node.NodeSettingsWO;
 /**
  * Settings proxy for distance matrix calculate node.
  *
- * @author Anastasia Zhukova, University of Konstanz
- * @author Christian Albrecht, KNIME AG, Zurich, Switzerland, University of Konstanz
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
+ * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
 final class OPTICSAssignerViewConfig {
 
+    static final String CFG_HIDE_IN_WIZARD = "hideInWizard";
     static final boolean DEFAULT_HIDE_IN_WIZARD = false;
-    static final Double DEFAULT_EPS_PRIME = 0.65;
-    static final int DEFAULT_MAX_ROWS = 2000;
-    static final int DEFAULT_WIDTH = 800;
-    static final int DEFAULT_HEIGHT = 600;
-    static final boolean DEFAULT_DISPLAY_FULLSCREEN_BUTTON = true;
-    static final boolean DEFAULT_PUBLISH_SELECTION = true;
-    static final boolean DEFAULT_ENABLE_SHOW_SELECTED_ONLY = true;
-    static final boolean DEFAULT_SUBSCRIBE_SELECTION = true;
-    static final boolean DEFAULT_SHOW_WARNING_IN_VIEW = true;
-    static final boolean DEFAULT_CALC_EPS_PRIME_MEAN = true;
-    static final boolean DEFAULT_CALC_EPS_PRIME_MEDIAN = false;
-
-    static final String HIDE_IN_WIZARD = "hideInWizard";
-    static final String EPSILON_PR = "epsilonPrime";
-    static final String RESIZE_TO_WINDOW = "resizeToWindow";
-    static final String SHOW_LEGEND = "showLegend";
-    static final String GENERATE_IMAGE = "generateImage";
-    static final String CFG_DISPLAY_FULLSCREEN_BUTTON = "displayFullscreenButton";
-    static final String ENABLE_CONFIG = "enableViewConfiguration";
-    static final String ENABLE_TTILE_CHANGE = "enableTitleChange";
-    static final String ENABLE_EPSILON_PRIME_CHANGE = "enableEpsilonPrimeChange";
-    static final String ENABLE_SELECTION = "enableSelection";
-    static final String ENABLE_RECTANGLE_SELECTION = "enableRectangleSelection";
-    static final String CFG_PUBLISH_SELECTION = "publishSelection";
-    static final String CFG_ENABLE_SHOW_SELECTED_ONLY = "enableShowSelectedOnly";
-    static final String CFG_SUBSCRIBE_SELECTION = "subscribeSelection";
-    static final String CHART_TITLE = "chartTitle";
-    static final String CHART_SUBTITLE = "chartSubtitle";
-    static final String MAX_ROWS = "maxRows";
-    static final String IMAGE_WIDTH = "imageWidth";
-    static final String IMAGE_HEIGHT = "imageHeight";
-    static final String SHOW_WARNING_IN_VIEW = "showWarningInView";
-    static final String CALC_EPS_PRIME_MEDIAN = "epsPrimeMedian";
-    static final String CALC_EPS_PRIME_MEAN = "epsPrimeMean";
-    static final String MANUAL_EPS_PRIME = "manualEpsPrime";
-    static final String EPS_CALC_METHOD = "epsCalcMethod";
-    static final String WAS_REDRAWN = "wasRedrawn";
-
     private boolean m_hideInWizard = DEFAULT_HIDE_IN_WIZARD;
+
+    static final String CFG_EPSILON_PR = "epsilonPrime";
+    static final Double DEFAULT_EPS_PRIME = 0.65;
     private Double m_eps_pr = DEFAULT_EPS_PRIME;
-    private boolean m_generateImage = true;
-    private boolean m_showLegend = true;
-    private boolean m_displayFullscreenButton = DEFAULT_DISPLAY_FULLSCREEN_BUTTON;
-    private boolean m_resizeToWindow = true;
-    private boolean m_enableViewConfiguration = true;
-    private boolean m_enableTitleChange = true;
-    private boolean m_enableEpsilonPrimeChange = true;
-    private boolean m_enableSwitchLegend = true;
-    private boolean m_enableSelection = true;
-    private boolean m_enableRectangleSelection = true;
-    private boolean m_publishSelection = DEFAULT_PUBLISH_SELECTION;
-    private boolean m_subscribeSelection = DEFAULT_SUBSCRIBE_SELECTION;
-    private boolean m_enableShowSelectedOnly = DEFAULT_ENABLE_SHOW_SELECTED_ONLY;
+
+    static final String CFG_MAX_ROWS = "maxRows";
+    static final int DEFAULT_MAX_ROWS = 2000;
     private int m_maxRows = DEFAULT_MAX_ROWS;
-    private String m_chartTitle;
-    private String m_chartSubtitle;
+
+    static final String CFG_IMAGE_WIDTH = "imageWidth";
+    static final int DEFAULT_WIDTH = 800;
     private int m_imageWidth = DEFAULT_WIDTH;
+
+    static final String CFG_IMAGE_HEIGHT = "imageHeight";
+    static final int DEFAULT_HEIGHT = 600;
     private int m_imageHeight = DEFAULT_HEIGHT;
+
+    static final String CFG_DISPLAY_FULLSCREEN_BUTTON = "displayFullscreenButton";
+    static final boolean DEFAULT_DISPLAY_FULLSCREEN_BUTTON = true;
+    private boolean m_displayFullscreenButton = DEFAULT_DISPLAY_FULLSCREEN_BUTTON;
+
+    static final String CFG_PUBLISH_SELECTION = "publishSelection";
+    static final boolean DEFAULT_PUBLISH_SELECTION = true;
+    private boolean m_publishSelection = DEFAULT_PUBLISH_SELECTION;
+
+    static final String CFG_ENABLE_SHOW_SELECTED_ONLY = "enableShowSelectedOnly";
+    static final boolean DEFAULT_ENABLE_SHOW_SELECTED_ONLY = true;
+    private boolean m_enableShowSelectedOnly = DEFAULT_ENABLE_SHOW_SELECTED_ONLY;
+
+    static final String CFG_SUBSCRIBE_SELECTION = "subscribeSelection";
+    static final boolean DEFAULT_SUBSCRIBE_SELECTION = true;
+    private boolean m_subscribeSelection = DEFAULT_SUBSCRIBE_SELECTION;
+
+    static final String CFG_SHOW_WARNING_IN_VIEW = "showWarningInView";
+    static final boolean DEFAULT_SHOW_WARNING_IN_VIEW = true;
     private boolean m_showWarningInView = DEFAULT_SHOW_WARNING_IN_VIEW;
-    private boolean m_calcEpsPrimeMedian = DEFAULT_CALC_EPS_PRIME_MEDIAN;
+
+    static final String CFG_CALC_EPS_PRIME_MEAN = "epsPrimeMean";
+    static final boolean DEFAULT_CALC_EPS_PRIME_MEAN = true;
     private boolean m_calcEpsPrimeMean = DEFAULT_CALC_EPS_PRIME_MEAN;
-    private boolean m_manualEpsPrime = false;
-    private String m_epsCalcMethod = CALC_EPS_PRIME_MEAN;
-    private boolean m_wasRedrawn = false;
+
+    static final String CFG_CALC_EPS_PRIME_MEDIAN = "epsPrimeMedian";
+    static final boolean DEFAULT_CALC_EPS_PRIME_MEDIAN = false;
+    private boolean m_calcEpsPrimeMedian = DEFAULT_CALC_EPS_PRIME_MEDIAN;
+
+    static final String CFG_MANUAL_EPS_PRIME = "manualEpsPrime";
+    static final boolean DEFAULT_MANUAL_EPS_PRIME = false;
+    private boolean m_manualEpsPrime = DEFAULT_MANUAL_EPS_PRIME;
+
+    static final String CFG_EPS_CALC_METHOD = "epsCalcMethod";
+    private String m_epsCalcMethod = CFG_CALC_EPS_PRIME_MEAN;
+
+    static final String CFG_RESIZE_TO_WINDOW = "resizeToWindow";
+    static final boolean DEFAULT_RESIZE_TO_WINDOW = true;
+    private boolean m_resizeToWindow = DEFAULT_RESIZE_TO_WINDOW;
+
+    static final String CFG_GENERATE_IMAGE = "generateImage";
+    static final boolean DEFAULT_GENERATE_IMAGE = true;
+    private boolean m_generateImage = DEFAULT_GENERATE_IMAGE;
+
+    static final String CFG_ENABLE_CONFIG = "enableViewConfiguration";
+    static final boolean DEFAULT_ENABLE_CONFIG = true;
+    private boolean m_enableViewConfiguration = DEFAULT_ENABLE_CONFIG;
+
+    static final String CFG_ENABLE_TTILE_CHANGE = "enableTitleChange";
+    static final boolean DEFAULT_ENABLE_TTILE_CHANGE = true;
+    private boolean m_enableTitleChange = DEFAULT_ENABLE_TTILE_CHANGE;
+
+    static final String ENABLE_EPSILON_PRIME_CHANGE = "enableEpsilonPrimeChange";
+    private boolean m_enableEpsilonPrimeChange = true;
+
+    static final String CFG_ENABLE_SELECTION = "enableSelection";
+    static final boolean DEFAULT_ENABLE_SELECTION = true;
+    private boolean m_enableSelection = DEFAULT_ENABLE_SELECTION;
+
+    static final String CFG_ENABLE_RECTANGLE_SELECTION = "enableRectangleSelection";
+    static final boolean DEFAULT_ENABLE_RECTANGLE_SELECTION = true;
+    private boolean m_enableRectangleSelection = DEFAULT_ENABLE_RECTANGLE_SELECTION;
+
+    static final String CFG_CHART_TITLE = "chartTitle";
+    private String m_chartTitle;
+
+    static final String CFG_CHART_SUBTITLE = "chartSubtitle";
+    private String m_chartSubtitle;
+
+    static final String CFG_WAS_REDRAWN = "wasRedrawn";
+    static final boolean DEFAULT_WAS_REDRAWN = false;
+    private boolean m_wasRedrawn = DEFAULT_WAS_REDRAWN;
+
+    static final String EPSILON = "epsilon";
+
 
     /**
      * Saves the current settings the argument. If none have been set (distance is null), nothing will be saved.
@@ -134,30 +163,30 @@ final class OPTICSAssignerViewConfig {
      * @param settings To write to.
      */
     void saveConfiguration(final NodeSettingsWO settings) {
-        settings.addBoolean(HIDE_IN_WIZARD, m_hideInWizard);
-        settings.addString(EPSILON_PR, getEpsPrime().toString());
-        settings.addBoolean(GENERATE_IMAGE, getGenerateImage());
-        settings.addBoolean(RESIZE_TO_WINDOW, getResizeToWindow());
-        settings.addBoolean(ENABLE_CONFIG, getEnableViewConfiguration());
-        settings.addBoolean(ENABLE_TTILE_CHANGE, getEnableTitleChange());
+        settings.addBoolean(CFG_HIDE_IN_WIZARD, m_hideInWizard);
+        settings.addString(CFG_EPSILON_PR, getEpsPrime().toString());
+        settings.addBoolean(CFG_GENERATE_IMAGE, getGenerateImage());
+        settings.addBoolean(CFG_RESIZE_TO_WINDOW, getResizeToWindow());
+        settings.addBoolean(CFG_ENABLE_CONFIG, getEnableViewConfiguration());
+        settings.addBoolean(CFG_ENABLE_TTILE_CHANGE, getEnableTitleChange());
         settings.addBoolean(ENABLE_EPSILON_PRIME_CHANGE, getEnableEpsilonPrimeChange());
-        settings.addBoolean(ENABLE_SELECTION, getEnableSelection());
-        settings.addBoolean(ENABLE_RECTANGLE_SELECTION, getEnableRectangleSelection());
-        settings.addString(CHART_TITLE, getChartTitle());
-        settings.addString(CHART_SUBTITLE, getChartSubtitle());
-        settings.addInt(MAX_ROWS, getMaxRows());
-        settings.addInt(IMAGE_WIDTH, getImageWidth());
-        settings.addInt(IMAGE_HEIGHT, getImageHeight());
+        settings.addBoolean(CFG_ENABLE_SELECTION, getEnableSelection());
+        settings.addBoolean(CFG_ENABLE_RECTANGLE_SELECTION, getEnableRectangleSelection());
+        settings.addString(CFG_CHART_TITLE, getChartTitle());
+        settings.addString(CFG_CHART_SUBTITLE, getChartSubtitle());
+        settings.addInt(CFG_MAX_ROWS, getMaxRows());
+        settings.addInt(CFG_IMAGE_WIDTH, getImageWidth());
+        settings.addInt(CFG_IMAGE_HEIGHT, getImageHeight());
         settings.addBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, getDisplayFullscreenButton());
         settings.addBoolean(CFG_PUBLISH_SELECTION, getPublishSelection());
         settings.addBoolean(CFG_SUBSCRIBE_SELECTION, getSubscribeSelection());
         settings.addBoolean(CFG_ENABLE_SHOW_SELECTED_ONLY, getEnableShowSelectedOnly());
-        settings.addBoolean(SHOW_WARNING_IN_VIEW, getShowWarningInView());
-        settings.addBoolean(CALC_EPS_PRIME_MEAN, getCalcEpsPrimeMean());
-        settings.addBoolean(CALC_EPS_PRIME_MEDIAN, getCalcEpsPrimeMedian());
-        settings.addBoolean(MANUAL_EPS_PRIME, getManualEpsPrime());
-        settings.addString(EPS_CALC_METHOD, getEpsCalcMethod());
-        settings.addBoolean(WAS_REDRAWN, getWasRedrawn());
+        settings.addBoolean(CFG_SHOW_WARNING_IN_VIEW, getShowWarningInView());
+        settings.addBoolean(CFG_CALC_EPS_PRIME_MEAN, getCalcEpsPrimeMean());
+        settings.addBoolean(CFG_CALC_EPS_PRIME_MEDIAN, getCalcEpsPrimeMedian());
+        settings.addBoolean(CFG_MANUAL_EPS_PRIME, getManualEpsPrime());
+        settings.addString(CFG_EPS_CALC_METHOD, getEpsCalcMethod());
+        settings.addBoolean(CFG_WAS_REDRAWN, getWasRedrawn());
     }
 
     /**
@@ -167,32 +196,32 @@ final class OPTICSAssignerViewConfig {
      * @throws InvalidSettingsException If incomplete or wrong.
      */
     void loadConfigurationInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_hideInWizard = settings.getBoolean(HIDE_IN_WIZARD);
-	    String epsPr = settings.getString(EPSILON_PR);
+        m_hideInWizard = settings.getBoolean(CFG_HIDE_IN_WIZARD, DEFAULT_HIDE_IN_WIZARD);
+	    String epsPr = settings.getString(CFG_EPSILON_PR);
 	    setEpsPrime(epsPr == null ? null : Double.parseDouble(epsPr));
 	    checkSetting(m_eps_pr > 0, "epsilon prime must be > 0: " + m_eps_pr);
-        setGenerateImage(settings.getBoolean(GENERATE_IMAGE));
-        setResizeToWindow(settings.getBoolean(RESIZE_TO_WINDOW));
-        setEnableViewConfiguration(settings.getBoolean(ENABLE_CONFIG));
-        setEnableTitleChange(settings.getBoolean(ENABLE_TTILE_CHANGE));
+        setGenerateImage(settings.getBoolean(CFG_GENERATE_IMAGE));
+        setResizeToWindow(settings.getBoolean(CFG_RESIZE_TO_WINDOW));
+        setEnableViewConfiguration(settings.getBoolean(CFG_ENABLE_CONFIG));
+        setEnableTitleChange(settings.getBoolean(CFG_ENABLE_TTILE_CHANGE));
         setEnableEpsilonPrimeChange(settings.getBoolean(ENABLE_EPSILON_PRIME_CHANGE));
-        setEnableSelection(settings.getBoolean(ENABLE_SELECTION));
-        setEnableRectangleSelection(settings.getBoolean(ENABLE_RECTANGLE_SELECTION));
-        setChartTitle(settings.getString(CHART_TITLE));
-        setChartSubtitle(settings.getString(CHART_SUBTITLE));
-        setMaxRows(settings.getInt(MAX_ROWS,DEFAULT_MAX_ROWS));
-        setImageWidth(settings.getInt(IMAGE_WIDTH));
-        setImageHeight(settings.getInt(IMAGE_HEIGHT));
+        setEnableSelection(settings.getBoolean(CFG_ENABLE_SELECTION));
+        setEnableRectangleSelection(settings.getBoolean(CFG_ENABLE_RECTANGLE_SELECTION));
+        setChartTitle(settings.getString(CFG_CHART_TITLE));
+        setChartSubtitle(settings.getString(CFG_CHART_SUBTITLE));
+        setMaxRows(settings.getInt(CFG_MAX_ROWS,DEFAULT_MAX_ROWS));
+        setImageWidth(settings.getInt(CFG_IMAGE_WIDTH));
+        setImageHeight(settings.getInt(CFG_IMAGE_HEIGHT));
         setDisplayFullscreenButton(settings.getBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, DEFAULT_DISPLAY_FULLSCREEN_BUTTON));
         setPublishSelection(settings.getBoolean(CFG_PUBLISH_SELECTION, DEFAULT_PUBLISH_SELECTION));
         setSubscribeSelection(settings.getBoolean(CFG_SUBSCRIBE_SELECTION, DEFAULT_SUBSCRIBE_SELECTION));
         setEnableShowSelectedOnly(settings.getBoolean(CFG_ENABLE_SHOW_SELECTED_ONLY, DEFAULT_ENABLE_SHOW_SELECTED_ONLY));
-        setShowWarningInView(settings.getBoolean(SHOW_WARNING_IN_VIEW, DEFAULT_SHOW_WARNING_IN_VIEW));
-        setCalcEpsPrimeMean(settings.getBoolean(CALC_EPS_PRIME_MEAN, DEFAULT_CALC_EPS_PRIME_MEAN));
-        setCalcEpsPrimeMedian(settings.getBoolean(CALC_EPS_PRIME_MEDIAN, DEFAULT_CALC_EPS_PRIME_MEDIAN));
-        setManualEpsPrime(settings.getBoolean(MANUAL_EPS_PRIME, false));
-        setEpsCalcMethod(settings.getString(EPS_CALC_METHOD, CALC_EPS_PRIME_MEAN));
-        setWasRedrawn(settings.getBoolean(WAS_REDRAWN, false));
+        setShowWarningInView(settings.getBoolean(CFG_SHOW_WARNING_IN_VIEW, DEFAULT_SHOW_WARNING_IN_VIEW));
+        setCalcEpsPrimeMean(settings.getBoolean(CFG_CALC_EPS_PRIME_MEAN, DEFAULT_CALC_EPS_PRIME_MEAN));
+        setCalcEpsPrimeMedian(settings.getBoolean(CFG_CALC_EPS_PRIME_MEDIAN, DEFAULT_CALC_EPS_PRIME_MEDIAN));
+        setManualEpsPrime(settings.getBoolean(CFG_MANUAL_EPS_PRIME, false));
+        setEpsCalcMethod(settings.getString(CFG_EPS_CALC_METHOD, CFG_CALC_EPS_PRIME_MEAN));
+        setWasRedrawn(settings.getBoolean(CFG_WAS_REDRAWN, false));
     }
 
     /**
@@ -203,30 +232,30 @@ final class OPTICSAssignerViewConfig {
      * @throws InvalidSettingsException
      */
     void loadConfigurationInDialog(final NodeSettingsRO settings, final DataTableSpec spec) throws InvalidSettingsException {
-    	m_hideInWizard = settings.getBoolean(HIDE_IN_WIZARD, DEFAULT_HIDE_IN_WIZARD);
-        setEpsPrime(Double.parseDouble(settings.getString(EPSILON_PR, DEFAULT_EPS_PRIME.toString())));
-        setGenerateImage(settings.getBoolean(GENERATE_IMAGE, true));
-        setResizeToWindow(settings.getBoolean(RESIZE_TO_WINDOW, true));
-        setEnableViewConfiguration(settings.getBoolean(ENABLE_CONFIG, true));
-        setEnableTitleChange(settings.getBoolean(ENABLE_TTILE_CHANGE, true));
+    	m_hideInWizard = settings.getBoolean(CFG_HIDE_IN_WIZARD, DEFAULT_HIDE_IN_WIZARD);
+        setEpsPrime(Double.parseDouble(settings.getString(CFG_EPSILON_PR, DEFAULT_EPS_PRIME.toString())));
+        setGenerateImage(settings.getBoolean(CFG_GENERATE_IMAGE, true));
+        setResizeToWindow(settings.getBoolean(CFG_RESIZE_TO_WINDOW, true));
+        setEnableViewConfiguration(settings.getBoolean(CFG_ENABLE_CONFIG, true));
+        setEnableTitleChange(settings.getBoolean(CFG_ENABLE_TTILE_CHANGE, true));
         setEnableEpsilonPrimeChange(settings.getBoolean(ENABLE_EPSILON_PRIME_CHANGE, true));
-        setEnableSelection(settings.getBoolean(ENABLE_SELECTION, true));
-        setEnableRectangleSelection(settings.getBoolean(ENABLE_RECTANGLE_SELECTION, true));
-        setChartTitle(settings.getString(CHART_TITLE, null));
-        setChartSubtitle(settings.getString(CHART_SUBTITLE, null));
-        setMaxRows(settings.getInt(MAX_ROWS, DEFAULT_MAX_ROWS));
-        setImageWidth(settings.getInt(IMAGE_WIDTH, DEFAULT_WIDTH));
-        setImageHeight(settings.getInt(IMAGE_HEIGHT, DEFAULT_HEIGHT));
+        setEnableSelection(settings.getBoolean(CFG_ENABLE_SELECTION, true));
+        setEnableRectangleSelection(settings.getBoolean(CFG_ENABLE_RECTANGLE_SELECTION, true));
+        setChartTitle(settings.getString(CFG_CHART_TITLE, null));
+        setChartSubtitle(settings.getString(CFG_CHART_SUBTITLE, null));
+        setMaxRows(settings.getInt(CFG_MAX_ROWS, DEFAULT_MAX_ROWS));
+        setImageWidth(settings.getInt(CFG_IMAGE_WIDTH, DEFAULT_WIDTH));
+        setImageHeight(settings.getInt(CFG_IMAGE_HEIGHT, DEFAULT_HEIGHT));
         setDisplayFullscreenButton(settings.getBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, DEFAULT_DISPLAY_FULLSCREEN_BUTTON));
         setPublishSelection(settings.getBoolean(CFG_PUBLISH_SELECTION, DEFAULT_PUBLISH_SELECTION));
         setSubscribeSelection(settings.getBoolean(CFG_SUBSCRIBE_SELECTION, DEFAULT_SUBSCRIBE_SELECTION));
         setEnableShowSelectedOnly(settings.getBoolean(CFG_ENABLE_SHOW_SELECTED_ONLY, DEFAULT_ENABLE_SHOW_SELECTED_ONLY));
-        setShowWarningInView(settings.getBoolean(SHOW_WARNING_IN_VIEW, DEFAULT_SHOW_WARNING_IN_VIEW));
-        setCalcEpsPrimeMean(settings.getBoolean(CALC_EPS_PRIME_MEAN, DEFAULT_CALC_EPS_PRIME_MEAN));
-        setCalcEpsPrimeMedian(settings.getBoolean(CALC_EPS_PRIME_MEDIAN, DEFAULT_CALC_EPS_PRIME_MEDIAN));
-        setManualEpsPrime(settings.getBoolean(MANUAL_EPS_PRIME, false));
-        setEpsCalcMethod(settings.getString(EPS_CALC_METHOD, CALC_EPS_PRIME_MEAN));
-        setWasRedrawn(settings.getBoolean(WAS_REDRAWN, false));
+        setShowWarningInView(settings.getBoolean(CFG_SHOW_WARNING_IN_VIEW, DEFAULT_SHOW_WARNING_IN_VIEW));
+        setCalcEpsPrimeMean(settings.getBoolean(CFG_CALC_EPS_PRIME_MEAN, DEFAULT_CALC_EPS_PRIME_MEAN));
+        setCalcEpsPrimeMedian(settings.getBoolean(CFG_CALC_EPS_PRIME_MEDIAN, DEFAULT_CALC_EPS_PRIME_MEDIAN));
+        setManualEpsPrime(settings.getBoolean(CFG_MANUAL_EPS_PRIME, false));
+        setEpsCalcMethod(settings.getString(CFG_EPS_CALC_METHOD, CFG_CALC_EPS_PRIME_MEAN));
+        setWasRedrawn(settings.getBoolean(CFG_WAS_REDRAWN, false));
     }
 
     /**
@@ -269,20 +298,6 @@ final class OPTICSAssignerViewConfig {
      */
     void setGenerateImage(final boolean generateImage) {
         m_generateImage = generateImage;
-    }
-
-    /**
-     * @return the showLegend
-     */
-    boolean getShowLegend() {
-        return m_showLegend;
-    }
-
-    /**
-     * @param showLegend the showLegend to set
-     */
-    void setShowLegend(final boolean showLegend) {
-        m_showLegend = showLegend;
     }
 
     /**
@@ -495,20 +510,6 @@ final class OPTICSAssignerViewConfig {
      */
     void setEnableEpsilonPrimeChange(final boolean enableEpsilonPrimeChange) {
         m_enableEpsilonPrimeChange = enableEpsilonPrimeChange;
-    }
-
-    /**
-     * @return the enableSwitchLegend
-     */
-    boolean getEnableSwitchLegend() {
-        return m_enableSwitchLegend;
-    }
-
-    /**
-     * @param enableSwitchLegend the enableSwitchLegend to set
-     */
-    void setEnableSwitchLegend(final boolean enableSwitchLegend) {
-        m_enableSwitchLegend = enableSwitchLegend;
     }
 
     /**
