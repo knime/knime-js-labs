@@ -411,19 +411,21 @@ public class TagCloudViewNodeModel
         representation.setDisplayClearSelectionButton(m_config.getDisplayClearSelectionButton());
 
         TagCloudViewValue value = getViewValue();
-        value.setTitle(m_config.getTitle());
-        value.setSubtitle(m_config.getSubtitle());
-        value.setMinFontSize(m_config.getMinFontSize());
-        value.setMaxFontSize(m_config.getMaxFontSize());
-        value.setFontScaleType(m_config.getFontScaleType());
-        value.setSpiralType(m_config.getSpiralType());
-        value.setNumOrientations(m_config.getNumOrientations());
-        value.setStartAngle(m_config.getStartAngle());
-        value.setEndAngle(m_config.getEndAngle());
-        value.setPublishSelection(m_config.getPublishSelection());
-        value.setSubscribeSelection(m_config.getSubscribeSelection());
-        value.setShowSelectedOnly(m_config.getDefaultShowSelectedOnly());
-        value.setSubscribeFilter(m_config.getSubscribeFilter());
+        if (isViewValueEmpty()) {
+            value.setTitle(m_config.getTitle());
+            value.setSubtitle(m_config.getSubtitle());
+            value.setMinFontSize(m_config.getMinFontSize());
+            value.setMaxFontSize(m_config.getMaxFontSize());
+            value.setFontScaleType(m_config.getFontScaleType());
+            value.setSpiralType(m_config.getSpiralType());
+            value.setNumOrientations(m_config.getNumOrientations());
+            value.setStartAngle(m_config.getStartAngle());
+            value.setEndAngle(m_config.getEndAngle());
+            value.setPublishSelection(m_config.getPublishSelection());
+            value.setSubscribeSelection(m_config.getSubscribeSelection());
+            value.setShowSelectedOnly(m_config.getDefaultShowSelectedOnly());
+            value.setSubscribeFilter(m_config.getSubscribeFilter());
+        }
     }
 
     private void copyValueToConfig() {
