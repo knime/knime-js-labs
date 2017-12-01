@@ -521,15 +521,17 @@ public class OPTICSAssignerNodeModel
         representation.setResizeToWindow(m_config.getResizeToWindow());
 
         OPTICSAssignerViewValue viewValue = getViewValue();
-        viewValue.setChartTitle(m_config.getChartTitle());
-        viewValue.setChartSubtitle(m_config.getChartSubtitle());
-        viewValue.setPublishSelection(m_config.getPublishSelection());
-        viewValue.setSubscribeSelection(m_config.getSubscribeSelection());
-        viewValue.setEpsPrime(eps_prime);
-        viewValue.setCalcEpsPrimeMean(m_config.getCalcEpsPrimeMean());
-        viewValue.setCalcEpsPrimeMedian(m_config.getCalcEpsPrimeMedian());
-        viewValue.setManualEpsPrime(m_config.getManualEpsPrime());
-        viewValue.setEpsCalcMethod(m_config.getEpsCalcMethod());
+        if (isViewValueEmpty()) {
+            viewValue.setChartTitle(m_config.getChartTitle());
+            viewValue.setChartSubtitle(m_config.getChartSubtitle());
+            viewValue.setPublishSelection(m_config.getPublishSelection());
+            viewValue.setSubscribeSelection(m_config.getSubscribeSelection());
+            viewValue.setEpsPrime(eps_prime);
+            viewValue.setCalcEpsPrimeMean(m_config.getCalcEpsPrimeMean());
+            viewValue.setCalcEpsPrimeMedian(m_config.getCalcEpsPrimeMedian());
+            viewValue.setManualEpsPrime(m_config.getManualEpsPrime());
+            viewValue.setEpsCalcMethod(m_config.getEpsCalcMethod());
+        }
 
     }
 
