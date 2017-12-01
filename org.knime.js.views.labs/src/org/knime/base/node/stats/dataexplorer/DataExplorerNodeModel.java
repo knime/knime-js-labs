@@ -311,7 +311,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         String nominalEvaluationResults = calc.evaluate(table, exec.createSubExecutionContext(0.5));
         if (nominalEvaluationResults != null) {
             String[] errors = nominalEvaluationResults.split(":");
-            String[] errorsClean = errors[errors.length - 1].replaceAll("('\"|\"'|\"| |\\n)", "").split(",");
+            String[] errorsClean = errors[errors.length - 1].replaceAll("('\"|\"'|\"|\\n)", "").split(",");
             //getViewRepresentation().setMaxNomValueReached(errorsClean);
             errorSet.addAll(Arrays.asList(errorsClean));
         } else {
@@ -428,7 +428,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         } else {
             output.addAll(Arrays.asList(unwrapDataValueArray(freq)));
             output.add(infoMessage);
-            output.addAll(Arrays.asList(unwrapDataValueArray(freq)));
+            output.addAll(Arrays.asList(unwrapDataValueArray(infreq)));
         }
         return output;
     }

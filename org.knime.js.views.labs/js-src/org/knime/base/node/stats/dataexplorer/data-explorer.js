@@ -323,7 +323,11 @@ dataExplorerNamespace = function() {
                         .attr("stroke-width", "1px")
                         .append("title")
                         .text(function(d, i) { return d.first+": "+d.second; });
-
+                    
+                    if (_representation.maxNomValueReached.indexOf(full[0]) > -1) {
+                        return $('<div/>').append("<span> Not all nominal values calculated.</span>").html()
+                    }
+                    
                     return $('<div/>').append(histDiv).html();
                 }
             }
