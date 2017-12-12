@@ -275,7 +275,7 @@ public class TagCloudViewNodeDialogPane extends NodeDialogPane {
         GridBagConstraints gbcG = createConfiguredGridBagConstraints();
         gbcG.fill = GridBagConstraints.HORIZONTAL;
         gbcG.gridwidth = 1;
-        generalPanel.add(new JLabel("No. of words to display: "), gbcG);
+        generalPanel.add(new JLabel("No. of tags to display: "), gbcG);
         gbcG.gridx++;
         m_maxWordsSpinner.setPreferredSize(new Dimension(100, DialogUtil.DEF_TEXTFIELD_WIDTH));
         generalPanel.add(m_maxWordsSpinner, gbcG);
