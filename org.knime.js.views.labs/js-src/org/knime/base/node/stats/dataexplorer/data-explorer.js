@@ -11,9 +11,9 @@ dataExplorerNamespace = function() {
 	var selection = {};
 	var allCheckboxes = [];
 	var initialized = false;
-    var svgWidth = 100;
+    var svgWidth = 120;
     var svgHeight = 30;
-    var svgWsmall = 100;
+    var svgWsmall = 120;
     var svgHsmall = 30;
     var svgWbig = 500;
     var svgHbig = 300;
@@ -303,31 +303,39 @@ dataExplorerNamespace = function() {
                         .attr("width", svgWidth)
                         .attr("class", "svg_hist_nom")
                         .attr("id", "svgNom"+full[histColNom].colIndex);
-
-                    var bar_group = svg.append("g")
-                        .attr("transform", "translate(" + [0 , margin.top] + ")")
-                        .attr("class", "bars")
-                        .attr("id", "svgNom"+meta.row);
-
-                    var bars = bar_group.selectAll("rect")
-                        .data(full[histColNom].bins)
-                            .enter()
-                        .append("rect")
-                        .attr("class", "rect"+full[histColNom].colIndex)
-                        .attr("x", function (d) {return xScaleNom(d.first);})
-                        .attr("y", function(d) {return yScale(d.second);})
-                        .attr("width", function(d) {return xScaleNom.rangeBand()})
-                        .attr("height", function(d){return svgHsmall - yScale(d.second);})
-                        .attr("fill", "#547cac")
-                        .attr("stroke", "black")
-                        .attr("stroke-width", "1px")
-                        .append("title")
-                        .text(function(d, i) { return d.first+": "+d.second; });
                     
-                    if (_representation.maxNomValueReached.indexOf(full[0]) > -1) {
-                        return $('<div/>').append("<span> Not all nominal values calculated.</span>").html()
+                    if (_representation.maxNomValueReached.indexOf(full[0]) < 0) {
+
+                        var bar_group = svg.append("g")
+                            .attr("transform", "translate(" + [0 , margin.top] + ")")
+                            .attr("class", "bars")
+                            .attr("id", "svgNom"+meta.row);
+
+                        var bars = bar_group.selectAll("rect")
+                            .data(full[histColNom].bins)
+                                .enter()
+                            .append("rect")
+                            .attr("class", "rect"+full[histColNom].colIndex)
+                            .attr("x", function (d) {return xScaleNom(d.first);})
+                            .attr("y", function(d) {return yScale(d.second);})
+                            .attr("width", function(d) {return xScaleNom.rangeBand()})
+                            .attr("height", function(d){return svgHsmall - yScale(d.second);})
+                            .attr("fill", "#547cac")
+                            .attr("stroke", "black")
+                            .attr("stroke-width", "1px")
+                            .append("title")
+                            .text(function(d, i) { return d.first+": "+d.second; });
+
+                    } else {
+                        var errorMessage = ["Not all nominal", "values calculated."]
+                        var errorText = svg.selectAll("text").data(errorMessage)
+                                .enter()
+                            .append('text')
+                            .attr("x", 0)
+                            .attr("y", function(d, i){return svgHeight/3*(1 + i)})
+                            .text(function(d){return d})
                     }
-                    
+  
                     return $('<div/>').append(histDiv).html();
                 }
             }
@@ -437,15 +445,6 @@ dataExplorerNamespace = function() {
             
             nominalDataTable.on("responsive-display", function(e, datatable, row, showHide, update) {
                 
-                
-                var textScale = d3.scale.linear()
-                    .range([8, 11])
-                    .domain([d3.max(histNomSizes), 16]);
-                
-                var charecterScale = d3.scale.linear()
-                    .range([3, 7])
-                    .domain([d3.max(histNomSizes), 13])
-                
                 var data = row.data()[histColNom];
                 
                 if (!update && showHide) {
@@ -453,114 +452,122 @@ dataExplorerNamespace = function() {
                     respOpenedNom.sort();
                 }
                 
-                //when responsive is opened it creates an additional div of the same class right under its original one
-                var bigHist = $(".histNom")[data.colIndex % dataTable.page.len() + respOpenedNom.indexOf(data.colIndex) + 1];
-                //var bigHist = $(".hist")[row[0][0] % _representation.initialPageSize + 1];
-                svgWidth = svgWbig;
-                svgHeight = svgHbig;
-                var svgBigHist = d3.select(bigHist).select("#svgNom"+data.colIndex)[0][0]
-                //var svgBigHist = d3.select(bigHist).select("#svg"+row[0][0])[0][0]
+                if (_representation.maxNomValueReached.indexOf(data.columnName) < 0) {
                 
-//                var min = data.bins[0].def.first;
-//                var max = data.bins[data.bins.length - 1].def.second;
-//                var barWidthValue = (max - min)/data.bins.length;
-                
-                xScaleNom.rangeBands([0, svgWidth - margin.left - margin.right])
-                    .domain(data.bins.map(function(d){return d.first}));
-                yScale.range([svgHeight - 2*margin.top - margin.bottom, 0])
-                    .domain([0, data.maxCount]);
-                
-                var svg = d3.select(svgBigHist).attr("width", svgWidth).attr("height", svgHeight);
-                
-                var bar_group = svg.selectAll(".bars")
-                    .attr("transform", "translate("+[margin.left , margin.top]+")");
-                //var barWidth = xScale((barWidthValue + min))
-                
-                var bars = svg.selectAll(".bars")
-                    .selectAll(".rect"+data.colIndex)
-                    //.selectAll(".rect"+row[0][0])
-                    .data(data.bins)
-                    .attr("x", function (d) {return xScaleNom(d.first);})
-                    .attr("y", function(d) {return yScale(d.second);})
-                    .attr("width", function(d) {return xScaleNom.rangeBand();})
-                    .attr("height", function(d){return svgHeight - 2*margin.top - margin.bottom -  yScale(d.second);})
-                
-                var text_group = svg.append("g")
-                    .attr("class", "caption")
-                    .attr("transform", "translate(" + [margin.left , margin.top] + ")")
-                    .attr("id", "id"+data.colIndex);
-                    //.attr("id", "id"+row[0][0]);
-                
-                var texts = text_group.selectAll("text")
-                    .data(data.bins)
-                    .enter()
-                    .append("text")
-                    .attr("x", function (d) {return xScaleNom(d.first) + xScaleNom.rangeBand()/2;})
-                    .attr("y", function(d) {return yScale(d.second) - 2;})
-                    .text(function(d) {return d.second;})
-                    .attr("font-size", Math.round(Math.min(svgHeight/15, 11))+"px")
-                    .attr("text-anchor", "middle");
-                
-//                var ticks = [];
-//                data.bins.forEach(function(d,i) {
-//                    ticks.push(d.def.first);
-//                })
-//                ticks.push(data.bins[data.bins.length - 1].def.second)
-                
-                xAxis = d3.svg.axis()
-                    .scale(xScaleNom)
-                    .ticks(0)
-                    .orient("bottom");
-                
-                yAxis = d3.svg.axis()
-                    .scale(yScale)
-                    .orient("left")
-                    .ticks(5);
-                
-                if (data.maxCount < 10000) {
-                    yAxis.tickFormat(d3.format(".0f"));
-                } else {
-                    yAxis.tickFormat(d3.format(".0e"))
-                }
-                
-                var axisX = svg.append("g")
-                    .attr("class", "x nom axis")
-                    .attr("id", "xAxis"+data.colIndex)
-                    .attr("transform", "translate(" + [margin.left, svgHeight - margin.bottom - margin.top] + ")")
-                    .call(xAxis)
-                
-                //different patterns of labels depending on number of elements in one column
-                if (histNomSizes[data.colIndex] > 12) {
-                    axisX.selectAll("text")
-                        .attr("y", -xScaleNom.rangeBand()/4)
-                        .attr("x", -2)
-                        .attr("transform", "rotate(-90)")
-                        .style("text-anchor", "end")
-                        .text(function(d){ 
-                            return d.slice(0,3)+".";
-                        })
-                        .style("font-size", textScale(data.bins.length)+"px");
-                } else {
-                    axisX.selectAll("text")
-                        .attr("y", 2)
-                        .attr("x", 0)
-                        //.attr("dy", ".35em")
-                        .attr("transform", "rotate(0)")
-                        .style("text-anchor", "middle")
-                        .text(function(d){ 
-                            return d.slice(0,charecterScale(histNomSizes[data.colIndex]));
-                        })
-                        .style("font-size", "11px");
-                }
+                    var textScale = d3.scale.linear()
+                        .range([8, 11])
+                        .domain([d3.max(histNomSizes), 16]);
 
-                
-                var axisY = svg.append("g")
-                    .attr("class", "y axis")
-                    .attr("id", "yAxis"+data.colIndex)
-                    //.attr("id", "yAxis"+row[0][0])
-                    .attr("transform", "translate(" + [margin.left, margin.top] + ")")
-                    .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
-                    .call(yAxis);
+                    var charecterScale = d3.scale.linear()
+                        
+                    
+                    if (d3.max(histNomSizes) >= 13) {
+                        charecterScale.range([3, 7]).domain([d3.max(histNomSizes), 13])
+                    } else {
+                        charecterScale.range([7, 10]).domain([12, d3.max(histNomSizes)])
+                    }
+                        
+
+                    //when responsive is opened it creates an additional div of the same class right under its original one
+                    var bigHist = $(".histNom")[data.colIndex % dataTable.page.len() + respOpenedNom.indexOf(data.colIndex) + 1];
+                    svgWidth = svgWbig;
+                    svgHeight = svgHbig;
+                    var svgBigHist = d3.select(bigHist).select("#svgNom"+data.colIndex)[0][0]
+
+                    xScaleNom.rangeBands([0, svgWidth - margin.left - margin.right])
+                        .domain(data.bins.map(function(d){return d.first}));
+                    yScale.range([svgHeight - 2*margin.top - margin.bottom, 0])
+                        .domain([0, data.maxCount]);
+
+                    var svg = d3.select(svgBigHist).attr("width", svgWidth).attr("height", svgHeight);
+
+                    var bar_group = svg.selectAll(".bars")
+                        .attr("transform", "translate("+[margin.left , margin.top]+")");
+
+                    var bars = svg.selectAll(".bars")
+                        .selectAll(".rect"+data.colIndex)
+                        .data(data.bins)
+                        .attr("x", function (d) {return xScaleNom(d.first);})
+                        .attr("y", function(d) {return yScale(d.second);})
+                        .attr("width", function(d) {return xScaleNom.rangeBand();})
+                        .attr("height", function(d){return svgHeight - 2*margin.top - margin.bottom -  yScale(d.second);})
+
+                    var text_group = svg.append("g")
+                        .attr("class", "caption")
+                        .attr("transform", "translate(" + [margin.left , margin.top] + ")")
+                        .attr("id", "id"+data.colIndex);
+
+                    var texts = text_group.selectAll("text")
+                        .data(data.bins)
+                        .enter()
+                        .append("text")
+                        .attr("x", function (d) {return xScaleNom(d.first) + xScaleNom.rangeBand()/2;})
+                        .attr("y", function(d) {return yScale(d.second) - 2;})
+                        .text(function(d) {return d.second;})
+                        .attr("font-size", Math.round(Math.min(svgHeight/15, 11))+"px")
+                        .attr("text-anchor", "middle");
+
+    //                var ticks = [];
+    //                data.bins.forEach(function(d,i) {
+    //                    ticks.push(d.def.first);
+    //                })
+    //                ticks.push(data.bins[data.bins.length - 1].def.second)
+
+                    xAxis = d3.svg.axis()
+                        .scale(xScaleNom)
+                        .ticks(0)
+                        .orient("bottom");
+
+                    yAxis = d3.svg.axis()
+                        .scale(yScale)
+                        .orient("left")
+                        .ticks(5);
+
+                    if (data.maxCount < 10000) {
+                        yAxis.tickFormat(d3.format(".0f"));
+                    } else {
+                        yAxis.tickFormat(d3.format(".0e"))
+                    }
+
+                    var axisX = svg.append("g")
+                        .attr("class", "x nom axis")
+                        .attr("id", "xAxis"+data.colIndex)
+                        .attr("transform", "translate(" + [margin.left, svgHeight - margin.bottom - margin.top] + ")")
+                        .call(xAxis)
+
+                    //different patterns of labels depending on number of elements in one column
+                    if (histNomSizes[data.colIndex] > 12) {
+                        axisX.selectAll("text")
+                            .attr("y", -xScaleNom.rangeBand()/4)
+                            .attr("x", -2)
+                            .attr("transform", "rotate(-90)")
+                            .style("text-anchor", "end")
+                            .text(function(d){ 
+                                return d.slice(0,3)+".";
+                            })
+                            .style("font-size", textScale(data.bins.length)+"px");
+                    } else {
+                        axisX.selectAll("text")
+                            .attr("y", 2)
+                            .attr("x", 0)
+                            //.attr("dy", ".35em")
+                            .attr("transform", "rotate(0)")
+                            .style("text-anchor", "middle")
+                            .text(function(d){ 
+                                return d.slice(0,charecterScale(histNomSizes[data.colIndex]));
+                            })
+                            .style("font-size", "11px");
+                    }
+
+
+                    var axisY = svg.append("g")
+                        .attr("class", "y axis")
+                        .attr("id", "yAxis"+data.colIndex)
+                        .attr("transform", "translate(" + [margin.left, margin.top] + ")")
+                        .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
+                        .call(yAxis);
+
+                }
                 
                 if (!update && !showHide) {
                     respOpenedNom.splice(respOpenedNom.indexOf(data.colIndex), 1);

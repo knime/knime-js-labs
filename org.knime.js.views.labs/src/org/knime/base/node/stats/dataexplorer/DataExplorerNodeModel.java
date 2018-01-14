@@ -313,6 +313,12 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             String[] errors = nominalEvaluationResults.split(":");
             String[] errorsClean = errors[errors.length - 1].replaceAll("('\"|\"'|\"|\\n)", "").split(",");
             //getViewRepresentation().setMaxNomValueReached(errorsClean);
+            for (int i = 0; i < errorsClean.length; i++) {
+                String a = errorsClean[i].substring(0, 1);
+                if (a.chars().allMatch(Character::isWhitespace)) {
+                    errorsClean[i] = errorsClean[i].substring(1, errorsClean[i].length());
+                }
+            }
             errorSet.addAll(Arrays.asList(errorsClean));
         } else {
             getViewRepresentation().setMaxNomValueReached(new String[0]);
