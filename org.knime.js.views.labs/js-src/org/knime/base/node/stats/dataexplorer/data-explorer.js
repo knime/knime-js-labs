@@ -30,10 +30,13 @@ dataExplorerNamespace = function() {
     var pageLengths;
     var order = [];
     var buttons = [];
-    var respOpenedNum = [];
-    var respOpenedNom = [];
+    var respOpenedNum = new Map();
+    var respOpenedNom = new Map();
     var showWarningMessage = true;
     var warningMessageCutOffValues = "Some nominal values were cut off by the number of unique nominal values. Change settings in the dialog window.";
+    var prevRowsPerPage;
+    var openedNomRows = 0;
+    var openedNumRows = 0;
     
     
 	
@@ -346,6 +349,7 @@ dataExplorerNamespace = function() {
 			if (_value.pageSize) {
 				pageLength = _value.pageSize;
 			}
+            prevRowsPerPage = pageLength;
 			pageLengths = _representation.allowedPageSizes;
 			if (_representation.pageSizeShowAll) {
 				var first = pageLengths.slice(0);
@@ -446,12 +450,11 @@ dataExplorerNamespace = function() {
             nominalDataTable.on("responsive-display", function(e, datatable, row, showHide, update) {
                 
                 var data = row.data()[histColNom];
+                var pageLength = datatable.page.info().length < 0? datatable.page.info().recordsTotal : datatable.page.info().length;
+                //var pageNum = Math.floor(data.colIndex / pageLength);
                 
-                if (!update && showHide) {
-                    respOpenedNom.push(data.colIndex);
-                    respOpenedNom.sort();
-                }
-                
+                openedNomRows = updateResponsiveContainer(respOpenedNom, datatable.page.info().page, data.colIndex, showHide, update, openedNomRows, pageLength)
+
                 if (_representation.maxNomValueReached.indexOf(data.columnName) < 0) {
                 
                     var textScale = d3.scale.linear()
@@ -459,7 +462,6 @@ dataExplorerNamespace = function() {
                         .domain([d3.max(histNomSizes), 16]);
 
                     var charecterScale = d3.scale.linear()
-                        
                     
                     if (d3.max(histNomSizes) >= 13) {
                         charecterScale.range([3, 7]).domain([d3.max(histNomSizes), 13])
@@ -467,9 +469,9 @@ dataExplorerNamespace = function() {
                         charecterScale.range([7, 10]).domain([12, d3.max(histNomSizes)])
                     }
                         
-
                     //when responsive is opened it creates an additional div of the same class right under its original one
-                    var bigHist = $(".histNom")[data.colIndex % dataTable.page.len() + respOpenedNom.indexOf(data.colIndex) + 1];
+                    var bigHist = $(".histNom")[data.colIndex % pageLength + respOpenedNom.get(datatable.page.info().page).col.indexOf(data.colIndex) + 1];
+                    
                     svgWidth = svgWbig;
                     svgHeight = svgHbig;
                     var svgBigHist = d3.select(bigHist).select("#svgNom"+data.colIndex)[0][0]
@@ -506,12 +508,6 @@ dataExplorerNamespace = function() {
                         .text(function(d) {return d.second;})
                         .attr("font-size", Math.round(Math.min(svgHeight/15, 11))+"px")
                         .attr("text-anchor", "middle");
-
-    //                var ticks = [];
-    //                data.bins.forEach(function(d,i) {
-    //                    ticks.push(d.def.first);
-    //                })
-    //                ticks.push(data.bins[data.bins.length - 1].def.second)
 
                     xAxis = d3.svg.axis()
                         .scale(xScaleNom)
@@ -559,20 +555,17 @@ dataExplorerNamespace = function() {
                             .style("font-size", "11px");
                     }
 
-
                     var axisY = svg.append("g")
                         .attr("class", "y axis")
                         .attr("id", "yAxis"+data.colIndex)
                         .attr("transform", "translate(" + [margin.left, margin.top] + ")")
                         .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
                         .call(yAxis);
-
                 }
                 
                 if (!update && !showHide) {
-                    respOpenedNom.splice(respOpenedNom.indexOf(data.colIndex), 1);
+                    mapDeleteElement(respOpenedNom, datatable.page.info().page, data.colIndex)
                 }
-
             })
             
         } catch (err) {
@@ -583,7 +576,55 @@ dataExplorerNamespace = function() {
 			}
 		}
     }
+    
+    mapInitFill = function(map, num) {
+        map.set(num, {});
+        map.get(num).col = [];
+        map.get(num).colNum = 0;
+    }
+    
+    mapAddElement = function(map, num, colIndex) {
+        map.get(num).col.push(colIndex);
+        map.get(num).colNum = map.get(num).col.length ;
+        map.get(num).col.sort(function(a, b){return a-b});
+    }
+    
+    mapDeleteElement = function(map, num, colIndex) {
+        map.get(num).col.splice(map.get(num).col.indexOf(colIndex), 1);
+        map.get(num).colNum = map.get(num).col.length;
+    }
+    
+    updateResponsiveContainer = function(map, num, colIndex, showHide, update, openedRows, pageLength) {
+        if (showHide) {
+            if (update) {
+                if (prevRowsPerPage != pageLength) {
+                    //delete old value and put into new location in the map
+                    var oldPageNum = Math.floor(colIndex / prevRowsPerPage)
+                    mapDeleteElement(map, oldPageNum, colIndex)
+                    if (!map.has(num)) {
+                        mapInitFill(map, num);
+                    }
+                    mapAddElement(map, num, colIndex)
+                    openedRows++
+                } 
+                var controlSum = d3.nest()
+                    .rollup(function(v) { return d3.sum(v, function(d) {return d.colNum})})
+                    .entries(Array.from(map.values()))
+                if (controlSum == openedRows) {
+                    prevRowsPerPage = pageLength;
+                    openedRows = 0;
+                }
+            } else {
+                if (!map.has(num)) {
+                    mapInitFill(map, num);
+                } 
+                mapAddElement(map, num, colIndex)
+            }
+        }
+        return openedRows;
+    }
 	
+    
 	drawNumericTable = function() {
 		if (_representation.enableSelection && _value.selection) {
 			for (var i = 0; i < _value.selection.length; i++) {
@@ -639,8 +680,6 @@ dataExplorerNamespace = function() {
 				});
 			}
 			
-
-			//console.log(knimeTable);
 			for (var i = 0; i < knimeTable.getColumnNames().length; i++) {
 				var colType = knimeTable.getColumnTypes()[i];
 				var knimeColType = knimeTable.getKnimeColumnTypes()[i];
@@ -655,14 +694,10 @@ dataExplorerNamespace = function() {
 				if (colType == 'number' && _representation.enableGlobalNumberFormat) {
 					if (knimeTable.getKnimeColumnTypes()[i].indexOf('double') > -1) {
 						colDef.render = function(data, type, full, meta) {
-                            //console.log("data4", data)
-                            //console.log("full4", full)
-                            //console.log(data)
 							if (!$.isNumeric(data)) {
 								return data;
 							}
                             return isInt(data)? data : Number(data).toFixed(_representation.globalNumberFormatDecimals);
-							//return Number(data).toFixed(_representation.globalNumberFormatDecimals);
 						}
 					}
 				}
@@ -682,7 +717,6 @@ dataExplorerNamespace = function() {
             if (_representation.jsNumericHistograms != null) {
                 _representation.jsNumericHistograms.forEach(function(d) {histSizes.push(d.bins.length)});
                 colDef.render = function(data, type, full, meta) {
-                    //console.log("data", data)
                     svgHeight = svgHsmall + margin.top;
                     svgWidth = svgWsmall;
 
@@ -700,7 +734,6 @@ dataExplorerNamespace = function() {
                     yScale.range([svgHsmall, 0])
                         .domain([0, data.maxCount]);
 
-                    //var fill = colorScale(data.colIndex);
                     var histDiv = document.createElement("div");
 
                     var svg = d3.select(histDiv).attr("class", "hist")
@@ -709,12 +742,10 @@ dataExplorerNamespace = function() {
                         .attr("width", svgWidth)
                         .attr("class", "svg_hist")
                         .attr("id", "svg"+data.colIndex);
-                        //.attr("id", "svg"+meta.row);
 
                     var bar_group = svg.append("g")
                         .attr("transform", "translate(" + [0 , margin.top] + ")")
                         .attr("class", "bars")
-                        //.attr("id", "id"+data.colIndex);
                         .attr("id", "svg"+meta.row);
 
                     var bars = bar_group.selectAll("rect")
@@ -722,7 +753,6 @@ dataExplorerNamespace = function() {
                             .enter()
                         .append("rect")
                         .attr("class", "rect"+data.colIndex)
-                        //.attr("class", "rect"+meta.row)
                         .attr("x", function (d) {return xScale(d.def.first - min);})
                         .attr("y", function(d) {return yScale(d.count);})
                         .attr("width", function(d) {return xScale(dataRange == 0? d.def.first : barWidth)})
@@ -855,23 +885,19 @@ dataExplorerNamespace = function() {
             
             
             dataTable.on("responsive-display", function(e, datatable, row, showHide, update) {
-                                
-                console.log("showHide", showHide, respOpenedNum)
                 
+                var data = row.data()[histCol];
+                var pageLength = datatable.page.info().length < 0? datatable.page.info().recordsTotal : datatable.page.info().length;
+                
+                openedNumRows = updateResponsiveContainer(respOpenedNum, datatable.page.info().page, data.colIndex, showHide, update, openedNumRows, pageLength)
+
+                //when responsive is opened it creates an additional div of the same class right under its original one
+                var bigHist = $(".hist")[data.colIndex % pageLength + respOpenedNum.get(datatable.page.info().page).col.indexOf(data.colIndex) + 1];
+
                 var textScale = d3.scale.linear()
                     .range([8, 11])
                     .domain([d3.max(histSizes), 12]);
                 
-                var data = row.data()[histCol];
-                
-                if (!update && showHide) {
-                    respOpenedNum.push(data.colIndex);
-                    respOpenedNum.sort(function(a, b){return a-b});
-                }
-                
-                //when responsive is opened it creates an additional div of the same class right under its original one
-                var bigHist = $(".hist")[data.colIndex % dataTable.page.len() + respOpenedNum.indexOf(data.colIndex) + 1];
-
                 svgWidth = svgWbig;
                 svgHeight = svgHbig;
                 var svgBigHist = d3.select(bigHist).select("#svg"+data.colIndex)[0][0]
@@ -966,13 +992,7 @@ dataExplorerNamespace = function() {
                                  xAxis.tickFormat(d3.format(".0f"));
                              }
                          }
-                        //xAxis.tickFormat(d3.format(".1e"))
                     }
-                    
-                    //if statement for int
-//                    if (isInt(max)) {
-//                        xAxis.tickFormat(d3.format(".0e"));
-//                    }
                 }
                 
                 if (data.maxCount < 10000) {
@@ -984,7 +1004,6 @@ dataExplorerNamespace = function() {
                 var axisX = svg.append("g")
                     .attr("class", "x axis")
                     .attr("id", "xAxis"+data.colIndex)
-                    //.attr("id", "xAxis"+row[0][0])
                     .attr("transform", "translate(" + [margin.left, svgHeight - margin.bottom - margin.top] + ")")
                     .call(xAxis);
                 
@@ -1008,9 +1027,8 @@ dataExplorerNamespace = function() {
                     .call(yAxis);
                 
                 if (!update && !showHide) {
-                    respOpenedNum.splice(respOpenedNum.indexOf(data.colIndex), 1);
+                     mapDeleteElement(respOpenedNum, datatable.page.info().page, data.colIndex)
                 }
-                console.log("showHide", showHide, respOpenedNum)
             })
 			
 		} catch (err) {
