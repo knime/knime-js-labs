@@ -12,8 +12,9 @@ table_editor = function() {
 	var initialized = false;
 	
 	var colArray = [];
-	var colShift = 0;
+	var infoColsCount = 0;
 	
+	var selectedCell = undefined;
 	
 	/**
 	 * Editor abstract class
@@ -283,14 +284,14 @@ table_editor = function() {
 						}
 					});
 				}
-				colShift++;
+				infoColsCount++;
 			}
 			if (_representation.displayRowIndex) {
 				colArray.push({
 					'title': "Row Index",
 					'searchable': false
 				});
-				colShift++;
+				infoColsCount++;
 			}
 			if (_representation.displayRowIds || _representation.displayRowColors) {
 				var title = _representation.displayRowIds ? 'RowID' : '';
@@ -300,7 +301,7 @@ table_editor = function() {
 					'orderable': orderable,
 					'className': 'no-break'
 				});
-				colShift++;
+				infoColsCount++;
 			}
 			
 			var editableColIndices = [];
@@ -450,12 +451,14 @@ table_editor = function() {
 						$('#knimePagedTable_filter').remove();
 					}
 					if (dataTable) {
-						dataTable.columns(editableColIndices, {page: 'current'}).nodes().flatten().to$().on('click', editableCellClickHandler);
+						dataTable.columns({page: 'current'}).nodes().flatten().to$().on('click', cellClickHandler);
+						dataTable.columns(editableColIndices, {page: 'current'}).nodes().flatten().to$().on('dblclick', editableCellDoubleClickHandler);
 					}
 				},
 				'preDrawCallback': function() {
 					if (dataTable) {
-						dataTable.columns(editableColIndices, {page: 'current'}).nodes().flatten().to$().off('click', editableCellClickHandler);
+						dataTable.columns({page: 'current'}).nodes().flatten().to$().off('click', cellClickHandler);
+						dataTable.columns(editableColIndices, {page: 'current'}).nodes().flatten().to$().off('dblclick', editableCellDoubleClickHandler);
 					}
 				}
 			});
@@ -768,69 +771,274 @@ table_editor = function() {
 		initialized = true;
 	}
 	
-	editableCellClickHandler = function() {
+	cellClickHandler = function() {
 		var td = this;
 		var cell = dataTable.cell(td);
+		selectCell(cell);
+	}
+	
+	editableCellDoubleClickHandler = function() {
+		var td = this;
+		var cell = dataTable.cell(td);
+		createCellEditor(cell);
+	}
+	
+	selectedCellFocusOutHandler = function(e) {		
+		if (!selectedCell) {
+			return;
+		}
+		var $td = $(selectedCell.node());
+		if ($(e.target).is($td)) {
+			unselectCurrentCell();
+		}
+	}
+	
+	selectCell = function(cell) {
+		if (!cell) {
+			cell = selectedCell;
+		}
 		
 		var $td = $(cell.node());
-		$td.off('click', editableCellClickHandler);
-		var editor = createCellEditor(cell);
+
+		if (!isEqualCell(cell, selectedCell)) {
+			unselectCurrentCell();
+			selectedCell = cell;
+			$td.addClass('selected-cell');
+			catchTdEventsOn($td);
+		}
+		
+		$td.attr('tabindex', -1);
+		$td.focus();
+	}
+	
+	unselectCurrentCell = function() {
+		if (!selectedCell) {
+			return;
+		}
+		
+		var $td = $(selectedCell.node());
+		$td.removeClass('selected-cell');
+		catchTdEventsOff($td);
+		
+		selectedCell = undefined;
+	}	
+	
+	createCellEditor = function(cell, cellValue) {
+		var $td = $(cell.node());
+		catchTdEventsOff($td);
+		
+		var editor = createCellEditorComponent(cell, cellValue);
 		var editorComponent = editor.getComponent();
-		
-		var editFinishCallback = function() {
-			restoreListeners();
-			var newVal = editor.getValue();
-			$td.empty()
-				.append(newVal);
-				
-			var index = cell.index();
-			dataTable.data()[index.row][index.column] = newVal;
-			
-			var rowKey = knimeTable.getRows()[index.row].rowKey;
-			var colName = knimeTable.getColumnNames()[index.column - colShift];
-			if (_value.editorChanges.changes[rowKey] === undefined) {
-				_value.editorChanges.changes[rowKey] = {};
-			}
-			_value.editorChanges.changes[rowKey][colName] = newVal;
-			
-			cell.invalidate();
-		}
-		
-		var editCancelCallback = function() {
-			restoreListeners();
-			cell.invalidate();
-		}
-		
-		var restoreListeners = function() {
-			setTimeout(function() {
-				$td.on('click', editableCellClickHandler)
-			}, 200);
-			editorComponent.off('focusout');
-			editorComponent.off('keyup');
-		}
 		
 		$td.empty()
 			.append(editorComponent);
 		editorComponent.focus();
+
+		$td.off('click', cellClickHandler);
+		$td.off('dblclick', editableCellDoubleClickHandler);
+		
+		var editFinishCallback = function() {
+			restoreListeners();
+			var newValue = editor.getValue();
+			$td.empty()
+				.append(newValue);
+			setCellValue(cell, newValue);
+		}
+		
+		var editCancelCallback = function() {			
+			restoreListeners();
+			$td.attr('tabindex', -1);
+			$td.focus();
+			cell.invalidate();
+		}
+		
+		var restoreListeners = function() {
+			$td.on('dblclick', editableCellDoubleClickHandler);
+			$td.on('click', cellClickHandler);
+			catchTdEventsOn($td);
+			editorComponent.off('focusout');
+			editorComponent.off('keydown');
+		}
 		
 		editorComponent.on('focusout', editFinishCallback);
-		editorComponent.on('keyup', function(e) {
-			if (e.key == "Enter") {
-				editFinishCallback();
-			} else if (e.key == "Escape") {
-				editCancelCallback();
+		editorComponent.on('keydown', function(e) {
+			switch (e.key) {
+				case 'Enter':
+					editFinishCallback();
+					selectCell(getCellByShift(cell, 1, 0));
+					break;
+				case 'Escape':
+					e.stopPropagation();
+					editCancelCallback();
+					break;
+				case 'Tab':
+					e.preventDefault();
+					editFinishCallback();
+					if (e.shiftKey) {
+						selectCell(getCellByShift(cell, 0, -1));
+					} else {
+						selectCell(getCellByShift(cell, 0, 1));
+					}
 			}
-		})
+		});
 	}
 	
-	createCellEditor = function(cell) {
+	createCellEditorComponent = function(cell, cellValue) {
 		// get column type
-		var colInd = cell.index().column - colShift;
+		var colInd = cell.index().column - infoColsCount;
 		var colType = knimeTable.getKnimeColumnTypes()[colInd];
 		var editor = createEditor(colType);
-		editor.setValue(cell.data());
+		editor.setValue(cellValue !== undefined ? cellValue : cell.data());
 		return editor;
 	}
+	
+	getCellByShift = function(cell, rowShift, columnShift) {
+		var ind = cell.index();
+		var newRowInd = ind.row + rowShift;
+		var newColInd = ind.column + columnShift - infoColsCount;
+		var pageInfo = dataTable.page.info();
+		if (newRowInd < pageInfo.start || newRowInd > pageInfo.end - 1 || newColInd < 0 || newColInd >= knimeTable.getColumnNames().length) {			 
+			return null;
+			// according to documentation https://datatables.net/reference/api/page.info() info.end gives index of the last displayed row on the page,
+			// however it returns the value which is +1
+		}
+		return dataTable.cell(newRowInd, newColInd + infoColsCount);
+	}
+	
+	setCellValue = function(cell, newValue) {
+		var index = cell.index();
+		dataTable.data()[index.row][index.column] = newValue;
+		
+		var rowKey = knimeTable.getRows()[index.row].rowKey;
+		var colName = knimeTable.getColumnNames()[index.column - infoColsCount];
+		if (_value.editorChanges.changes[rowKey] === undefined) {
+			_value.editorChanges.changes[rowKey] = {};
+		}
+		_value.editorChanges.changes[rowKey][colName] = newValue;
+		
+		cell.invalidate();
+	}
+	
+	catchTdEventsOn = function($td) {
+		$td.on('keydown', selectedCellKeyDownHandler);
+		$td.on('focusout', selectedCellFocusOutHandler);
+	}
+	
+	catchTdEventsOff = function($td) {
+		$td.off('keydown', selectedCellKeyDownHandler);
+		$td.off('focusout', selectedCellFocusOutHandler);
+		$td.removeAttr('tabindex');
+	}
+	
+	selectedCellKeyDownHandler = function(e) {
+		switch (e.key) {
+			case 'ArrowUp':
+				e.stopPropagation();
+				if (e.ctrlKey) {
+					selectCell(getFirstCellInColumn());
+				} else {
+					selectCell(getCellByShift(selectedCell, -1, 0));
+				}
+				break;
+			case 'ArrowDown':
+				if (e.ctrlKey) {
+					selectCell(getLastCellInColumn());
+				} else {
+					selectCell(getCellByShift(selectedCell, 1, 0));
+				}
+				break;			    
+		    case 'ArrowLeft':
+		    	if (e.ctrlKey) {
+		    		selectCell(getFirstCellInRow());  // same as Home
+		    	} else {
+		    		selectCell(getCellByShift(selectedCell, 0, -1));
+		    	}
+		    	break;
+		    case 'ArrowRight':
+		    	if (e.ctrlKey) {
+		    		selectCell(getLastCellInRow());  // same as End
+		    	} else {
+		    		selectCell(getCellByShift(selectedCell, 0, 1));
+		    	}
+		    	break;
+		    case 'Home':
+		    	if (e.ctrlKey) {
+		    		selectCell(getTopLeftCell());
+		    	} else {
+		    		selectCell(getFirstCellInRow());
+		    	}
+		    	break;
+		    case 'End':
+		    	if (e.ctrlKey) {
+		    		selectCell(getBottomRightCell());
+		    	} else {
+		    		selectCell(getLastCellInRow());
+		    	}
+		    	break;
+			case 'Enter':
+				selectCell(getCellByShift(selectedCell, 1, 0));  // same as ArrowDown
+				break;
+		    case 'Delete':
+		    	if (isEditableCell(selectedCell)) {
+		    		setCellValue(selectedCell, null);
+		    	}
+		    	break;
+		    case 'Backspace':
+		    	if (isEditableCell(selectedCell)) {
+		    		e.preventDefault();
+		    		createCellEditor(selectedCell, null);
+		    	}
+		    	break;
+			default:
+			   if (isEditableCell(selectedCell) && e.key.length == 1) {  // test whether the key is printable
+				   e.preventDefault();
+			       createCellEditor(selectedCell, e.key);			       
+			   }
+		}
+	}
+	
+	getFirstCellInRow = function() {
+		return dataTable.cell(selectedCell.index().row, infoColsCount);
+	}
+	
+	getLastCellInRow = function() {
+		return dataTable.cell(selectedCell.index().row, knimeTable.getColumnNames().length + infoColsCount - 1);
+	}
+	
+	getFirstCellInColumn = function() {
+		return dataTable.cell(dataTable.page.info().start, selectedCell.index().column);
+	}
+	
+	getLastCellInColumn = function() {
+		return dataTable.cell(dataTable.page.info().end - 1, selectedCell.index().column);
+		// see the comment in getCellByShift about end - 1
+	}
+	
+	getTopLeftCell = function() {
+		return dataTable.cell(dataTable.page.info().start, infoColsCount);
+	}
+	
+	getBottomRightCell = function() {
+		return dataTable.cell(dataTable.page.info().end - 1, knimeTable.getColumnNames().length + infoColsCount - 1);
+		// see the comment in getCellByShift about end - 1
+	}
+	
+	isEditableCell = function(cell) {
+		var index = cell.index();
+		var colName = knimeTable.getColumnNames()[index.column - infoColsCount];
+		return _representation.editableColumns.indexOf(colName) !== -1;
+	}
+	
+	isEqualCell = function(cell1, cell2) {
+		if (cell1 && cell2) {
+			var index1 = cell1.index();
+			var index2 = cell2.index();
+			return index1.row === index2.row && index1.column === index2.column;
+		} else {
+			return cell1 === cell2;
+		}
+	}
+	
 	
 	selectAll = function(all, ignoreSearch) {
 		// cannot select all rows before all data is loaded
