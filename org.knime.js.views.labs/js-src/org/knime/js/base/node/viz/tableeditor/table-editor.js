@@ -893,6 +893,9 @@ table_editor = function() {
 	}
 	
 	getCellByShift = function(cell, rowShift, columnShift) {
+		if (!cell) {
+			return null;
+		}
 		var ind = cell.index();
 		var newRowInd = ind.row + rowShift;
 		var newColInd = ind.column + columnShift - infoColsCount;
@@ -922,11 +925,13 @@ table_editor = function() {
 	catchTdEventsOn = function($td) {
 		$td.on('keydown', selectedCellKeyDownHandler);
 		$td.on('focusout', selectedCellFocusOutHandler);
+		$td.on('paste', pasteHandler);
 	}
 	
 	catchTdEventsOff = function($td) {
 		$td.off('keydown', selectedCellKeyDownHandler);
 		$td.off('focusout', selectedCellFocusOutHandler);
+		$td.off('paste', pasteHandler);
 		$td.removeAttr('tabindex');
 	}
 	
@@ -935,28 +940,28 @@ table_editor = function() {
 			case 'ArrowUp':
 				e.stopPropagation();
 				if (e.ctrlKey) {
-					selectCell(getFirstCellInColumn());
+					selectCell(getFirstCellInColumn(selectedCell));
 				} else {
 					selectCell(getCellByShift(selectedCell, -1, 0));
 				}
 				break;
 			case 'ArrowDown':
 				if (e.ctrlKey) {
-					selectCell(getLastCellInColumn());
+					selectCell(getLastCellInColumn(selectedCell));
 				} else {
 					selectCell(getCellByShift(selectedCell, 1, 0));
 				}
 				break;			    
 		    case 'ArrowLeft':
 		    	if (e.ctrlKey) {
-		    		selectCell(getFirstCellInRow());  // same as Home
+		    		selectCell(getFirstCellInRow(selectedCell));  // same as Home
 		    	} else {
 		    		selectCell(getCellByShift(selectedCell, 0, -1));
 		    	}
 		    	break;
 		    case 'ArrowRight':
 		    	if (e.ctrlKey) {
-		    		selectCell(getLastCellInRow());  // same as End
+		    		selectCell(getLastCellInRow(selectedCell));  // same as End
 		    	} else {
 		    		selectCell(getCellByShift(selectedCell, 0, 1));
 		    	}
@@ -965,14 +970,14 @@ table_editor = function() {
 		    	if (e.ctrlKey) {
 		    		selectCell(getTopLeftCell());
 		    	} else {
-		    		selectCell(getFirstCellInRow());
+		    		selectCell(getFirstCellInRow(selectedCell));
 		    	}
 		    	break;
 		    case 'End':
 		    	if (e.ctrlKey) {
 		    		selectCell(getBottomRightCell());
 		    	} else {
-		    		selectCell(getLastCellInRow());
+		    		selectCell(getLastCellInRow(selectedCell));
 		    	}
 		    	break;
 			case 'Enter':
@@ -990,27 +995,131 @@ table_editor = function() {
 		    	}
 		    	break;
 			default:
-			   if (isEditableCell(selectedCell) && e.key.length == 1) {  // test whether the key is printable
+			   if (isEditableCell(selectedCell) && e.key.length == 1 && !e.ctrlKey) {  // test whether the key is printable and no CTRL is pressed
 				   e.preventDefault();
 			       createCellEditor(selectedCell, e.key);			       
 			   }
 		}
 	}
 	
-	getFirstCellInRow = function() {
-		return dataTable.cell(selectedCell.index().row, infoColsCount);
+	pasteHandler = function(e) {		
+		var data = e.originalEvent.clipboardData.getData('text');
+		var values = [];		
+		var lines = data.replace(/\r/g, '').split('\n');
+		if (lines.length > 0 && lines[lines.length - 1] === '') {
+			// when copying from Excel the last line is always an empty string,
+			// while from Google Sheets this is not the case
+			lines.pop();
+		}
+		for (var i = 0; i < lines.length; i++) {
+			values.push(lines[i].split('\t'));
+		}
+		pasteMultipleValues(selectedCell, values);
 	}
 	
-	getLastCellInRow = function() {
-		return dataTable.cell(selectedCell.index().row, knimeTable.getColumnNames().length + infoColsCount - 1);
+	pasteMultipleValues = function(cell, values) {
+		var startCell = cell;
+
+		// validation
+		if (!iterateSubtable(startCell, values, function(cell, value) {
+			if (!cell) {
+				alert('Cannot paste the values. Range out of bounds.');
+				return false;
+			}
+
+			var colName = knimeTable.getColumnNames()[cell.index().column - infoColsCount];
+			if (!isEditableCell(cell)) {
+				alert('Cannot paste the values as column "' + colName +'" is not editable.');
+				return false;
+			}
+
+			var convertRes = convertValueToCellType(cell, value);
+			if (!convertRes.status) {
+				alert('Cannot paste the values as value "' + value + '" is not compatible with type "' + res.type + '" of column "' + colName + '".');
+				return false;
+			}
+
+			return true;
+		})) {			
+			return;
+		}
+
+		// pasting
+		iterateSubtable(startCell, values, function(cell, value) {			
+			setCellValue(cell, convertValueToCellType(cell, value).value);
+			return true;
+		});		
+	}
+
+	iterateSubtable = function(cell, values, callback) {		
+		for (var i = 0; i < values.length; i++) {			
+			var row = values[i];
+			for (var j = 0; j < row.length; j++) {				
+				if (!callback(cell, row[j])) {
+					return false;
+				}
+				if (!cell) {
+					return;
+				}
+				if (j < row.length - 1) {
+					cell = getCellByShift(cell, 0, 1);
+				}
+			}
+			if (i < values.length - 1) {
+				cell = getCellByShift(cell, 1, -(row.length - 1));
+			}
+		}
+		return true;
+	}
+
+	convertValueToCellType = function(cell, value) {
+		res = { 
+			status: false, 
+			value: undefined,
+			type: knimeTable.getKnimeColumnTypes()[cell.index().column - infoColsCount]
+		};
+		switch (res.type) {
+			case 'String':
+				res.value = value.toString();
+				res.status = true;
+				break;
+			case 'Number (integer)':
+			case 'Number (long)':
+				res.value = filterInt(value);
+				res.status = !isNaN(res.value);
+				break;
+			case 'Number (double)':
+				res.value = Number(value.replace(',', '.'));
+				res.status = !isNaN(res.value);
+				break;
+		}
+		return res;
+	}
+
+	/**
+	 * taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
+	 */
+	filterInt = function(value) {
+		if (/^(\-|\+)?([0-9]+)$/.test(value)) {
+			return Number(value);
+		}
+		return NaN;
+	}
+		
+	getFirstCellInRow = function(cell) {
+		return dataTable.cell(cell.index().row, infoColsCount);
 	}
 	
-	getFirstCellInColumn = function() {
-		return dataTable.cell(dataTable.page.info().start, selectedCell.index().column);
+	getLastCellInRow = function(cell) {
+		return dataTable.cell(cell.index().row, knimeTable.getColumnNames().length + infoColsCount - 1);
 	}
 	
-	getLastCellInColumn = function() {
-		return dataTable.cell(dataTable.page.info().end - 1, selectedCell.index().column);
+	getFirstCellInColumn = function(cell) {
+		return dataTable.cell(dataTable.page.info().start, cell.index().column);
+	}
+	
+	getLastCellInColumn = function(cell) {
+		return dataTable.cell(dataTable.page.info().end - 1, cell.index().column);
 		// see the comment in getCellByShift about end - 1
 	}
 	
