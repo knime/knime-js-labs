@@ -310,8 +310,12 @@ public class TableEditorViewNodeModel extends AbstractWizardNodeModel<TableEdito
                                     copy[i] = new IntCell((Integer) value);
                                 } else if (type.isCompatible(LongValue.class) && value instanceof Integer) {
                                     copy[i] = new LongCell(((Integer) value).longValue());
-                                } else if (type.isCompatible(DoubleValue.class) && value instanceof Double) {
-                                    copy[i] = new DoubleCell((Double) value);
+                                } else if (type.isCompatible(DoubleValue.class) && (value instanceof Double || value instanceof Integer)) {
+                                    if (value instanceof Double) {
+                                        copy[i] = new DoubleCell((Double) value);
+                                    } else {
+                                        copy[i] = new DoubleCell((Integer) value);
+                                    }
                                 }  else if (type.getCellClass().equals(StringCell.class)) {
                                     copy[i] = new StringCell(value.toString());
                                 } else {
