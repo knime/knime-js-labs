@@ -803,7 +803,7 @@ table_editor = function() {
 		if (!isEqualCell(cell, selectedCell)) {
 			unselectCurrentCell();
 			selectedCell = cell;
-			$td.addClass('selected-cell');
+			$td.addClass('selected');
 			catchTdEventsOn($td);
 		}
 		
@@ -817,7 +817,7 @@ table_editor = function() {
 		}
 		
 		var $td = $(selectedCell.node());
-		$td.removeClass('selected-cell');
+		$td.removeClass('selected');
 		catchTdEventsOff($td);
 		
 		selectedCell = undefined;
@@ -830,8 +830,11 @@ table_editor = function() {
 		var editor = createCellEditorComponent(cell, cellValue);
 		var editorComponent = editor.getComponent();
 		
+		var tdHeight = $td.height();				
 		$td.empty()
-			.append(editorComponent);
+			.append(editorComponent);	
+		// need to set up height after adding the editor to the cell, otherwise it won't work in FF
+		editorComponent.height(tdHeight);
 		editorComponent.focus();
 
 		$td.off('click', cellClickHandler);

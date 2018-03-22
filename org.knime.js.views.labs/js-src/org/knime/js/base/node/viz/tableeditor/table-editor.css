@@ -137,9 +137,16 @@ h2 {
 	color: #d9534f;
 }
 
-#knimePagedTable td.selected-cell {
-	border-color: #337ab7;
-    border-width: 2px;
+#knimePagedTable td.selected {
+    outline: none;  
+}
+
+#knimePagedTable td.selected input {
+    color: initial;
+    width: 100%;        
+    padding-top: 0px;
+    padding-bottom: 0px;
+    border: 0px;
 }
 
 #knimePagedTable #checkbox-select-all,
