@@ -45,11 +45,27 @@ knime_tag_cloud = function() {
 			if (_representation.imageGeneration) {
 				return;
 			}
+			//restore previously saved layout
 	        var parser = new DOMParser(); 
 	        var xmlDoc = parser.parseFromString(_value.svgFromView, "text/xml"); 
 	        var elemXML = xmlDoc.documentElement;
 	        var elemSVG = document.adoptNode(elemXML);
 			document.getElementsByTagName('body')[0].appendChild(elemSVG);
+			
+			//re-join data, using key function on previously assigned id
+			if (_representation.data && _representation.data[0].id) {
+				d3.select('svg g.vis').selectAll("text")
+				.data(_representation.data, function (d) {
+					return d ? d.id : this.getAttribute('id');
+				})
+				.on("click", function(d) {
+					textClicked(d);
+				});
+				applySelection(true);
+				if (_value.publishSelection && _value.selection) {
+					knimeService.setSelectedRows(_representation.tableID, _value.selection, selectionChanged);
+				}
+			}
 		}
 		
 		// Sorting is done in node model
@@ -256,6 +272,9 @@ knime_tag_cloud = function() {
 		//add new words
 		data.enter()
 			.append("text")
+			.attr("id", function (d) {
+				return d.id;
+			})
 			.style("font-size", function(d) {
 				return (_representation.imageGeneration ? d.size : 1) + "px";
 			})
@@ -281,30 +300,7 @@ knime_tag_cloud = function() {
 			.style("-ms-user-select", "none")
 			.style("user-select", "none")
 			.on("click", function(d) {
-				var selection = _value.selection || [];
-				if (d3.event.ctrlKey || d3.event.metaKey) {
-					if (d.selected) {
-						for (var i = 0; i < d.rowIDs.length; i++) {
-							var index = selection.indexOf(d.rowIDs[i]);
-							if (index > -1) {
-								selection.splice(index, 1);
-							}
-						}
-						_value.selection = selection;
-						if (_value.publishSelection) {
-							knimeService.removeRowsFromSelection(_representation.tableID, d.rowIDs, selectionChanged);
-						}
-					} else {
-						_value.selection = selection.concat(d.rowIDs);
-						if (_value.publishSelection) {
-							knimeService.addRowsToSelection(_representation.tableID, d.rowIDs, selectionChanged);
-						}
-					}
-				} else {
-					_value.selection = d.rowIDs;
-					knimeService.setSelectedRows(_representation.tableID, d.rowIDs, selectionChanged);
-				}
-		    	applySelection(true);
+				textClicked(d, d3.event);
 		    })
 			.text(function(d) {
 				return d.text;
@@ -614,7 +610,35 @@ knime_tag_cloud = function() {
 				}
 	    	}
 	    }
-	    
+	}
+	
+	function textClicked(d, event) {
+		var selection = _value.selection || [];
+		if (d3.event.ctrlKey || d3.event.metaKey) {
+			if (d.selected) {
+				for (var i = 0; i < d.rowIDs.length; i++) {
+					var index = selection.indexOf(d.rowIDs[i]);
+					if (index > -1) {
+						selection.splice(index, 1);
+					}
+				}
+				_value.selection = selection;
+				if (_value.publishSelection) {
+					knimeService.removeRowsFromSelection(_representation.tableID, d.rowIDs, selectionChanged);
+				}
+			} else {
+				_value.selection = selection.concat(d.rowIDs);
+				if (_value.publishSelection) {
+					knimeService.addRowsToSelection(_representation.tableID, d.rowIDs, selectionChanged);
+				}
+			}
+		} else {
+			_value.selection = d.rowIDs;
+			if (_value.publishSelection) {
+				knimeService.setSelectedRows(_representation.tableID, d.rowIDs, selectionChanged);
+			}
+		}
+    	applySelection(true);
 	}
 	
 	function applySelection(redraw) {
@@ -636,7 +660,7 @@ knime_tag_cloud = function() {
 				d.partialSelected = selectedRowIDs.length > 0;
 			}
 			if (redraw) {
-				var strokeWidth = ~~(Math.log(d.size)/Math.log(5));
+				var strokeWidth = Math.max(1,~~(Math.log(d.size)/Math.log(5)));
 				d3.select(this)
 					.attr("stroke", d.selected ? _representation.selectionColor : d.partialSelected ? "#DDDDDD" : null)
 					.attr("stroke-width", (d.selected || d.partialSelected) ? strokeWidth : null)

@@ -211,6 +211,7 @@ public class TagCloudTermCellResolver {
         //initializing generic map to hold term and string values which can be used for aggregation
         Map<Object, TagCloudData> map = new HashMap<Object, TagCloudData>();
         int rowID = 0;
+        int tagID = 0;
         for (final DataRow row : data) {
             //ignore missing cells
             if ((termColIndex > -1 && row.getCell(termColIndex).isMissing())
@@ -260,6 +261,7 @@ public class TagCloudTermCellResolver {
                 wcd.setRowIDs(rowKeySet.toArray(new String[0]));
             } else {
                 TagCloudData wcd = new TagCloudData();
+                wcd.setId("tag_" + Integer.toString(++tagID));
                 wcd.setRowIDs(new String[]{rowKey});
                 wcd.setText(word);
                 wcd.setSize(size);

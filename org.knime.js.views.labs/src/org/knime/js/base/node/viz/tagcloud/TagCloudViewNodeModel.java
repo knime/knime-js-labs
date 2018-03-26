@@ -353,6 +353,7 @@ public class TagCloudViewNodeModel
                 // set internal table
                 try {
                     representation.setFilterTable(getJSONTable(m_table, null));
+                    representation.setTableID(getTableId(0));
                 } catch (Exception e) {
                     LOGGER.error("Could not create JSON table: " + e.getMessage(), e);
                 }
