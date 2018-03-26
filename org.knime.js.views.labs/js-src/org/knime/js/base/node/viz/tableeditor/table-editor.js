@@ -882,6 +882,15 @@ table_editor = function() {
 					} else {
 						selectCell(getCellByShift(cell, 0, 1));
 					}
+				case 'ArrowUp':
+				case 'ArrowDown':
+				case 'ArrowLeft':
+				case 'ArrowRight':
+					if (cellValue) {
+						editFinishCallback();
+						cellArrowKeyDownHandler(e);
+					}
+					break;
 			}
 		});
 	}
@@ -941,33 +950,10 @@ table_editor = function() {
 	selectedCellKeyDownHandler = function(e) {
 		switch (e.key) {
 			case 'ArrowUp':
-				e.stopPropagation();
-				if (e.ctrlKey) {
-					selectCell(getFirstCellInColumn(selectedCell));
-				} else {
-					selectCell(getCellByShift(selectedCell, -1, 0));
-				}
-				break;
 			case 'ArrowDown':
-				if (e.ctrlKey) {
-					selectCell(getLastCellInColumn(selectedCell));
-				} else {
-					selectCell(getCellByShift(selectedCell, 1, 0));
-				}
-				break;			    
 		    case 'ArrowLeft':
-		    	if (e.ctrlKey) {
-		    		selectCell(getFirstCellInRow(selectedCell));  // same as Home
-		    	} else {
-		    		selectCell(getCellByShift(selectedCell, 0, -1));
-		    	}
-		    	break;
-		    case 'ArrowRight':
-		    	if (e.ctrlKey) {
-		    		selectCell(getLastCellInRow(selectedCell));  // same as End
-		    	} else {
-		    		selectCell(getCellByShift(selectedCell, 0, 1));
-		    	}
+			case 'ArrowRight':
+				cellArrowKeyDownHandler(e);
 		    	break;
 		    case 'Home':
 		    	if (e.ctrlKey) {
@@ -1002,6 +988,39 @@ table_editor = function() {
 				   e.preventDefault();
 			       createCellEditor(selectedCell, e.key);			       
 			   }
+		}
+	}
+
+	cellArrowKeyDownHandler = function(e) {
+		switch (e.key) {
+			case 'ArrowUp':
+				if (e.ctrlKey) {
+					selectCell(getFirstCellInColumn(selectedCell));
+				} else {
+					selectCell(getCellByShift(selectedCell, -1, 0));
+				}
+				break;
+			case 'ArrowDown':
+				if (e.ctrlKey) {
+					selectCell(getLastCellInColumn(selectedCell));
+				} else {
+					selectCell(getCellByShift(selectedCell, 1, 0));
+				}
+				break;
+			case 'ArrowLeft':
+				if (e.ctrlKey) {
+					selectCell(getFirstCellInRow(selectedCell));  // same as Home
+				} else {
+					selectCell(getCellByShift(selectedCell, 0, -1));
+				}
+				break;
+			case 'ArrowRight':
+				if (e.ctrlKey) {
+					selectCell(getLastCellInRow(selectedCell));  // same as End
+				} else {
+					selectCell(getCellByShift(selectedCell, 0, 1));
+				}
+				break;
 		}
 	}
 	
