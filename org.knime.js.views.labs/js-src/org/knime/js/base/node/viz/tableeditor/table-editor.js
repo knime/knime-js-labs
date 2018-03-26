@@ -948,6 +948,7 @@ table_editor = function() {
 	}
 	
 	selectedCellKeyDownHandler = function(e) {
+		var ctrlKey = isMacOS() ? e.metaKey : e.ctrlKey;
 		switch (e.key) {
 			case 'ArrowUp':
 			case 'ArrowDown':
@@ -956,14 +957,14 @@ table_editor = function() {
 				cellArrowKeyDownHandler(e);
 		    	break;
 		    case 'Home':
-		    	if (e.ctrlKey) {
+		    	if (ctrlKey) {
 		    		selectCell(getTopLeftCell());
 		    	} else {
 		    		selectCell(getFirstCellInRow(selectedCell));
 		    	}
 		    	break;
 		    case 'End':
-		    	if (e.ctrlKey) {
+		    	if (ctrlKey) {
 		    		selectCell(getBottomRightCell());
 		    	} else {
 		    		selectCell(getLastCellInRow(selectedCell));
@@ -984,7 +985,7 @@ table_editor = function() {
 		    	}
 		    	break;
 			default:
-			   if (isEditableCell(selectedCell) && e.key.length == 1 && !e.ctrlKey) {  // test whether the key is printable and no CTRL is pressed
+			   if (isEditableCell(selectedCell) && e.key.length == 1 && !ctrlKey) {  // test whether the key is printable and no CTRL is pressed
 				   e.preventDefault();
 			       createCellEditor(selectedCell, e.key);			       
 			   }
@@ -992,30 +993,31 @@ table_editor = function() {
 	}
 
 	cellArrowKeyDownHandler = function(e) {
+		var ctrlKey = isMacOS() ? e.metaKey : e.ctrlKey;
 		switch (e.key) {
 			case 'ArrowUp':
-				if (e.ctrlKey) {
+				if (ctrlKey) {
 					selectCell(getFirstCellInColumn(selectedCell));
 				} else {
 					selectCell(getCellByShift(selectedCell, -1, 0));
 				}
 				break;
 			case 'ArrowDown':
-				if (e.ctrlKey) {
+				if (ctrlKey) {
 					selectCell(getLastCellInColumn(selectedCell));
 				} else {
 					selectCell(getCellByShift(selectedCell, 1, 0));
 				}
 				break;
 			case 'ArrowLeft':
-				if (e.ctrlKey) {
+				if (ctrlKey) {
 					selectCell(getFirstCellInRow(selectedCell));  // same as Home
 				} else {
 					selectCell(getCellByShift(selectedCell, 0, -1));
 				}
 				break;
 			case 'ArrowRight':
-				if (e.ctrlKey) {
+				if (ctrlKey) {
 					selectCell(getLastCellInRow(selectedCell));  // same as End
 				} else {
 					selectCell(getCellByShift(selectedCell, 0, 1));
@@ -1315,6 +1317,10 @@ table_editor = function() {
 	isColumnSearchable = function (colType) {
 		var allowedTypes = ['boolean', 'string', 'number', 'dateTime', 'undefined'];
 		return allowedTypes.indexOf(colType) >= 0;
+	}
+
+	isMacOS = function() {
+		return navigator.platform.indexOf('Mac') !== -1;
 	}
 	
 	table_viewer.validate = function() {
