@@ -1,18 +1,18 @@
 #knimePagedTableContainer {
-	margin: 10px;
-	overflow: auto;
+    margin: 10px;
+    overflow: auto;
 }
 
 h1 {
-	font-family: sans-serif;
-	font-size: 24px;
-	margin: 0;
+    font-family: sans-serif;
+    font-size: 24px;
+    margin: 0;
 }
 
 h2 {
-	font-family: sans-serif;
-	font-size: 14px;
-	margin: 5px 0 15px 0;
+    font-family: sans-serif;
+    font-size: 14px;
+    margin: 5px 0 15px 0;
 }
 
 #knimePagedTableContainer .col-lg-1:first-child,
@@ -63,7 +63,7 @@ h2 {
 #knimePagedTableContainer .col-xs-7:first-child,
 #knimePagedTableContainer .col-xs-8:first-child,
 #knimePagedTableContainer .col-xs-9:first-child {
-	padding-left: 0;
+    padding-left: 0;
 }
 
 #knimePagedTableContainer .col-lg-1:last-child,
@@ -114,27 +114,27 @@ h2 {
 #knimePagedTableContainer .col-xs-7:last-child,
 #knimePagedTableContainer .col-xs-8:last-child,
 #knimePagedTableContainer .col-xs-9:last-child {
-	padding-right: 0;
+    padding-right: 0;
 }
 
 #knimePagedTableContainer .row {
-	margin: 0;
+    margin: 0;
 }
 
 #knimePagedTable_wrapper .dt-buttons.btn-group {
-	width: auto;
+    width: auto;
 }
 
 #knimePagedTable td.no-break {
-	white-space: nowrap;
+    white-space: nowrap;
 }
 
 #knimePagedTable td.no-break .rowKey {
-	white-space: normal;
+    white-space: normal;
 }
 
 #knimePagedTable td .missing-value-cell {
-	color: #d9534f;
+    color: #d9534f;
 }
 
 #knimePagedTable td.selected {
@@ -153,13 +153,13 @@ h2 {
 #knimePagedTable #clear-selection-button,
 #knimePagedTable td.selection-cell input[type=checkbox], 
 #knimePagedTable td.selection-cell input[type=radio] {
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #knimePagedTable #clear-selection-button {
-	border: none;
+    border: none;
     font-size: 14px;
 }
 
@@ -168,14 +168,17 @@ h2 {
     padding-bottom: 3px;
 }
 
-#knimePagedTable input.double-cell::-webkit-outer-spin-button,
-#knimePagedTable input.double-cell::-webkit-inner-spin-button {    
+#knimePagedTable input[type=number] {
+    -moz-appearance:textfield;
+}
+#knimePagedTable input[type=number]::-webkit-outer-spin-button,
+#knimePagedTable input[type=number]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
 #knimePagedTable th span {
-	opacity: 0.2;
-	float: right;
-	padding-top: 2px;
+    opacity: 0.2;
+    float: right;
+    padding-top: 2px;
 }

@@ -75,7 +75,7 @@ table_editor = function() {
 	 * Double values editor
 	 */
 	var DoubleEditor = function() {
-		this.component = $('<input type="number" class="double-cell" step="any"/>');
+		this.component = $('<input type="number" step="any"/>');
 	}
 	
 	DoubleEditor.prototype = Object.create(Editor.prototype);
@@ -887,8 +887,12 @@ table_editor = function() {
 				case 'ArrowLeft':
 				case 'ArrowRight':
 					if (cellValue) {
+						// presence of cellValue <=> user entered editor mode by typing
 						editFinishCallback();
 						cellArrowKeyDownHandler(e);
+					} else if ((e.key == 'ArrowUp' || e.key == 'ArrowDown') && (editor instanceof IntEditor || editor instanceof DoubleEditor)) {
+						// don't trigger spinner for numeric editors
+						e.preventDefault();
 					}
 					break;
 			}
