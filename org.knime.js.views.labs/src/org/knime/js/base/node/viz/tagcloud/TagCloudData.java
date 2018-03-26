@@ -65,6 +65,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class TagCloudData {
 
+    private static final String CFG_ID = "id";
+    private String m_id;
+
     private static final String CFG_ROW_IDS = "rowIDs";
     private String[] m_rowIDs;
 
@@ -79,6 +82,20 @@ public class TagCloudData {
 
     private static final String CFG_OPACITY = "opacity";
     private double m_opacity;
+
+    /**
+     * @return the id
+     */
+    public String getId() {
+        return m_id;
+    }
+
+    /**
+     * @param id the id to set
+     */
+    public void setId(final String id) {
+        m_id = id;
+    }
 
     /**
      * @return the rowIDs
@@ -151,6 +168,7 @@ public class TagCloudData {
     }
 
     void saveToNodeSettings(final NodeSettingsWO settings) {
+        settings.addString(CFG_ID, m_id);
         settings.addStringArray(CFG_ROW_IDS, m_rowIDs);
         settings.addString(CFG_TEXT, m_text);
         settings.addString(CFG_COLOR, m_color);
@@ -164,6 +182,9 @@ public class TagCloudData {
         m_color = settings.getString(CFG_COLOR);
         m_size = settings.getDouble(CFG_SIZE);
         m_opacity = settings.getDouble(CFG_OPACITY);
+
+        //added with 3.5.2
+        m_id = settings.getString(CFG_ID, null);
     }
 
     /**
@@ -182,6 +203,7 @@ public class TagCloudData {
         }
         TagCloudData other = (TagCloudData)obj;
         return new EqualsBuilder()
+                .append(m_id, other.m_id)
                 .append(m_rowIDs, other.m_rowIDs)
                 .append(m_text, other.m_text)
                 .append(m_color, other.m_color)
@@ -196,6 +218,7 @@ public class TagCloudData {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
+                .append(m_id)
                 .append(m_rowIDs)
                 .append(m_text)
                 .append(m_color)
@@ -203,5 +226,4 @@ public class TagCloudData {
                 .append(m_opacity)
                 .toHashCode();
     }
-
 }
