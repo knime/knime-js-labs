@@ -830,7 +830,7 @@ table_editor = function() {
 		var editor = createCellEditorComponent(cell, cellValue);
 		var editorComponent = editor.getComponent();
 		
-		var tdHeight = $td.height();				
+		var tdHeight = _getTableCellContentHeight(cell);
 		$td.empty()
 			.append(editorComponent);	
 		// need to set up height after adding the editor to the cell, otherwise it won't work in FF
@@ -1321,6 +1321,19 @@ table_editor = function() {
 	isColumnSearchable = function (colType) {
 		var allowedTypes = ['boolean', 'string', 'number', 'dateTime', 'undefined'];
 		return allowedTypes.indexOf(colType) >= 0;
+	}
+	
+	getTableCellContentHeight = function(cell) {
+		// e.g.: "12px" -> 12
+		var _removePx = function(size) {			
+			return Number(size.substr(0, size.length - 2));
+		}
+		var $td = $(cell.node());
+		// We have to calculate the height of td in this way because $.height() don't give a precise value if a page was zoomed in the browser
+		// (see the additional note at http://api.jquery.com/height/)
+		// Also we need to use getBoundingClientRect() to get the precise fraction value, as offsetHeight is rounded to be integer
+		// (see the note at https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetHeight)
+		return cell.node().getBoundingClientRect().height - _removePx($td.css('border-top-width')) - _removePx($td.css('border-bottom-width')) - _removePx($td.css('padding-top')) - _removePx($td.css('padding-bottom'));
 	}
 
 	isMacOS = function() {
