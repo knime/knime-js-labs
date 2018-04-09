@@ -15,6 +15,10 @@ table_editor = function() {
 	var infoColsCount = 0;
 	
 	var selectedCell = undefined;
+
+    // for uknown reason even in preDraw current page contains already new cells,
+    // therefore to clean the old page, we need to save them in a separate variable
+	var curCells;
 	
 	/**
 	 * Editor abstract class
@@ -451,14 +455,18 @@ table_editor = function() {
 						$('#knimePagedTable_filter').remove();
 					}
 					if (dataTable) {
-						dataTable.columns({page: 'current'}).nodes().flatten().to$().on('click', cellClickHandler);
-						dataTable.columns(editableColIndices, {page: 'current'}).nodes().flatten().to$().on('dblclick', editableCellDoubleClickHandler);
+						curCells = dataTable.columns(function(ind) { 
+							return ind >= infoColsCount;
+						}, {page: 'current'}).nodes().flatten().to$()
+						curCells.on('click', cellClickHandler);
+						curCells.on('dblclick', editableCellDoubleClickHandler);
 					}
 				},
 				'preDrawCallback': function() {
-					if (dataTable) {
-						dataTable.columns({page: 'current'}).nodes().flatten().to$().off('click', cellClickHandler);
-						dataTable.columns(editableColIndices, {page: 'current'}).nodes().flatten().to$().off('dblclick', editableCellDoubleClickHandler);
+					if (dataTable && curCells) {
+						unselectCurrentCell();
+						curCells.off('click', cellClickHandler);
+						curCells.off('dblclick', editableCellDoubleClickHandler);
 					}
 				}
 			});
@@ -830,7 +838,7 @@ table_editor = function() {
 		var editor = createCellEditorComponent(cell, cellValue);
 		var editorComponent = editor.getComponent();
 		
-		var tdHeight = _getTableCellContentHeight(cell);
+		var tdHeight = getTableCellContentHeight(cell);
 		$td.empty()
 			.append(editorComponent);	
 		// need to set up height after adding the editor to the cell, otherwise it won't work in FF
@@ -913,14 +921,19 @@ table_editor = function() {
 			return null;
 		}
 		var ind = cell.index();
-		var newRowInd = ind.row + rowShift;
 		var newColInd = ind.column + columnShift - infoColsCount;
-		var pageInfo = dataTable.page.info();
-		if (newRowInd < pageInfo.start || newRowInd > pageInfo.end - 1 || newColInd < 0 || newColInd >= knimeTable.getColumnNames().length) {			 
+		if (newColInd < 0 || newColInd >= knimeTable.getColumnNames().length) {
 			return null;
-			// according to documentation https://datatables.net/reference/api/page.info() info.end gives index of the last displayed row on the page,
-			// however it returns the value which is +1
 		}
+
+	    // here we need to take into account the actual order of rows (because of sorting or filtering)
+		var indexes = dataTable.rows( { page: 'current', search: 'applied' } ).indexes().toArray();
+		var newRowInd = indexes.indexOf(ind.row) + rowShift;
+		if (newRowInd >= indexes.length || newRowInd < 0) {
+			return null;
+		}
+		newRowInd = indexes[newRowInd];
+		
 		return dataTable.cell(newRowInd, newColInd + infoColsCount);
 	}
 	
