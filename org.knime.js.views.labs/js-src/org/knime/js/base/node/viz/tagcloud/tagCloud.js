@@ -215,7 +215,8 @@ knime_tag_cloud = function() {
 		if (_value.title) {
         	titleG.append("text")
 	        	.text(_value.title)
-	        	.attr("id", "title")
+				.attr("id", "title")
+				.attr("class", "knime-title")
 	        	.attr("font", "sans-serif")
 	        	.attr("y", 24)
 	        	.attr("font-size", 24);
@@ -223,7 +224,8 @@ knime_tag_cloud = function() {
 		if (_value.subtitle) {
         	titleG.append("text")        
 	        	.text(_value.subtitle)
-	        	.attr("id", "subtitle")
+				.attr("id", "subtitle")
+				.attr("class", "knime-subtitle")
 	        	.attr("font", "sans-serif")
 	        	.attr("font-size", 12)
 	        	.attr("y", size[2] - 12);
