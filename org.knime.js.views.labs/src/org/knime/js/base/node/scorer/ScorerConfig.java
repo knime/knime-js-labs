@@ -95,19 +95,19 @@ public class ScorerConfig {
     private final static boolean DEFAULT_IGNORE_MISSING_VALUES = true;
     private boolean m_ignoreMissingValues = DEFAULT_IGNORE_MISSING_VALUES;
 
-    private static final String CFG_TITLE = "title";
+    static final String CFG_TITLE = "title";
     private final static String DEFAULT_TITLE = "Scorer View";
     private String m_title = DEFAULT_TITLE;
 
-    private static final String CFG_SUBTITLE = "subtitle";
+    static final String CFG_SUBTITLE = "subtitle";
     private final static String DEFAULT_SUBTITLE = "";
     private String m_subtitle = DEFAULT_SUBTITLE;
 
-    private static final String CFG_DISPLAY_TOTAL_ROWS = "displayTotalRows";
+    static final String CFG_DISPLAY_TOTAL_ROWS = "displayTotalRows";
     private final static boolean DEFAULT_DISPLAY_TOTAL_ROWS = false;
     private boolean m_displayTotalRows = DEFAULT_DISPLAY_TOTAL_ROWS;
 
-    private static final String CFG_DISPLAY_CONFUSION_MATRIX_RATES = "displayConfusionMatrixRates";
+    static final String CFG_DISPLAY_CONFUSION_MATRIX_RATES = "displayConfusionMatrixRates";
     private final static boolean DEFAULT_DISPLAY_CONFUSION_MATRIX_RATES = true;
     private boolean m_displayConfusionMatrixRates = DEFAULT_DISPLAY_CONFUSION_MATRIX_RATES;
 
@@ -119,7 +119,7 @@ public class ScorerConfig {
     private final static Color DEFAULT_DIAGONAL_COLOR = new Color(166, 192, 197);
     private Color m_diagonalColor = DEFAULT_DIAGONAL_COLOR;
 
-    private static final String CFG_DISPLAY_FLOAT_AS_PERCENT = "displayFloatAsPercent";
+    static final String CFG_DISPLAY_FLOAT_AS_PERCENT = "displayFloatAsPercent";
     private final static boolean DEFAULT_DISPLAY_FLOAT_AS_PERCENT = true;
     private boolean m_displayFloatAsPercent = DEFAULT_DISPLAY_FLOAT_AS_PERCENT;
 
@@ -127,7 +127,7 @@ public class ScorerConfig {
     private final static boolean DEFAULT_DISPLAY_FULLSCREEN_BUTTON = true;
     private boolean m_displayFullscreenButton = DEFAULT_DISPLAY_FULLSCREEN_BUTTON;
 
-    private static final String CFG_DISPLAY_CLASS_STATS_TABLE = "displayClassStatsTable";
+    static final String CFG_DISPLAY_CLASS_STATS_TABLE = "displayClassStatsTable";
     private final static boolean DEFAULT_DISPLAY_CLASS_STATS_TABLE = false;
     private boolean m_displayClassStatsTable = DEFAULT_DISPLAY_CLASS_STATS_TABLE;
 
@@ -183,7 +183,7 @@ public class ScorerConfig {
     private final static boolean DEFAULT_CLASS_F_MEASURE = true;
     private boolean m_classFMeasure = DEFAULT_CLASS_F_MEASURE;
 
-    private static final String CFG_DISPLAY_OVERALL_STATS = "displayOverallStats";
+    static final String CFG_DISPLAY_OVERALL_STATS = "displayOverallStats";
     private final static boolean DEFAULT_DISPLAY_OVERALL_STATS = true;
     private boolean m_displayOverallStats = DEFAULT_DISPLAY_OVERALL_STATS;
 

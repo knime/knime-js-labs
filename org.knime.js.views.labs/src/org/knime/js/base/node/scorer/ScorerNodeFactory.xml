@@ -6,188 +6,134 @@
     <fullDescription>
     	<intro>Compares two columns by their attribute value pairs and shows the confusion matrix, i.e. how many rows of which attribute and their classification match. Additionally, it is possible to hilight cells of this matrix to determine the underlying rows. The dialog allows you to select two columns for comparison; the values from the first selected column are represented in the confusion matrix's rows and the values from the second column by the confusion matrix's columns. The view of the node displays three tables, the first one is the confusion matrix with the number of matches in each cell. The second table reports a number of accuracy statistics specific to a given class such as True-Positives, False-Positives, True-Negatives, False-Negatives, Accuracy, Balanced Accuracy, Error Rate, False Negative Rate, Recall, Precision, Sensitivity, Specificity, F-measure. The last table contains overall statistics like the overall accuracy, Overall Error, Cohen's kappa, the Correct Classified and the Wrong Classified.</intro>
 		<tab name="Scorer Options">
-			<options>
-				<columnSelectorOption name="First column" id="first_column" inPortIndex="0" label="Actual column" filterClasses="org.knime.core.data.DataValue">
+				<option name="Title">
+					The view title
+				</option>
+				<option name="Subtitle">
+					The view subtitle
+				</option>
+				<option name="Actual column">
 					The actual column contains the actual classes of the data.
-				</columnSelectorOption>
-				<columnSelectorOption name="Second column" id="second_column" inPortIndex="0" label="Predicted column" filterClasses="org.knime.core.data.DataValue">
+				</option>
+				<option name="Predicted column">
 					The predicted column contains the predicted classes of the data.
-				</columnSelectorOption>
- 				<radioButtonOption name="Sorting Strategy" id="sorting_strategy" 
-					possibleValues="Lexical Insertion&#160;Order" label="Sorting Strategy" defaultValue="Lexical">
-				</radioButtonOption>
-				<checkBoxOption name="Reverse order" id="reverse_order" 
-                    label="Reverse order" defaultValue="false" loadDefaults="true">
+				</option>
+ 				<option name="Sorting Strategy">
+ 					Whether to sort the labels according to their appearance, or use the lexical/numeric ordering.
+				</option>
+				<option name="Reverse order">
                     Reverse the order of the elements.
-                </checkBoxOption>
-                <checkBoxOption name="Ignore missing values" id="ignore_missing_values" 
-                    label="Ignore missing values" defaultValue="true" loadDefaults="true">
+                </option>
+                <option name="Ignore missing values">
 					Choose how to treat missing values in either the reference or prediction column. Default is to ignore them (treat them as if the row did not exist). Alternatively, you can expect the table to not contain missing values in these two columns. If they do, the node will fail during execution.
-                </checkBoxOption>
-			</options>
-		</tab>
-		<tab name="General View Options">
-			<options>
-				<stringOption name="Title" id="title" label="Title" defaultValue="Scorer View" optional="true" saveInView="true">
-					The view title.
-				</stringOption>
-				<stringOption name="Subtitle" id="subtitle" label="Subtitle" optional="true" saveInView="true">
-					The view subtitle.
-				</stringOption>
-				<checkBoxOption name="Display number of rows" id="displayRowsNumber"
-                    label="Display number of rows" defaultValue="false" loadDefaults="true" saveInView="true">
-                    Check to display the number of rows.
-                </checkBoxOption>
-				<checkBoxOption name="Display confusion matrix rates" id="displayCMRates"
-                    label="Display confusion matrix rates" defaultValue="true" loadDefaults="true" saveInView="true">
+                </option>
+                <option name="Header color">
+					Background color used for the header sections of the tables (rows or column headers).
+				</option>
+				<option name="Diagonal color">
+					Background color used for highlighting the values on the diagonal of the confusion matrix (the correct predictions).
+				</option>
+				<option name="Display number of rows">
+                    Check to display the total number of rows in the top left corner of the confusion matrix.
+                </option>
+                <option name="Display float values as percentages">
+                    Check to display non-integer values as percentages.
+                </option>
+                <option name="Display confusion matrix rates">
                     Check to display the confusion matrix's rows and columns totals as rates. These are the result of the division of the correct prediction on a given row (or cell)
-                    divided by the sum of all values on that  line (row or column).
-                 </checkBoxOption>
-				<colorOption name="Header color" id="header_color" label="Header color" format="HexString" defaultR="255" defaultG="240" defaultB="199">
-					Color used for the header sections of the tables (rows or column headers).
-				</colorOption>
-				<colorOption name="Diagonal color" id="diag_color" label="Diagonal color" format="HexString" defaultR="166" defaultG="192" defaultB="197">
-					Color used for highlighting the values on the diagonal of the confusion matrix (the correct predictions).
-				</colorOption>
-				<checkBoxOption name="Display float values as percentages" id="displayPercentages"
-                    label="Display float values as percentages" defaultValue="true" loadDefaults="true">
-                    Check to display float values as percentages.
-                </checkBoxOption>				
-				<checkBoxOption name="Display fullscreen button" id="displayFullscreenButton"
-                    label="Display fullscreen button" defaultValue="true" loadDefaults="true">
+                    divided by the sum of all values on that row or column.
+                </option>
+                <option name="Display fullscreen button">
                     Check to display a button which switches the view into fullscreen mode. The button is only available in the KNIME WebPortal.
-                </checkBoxOption>
-                <checkBoxOption name="Show warnings in view" id="showWarnings" 
-				    label="Show warnings in view" defaultValue="true" loadDefaults="true">
+                </option>
+                <option name="Show warnings in view">
                     If checked, warning messages will be displayed in the view when they occur.
-                </checkBoxOption>
-			</options>
+                </option>
 		</tab>
-		<tab name="Class Statistics Options">
-			<options>
-				<checkBoxOption name="Display class statistics table" id="displayClassStatistics"
-                    label="Display class statistics table" defaultValue="false" loadDefaults="true" saveInView="true">
+		<tab name="Statistics Options">
+				<option name="Display class statistics table">
                     Check to display the class statistics table.
-                </checkBoxOption>	
-				<checkBoxOption name="Display true positives for each class" id="displayTruePositives"
-                    label="Display true positives" defaultValue="true" loadDefaults="true">
+                </option>	
+				<option name="Calculate/display true positives for each class">
                     Check to display the true positives in the class statistics table.
-                </checkBoxOption>
-                <checkBoxOption name="Display false positives for each class" id="displayFalsePositives"
-                    label="Display false positives" defaultValue="true" loadDefaults="true">
+                </option>
+                <option name="Calculate/display false positives for each class">
                     Check to display the false positives in the class statistics table.
-                </checkBoxOption>
-				<checkBoxOption name="Display true negatives for each class" id="displayTrueNegatives"
-                    label="Display true negatives" defaultValue="true" loadDefaults="true">
+                </option>
+				<option name="Calculate/display true negatives for each class">
                     Check to display the true negatives in the class statistics table.
-                </checkBoxOption>
-                <checkBoxOption name="Display false negatives for each class" id="displayFalseNegatives"
-                    label="Display false negatives" defaultValue="true" loadDefaults="true">
+                </option>
+                <option name="Calculate/display false negatives for each class">
                     Check to display the false negatives in the class statistics table.
-                </checkBoxOption>                
-				<checkBoxOption name="Display accuracy for each class" id="displayAccuracy"
-                    label="Display accuracy" defaultValue="true" loadDefaults="true">
+                </option>                
+				<option name="Calculate/display accuracy for each class">
                     Check to display the accuracy in the class statistics table.
-                </checkBoxOption>
-				<checkBoxOption name="Display balanced accuracy for each class" id="displayBalancedAccuracy"
-                    label="Display balanced accuracy" defaultValue="true" loadDefaults="true">
+                </option>
+				<option name="Calculate/display balanced accuracy for each class">
                     Check to display the balanced accuracy in the class statistics table.
-                </checkBoxOption>                
-				<checkBoxOption name="Display error rate for each class" id="displayErrorRate"
-                    label="Display error rate" defaultValue="true" loadDefaults="true">
+                </option>                
+				<option name="Calculate/display error rate for each class">
                     Check to display the error rate in the class statistics table.
-                </checkBoxOption>
-                <checkBoxOption name="Display false negative rate for each class" id="displayFalseNegativeRate"
-                    label="Display false negative rate" defaultValue="true" loadDefaults="true">
+                </option>
+                <option name="Calculate/display false negative rate for each class">
                     Check to display the false negative rate in the class statistics table.
-                </checkBoxOption>
-				<checkBoxOption name="Display recall for each class" id="displayRecall"
-                    label="Display recall" defaultValue="true" loadDefaults="true">
+                </option>
+				<option name="Calculate/display recall for each class">
                     Check to display the recall in the class statistics table.
-                </checkBoxOption>
-				<checkBoxOption name="Display precision for each class" id="displayPrecision"
-                    label="Display precision" defaultValue="true" loadDefaults="true">
+                </option>
+				<option name="Calculate/display precision for each class">
                     Check to display the precision in the class statistics table.
-                </checkBoxOption>                
-				<checkBoxOption name="Display sensitivity for each class" id="displaySensitivity"
-                    label="Display sensitivity" defaultValue="true" loadDefaults="true">
+                </option>                
+				<option name="Calculate/display sensitivity for each class">
                     Check to display the sensitivity in the class statistics table.
-                </checkBoxOption>
-                <checkBoxOption name="Display specificity rate for each class" id="displaySpecificity"
-                    label="Display specificity" defaultValue="true" loadDefaults="true">
+                </option>
+                <option name="Calculate/display specificity rate for each class">
                     Check to display the specificity in the class statistics table.
-                </checkBoxOption>                
-                <checkBoxOption name="Display F-measure for each class" id="displayFMeasure"
-                    label="Display F-measure" defaultValue="true" loadDefaults="true">
+                </option>                
+                <option name="Calculate/display F-measure for each class">
                     Check to display the F-measure in the class statistics table.
-                </checkBoxOption>                
-			</options>
-		</tab>
-		<tab name="Overall Statistics Options">
-			<options>
-				<checkBoxOption name="Display overall statistics table" id="displayOverallStatistics"
-                    label="Display overall statistics table" defaultValue="true" loadDefaults="true" saveInView="true">
+                </option>
+                <option name="Display overall statistics table">
                     Check to display the overall statistics table.
-                </checkBoxOption>				
-				<checkBoxOption name="Display overall accuracy" id="displayOverallAccuracy"
-                    label="Display overall accuracy" defaultValue="true" loadDefaults="true">
+                </option>				
+				<option name="Calculate/display overall accuracy">
                     Check to display the overall accuracy in the overall statistics table.
-                </checkBoxOption>
-				<checkBoxOption name="Display overall error" id="displayOverallError"
-                    label="Display overall error" defaultValue="true" loadDefaults="true">
+                </option>
+				<option name="Calculate/display overall error">
                     Check to display the overall error in the overall statistics table.
-                </checkBoxOption>
-				<checkBoxOption name="Display Cohen's kappa" id="displayCohensKappa"
-                    label="Display Cohen's kappa" defaultValue="true" loadDefaults="true">
+                </option>
+				<option name="Calculate/display Cohen's kappa">
                     Check to display the Cohen's kappa in the overall statistics table.
-                </checkBoxOption>
-				<checkBoxOption name="Display correct classified" id="displayCorrectClassified"
-                    label="Display correct classified" defaultValue="true" loadDefaults="true">
+                </option>
+				<option name="Calculate/display correct classified">
                     Check to display the correct classified in the overall statistics table.
-                </checkBoxOption>
-				<checkBoxOption name="Display wrong classified" id="displayWrongClassified"
-                    label="Display wrong classified" defaultValue="true" loadDefaults="true">
+                </option>
+				<option name="Calculate/display wrong classified">
                     Check to display the wrong classified in the overall statistics table.
-                </checkBoxOption>
-			</options>
-		</tab>		
+                </option>               
+		</tab>
 		<tab name="Control Options">
-			<options>
-				<checkBoxOption name="Enable view controls" id="enableViewControls"
-					label="Enable view controls" defaultValue="true">
+				<option name="Enable view controls">
 					Check to enable controls in the chart.
-				</checkBoxOption>
-				<checkBoxOption name="Enable Title editing" id="enableTitleEdit"
-					label="Enable Title editing" defaultValue="true" enableDependency="enableViewControls"
-					enableValue="true">
+				</option>
+				<option name="Enable Title editing">
 					Check to enable the editing of the title within the view.
-				</checkBoxOption>
-				<checkBoxOption name="Enable Subtitle editing" id="enableSubtitleEdit"
-					label="Enable Subtitle editing" defaultValue="true" enableDependency="enableViewControls"
-					enableValue="true">
+				</option>
+				<option name="Enable Subtitle editing">
 					Check to enable the editing of the subtitle within the view.
-				</checkBoxOption>
-				<checkBoxOption name="Enable Rows Number display" id="enableRowsNumberDisplay"
-					label="Enable Rows Number display" defaultValue="true" enableDependency="enableViewControls"
-					enableValue="true">
+				</option>
+				<option name="Enable Rows Number display">
 					Check to enable the display of the rows number.
-				</checkBoxOption>				
-				<checkBoxOption name="Enable Confusion Matrix rates display" id="enableCMRatesDisplay"
-					label="Enable Confusion Matrix rates display" defaultValue="true" enableDependency="enableViewControls"
-					enableValue="true">
+				</option>				
+				<option name="Enable Confusion Matrix rates display">
 					Check to enable the display of the Confusion Matrix's rows and columns totals as rates.
-				</checkBoxOption>				
-				<checkBoxOption name="Enable Class Statistics display" id="enableClassStatisticsDisplay"
-					label="Enable Class Statistics display" defaultValue="true" enableDependency="enableViewControls"
-					enableValue="true">
+				</option>				
+				<option name="Enable Class Statistics display">
 					Check to enable the display of the class statistics table.
-				</checkBoxOption>
-				<checkBoxOption name="Enable Overall Statistics display" id="enableOverallStatisticsDisplay"
-					label="Enable Overall Statistics display" defaultValue="true" enableDependency="enableViewControls"
-					enableValue="true">
+				</option>
+				<option name="Enable Overall Statistics display">
 					Check to enable the display of the overall statistics table.
-				</checkBoxOption>
-			</options>
+				</option>
 		</tab>		
 		
     </fullDescription>
@@ -195,6 +141,9 @@
     <interactiveView name="Confusion Matrix"></interactiveView>
     <ports>
     	<inPort name="Input table" index="0">Table containing at least two columns to compare.</inPort>
+    	<outPort name="Confusion matrix" index="0">The confusion matrix</outPort>
+    	<outPort name="Class statistics table" index="1">The class statistics table</outPort>
+    	<outPort name="Overall statistics table" index="2">The overall statistics table</outPort>
     </ports>
     
 </knimeNode>

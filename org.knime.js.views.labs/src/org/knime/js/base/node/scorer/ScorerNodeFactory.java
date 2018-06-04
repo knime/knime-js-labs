@@ -58,7 +58,7 @@ import org.knime.core.node.wizard.WizardNodeFactoryExtension;
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
 public class ScorerNodeFactory extends NodeFactory<ScorerNodeModel>
-    implements WizardNodeFactoryExtension<ScorerNodeModel, ScorerViewPresentation, ScorerViewValue> {
+    implements WizardNodeFactoryExtension<ScorerNodeModel, ScorerViewRepresentation, ScorerViewValue> {
 
     /**
      * {@inheritDoc}

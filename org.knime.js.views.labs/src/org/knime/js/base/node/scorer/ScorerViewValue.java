@@ -48,6 +48,8 @@
  */
 package org.knime.js.base.node.scorer;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -59,11 +61,110 @@ import org.knime.js.core.JSONViewContent;
  */
 public class ScorerViewValue extends JSONViewContent {
 
+    private String m_title;
+    private String m_subtitle;
+    private boolean m_displayTotalRows;
+    private boolean m_displayConfusionMatrixRates;
+    private boolean m_displayFloatAsPercent;
+    private boolean m_displayClassStatsTable;
+    private boolean m_displayOverallStats;
+
     /**
-     *
+     * @return the title
      */
-    public ScorerViewValue() {
-        // TODO Auto-generated constructor stub
+    public String getTitle() {
+        return m_title;
+    }
+
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(final String title) {
+        m_title = title;
+    }
+
+    /**
+     * @return the subtitle
+     */
+    public String getSubtitle() {
+        return m_subtitle;
+    }
+
+    /**
+     * @param subtitle the subtitle to set
+     */
+    public void setSubtitle(final String subtitle) {
+        m_subtitle = subtitle;
+    }
+
+    /**
+     * @return the displayTotalRows
+     */
+    public boolean isDisplayTotalRows() {
+        return m_displayTotalRows;
+    }
+
+    /**
+     * @param displayTotalRows the displayTotalRows to set
+     */
+    public void setDisplayTotalRows(final boolean displayTotalRows) {
+        m_displayTotalRows = displayTotalRows;
+    }
+
+    /**
+     * @return the displayConfusionMatrixRates
+     */
+    public boolean isDisplayConfusionMatrixRates() {
+        return m_displayConfusionMatrixRates;
+    }
+
+    /**
+     * @param displayConfusionMatrixRates the displayConfusionMatrixRates to set
+     */
+    public void setDisplayConfusionMatrixRates(final boolean displayConfusionMatrixRates) {
+        m_displayConfusionMatrixRates = displayConfusionMatrixRates;
+    }
+
+    /**
+     * @return the displayFloatAsPercent
+     */
+    public boolean isDisplayFloatAsPercent() {
+        return m_displayFloatAsPercent;
+    }
+
+    /**
+     * @param displayFloatAsPercent the displayFloatAsPercent to set
+     */
+    public void setDisplayFloatAsPercent(final boolean displayFloatAsPercent) {
+        m_displayFloatAsPercent = displayFloatAsPercent;
+    }
+
+    /**
+     * @return the displayClassStatsTable
+     */
+    public boolean isDisplayClassStatsTable() {
+        return m_displayClassStatsTable;
+    }
+
+    /**
+     * @param displayClassStatsTable the displayClassStatsTable to set
+     */
+    public void setDisplayClassStatsTable(final boolean displayClassStatsTable) {
+        m_displayClassStatsTable = displayClassStatsTable;
+    }
+
+    /**
+     * @return the displayOverallStats
+     */
+    public boolean isDisplayOverallStats() {
+        return m_displayOverallStats;
+    }
+
+    /**
+     * @param displayOverallStats the displayOverallStats to set
+     */
+    public void setDisplayOverallStats(final boolean displayOverallStats) {
+        m_displayOverallStats = displayOverallStats;
     }
 
     /**
@@ -71,8 +172,13 @@ public class ScorerViewValue extends JSONViewContent {
      */
     @Override
     public void saveToNodeSettings(final NodeSettingsWO settings) {
-        // TODO Auto-generated method stub
-
+        settings.addString(ScorerConfig.CFG_TITLE, m_title);
+        settings.addString(ScorerConfig.CFG_SUBTITLE, m_subtitle);
+        settings.addBoolean(ScorerConfig.CFG_DISPLAY_TOTAL_ROWS, m_displayTotalRows);
+        settings.addBoolean(ScorerConfig.CFG_DISPLAY_CONFUSION_MATRIX_RATES, m_displayConfusionMatrixRates);
+        settings.addBoolean(ScorerConfig.CFG_DISPLAY_FLOAT_AS_PERCENT, m_displayFloatAsPercent);
+        settings.addBoolean(ScorerConfig.CFG_DISPLAY_CLASS_STATS_TABLE, m_displayClassStatsTable);
+        settings.addBoolean(ScorerConfig.CFG_DISPLAY_OVERALL_STATS, m_displayOverallStats);
     }
 
     /**
@@ -80,8 +186,13 @@ public class ScorerViewValue extends JSONViewContent {
      */
     @Override
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        // TODO Auto-generated method stub
-
+        m_title = settings.getString(ScorerConfig.CFG_TITLE);
+        m_subtitle = settings.getString(ScorerConfig.CFG_SUBTITLE);
+        m_displayTotalRows = settings.getBoolean(ScorerConfig.CFG_DISPLAY_TOTAL_ROWS);
+        m_displayConfusionMatrixRates = settings.getBoolean(ScorerConfig.CFG_DISPLAY_CONFUSION_MATRIX_RATES);
+        m_displayFloatAsPercent = settings.getBoolean(ScorerConfig.CFG_DISPLAY_FLOAT_AS_PERCENT);
+        m_displayClassStatsTable = settings.getBoolean(ScorerConfig.CFG_DISPLAY_CLASS_STATS_TABLE);
+        m_displayOverallStats = settings.getBoolean(ScorerConfig.CFG_DISPLAY_OVERALL_STATS);
     }
 
     /**
@@ -89,8 +200,25 @@ public class ScorerViewValue extends JSONViewContent {
      */
     @Override
     public boolean equals(final Object obj) {
-        // TODO Auto-generated method stub
-        return false;
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        ScorerViewValue other = (ScorerViewValue)obj;
+        return new EqualsBuilder()
+                .append(m_title, other.m_title)
+                .append(m_subtitle, other.m_subtitle)
+                .append(m_displayTotalRows, other.m_displayTotalRows)
+                .append(m_displayConfusionMatrixRates, other.m_displayConfusionMatrixRates)
+                .append(m_displayFloatAsPercent, other.m_displayFloatAsPercent)
+                .append(m_displayClassStatsTable, other.m_displayClassStatsTable)
+                .append(m_displayOverallStats, other.m_displayOverallStats)
+                .isEquals();
     }
 
     /**
@@ -98,8 +226,15 @@ public class ScorerViewValue extends JSONViewContent {
      */
     @Override
     public int hashCode() {
-        // TODO Auto-generated method stub
-        return 0;
+        return new HashCodeBuilder()
+                .append(m_title)
+                .append(m_subtitle)
+                .append(m_displayTotalRows)
+                .append(m_displayConfusionMatrixRates)
+                .append(m_displayFloatAsPercent)
+                .append(m_displayClassStatsTable)
+                .append(m_displayOverallStats)
+                .toHashCode();
     }
 
 }

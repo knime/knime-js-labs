@@ -27,6 +27,11 @@
             deprecated="false"
             factory-class="org.knime.base.node.stats.dataexplorer.DataExplorerNodeFactory">
       </node>
+      <node
+            category-path="/analytics/mining/modeleval"
+            deprecated="false"
+            factory-class="org.knime.js.base.node.scorer.ScorerNodeFactory">
+      </node>
    </extension>
    <extension
          point="org.knime.workbench.repository.categories">
@@ -271,6 +276,28 @@
                webResourceBundleID="D3_3.2.8">
          </webDependency>
       </webResourceBundle>
+      <webResourceBundle
+            debug="true"
+            name="Scorer"
+            usesDefine="false"
+            version="1.0"
+            webResourceBundleID="org.knime.js.base.node.scorer.bundle">
+         <webResource
+               relativePathSource="js-src/org/knime/js/base/node/scorer/"
+               relativePathTarget="/org/knime/js/base/node/scorer/">
+         </webResource>
+         <importResource
+               relativePath="/org/knime/js/base/node/scorer/scorer.js"
+               type="JAVASCRIPT">
+         </importResource>
+         <importResource
+               relativePath="/org/knime/js/base/node/scorer/scorer.css"
+               type="CSS">
+         </importResource>
+         <webDependency
+               webResourceBundleID="KnimeTable_1.0.0">
+         </webDependency>
+      </webResourceBundle>
    </extension>
    <extension
          point="org.knime.js.core.javascriptComponents">
@@ -358,6 +385,16 @@
             javascriptComponentID="org_knime_base_node_stats_dataexplorer"
             name="Data Explorer"
             namespace="dataExplorerNamespace"
+            setValidationError-method-name="setValidationError"
+            validate-method-name="validate">
+      </javascriptComponent>
+      <javascriptComponent
+            getComponentValue-method-name="getComponentValue"
+            implementationBundleID="org.knime.js.base.node.scorer.bundle"
+            init-method-name="init"
+            javascriptComponentID="org.knime.js.base.node.scorer"
+            name="Scorer"
+            namespace="scorer_namespace"
             setValidationError-method-name="setValidationError"
             validate-method-name="validate">
       </javascriptComponent>

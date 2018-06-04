@@ -48,6 +48,9 @@
  */
 package org.knime.js.base.node.scorer;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.core.node.InvalidSettingsException;
@@ -60,7 +63,7 @@ import org.knime.js.core.JSONViewContent;
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
-public class ScorerViewPresentation extends JSONViewContent {
+public class ScorerViewRepresentation extends JSONViewContent {
 
     private static final String CFG_CONFUSION_MATRIX = "confusionMatrix";
     private JSONDataTable m_confusionMatrix;
@@ -68,6 +71,12 @@ public class ScorerViewPresentation extends JSONViewContent {
     private JSONDataTable m_classStatisticsTable;
     private static final String CFG_OVERALL_STATISTICS_TABLE = "overallStatisticsTable";
     private JSONDataTable m_overallStatisticsTable;
+    private static final String CFG_KEYSTORE = "keystore";
+    private static final String CFG_DIMENSIONS = "dimensions";
+    private static final String CFG_STORE_PREFIX = "store_";
+    private List<String>[][] m_keystore;
+    private static final String CFG_WARNING_MESSAGE = "warningMessage";
+    private String m_warningMessage;
 
     private boolean m_showWarningsInView;
     private String m_headerColor;
@@ -121,6 +130,34 @@ public class ScorerViewPresentation extends JSONViewContent {
      */
     public void setOverallStatisticsTable(final JSONDataTable overallStatisticsTable) {
         m_overallStatisticsTable = overallStatisticsTable;
+    }
+
+    /**
+     * @return the keystore
+     */
+    public List<String>[][] getKeystore() {
+        return m_keystore;
+    }
+
+    /**
+     * @param keystore the keystore to set
+     */
+    public void setKeystore(final List<String>[][] keystore) {
+        m_keystore = keystore;
+    }
+
+    /**
+     * @return the warningMessage
+     */
+    public String getWarningMessage() {
+        return m_warningMessage;
+    }
+
+    /**
+     * @param warningMessage the warningMessage to set
+     */
+    public void setWarningMessage(final String warningMessage) {
+        m_warningMessage = warningMessage;
     }
 
     /**
@@ -282,12 +319,16 @@ public class ScorerViewPresentation extends JSONViewContent {
      */
     @Override
     public void saveToNodeSettings(final NodeSettingsWO settings) {
-        NodeSettingsWO confusionMatrixSettings = settings.addNodeSettings(CFG_CONFUSION_MATRIX);
-        m_confusionMatrix.saveJSONToNodeSettings(confusionMatrixSettings);
-        NodeSettingsWO classStatisticsSettings = settings.addNodeSettings(CFG_CLASS_STATISTICS_TABLE);
-        m_classStatisticsTable.saveJSONToNodeSettings(classStatisticsSettings);
-        NodeSettingsWO overallStatisticsSettings = settings.addNodeSettings(CFG_OVERALL_STATISTICS_TABLE);
-        m_overallStatisticsTable.saveJSONToNodeSettings(overallStatisticsSettings);
+        //Tables are stored in node model
+        NodeSettingsWO storeSettings = settings.addNodeSettings(CFG_KEYSTORE);
+        int dimensions = m_keystore == null ? 0 : m_keystore.length;
+        storeSettings.addInt(CFG_DIMENSIONS, dimensions);
+        for (int x = 0; x < dimensions; x++) {
+            for (int y = 0; y < dimensions; y++) {
+                storeSettings.addStringArray(CFG_STORE_PREFIX + x + "_" + y, m_keystore[x][y].toArray(new String[0]));
+            }
+        }
+        settings.addString(CFG_WARNING_MESSAGE, m_warningMessage);
 
         settings.addBoolean(ScorerConfig.CFG_WARNINGS_IN_VIEW, m_showWarningsInView);
         settings.addString(ScorerConfig.CFG_HEADER_COLOR, m_headerColor);
@@ -305,14 +346,21 @@ public class ScorerViewPresentation extends JSONViewContent {
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        NodeSettingsRO confusionMatrixSettings = settings.getNodeSettings(CFG_CONFUSION_MATRIX);
-        m_confusionMatrix = JSONDataTable.loadFromNodeSettings(confusionMatrixSettings);
-        NodeSettingsRO classStatisticsSettings = settings.getNodeSettings(CFG_CLASS_STATISTICS_TABLE);
-        m_classStatisticsTable = JSONDataTable.loadFromNodeSettings(classStatisticsSettings);
-        NodeSettingsRO overallStatisticsSettings = settings.getNodeSettings(CFG_OVERALL_STATISTICS_TABLE);
-        m_overallStatisticsTable = JSONDataTable.loadFromNodeSettings(overallStatisticsSettings);
+        //Tables are loaded in node model
+        NodeSettingsRO storeSettings = settings.getNodeSettings(CFG_KEYSTORE);
+        int dimensions = storeSettings.getInt(CFG_DIMENSIONS);
+        if (dimensions > 0) {
+            m_keystore = new List[dimensions][dimensions];
+            for (int x = 0; x < dimensions; x++) {
+                for (int y = 0; y < dimensions; y++) {
+                    m_keystore[x][y] = Arrays.asList(storeSettings.getStringArray(CFG_STORE_PREFIX + x + "_" + y));
+                }
+            }
+        }
+        m_warningMessage = settings.getString(CFG_WARNING_MESSAGE);
 
         m_showWarningsInView = settings.getBoolean(ScorerConfig.CFG_WARNINGS_IN_VIEW);
         m_headerColor = settings.getString(ScorerConfig.CFG_HEADER_COLOR);
@@ -342,11 +390,12 @@ public class ScorerViewPresentation extends JSONViewContent {
         if (obj.getClass() != getClass()) {
             return false;
         }
-        ScorerViewPresentation other = (ScorerViewPresentation)obj;
+        ScorerViewRepresentation other = (ScorerViewRepresentation)obj;
         return new EqualsBuilder()
                 .append(m_confusionMatrix, other.m_confusionMatrix)
                 .append(m_classStatisticsTable, other.m_classStatisticsTable)
                 .append(m_overallStatisticsTable, other.m_overallStatisticsTable)
+                .append(m_keystore, other.m_keystore)
                 .append(m_showWarningsInView, other.m_showWarningsInView)
                 .append(m_headerColor, other.m_headerColor)
                 .append(m_diagonalColor, other.m_diagonalColor)
@@ -370,6 +419,7 @@ public class ScorerViewPresentation extends JSONViewContent {
                 .append(m_confusionMatrix)
                 .append(m_classStatisticsTable)
                 .append(m_overallStatisticsTable)
+                .append(m_keystore)
                 .append(m_showWarningsInView)
                 .append(m_headerColor)
                 .append(m_diagonalColor)
