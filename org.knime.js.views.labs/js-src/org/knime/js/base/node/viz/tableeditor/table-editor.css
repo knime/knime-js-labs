@@ -133,15 +133,15 @@ h2 {
     white-space: normal;
 }
 
-#knimePagedTable td .missing-value-cell {
+#knimePagedTable td .knime-missing-value-cell {
     color: #d9534f;
 }
 
-#knimePagedTable td.selected {
+#knimePagedTable td.knime-selected {
     outline: none;  
 }
 
-#knimePagedTable td.selected input {
+#knimePagedTable td.knime-selected input {
     color: initial;
     width: 100%;        
     padding-top: 0px;

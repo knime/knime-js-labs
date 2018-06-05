@@ -44,7 +44,7 @@ table_editor = function() {
 	 * String values editor
 	 */
 	var StringEditor = function() {
-		this.component = $('<input type="text"/>');
+		this.component = $('<input type="text" class="knime-table-control-text knime-string knime-single-line"/>');
 	}
 	
 	StringEditor.prototype = Object.create(Editor.prototype);
@@ -61,7 +61,7 @@ table_editor = function() {
 	 * Integer or Long values editor
 	 */
 	var IntEditor = function() {
-		this.component = $('<input type="number"/>');
+		this.component = $('<input type="number" class="knime-table-control-text knime-integer knime-single-line"/>');
 	}
 	
 	IntEditor.prototype = Object.create(Editor.prototype);
@@ -79,7 +79,7 @@ table_editor = function() {
 	 * Double values editor
 	 */
 	var DoubleEditor = function() {
-		this.component = $('<input type="number" step="any"/>');
+		this.component = $('<input type="number" step="any" class="knime-table-control-text knime-double knime-single-line"/>');
 	}
 	
 	DoubleEditor.prototype = Object.create(Editor.prototype);
@@ -97,7 +97,7 @@ table_editor = function() {
 	 * Boolean values editor
 	 */
 	var BooleanEditor = function() {
-		this.component = $('<input type="text"/>');
+		this.component = $('<input type="text" class="knime-boolean"/>');
 	}
 	
 	BooleanEditor.prototype = Object.create(Editor.prototype);
@@ -207,33 +207,33 @@ table_editor = function() {
 			knimeTable = new kt();
 			knimeTable.setDataTable(_representation.table);
 			
-			var wrapper = $('<div id="knimePagedTableContainer">');
+			var wrapper = $('<div id="knimePagedTableContainer" class="knime-table-container">');
 			body.append(wrapper);
 			if (_representation.title != null && _representation.title != '') {
-				wrapper.append('<h1>' + _representation.title + '</h1>')
+				wrapper.append('<h1 class="knime-title">' + _representation.title + '</h1>')
 			}
 			if (_representation.subtitle != null && _representation.subtitle != '') {
-				wrapper.append('<h2>' + _representation.subtitle + '</h2>')
+				wrapper.append('<h2 class="knime-subtitle">' + _representation.subtitle + '</h2>')
 			}
-			var table = $('<table id="knimePagedTable" class="table table-striped table-bordered" width="100%">');
+			var table = $('<table id="knimePagedTable" class="table table-striped table-bordered knime-table" width="100%">');
 			wrapper.append(table);
 			if (_representation.enableColumnSearching) {
-				$('#knimePagedTable').append('<tfoot><tr></tr></tfoot>');
+				$('#knimePagedTable').append('<tfoot class="knime-table-footer"><tr class="knime-table-row knime-table-footer"></tr></tfoot>');
 				var footerRow = $('#knimePagedTable tfoot tr');
 				if (_representation.enableSelection) {
-					footerRow.append('<th></th>');
+					footerRow.append('<th class="knime-table-cell knime-table-footer"></th>');
 				}
 				if (_representation.displayRowIndex) {
-					footerRow.append('<th></th>');						
+					footerRow.append('<th class="knime-table-cell knime-table-footer"></th>');						
 				}
 				if (_representation.displayRowColors || _representation.displayRowIds) {
-					footerRow.append('<th></th>');
+					footerRow.append('<th class="knime-table-cell knime-table-footer"></th>');
 				}
 				for (var i = 0; i < knimeTable.getColumnNames().length; i++) {
 					if (isColumnSearchable(knimeTable.getColumnTypes()[i])) {
-						footerRow.append('<th>' + knimeTable.getColumnNames()[i] + '</th>')
+						footerRow.append('<th class="knime-table-cell knime-table-footer">' + knimeTable.getColumnNames()[i] + '</th>')
 					} else {
-						footerRow.append('<th></th>');
+						footerRow.append('<th class="knime-table-cell knime-table-footer"></th>');
 					}
 				}
 				
@@ -242,7 +242,7 @@ table_editor = function() {
 			        if (title == '') {
 			        	return;
 			        }
-			        $(this).html('<input type="text" placeholder="Search '+title+'" />' );
+			        $(this).html('<input class="knime-table-control-text knime-filter knime-single-line" type="text" placeholder="Search ' + title + '" />' );
 			    });
 			}
 			
@@ -251,7 +251,7 @@ table_editor = function() {
 			if (_representation.enableSelection) {
 				if (_representation.singleSelection) {
 					var titleElement = _representation.enableClearSelectionButton 
-						? ('<button type="button" id="clear-selection-button" class="btn btn-default btn-xs" title="Clear selection">' 
+						? ('<button type="button" id="clear-selection-button" class="btn btn-default btn-xs knime-control-text" title="Clear selection">' 
 							+ '<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></button>')
 						: '';
 					colArray.push({'title': titleElement});
@@ -259,21 +259,21 @@ table_editor = function() {
 						'targets': 0,
 						'searchable':false,
 						'orderable':false,
-						'className': 'dt-body-center selection-cell',
+						'className': 'dt-body-center selection-cell knime-table-cell',
 						'render': function (data, type, full, meta) {
-							return '<input type="radio" name="radio_single_select"'
+							return '<input type="radio" class="knime-boolean" name="radio_single_select"'
 							+ (selection[data] ? ' checked' : '')
 							+' value="' + $('<div/>').text(data).html() + '">';
 						}
 					});
 				} else {
 					var all = _value.selectAll;
-					colArray.push({'title': '<input name="select_all" value="1" id="checkbox-select-all" type="checkbox"' + (all ? ' checked' : '')  + ' />'});
+					colArray.push({'title': '<input name="select_all" value="1" id="checkbox-select-all" type="checkbox" class="knime-boolean"' + (all ? ' checked' : '')  + ' />'});
 					colDefs.push({
 						'targets': 0,
 						'searchable':false,
 						'orderable':false,
-						'className': 'dt-body-center selection-cell',
+						'className': 'dt-body-center selection-cell knime-table-cell',
 						'render': function (data, type, full, meta) {
 							//var selected = selection[data] ? !all : all;
 							setTimeout(function(){
@@ -282,7 +282,7 @@ table_editor = function() {
 								el.indeterminate = true;
 							}*/
 							}, 0);
-							return '<input type="checkbox" name="id[]"'
+							return '<input type="checkbox" class="knime-boolean" name="id[]"'
 							+ (selection[data] ? ' checked' : '')
 							+' value="' + $('<div/>').text(data).html() + '">';
 						}
@@ -293,7 +293,8 @@ table_editor = function() {
 			if (_representation.displayRowIndex) {
 				colArray.push({
 					'title': "Row Index",
-					'searchable': false
+					'searchable': false,
+					'className': 'knime-table-cell'
 				});
 				infoColsCount++;
 			}
@@ -303,7 +304,7 @@ table_editor = function() {
 				colArray.push({
 					'title': title, 
 					'orderable': orderable,
-					'className': 'no-break'
+					'className': 'no-break knime-table-cell'
 				});
 				infoColsCount++;
 			}
@@ -322,10 +323,14 @@ table_editor = function() {
 				var colDef = {
 					'title': colName,
 					'orderable' : isColumnSortable(colType),
-					'searchable': isColumnSearchable(colType)					
+					'searchable': isColumnSearchable(colType),
+					'className': 'knime-table-cell'
+				}
+				if (_representation.editableColumns.indexOf(knimeTable.getColumnNames()[i]) !== -1) {
+					colDef.className += ' knime-editable';
 				}
 				if (_representation.displayMissingValueAsQuestionMark) {
-					colDef.defaultContent = '<span class="missing-value-cell">?</span>';
+					colDef.defaultContent = '<span class="knime-missing-value-cell">?</span>';
 				}
 				if (knimeColType == 'Date and Time' && _representation.dateTimeFormats.globalDateTimeFormat) {
 					colDef.render = function (data, type, full, meta) {
@@ -340,23 +345,27 @@ table_editor = function() {
 							return moment(data).utc().format(type === 'sort' || type === 'type' ? 'x' : _representation.dateTimeFormats.globalDateTimeFormat);
 						}
 					}
+					colDef.className += ' knime-datetime';
 				}
 				if (knimeColType == 'Local Date' && _representation.dateTimeFormats.globalLocalDateFormat) {
-				  colDef.render = function (data, type, full, meta) {
-				    return moment(data).format(type === 'sort' || type === 'type' ? 'x' : _representation.dateTimeFormats.globalLocalDateFormat);
-				  }
+					colDef.render = function (data, type, full, meta) {
+						return moment(data).format(type === 'sort' || type === 'type' ? 'x' : _representation.dateTimeFormats.globalLocalDateFormat);
+					}
+					colDef.className += ' knime-datetime knime-date';
 				}
 
 				if (knimeColType == 'Local Date Time' && _representation.dateTimeFormats.globalLocalDateTimeFormat) {
-				  colDef.render = function (data, type, full, meta) {
-				    return moment(data).format(type === 'sort' || type === 'type' ? 'x' : _representation.dateTimeFormats.globalLocalDateTimeFormat);
-				  }
+					colDef.render = function (data, type, full, meta) {
+						return moment(data).format(type === 'sort' || type === 'type' ? 'x' : _representation.dateTimeFormats.globalLocalDateTimeFormat);
+					}
+					colDef.className += ' knime-datetime';
 				}
 
 				if (knimeColType == 'Local Time' && _representation.dateTimeFormats.globalLocalTimeFormat) {
-				  colDef.render = function (data, type, full, meta) {
-				    return moment(data, "hh:mm:ss.SSSSSSSSS").format(type === 'sort' || type === 'type' ? 'x' : _representation.dateTimeFormats.globalLocalTimeFormat);
-				  }
+					colDef.render = function (data, type, full, meta) {
+						return moment(data, "hh:mm:ss.SSSSSSSSS").format(type === 'sort' || type === 'type' ? 'x' : _representation.dateTimeFormats.globalLocalTimeFormat);
+					}
+					colDef.className += ' knime-datetime knime-time';
 				}
 
 				if (knimeColType == 'Zoned Date Time' && _representation.dateTimeFormats.globalZonedDateTimeFormat) {
@@ -379,21 +388,38 @@ table_editor = function() {
 
 						return date.format(type === 'sort' || type === 'type' ? 'x' : _representation.dateTimeFormats.globalZonedDateTimeFormat);
 					}
+					colDef.className += ' knime-datetime knime-timezone';
 				}
-				if (colType == 'number' && _representation.enableGlobalNumberFormat) {
+
+				if (colType == 'number') {
 					if (knimeTable.getKnimeColumnTypes()[i].indexOf('double') > -1) {
-						colDef.render = function(data, type, full, meta) {
-							if (!$.isNumeric(data)) {
-								return data;
+						if (_representation.enableGlobalNumberFormat) {
+							colDef.render = function (data, type, full, meta) {
+								if (!$.isNumeric(data)) {
+									return data;
+								}
+								return Number(data).toFixed(_representation.globalNumberFormatDecimals);
 							}
-							return Number(data).toFixed(_representation.globalNumberFormatDecimals);
 						}
+						colDef.className += ' knime-double';
+					} else {
+						colDef.className += ' knime-integer';
 					}
 				}
 				if (colType == 'png') {
 					colDef.render = function (data, type, full, meta) {
 						return '<img src="data:image/png;base64,' + data + '" />';
 					}
+					colDef.className += ' knime-image knime-png';
+				}
+				if (colType == 'svg') {
+					colDef.className += ' knime-image knime-svg';
+				}
+				if (colType == 'boolean') {
+					colDef.className += ' knime-boolean';
+				}
+				if (colType == 'string') {
+					colDef.className += ' knime-string';
 				}
 				colArray.push(colDef);
 				
@@ -461,6 +487,7 @@ table_editor = function() {
 						curCells.on('click', cellClickHandler);
 						curCells.on('dblclick', editableCellDoubleClickHandler);
 					}
+					_setDynamicCssStyles();
 				},
 				'preDrawCallback': function() {
 					if (dataTable && curCells) {
@@ -598,8 +625,12 @@ table_editor = function() {
 					}
 					// Handle click on radio button to set selection and publish event
 					$('#knimePagedTable tbody').on('change', 'input[type="radio"]', function() {
+						$('.selection-cell').parent().removeClass('knime-selected');  // set tr style
 						selection = {};
 						selection[this.value] = this.checked;
+						if (this.checked) {
+							$(this).parent().parent().addClass('knime-selected');  // set tr style
+						}
 						if (knimeService && knimeService.isInteractivityAvailable() && _value.publishSelection) {
 							if (this.checked) {
 								knimeService.setSelectedRows(_representation.table.id, [this.value], selectionChanged);
@@ -635,6 +666,7 @@ table_editor = function() {
 							if (knimeService && knimeService.isInteractivityAvailable() && _value.publishSelection) {
 								knimeService.addRowsToSelection(_representation.table.id, [this.value], selectionChanged);
 							}
+							$(this).parent().parent().addClass('knime-selected');  // set tr style
 						} else {
 							if (_value.hideUnselected) {
 								dataTable.draw('full-hold');
@@ -642,6 +674,7 @@ table_editor = function() {
 							if (knimeService && knimeService.isInteractivityAvailable() && _value.publishSelection) {
 								knimeService.removeRowsFromSelection(_representation.table.id, [this.value], selectionChanged);
 							}
+							$(this).parent().parent().removeClass('knime-selected');  // set tr style
 						}
 						checkSelectAllState();
 					});
@@ -669,6 +702,8 @@ table_editor = function() {
 			        });
 			    });
 			}
+
+			_setControlCssStyles();
 			
 			//load all data
 			setTimeout(function() {
@@ -811,7 +846,7 @@ table_editor = function() {
 		if (!isEqualCell(cell, selectedCell)) {
 			unselectCurrentCell();
 			selectedCell = cell;
-			$td.addClass('selected');
+			$td.addClass('knime-selected selected');
 			catchTdEventsOn($td);
 		}
 		
@@ -825,7 +860,7 @@ table_editor = function() {
 		}
 		
 		var $td = $(selectedCell.node());
-		$td.removeClass('selected');
+		$td.removeClass('knime-selected selected');
 		catchTdEventsOff($td);
 		
 		selectedCell = undefined;
@@ -1261,6 +1296,13 @@ table_editor = function() {
 		for (var i = 0; i < curCheckboxes.length; i++) {
 			var checkbox = curCheckboxes[i];
 			checkbox.checked = selection[checkbox.value];
+			// set tr style
+			var $tr = $(checkbox).parent().parent();
+			if (checkbox.checked) {
+				$tr.addClass('knime-selected');
+			} else {
+				$tr.removeClass('knime-selected');
+			}
 			if ('indeterminate' in checkbox) {
 				if (!checkbox.checked && partialSelectedRows.indexOf(checkbox.value) > -1) {
 					checkbox.indeterminate = true;
@@ -1351,6 +1393,32 @@ table_editor = function() {
 
 	isMacOS = function() {
 		return navigator.platform.indexOf('Mac') !== -1;
+	}
+	
+	/**
+	 * Set CSS styles for table controls
+	 */
+	_setControlCssStyles = function() {
+		$('#knimePagedTable_length').addClass('knime-table-length');
+		$('#knimePagedTable_length label').addClass('knime-table-control-text');
+		$('#knimePagedTable_length select').addClass('knime-table-control-text knime-single-line');
+		$('.dt-buttons').addClass('knime-table-buttons');
+		$('.dt-buttons span').addClass('knime-table-control-text');
+		$('#knimePagedTable_filter').addClass('knime-table-search');
+		$('#knimePagedTable_filter label').addClass('knime-table-control-text');
+		$('#knimePagedTable_filter input').addClass('knime-filter knime-single-line');
+		$('#knimePagedTable_paginate').addClass('knime-table-paging');
+		$('#knimePagedTable_info').addClass('knime-table-info knime-table-control-text');		
+	}
+
+	/**
+	 * Set CSS styles for dynamically loaded objects controls
+	 */
+	_setDynamicCssStyles = function() {
+		$('#knimePagedTable tr').addClass('knime-table-row');	
+		$('#knimePagedTable_paginate ul').addClass('knime-table-control-text');
+		$('#knimePagedTable thead tr').addClass('knime-table-header');
+		$('#knimePagedTable thead th').addClass('knime-table-header');
 	}
 	
 	table_viewer.validate = function() {
