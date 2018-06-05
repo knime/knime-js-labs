@@ -52,7 +52,7 @@ h2 {
 	white-space: normal;
 }
 
-.knimeDataTable td .missing-value-cell {
+.knimeDataTable td .knime-missing-value-cell {
 	color: #d9534f;
 }
 
