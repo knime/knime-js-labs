@@ -52,10 +52,12 @@
 		var h1 = document.createElement('h1');
 		h1.appendChild(document.createTextNode(title));
 		h1.setAttribute('id', 'title');
+		h1.setAttribute('class', 'knime-title');
 		body.appendChild(h1);
 		var h4 = document.createElement('h4');
 		h4.appendChild(document.createTextNode(subtitle));
 		h4.setAttribute('id', 'subtitle');
+		h4.setAttribute('class', 'knime-subtitle');
 		h4.setAttribute('align', 'center');
 		body.appendChild(h4);
 
@@ -74,17 +76,19 @@
 	createConfusionMatrixTable = function() {
 		var table = document.createElement('table');
 		table.setAttribute('id', 'knime-confusion-matrix');
-		table.setAttribute('class', 'center');
+		table.setAttribute('class', 'center knime-table');
 		var caption = document.createElement('caption');
+		caption.setAttribute('class', 'knime-label knime-table-header')
 		caption.appendChild(document.createTextNode('Confusion Matrix'));
 		table.appendChild(caption);
 		
-		var tHeader = document.createElement('thead');
+		var tHeader = document.createElement('thead');		
 		//header row
 		var tRow = document.createElement('tr');
-		var th = document.createElement('th');
+		tRow.setAttribute('class', 'knime-table-row knime-table-header')
+		var th = document.createElement('th');		
 		th.appendChild(document.createTextNode('Rows Number : \n' + rowsNumber));
-		th.setAttribute('class', 'rowsNumber');
+		th.setAttribute('class', 'rowsNumber knime-table-cell knime-table-header knime-string');
 		th.setAttribute('style', 'border-right-width: 2px');
 		th.style.backgroundColor = _representation.headerColor;
 		tRow.appendChild(th);
@@ -93,6 +97,7 @@
 			th.appendChild(document.createTextNode(classes[i] + ' (Predicted)'));
 			th.style.backgroundColor = _representation.headerColor;
 			th.setAttribute('title', classes[i] + ' (Predicted)');
+			th.setAttribute('class', 'knime-table-cell knime-table-header knime-integer')
 			tRow.appendChild(th);
 		}
 		tHeader.appendChild(tRow);
@@ -102,16 +107,19 @@
 		var rateCellDescription = 'This is the the correct prediction on this row (or column) divided by the sum of all values on this line.';
 		for (var row = 0; row < confusionMatrix.getNumRows(); row++) {
 			tRow = document.createElement('tr');
+			tRow.setAttribute('class', 'knime-table-row');
 			th = document.createElement('th');
 			th.appendChild(document.createTextNode(classes[row] + ' (Actual)'));
 			th.style.backgroundColor = _representation.headerColor;
 			th.setAttribute('title', classes[row] + ' (Actual)');
+			th.setAttribute('class', 'knime-table-cell knime-table-header knime-string');
 			tRow.appendChild(th);
 			for (var col = 0; col < confusionMatrix.getNumColumns(); col++) {
 				var td = document.createElement('td');
 				td.appendChild(document.createTextNode(confusionMatrix.getCell(row, col)));
 				td.setAttribute('data-row', row);
 				td.setAttribute('data-col', col);
+				td.setAttribute('class', 'knime-table-cell knime-integer');
 				if (row === col) {
 					td.style.backgroundColor = _representation.diagonalColor;
 				}
@@ -125,24 +133,25 @@
 			} else {
 				lastCell.appendChild(document.createTextNode(cellValue.toFixed(3)));
 			}
-			lastCell.setAttribute('class', 'rateCell');
+			lastCell.setAttribute('class', 'rateCell knime-table-cell knime-double');
 			lastCell.setAttribute('title', rateCellDescription);
 			tRow.appendChild(lastCell);
 			tBody.appendChild(tRow);
 		}
 		tRow = document.createElement('tr');
+		tRow.setAttribute('class', 'knime-table-row');
 		td = document.createElement('td');
 		td.setAttribute('class', 'no-border');
 		tRow.appendChild(td);
 		for (var col = 0; col < confusionMatrix.getNumRows(); col++) {
-			td = document.createElement('td');
+			td = document.createElement('td');			
 			var cellValue = confusionMatrixWithRates[confusionMatrixWithRates.length-1][col];
 			if (_value.displayFloatAsPercent === true) {
 				td.appendChild(document.createTextNode((cellValue * 100).toFixed(1) + '\xA0%'));
 			} else {
 				td.appendChild(document.createTextNode(cellValue.toFixed(3)));
 			}
-			td.setAttribute('class', 'rateCell');
+			td.setAttribute('class', 'rateCell knime-table-cell knime-double');
 			td.setAttribute('title', rateCellDescription);	
 			tRow.appendChild(td);
 		}
@@ -195,9 +204,9 @@
 
 	cellClicked = function(event) {
 		confusionTable.querySelectorAll('td').forEach(function (cell) {
-			cell.classList.remove('selected');
+			cell.classList.remove('knime-selected');
 		});
-		this.classList.add('selected');
+		this.classList.add('knime-selected');
 		if (knimeService.isInteractivityAvailable()) {
 			var rowIds = keyStore[this.dataset.row][this.dataset.col];
 			knimeService.setSelectedRows(tableID, rowIds);
@@ -207,20 +216,32 @@
 	createClassStatisticsTable = function() {
 		var table = document.createElement('table');
 		table.setAttribute('id', 'knime-class-statistics');
-		table.setAttribute('class', 'center');
+		table.setAttribute('class', 'center knime-table');
 		if (classStatistics.getNumColumns() !== 0) {
 			var caption = document.createElement('caption');
+			caption.setAttribute('class', 'knime-label knime-table-header')
 			caption.appendChild(document.createTextNode('Class Statistics'));
 			table.appendChild(caption);
 		}
 
 		var tHeader = document.createElement('thead');
 		var tRow = document.createElement('tr');
+		tRow.setAttribute('class', 'knime-table-row');
 		var statNames = ['Class'];
 		Array.prototype.push.apply(statNames, classStatistics.getColumnNames());
 		for (var i = 0; i < statNames.length; i++) {
 			if (classStatistics.getNumColumns() !== 0) {
 				var th = document.createElement('th');
+				if (statNames[i] === 'Class') {
+					th.setAttribute('class', 'knime-table-cell knime-table-header knime-string');
+				} else if (statNames[i] === 'True Positives' || statNames[i] === 'False Positives'
+					|| statNames[i] === 'True Negatives' || statNames[i] === 'False Negatives') {
+					// cellValue is an integer
+					th.setAttribute('class', 'knime-table-cell knime-table-header knime-integer');
+				} else {
+					// cellValue is a float
+					th.setAttribute('class', 'knime-table-cell knime-table-header knime-double');
+				}
 				th.appendChild(document.createTextNode(statNames[i]));
 				th.style.backgroundColor = _representation.headerColor;
 				tRow.appendChild(th);
@@ -233,8 +254,10 @@
 		var columnNames = classStatistics.getColumnNames();
 		for (var row = 0; row < classStatistics.getNumRows(); row++) {
 			tRow = document.createElement('tr');
+			tRow.setAttribute('class', 'knime-table-row');
 			if (classStatistics.getNumColumns() !== 0) {
 				th = document.createElement('th');
+				th.setAttribute('class', 'knime-table-cell knime-table-header');
 				th.appendChild(document.createTextNode(classStatistics.getRow(row).rowKey));
 				tRow.appendChild(th);
 			}
@@ -245,6 +268,7 @@
 					|| columnNames[col] === 'True Negatives' || columnNames[col] === 'False Negatives') {
 					// cellValue is an integer
 					td.appendChild(document.createTextNode(cellValue));
+					td.setAttribute('class', 'knime-table-cell knime-integer');
 				} else {
 					// cellValue is a float
 					if (_value.displayFloatAsPercent === true) {
@@ -252,6 +276,7 @@
 					} else {
 						td.appendChild(document.createTextNode(cellValue.toFixed(3)));
 					}
+					td.setAttribute('class', 'knime-table-cell knime-double');
 				}
 				tRow.appendChild(td);
 			}
@@ -263,6 +288,7 @@
 		}
 		// last row has one cell without any border
 		tRow = document.createElement('tr');
+		tRow.setAttribute('class', 'knime-table-row');
 		td = document.createElement('td');
 		td.setAttribute('class', 'no-border');
 		tRow.appendChild(td);
@@ -277,19 +303,28 @@
 	createOverallStatisticsTable = function() {
 		var table = document.createElement('table');
 		table.setAttribute('id', 'knime-overall-statistics');
-		table.setAttribute('class', 'center');
+		table.setAttribute('class', 'center knime-table');
 		if (overallStatistics.getNumColumns() !== 0) {
 			var caption = document.createElement('caption');
+			caption.setAttribute('class', 'knime-label knime-table-header')
 			caption.appendChild(document.createTextNode('Overall Statistics'));
 			table.appendChild(caption);		
 		}
 
 		var tHeader = document.createElement('thead');
 		var tRow = document.createElement('tr');
+		tRow.setAttribute('class', 'knime-table-row');
 		var th = document.createElement('th');
 		var statNames = overallStatistics.getColumnNames()
 		for (var i = 0; i < statNames.length; i++) {
 			th = document.createElement('th');
+			if (statNames[i] === 'Correct Classified' || statNames[i] === 'Wrong Classified') {
+				// cellValue is an integer
+				th.setAttribute('class', 'knime-table-cell knime-table-header knime-integer');
+			} else {
+				// cellValue is a float
+				th.setAttribute('class', 'knime-table-cell knime-table-header knime-double');
+			}
 			var headerText = statNames[i];
 			if (statNames[i].indexOf('Cohen') > -1) {
 				headerText = "Cohen's kappa (𝝹)";
@@ -303,6 +338,7 @@
 
 		var tBody = document.createElement('tbody');
 		tRow = document.createElement('tr');
+		tRow.setAttribute('class', 'knime-table-row');
 		var columnNames = overallStatistics.getColumnNames();
 		for (var col = 0; col < overallStatistics.getNumColumns(); col++) {
 			var td = document.createElement('td');
@@ -310,6 +346,7 @@
 			if (columnNames[col] === 'Correct Classified' || columnNames[col] === 'Wrong Classified') {
 				// cellValue is an integer
 				td.appendChild(document.createTextNode(cellValue));
+				td.setAttribute('class', 'knime-table-cell knime-integer');
 			} else {
 				// cellValue is a float
 				if (!_value.displayFloatAsPercent || columnNames[col].indexOf('Cohen') > -1) {
@@ -317,6 +354,7 @@
 				} else {
 					td.appendChild(document.createTextNode((cellValue * 100).toFixed(1) + '\xA0%'));
 				}
+				td.setAttribute('class', 'knime-table-cell knime-double');
 			}
 			tRow.appendChild(td);
 		}
@@ -327,6 +365,7 @@
 		tBody.appendChild(tRow);
 		// last row has one cell without any border
 		tRow = document.createElement('tr');
+		tRow.setAttribute('class', 'knime-table-row');
 		td = document.createElement('td');
 		td.setAttribute('class', 'no-border');
 		tRow.appendChild(td);
@@ -433,6 +472,7 @@
 				curTitle = document.createElement('h1');
 				document.querySelector('body').appendChild(curTitle);
 				curTitle.setAttribute('id', 'title');
+				curTitle.setAttribute('class', 'knime-title');
 			}
 			curTitle.innerHTML = _value.title;
 		}
@@ -444,6 +484,7 @@
 				curSubtitle = document.createElement('h4');
 				document.querySelector('body').appendChild(curSubtitle);
 				curSubtitle.setAttribute('id', 'subtitle');
+				curSubtitle.setAttribute('class', 'knime-subtitle');
 			}
 			curSubtitle.innerHTML = _value.subtitle
 		}

@@ -65,7 +65,7 @@ tbody tr:not(:last-child) td:nth-last-child(2) {
 	border-right-width: 2px;
 }
 
-tbody td.selected {
+tbody td.knime-selected {
 	outline: 3px #0089c8 solid;
 }
 
