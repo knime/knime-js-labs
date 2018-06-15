@@ -574,11 +574,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         //TODO is it an optimal solution to use just one boolean for estimation of empty table treatment?
         boolean missingMinMax = false;
         for (int i = 0; i < includeColumns.length; i++) {
-            DataCell columnMin = minMax.getMin(includeColumns[i]);
-            DataCell columnMax = minMax.getMax(includeColumns[i]);
-            if (columnMin.isMissing() || Double.isNaN(((DoubleValue)columnMin).getDoubleValue())) {
-                missingMinMax = true;
-            } else if (columnMax.isMissing() || Double.isNaN(((DoubleValue)columnMax).getDoubleValue())) {
+            if (minMax.getMin(includeColumns[i]) instanceof MissingCell) {
                 missingMinMax = true;
             } else {
                 JSNumericHistogram histTest = new JSNumericHistogram(includeColumns[i], i, table,  ((DoubleValue)minMax.getMin(includeColumns[i])).getDoubleValue(),
