@@ -67,10 +67,10 @@ import org.knime.base.data.statistics.HistogramColumn.BinNumberSelectionStrategy
 import org.knime.base.data.statistics.HistogramModel;
 import org.knime.base.data.statistics.Statistic;
 import org.knime.base.data.statistics.StatisticCalculator;
+import org.knime.base.data.statistics.calculation.DoubleMinMax;
 import org.knime.base.data.statistics.calculation.Kurtosis;
 import org.knime.base.data.statistics.calculation.Mean;
 import org.knime.base.data.statistics.calculation.Median;
-import org.knime.base.data.statistics.calculation.MinMax;
 import org.knime.base.data.statistics.calculation.MissingValue;
 import org.knime.base.data.statistics.calculation.NominalValue;
 import org.knime.base.data.statistics.calculation.Skewness;
@@ -498,7 +498,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             return createJSONTable(TableId.NUMERIC, new JSONDataTableRow[includeColumns.length],  null);
         }
         List<Statistic> statistics = new ArrayList<Statistic>();
-        MinMax minMax = new MinMax(includeColumns);
+        DoubleMinMax minMax = new DoubleMinMax(true, includeColumns);
         statistics.add(minMax);
         Mean mean = new Mean(includeColumns);
         statistics.add(mean);
@@ -534,10 +534,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         for (int i = 0; i < includeColumns.length; i++) {
             String col = includeColumns[i];
             List<Object> rowValues = new ArrayList<Object>();
-            DataCell min = minMax.getMin(col);
-            DataCell max = minMax.getMax(col);
-            rowValues.add(min.isMissing() ? null : ((DoubleValue)min).getDoubleValue());
-            rowValues.add(max.isMissing() ? null : ((DoubleValue)max).getDoubleValue());
+            double min = minMax.getMin(col);
+            double max = minMax.getMax(col);
+            rowValues.add(min);
+            rowValues.add(max);
             Double dMean = mean.getResult(col);
             rowValues.add(dMean.isNaN() ? null : dMean);
             if (m_config.getShowMedian()) {
@@ -574,12 +574,13 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         //TODO is it an optimal solution to use just one boolean for estimation of empty table treatment?
         boolean missingMinMax = false;
         for (int i = 0; i < includeColumns.length; i++) {
-            if (minMax.getMin(includeColumns[i]) instanceof MissingCell) {
+            if (Double.isNaN(minMax.getMin(includeColumns[i]))) {
                 missingMinMax = true;
             } else {
-                JSNumericHistogram histTest = new JSNumericHistogram(includeColumns[i], i, table,  ((DoubleValue)minMax.getMin(includeColumns[i])).getDoubleValue(),
-                    ((DoubleValue)minMax.getMax(includeColumns[i])).getDoubleValue(),  mean.getResult(includeColumns[i]), m_config.getNumberOfHistogramBars(),
-                    m_config.getAdaptNumberOfHistogramBars());
+                JSNumericHistogram histTest =
+                    new JSNumericHistogram(includeColumns[i], i, table, minMax.getMin(includeColumns[i]),
+                        minMax.getMax(includeColumns[i]), mean.getResult(includeColumns[i]),
+                        m_config.getNumberOfHistogramBars(), m_config.getAdaptNumberOfHistogramBars());
                 jsHistograms.add(histTest);
             }
         }
@@ -724,8 +725,9 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
        return hCol.fromNominalModel(counts, colIndex, colName);
    }
 
-   private Map<Integer, ? extends HistogramModel<?>> calculateNumericHistograms(final BufferedDataTable table, final ExecutionContext exec, final MinMax minMax, final Mean mean, final String[] includeColumns) {
-       HistogramColumn hCol = HistogramColumn.getDefaultInstance()
+    private Map<Integer, ? extends HistogramModel<?>> calculateNumericHistograms(final BufferedDataTable table,
+        final ExecutionContext exec, final DoubleMinMax minMax, final Mean mean, final String[] includeColumns) {
+        HistogramColumn hCol = HistogramColumn.getDefaultInstance()
                .withNumberOfBins(m_config.getNumberOfHistogramBars());
        if (m_config.getAdaptNumberOfHistogramBars()) {
            hCol = HistogramColumn.getDefaultInstance().withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
@@ -735,10 +737,8 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
        double[] maxs = new double[noCols];
        double[] means = new double[noCols];
        for (int i = 0; i < noCols; i++) {
-           DataCell min = minMax.getMin(includeColumns[i]);
-           mins[i] = min.isMissing() ? Double.NaN : ((DoubleValue)min).getDoubleValue();
-           DataCell max = minMax.getMax(includeColumns[i]);
-           maxs[i] = max.isMissing() ? Double.NaN : ((DoubleValue)max).getDoubleValue();
+           mins[i] = minMax.getMin(includeColumns[i]);
+           maxs[i] = minMax.getMax(includeColumns[i]);
            means[i] = mean.getResult(includeColumns[i]);
        }
        return hCol.histograms(table, new HiLiteHandler(), mins, maxs, means, includeColumns);
