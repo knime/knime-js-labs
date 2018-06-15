@@ -89,6 +89,7 @@ import org.knime.js.core.layout.bs.JSONLayoutViewContent;
 import org.knime.js.core.layout.bs.JSONLayoutViewContent.ResizeMethod;
 //import org.knime.distmatrix.calculate2.DistanceMatrixCalculate2Config;
 import org.knime.js.core.node.AbstractSVGWizardNodeModel;
+import org.knime.js.core.node.CSSModifiable;
 
 /**
  * This is the model implementation of OPTICS.
@@ -97,9 +98,8 @@ import org.knime.js.core.node.AbstractSVGWizardNodeModel;
  * @author Oliver Sampson, University of Konstanz, Germany
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
-public class OPTICSAssignerNodeModel
-    extends AbstractSVGWizardNodeModel<OPTICSAssignerViewRepresentation, OPTICSAssignerViewValue>
-    implements FlowVariableProvider, LayoutTemplateProvider {
+public class OPTICSAssignerNodeModel extends AbstractSVGWizardNodeModel<OPTICSAssignerViewRepresentation,
+        OPTICSAssignerViewValue> implements FlowVariableProvider, LayoutTemplateProvider, CSSModifiable {
 
     private static final int PORT_IN_MODEL = 0;
 
@@ -462,6 +462,14 @@ public class OPTICSAssignerNodeModel
     @Override
     public void setHideInWizard(final boolean hide) {
         m_config.setHideInWizard(hide);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCssStyles() {
+        return m_config.getCustomCSS();
     }
 
     @Override

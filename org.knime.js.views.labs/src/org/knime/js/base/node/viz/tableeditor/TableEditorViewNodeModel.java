@@ -94,12 +94,14 @@ import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
 import org.knime.core.node.web.ValidationError;
 import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.node.AbstractWizardNodeModel;
+import org.knime.js.core.node.CSSModifiable;
 
 /**
  *
  * @author Christian Albrecht, KNIME.com GmbH, Konstanz, Germany
  */
-public class TableEditorViewNodeModel extends AbstractWizardNodeModel<TableEditorViewRepresentation, TableEditorViewValue> implements BufferedDataTableHolder {
+public class TableEditorViewNodeModel extends AbstractWizardNodeModel<TableEditorViewRepresentation,
+        TableEditorViewValue> implements BufferedDataTableHolder, CSSModifiable {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(TableEditorViewNodeModel.class);
 
@@ -227,6 +229,14 @@ public class TableEditorViewNodeModel extends AbstractWizardNodeModel<TableEdito
     @Override
     public void setHideInWizard(final boolean hide) {
         m_config.setHideInWizard(hide);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCssStyles() {
+        return m_config.getCustomCSS();
     }
 
     /**

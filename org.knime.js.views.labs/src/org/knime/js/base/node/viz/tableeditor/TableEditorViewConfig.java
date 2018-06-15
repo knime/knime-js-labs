@@ -209,6 +209,10 @@ public class TableEditorViewConfig {
     final static boolean DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK = true;
     private boolean m_displayMissingValueAsQuestionMark = DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK;
 
+    final static String CFG_CUSTOM_CSS = "customCSS";
+    final static String DEFAULT_CUSTOM_CSS = "";
+    private String m_customCSS = DEFAULT_CUSTOM_CSS;
+
     // Editor settings
 
     final static String CFG_EDITABLE_COLUMNS_FILTER = "editableColumnsFilter";
@@ -762,6 +766,20 @@ public class TableEditorViewConfig {
         m_tableHash = tableHash;
     }
 
+    /**
+     * @return the customCSS
+     */
+    public String getCustomCSS() {
+        return m_customCSS;
+    }
+
+    /**
+     * @param customCSS the customCSS to set
+     */
+    public void setCustomCSS(final String customCSS) {
+        m_customCSS = customCSS;
+    }
+
 
     /** Saves current parameters to settings object.
      * @param settings To save to.
@@ -808,6 +826,9 @@ public class TableEditorViewConfig {
         //added with 3.5
         settings.addBoolean(CFG_SINGLE_SELECTION, m_singleSelection);
         settings.addBoolean(CFG_ENABLE_CLEAR_SELECTION_BUTTON, m_enableClearSelectionButton);
+
+        //added with 3.6
+        settings.addString(CFG_CUSTOM_CSS, m_customCSS);
 
         // editor settings
         m_editableColumnsFilterConfig.saveConfiguration(settings);
@@ -868,6 +889,9 @@ public class TableEditorViewConfig {
         //added with 3.5
         m_singleSelection = settings.getBoolean(CFG_SINGLE_SELECTION, DEFAULT_SINGLE_SELECTION);
         m_enableClearSelectionButton = settings.getBoolean(CFG_ENABLE_CLEAR_SELECTION_BUTTON, DEFAULT_ENABLE_CLEAR_SELECTION_BUTTON);
+
+        //added with 3.6
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
 
         // editor settings
         m_editableColumnsFilterConfig.loadConfigurationInModel(settings);
@@ -932,6 +956,9 @@ public class TableEditorViewConfig {
         //added with 3.5
         m_singleSelection = settings.getBoolean(CFG_SINGLE_SELECTION, DEFAULT_SINGLE_SELECTION);
         m_enableClearSelectionButton = settings.getBoolean(CFG_ENABLE_CLEAR_SELECTION_BUTTON, DEFAULT_ENABLE_CLEAR_SELECTION_BUTTON);
+
+        //added with 3.6
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
 
         // editor settings
         m_editableColumnsFilterConfig.loadConfigurationInDialog(settings, spec);

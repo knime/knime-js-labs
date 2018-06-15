@@ -87,14 +87,15 @@ import org.knime.js.core.layout.LayoutTemplateProvider;
 import org.knime.js.core.layout.bs.JSONLayoutViewContent;
 import org.knime.js.core.layout.bs.JSONLayoutViewContent.ResizeMethod;
 import org.knime.js.core.node.AbstractSVGWizardNodeModel;
+import org.knime.js.core.node.CSSModifiable;
 
 /**
  * Node model for the tag cloud view
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
-public class TagCloudViewNodeModel
-    extends AbstractSVGWizardNodeModel<TagCloudViewRepresentation, TagCloudViewValue> implements LayoutTemplateProvider, BufferedDataTableHolder {
+public class TagCloudViewNodeModel extends AbstractSVGWizardNodeModel<TagCloudViewRepresentation,
+        TagCloudViewValue> implements LayoutTemplateProvider, BufferedDataTableHolder, CSSModifiable {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(TagCloudViewNodeModel.class);
 
@@ -176,7 +177,14 @@ public class TagCloudViewNodeModel
     @Override
     public void setHideInWizard(final boolean hide) {
         m_config.setHideInWizard(hide);
+    }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCssStyles() {
+        return m_config.getCustomCSS();
     }
 
     /**

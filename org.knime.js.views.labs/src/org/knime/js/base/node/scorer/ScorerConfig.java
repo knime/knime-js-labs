@@ -235,6 +235,10 @@ public class ScorerConfig {
     private final static boolean DEFAULT_ENABLE_OVERALL_STATISTICS_CONFIG = true;
     private boolean m_enableOverallStatisticsConfig = DEFAULT_ENABLE_OVERALL_STATISTICS_CONFIG;
 
+    static final String CFG_CUSTOM_CSS = "customCSS";
+    private final static String DEFAULT_CUSTOM_CSS = "";
+    private String m_customCSS = DEFAULT_CUSTOM_CSS;
+
     /**
      * @return the hideInWizard
      */
@@ -838,6 +842,20 @@ public class ScorerConfig {
     }
 
     /**
+     * @return the customCSS
+     */
+    public String getCustomCSS() {
+        return m_customCSS;
+    }
+
+    /**
+     * @param customCSS the customCSS to set
+     */
+    public void setCustomCSS(final String customCSS) {
+        m_customCSS = customCSS;
+    }
+
+    /**
      * Saves current parameters to settings object.
      *
      * @param settings To save to.
@@ -886,6 +904,7 @@ public class ScorerConfig {
         settings.addBoolean(CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG, m_enableConfusionMatrixRatesConfig);
         settings.addBoolean(CFG_ENABLE_CLASS_STATISTICS_CONFIG, m_enableClassStatisticsConfig);
         settings.addBoolean(CFG_ENABLE_OVERALL_STATISTICS_CONFIG, m_enableOverallStatisticsConfig);
+        settings.addString(CFG_CUSTOM_CSS, m_customCSS);
     }
 
     /**
@@ -938,7 +957,7 @@ public class ScorerConfig {
         m_enableConfusionMatrixRatesConfig = settings.getBoolean(CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG);
         m_enableClassStatisticsConfig = settings.getBoolean(CFG_ENABLE_CLASS_STATISTICS_CONFIG);
         m_enableOverallStatisticsConfig = settings.getBoolean(CFG_ENABLE_OVERALL_STATISTICS_CONFIG);
-
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS);
     }
 
     /**
@@ -1003,5 +1022,6 @@ public class ScorerConfig {
             settings.getBoolean(CFG_ENABLE_CLASS_STATISTICS_CONFIG, DEFAULT_ENABLE_CLASS_STATISTICS_CONFIG);
         m_enableOverallStatisticsConfig =
             settings.getBoolean(CFG_ENABLE_OVERALL_STATISTICS_CONFIG, DEFAULT_ENABLE_OVERALL_STATISTICS_CONFIG);
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
     }
 }

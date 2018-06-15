@@ -154,6 +154,10 @@ final class OPTICSAssignerViewConfig {
     static final boolean DEFAULT_WAS_REDRAWN = false;
     private boolean m_wasRedrawn = DEFAULT_WAS_REDRAWN;
 
+    static final String CFG_CUSTOM_CSS = "customCSS";
+    private static final String DEFAULT_CUSTOM_CSS = "";
+    private String m_customCSS = DEFAULT_CUSTOM_CSS;
+
     static final String EPSILON = "epsilon";
 
 
@@ -187,6 +191,9 @@ final class OPTICSAssignerViewConfig {
         settings.addBoolean(CFG_MANUAL_EPS_PRIME, getManualEpsPrime());
         settings.addString(CFG_EPS_CALC_METHOD, getEpsCalcMethod());
         settings.addBoolean(CFG_WAS_REDRAWN, getWasRedrawn());
+
+        //added with 3.6
+        settings.addString(CFG_CUSTOM_CSS, m_customCSS);
     }
 
     /**
@@ -222,6 +229,9 @@ final class OPTICSAssignerViewConfig {
         setManualEpsPrime(settings.getBoolean(CFG_MANUAL_EPS_PRIME, false));
         setEpsCalcMethod(settings.getString(CFG_EPS_CALC_METHOD, CFG_CALC_EPS_PRIME_MEAN));
         setWasRedrawn(settings.getBoolean(CFG_WAS_REDRAWN, false));
+
+        //added with 3.6
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
     }
 
     /**
@@ -256,6 +266,9 @@ final class OPTICSAssignerViewConfig {
         setManualEpsPrime(settings.getBoolean(CFG_MANUAL_EPS_PRIME, false));
         setEpsCalcMethod(settings.getString(CFG_EPS_CALC_METHOD, CFG_CALC_EPS_PRIME_MEAN));
         setWasRedrawn(settings.getBoolean(CFG_WAS_REDRAWN, false));
+
+        //added with 3.6
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
     }
 
     /**
@@ -270,6 +283,20 @@ final class OPTICSAssignerViewConfig {
      */
     public void setHideInWizard(final boolean hideInWizard) {
         m_hideInWizard = hideInWizard;
+    }
+
+    /**
+     * @return the customCSS
+     */
+    public String getCustomCSS() {
+        return m_customCSS;
+    }
+
+    /**
+     * @param customCSS the customCSS to set
+     */
+    public void setCustomCSS(final String customCSS) {
+        m_customCSS = customCSS;
     }
 
     /**

@@ -243,6 +243,10 @@ public class TagCloudViewConfig {
     private final static boolean DEFAULT_SUBSCRIBE_FILTER = true;
     private boolean m_subscribeFilter = DEFAULT_SUBSCRIBE_FILTER;
 
+    final static String CFG_CUSTOM_CSS = "customCSS";
+    private final static String DEFAULT_CUSTOM_CSS = "";
+    private String m_customCSS = DEFAULT_CUSTOM_CSS;
+
     /**
      * @return the hideInWizard
      */
@@ -880,6 +884,20 @@ public class TagCloudViewConfig {
         m_subscribeFilter = subscribeFilter;
     }
 
+    /**
+     * @return the customCSS
+     */
+    public String getCustomCSS() {
+        return m_customCSS;
+    }
+
+    /**
+     * @param customCSS the customCSS to set
+     */
+    public void setCustomCSS(final String customCSS) {
+        m_customCSS = customCSS;
+    }
+
     /** Saves current parameters to settings object.
      * @param settings To save to.
      */
@@ -929,6 +947,9 @@ public class TagCloudViewConfig {
         settings.addBoolean(CFG_ENABLE_SHOW_SELECTED_ONLY, m_enableShowSelectedOnly);
         settings.addBoolean(CFG_DEFAULT_SHOW_SELECTED_ONLY, m_defaultShowSelectedOnly);
         settings.addBoolean(CFG_SUBSCRIBE_FILTER, m_subscribeFilter);
+
+        //added with 3.6
+        settings.addString(CFG_CUSTOM_CSS, m_customCSS);
     }
 
     /** Loads parameters in NodeModel.
@@ -981,6 +1002,9 @@ public class TagCloudViewConfig {
         m_enableShowSelectedOnly = settings.getBoolean(CFG_ENABLE_SHOW_SELECTED_ONLY);
         m_defaultShowSelectedOnly = settings.getBoolean(CFG_DEFAULT_SHOW_SELECTED_ONLY);
         m_subscribeFilter = settings.getBoolean(CFG_SUBSCRIBE_FILTER);
+
+        //added with 3.6
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
     }
 
     /** Loads parameters in Dialog.
@@ -1034,6 +1058,9 @@ public class TagCloudViewConfig {
         m_enableShowSelectedOnly = settings.getBoolean(CFG_ENABLE_SHOW_SELECTED_ONLY, DEFAULT_ENABLE_SHOW_SELECTED_ONLY);
         m_defaultShowSelectedOnly = settings.getBoolean(CFG_DEFAULT_SHOW_SELECTED_ONLY, DEFAULT_DEFAULT_SHOW_SELECTED_ONLY);
         m_subscribeFilter = settings.getBoolean(CFG_SUBSCRIBE_FILTER, DEFAULT_SUBSCRIBE_FILTER);
+
+        //added with 3.6
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
     }
 
 }

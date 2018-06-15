@@ -76,13 +76,14 @@ import org.knime.js.core.layout.LayoutTemplateProvider;
 import org.knime.js.core.layout.bs.JSONLayoutViewContent;
 import org.knime.js.core.layout.bs.JSONLayoutViewContent.ResizeMethod;
 import org.knime.js.core.node.AbstractWizardNodeModel;
+import org.knime.js.core.node.CSSModifiable;
 
 /**
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
 public class ScorerNodeModel extends AbstractWizardNodeModel<ScorerViewRepresentation, ScorerViewValue>
-    implements LayoutTemplateProvider, BufferedDataTableHolder {
+    implements LayoutTemplateProvider, BufferedDataTableHolder, CSSModifiable {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(ScorerNodeModel.class);
 
@@ -202,6 +203,14 @@ public class ScorerNodeModel extends AbstractWizardNodeModel<ScorerViewRepresent
     @Override
     public void setHideInWizard(final boolean hide) {
         m_config.setHideInWizard(hide);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCssStyles() {
+        return m_config.getCustomCSS();
     }
 
     /**

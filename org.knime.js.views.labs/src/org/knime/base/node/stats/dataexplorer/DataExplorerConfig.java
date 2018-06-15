@@ -201,6 +201,10 @@ public class DataExplorerConfig {
     final static String[] DEFAULT_MAX_NOMINAL_VALUE_REACHED = new String[0];
     private String[] m_maxNomValueReached = DEFAULT_MAX_NOMINAL_VALUE_REACHED;
 
+    final static String CFG_CUSTOM_CSS = "customCSS";
+    private final static String DEFAULT_CUSTOM_CSS = "";
+    private String m_customCSS = DEFAULT_CUSTOM_CSS;
+
 
     final static String CFG_SELECTION = "selection";
     /**
@@ -609,6 +613,20 @@ public class DataExplorerConfig {
         this.m_maxNomValueReached = maxNomValueReached;
     }
 
+    /**
+     * @return the customCSS
+     */
+    public String getCustomCSS() {
+        return m_customCSS;
+    }
+
+    /**
+     * @param customCSS the customCSS to set
+     */
+    public void setCustomCSS(final String customCSS) {
+        m_customCSS = customCSS;
+    }
+
 
     void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addBoolean(CFG_HIDE_IN_WIZARD, m_hideInWizard);
@@ -640,6 +658,9 @@ public class DataExplorerConfig {
         settings.addInt(CFG_NUMBER_OF_HISTOGRAM_BARS, m_numberOfHistogramBars);
         settings.addBoolean(CFG_ADAPT_NUMBER_OF_HISTOGRAM_BARS, m_adaptNumberOfHistogramBars);
         settings.addStringArray(CFG_MAX_NOMINAL_VALUE_REACHED, m_maxNomValueReached);
+
+        //added with 3.6
+        settings.addString(CFG_CUSTOM_CSS, m_customCSS);
     }
 
     void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
@@ -672,6 +693,9 @@ public class DataExplorerConfig {
         m_numberOfHistogramBars = settings.getInt(CFG_NUMBER_OF_HISTOGRAM_BARS, DEFAULT_NUMBER_OF_HISTOGRAM_BARS);
         m_adaptNumberOfHistogramBars = settings.getBoolean(CFG_ADAPT_NUMBER_OF_HISTOGRAM_BARS, DEFAULT_ADAPT_NUMBER_OF_HISTOGRAM_BARS);
         m_maxNomValueReached = settings.getStringArray(CFG_MAX_NOMINAL_VALUE_REACHED, DEFAULT_MAX_NOMINAL_VALUE_REACHED);
+
+        //added with 3.6
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
     }
 
     void loadSettingsForDialog(final NodeSettingsRO settings, final DataTableSpec spec) {
@@ -704,6 +728,9 @@ public class DataExplorerConfig {
         m_numberOfHistogramBars = settings.getInt(CFG_NUMBER_OF_HISTOGRAM_BARS, DEFAULT_NUMBER_OF_HISTOGRAM_BARS);
         m_adaptNumberOfHistogramBars = settings.getBoolean(CFG_ADAPT_NUMBER_OF_HISTOGRAM_BARS, DEFAULT_ADAPT_NUMBER_OF_HISTOGRAM_BARS);
         m_maxNomValueReached = settings.getStringArray(CFG_MAX_NOMINAL_VALUE_REACHED, DEFAULT_MAX_NOMINAL_VALUE_REACHED);
+
+        //added with 3.6
+        m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
     }
 
 
