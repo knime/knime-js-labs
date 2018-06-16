@@ -29,9 +29,6 @@ knime_tag_cloud = function() {
 			_filterTable.setDataTable(_representation.filterTable);
 		}
 		
-		d3.select("html").style("width", "100%").style("height", "100%")/*.style("overflow", "hidden")*/;
-		d3.select("body").style("width", "100%").style("height", "100%").style("margin", "0").style("padding", "0");
-		
 		// d3 scheme set 2
 		_colorScheme = ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"];
 		// d3 scheme set 3
@@ -217,17 +214,13 @@ knime_tag_cloud = function() {
 	        	.text(_value.title)
 				.attr("id", "title")
 				.attr("class", "knime-title")
-	        	.attr("font", "sans-serif")
-	        	.attr("y", 24)
-	        	.attr("font-size", 24);
+	        	.attr("y", 24);
         }
 		if (_value.subtitle) {
         	titleG.append("text")        
 	        	.text(_value.subtitle)
 				.attr("id", "subtitle")
 				.attr("class", "knime-subtitle")
-	        	.attr("font", "sans-serif")
-	        	.attr("font-size", 12)
 	        	.attr("y", size[2] - 12);
         }
 		
