@@ -148,19 +148,19 @@ public class ScorerConfig {
     private boolean m_classFalseNegatives = DEFAULT_CLASS_FALSE_NEGATIVES;
 
     private static final String CFG_CLASS_ACCURACY = "classAccuracy";
-    private final static boolean DEFAULT_CLASS_ACCURACY = true;
+    private final static boolean DEFAULT_CLASS_ACCURACY = false;
     private boolean m_classAccuracy = DEFAULT_CLASS_ACCURACY;
 
     private static final String CFG_CLASS_BALANCED_ACCURACY = "classBalancedAccuracy";
-    private final static boolean DEFAULT_CLASS_BALANCED_ACCURACY = true;
+    private final static boolean DEFAULT_CLASS_BALANCED_ACCURACY = false;
     private boolean m_classBalancedAccuracy = DEFAULT_CLASS_BALANCED_ACCURACY;
 
     private static final String CFG_CLASS_ERROR_RATE = "classErrorRate";
-    private final static boolean DEFAULT_CLASS_ERROR_RATE = true;
+    private final static boolean DEFAULT_CLASS_ERROR_RATE = false;
     private boolean m_classErrorRate = DEFAULT_CLASS_ERROR_RATE;
 
     private static final String CFG_CLASS_FALSE_NEGATIVE_RATE = "classFalseNegativeRate";
-    private final static boolean DEFAULT_CLASS_FALSE_NEGATIVE_RATE = true;
+    private final static boolean DEFAULT_CLASS_FALSE_NEGATIVE_RATE = false;
     private boolean m_classFalseNegativeRate = DEFAULT_CLASS_FALSE_NEGATIVE_RATE;
 
     private static final String CFG_CLASS_RECALL = "classRecall";

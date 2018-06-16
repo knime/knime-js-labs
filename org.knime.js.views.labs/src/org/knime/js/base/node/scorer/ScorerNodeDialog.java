@@ -271,7 +271,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         displayPanel.add(m_classFalseNegativesCheckBox, gbcD);
         gbcD.gridx = 0;
         gbcD.gridy++;
-        displayPanel.add(m_classAccuracyCheckBox, gbcD);
+        /*displayPanel.add(m_classAccuracyCheckBox, gbcD);
         gbcD.gridx++;
         displayPanel.add(m_classBalancedAccuracyCheckBox, gbcD);
         gbcD.gridx = 0;
@@ -280,7 +280,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         gbcD.gridx++;
         displayPanel.add(m_classFalseNegativeRateCheckBox, gbcD);
         gbcD.gridx = 0;
-        gbcD.gridy++;
+        gbcD.gridy++;*/
         displayPanel.add(m_classRecallCheckBox, gbcD);
         gbcD.gridx++;
         displayPanel.add(m_classPrecisionCheckBox, gbcD);
@@ -375,10 +375,10 @@ public class ScorerNodeDialog extends NodeDialogPane {
         config.setClassFalsePositives(m_classFalsePositivesCheckBox.isSelected());
         config.setClassTrueNegatives(m_classTrueNegativesCheckBox.isSelected());
         config.setClassFalseNegatives(m_classFalseNegativesCheckBox.isSelected());
-        config.setClassAccuracy(m_classAccuracyCheckBox.isSelected());
+        /*config.setClassAccuracy(m_classAccuracyCheckBox.isSelected());
         config.setClassBalancedAccuracy(m_classBalancedAccuracyCheckBox.isSelected());
         config.setClassErrorRate(m_classErrorRateCheckBox.isSelected());
-        config.setClassFalseNegativeRate(m_classFalseNegativeRateCheckBox.isSelected());
+        config.setClassFalseNegativeRate(m_classFalseNegativeRateCheckBox.isSelected());*/
         config.setClassRecall(m_classRecallCheckBox.isSelected());
         config.setClassPrecision(m_classPrecisionCheckBox.isSelected());
         config.setClassSensitivity(m_classSensitivityCheckBox.isSelected());
@@ -438,10 +438,10 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_classFalsePositivesCheckBox.setSelected(config.isClassFalsePositives());
         m_classTrueNegativesCheckBox.setSelected(config.isClassTrueNegatives());
         m_classFalseNegativesCheckBox.setSelected(config.isClassFalseNegatives());
-        m_classAccuracyCheckBox.setSelected(config.isClassAccuracy());
+        /*m_classAccuracyCheckBox.setSelected(config.isClassAccuracy());
         m_classBalancedAccuracyCheckBox.setSelected(config.isClassBalancedAccuracy());
         m_classErrorRateCheckBox.setSelected(config.isClassErrorRate());
-        m_classFalseNegativeRateCheckBox.setSelected(config.isClassFalseNegativeRate());
+        m_classFalseNegativeRateCheckBox.setSelected(config.isClassFalseNegativeRate());*/
         m_classRecallCheckBox.setSelected(config.isClassRecall());
         m_classPrecisionCheckBox.setSelected(config.isClassPrecision());
         m_classSensitivityCheckBox.setSelected(config.isClassSensitivity());
