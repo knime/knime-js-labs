@@ -81,16 +81,11 @@
                 tooBigEpsPr = true;
             }
             
-			d3.select("html").style("width", "100%").style("height", "100%");
-            
-			d3.select("body").style("width", "100%").style("height", "100%").style("margin", "0").style("padding", "0");
-            
 			d3.select("body")
                 .attr("id", "body")
                 .append("div")
-                .attr("id",layoutContainer)
-                .style("width", "100%")
-                .style("height","100%")
+                .attr("id", layoutContainer)
+                .attr("class", "knime-layout-container")
                 .style("min-width", MIN_WIDTH + "px")
                 .style("min-height", MIN_HEIGHT + "px");
 
@@ -259,13 +254,11 @@
         } else {
             div = d3.select("#"+layoutContainer).append("div")
             .attr("id", containerID)
+            .attr("class", "knime-svg-container")
             .style("width", chartWidth)
             .style("height", chartHeight)
             .style("min-width", MIN_WIDTH + "px")
-            .style("min-height", MIN_HEIGHT + "px")
-            .style("box-sizing", "border-box")
-            .style("overflow", "hidden")
-            .style("margin", "0");
+            .style("min-height", MIN_HEIGHT + "px");
         }
         
         var w_h = getChartDimensions();
@@ -321,13 +314,19 @@
 
         var axis = svg.append("g")
             .attr("transform", "translate(" + [(0.9*margin.left), margin.top] + ")")
-            .attr("class", "axisY")
-            .style("font-size", Math.round(Math.min(svgHeight/50, 12))+"px")
+            .attr("class", "axisY knime-axis knime-y")
             .call(yAxis);
-        
+                    
         if (allNoise) {
             d3.selectAll(".axisY").selectAll("text").remove();
         }
+
+        var ticks = d3.selectAll(".tick")
+            .classed("knime-tick", true);
+        ticks.selectAll("line")
+            .classed("knime-tick-line", true);
+        ticks.selectAll("text")
+            .classed("knime-tick-label", true);        
         
         //plot histogram bars
         var rec = vis_hist
@@ -389,7 +388,7 @@
         
         //labels of clusters
         var rectTitle = vis_hist.append("g")
-            .attr("class", "label")
+            .attr("class", "label knime-label")
             .style("display", "none");
         
         rectTitle.append("rect")
@@ -399,8 +398,7 @@
         rectTitle.append("text")
             .attr("id", "textID")
             .attr("dy", ".90em")
-            .attr("dx", ".40em")
-            .attr("fill", "black")
+            .attr("dx", ".40em");
             
         function mousemove() {
             var xPos = d3.mouse(this)[0],
@@ -458,7 +456,7 @@
             selectionLinesArea.selectAll("rect")
                     .data(selection)
                     .enter().append("rect")
-                    .attr("class", "selection")
+                    .attr("class", "selection knime-selected")
                     .attr("id", function (d,i){return "sel" + d})
                     .attr("x", function(d) {
                         return d >= 0 ? xScale(d3.select("#barchart"+d).data()[0].key) : 0;
@@ -530,11 +528,10 @@
             var epsText = vis_hist
                 .append("text")
                 .attr("id", "epsPrimeText")
+                .attr("class", "knime-tooltip knime-tooltip-value")
                 .attr("y", setYforEpsText(_value.epsPrime, yScale(_value.epsPrime) - margin.bottom))
                 .attr("x", svgWidth - 1.9 * margin.right)
-                .attr("dy", ".35em")
-                .attr("fill", "black")
-                .style("font-size", Math.round(Math.min(svgHeight/50, 12))+"px")
+                .attr("dy", ".35em")                
                 .text(_value.epsPrime)  
         
         }
@@ -688,10 +685,9 @@
         d3.select("#chart_svg")
             .append("text")
             .attr("id","title")
+            .attr("class", "knime-title")
             .attr("x", margin.left + 20)
             .attr("y", margin.top - 16)
-            .attr("fill", "black")
-            .style("font-size", "20px")
             .text(_value.chartTitle)
 	}
     
@@ -699,10 +695,9 @@
         d3.select("#chart_svg")
             .append("text")
             .attr("id","subtitle")
+            .attr("class", "knime-subtitle")
             .attr("x", margin.left + 20)
             .attr("y", margin.top - 2)
-            .attr("fill", "black")
-            .style("font-size", "14px")
             .text(_value.chartSubtitle)
 	}
     

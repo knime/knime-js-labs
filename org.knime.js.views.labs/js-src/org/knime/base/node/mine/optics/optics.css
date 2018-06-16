@@ -5,15 +5,6 @@
     shape-rendering: crispEdges;
 }
 
-.axis text {
-    font-family: sans-serif;
-    font-size: 12px;
-}
-
-.eps text {
-    font-size: 12px;
-}
-
 .overlay {
     fill: lightgray;
 	opacity: 0.6;
