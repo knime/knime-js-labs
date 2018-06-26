@@ -343,7 +343,7 @@
 		for (var col = 0; col < overallStatistics.getNumColumns(); col++) {
 			var td = document.createElement('td');
 			var cellValue  = overallStatistics.getCell(0, col);
-			if (columnNames[col] === 'Correct Classified' || columnNames[col] === 'Wrong Classified') {
+			if (columnNames[col] === 'Correctly Classified' || columnNames[col] === 'Incorrectly Classified') {
 				// cellValue is an integer
 				td.appendChild(document.createTextNode(cellValue));
 				td.setAttribute('class', 'knime-table-cell knime-integer');
