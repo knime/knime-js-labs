@@ -119,7 +119,7 @@ dataExplorerNamespace = function() {
             if (_representation.jsNominalHistograms != null) {
                 for (var i = 0; i < _representation.jsNominalHistograms.length; i++) {
                     _representation.jsNominalHistograms[i].bins.sort(function(x,y){
-                        return d3.descending(x.second, y.second);
+                        return d3.descending(x.count, y.count);
                     })
                 }   
             }
@@ -306,7 +306,7 @@ dataExplorerNamespace = function() {
                     //window.alert(full);
 
                     xScaleNom.rangeBands([0, svgWidth])
-                        .domain(full[histColNom].bins.map(function(d){return d.first}));
+                        .domain(full[histColNom].bins.map(function(d){return d.value}));
                     yScale.range([svgHsmall, 0])
                         .domain([0, full[histColNom].maxCount]);
 
@@ -331,15 +331,15 @@ dataExplorerNamespace = function() {
                                 .enter()
                             .append("rect")
                             .attr("class", "rect"+full[histColNom].colIndex)
-                            .attr("x", function (d) {return xScaleNom(d.first);})
-                            .attr("y", function(d) {return yScale(d.second);})
+                            .attr("x", function (d) {return xScaleNom(d.value);})
+                            .attr("y", function(d) {return yScale(d.count);})
                             .attr("width", function(d) {return xScaleNom.rangeBand()})
-                            .attr("height", function(d){return svgHsmall - yScale(d.second);})
+                            .attr("height", function(d){return svgHsmall - yScale(d.count);})
                             .attr("fill", "#547cac")
                             .attr("stroke", "black")
                             .attr("stroke-width", "1px")
                             .append("title")
-                            .text(function(d, i) { return d.first+": "+d.second; });
+                            .text(function(d, i) { return d.value+": "+d.count; });
 
                     } else {
                         var errorMessage = ["Not all nominal", "values calculated."]
@@ -490,7 +490,7 @@ dataExplorerNamespace = function() {
                     var svgBigHist = d3.select(bigHist).select("#svgNom"+data.colIndex)[0][0]
 
                     xScaleNom.rangeBands([0, svgWidth - margin.left - margin.right])
-                        .domain(data.bins.map(function(d){return d.first}));
+                        .domain(data.bins.map(function(d){return d.value}));
                     yScale.range([svgHeight - 2*margin.top - margin.bottom, 0])
                         .domain([0, data.maxCount]);
 
@@ -502,10 +502,10 @@ dataExplorerNamespace = function() {
                     var bars = svg.selectAll(".bars")
                         .selectAll(".rect"+data.colIndex)
                         .data(data.bins)
-                        .attr("x", function (d) {return xScaleNom(d.first);})
-                        .attr("y", function(d) {return yScale(d.second);})
+                        .attr("x", function (d) {return xScaleNom(d.value);})
+                        .attr("y", function(d) {return yScale(d.count);})
                         .attr("width", function(d) {return xScaleNom.rangeBand();})
-                        .attr("height", function(d){return svgHeight - 2*margin.top - margin.bottom -  yScale(d.second);})
+                        .attr("height", function(d){return svgHeight - 2*margin.top - margin.bottom -  yScale(d.count);})
 
                     var text_group = svg.append("g")
                         .attr("class", "caption knime-label")
@@ -516,9 +516,9 @@ dataExplorerNamespace = function() {
                         .data(data.bins)
                         .enter()
                         .append("text")
-                        .attr("x", function (d) {return xScaleNom(d.first) + xScaleNom.rangeBand()/2;})
-                        .attr("y", function(d) {return yScale(d.second) - 2;})
-                        .text(function(d) {return d.second;})
+                        .attr("x", function (d) {return xScaleNom(d.value) + xScaleNom.rangeBand()/2;})
+                        .attr("y", function(d) {return yScale(d.count) - 2;})
+                        .text(function(d) {return d.count;})
                         .attr("font-size", Math.round(Math.min(svgHeight/15, 11))+"px")
                         .attr("text-anchor", "middle")
                         .attr("class", "knime-label");
@@ -754,8 +754,8 @@ dataExplorerNamespace = function() {
                     svgHeight = svgHsmall + margin.top;
                     svgWidth = svgWsmall;
 
-                    var min = data.bins[0].def.first;
-                    var max = data.bins[data.bins.length-1].def.second;
+                    var min = data.bins[0].min;
+                    var max = data.bins[data.bins.length-1].max;
                     var barWidth = (max - min)/data.bins.length;
                     var dataRange = max - min;
 
@@ -787,15 +787,15 @@ dataExplorerNamespace = function() {
                             .enter()
                         .append("rect")
                         .attr("class", "rect"+data.colIndex)
-                        .attr("x", function (d) {return xScale(d.def.first - min);})
+                        .attr("x", function (d) {return xScale(d.min - min);})
                         .attr("y", function(d) {return yScale(d.count);})
-                        .attr("width", function(d) {return xScale(dataRange == 0? d.def.first : barWidth)})
+                        .attr("width", function(d) {return xScale(dataRange == 0? d.min : barWidth)})
                         .attr("height", function(d){return svgHsmall - yScale(d.count);})
                         .attr("fill", "#547cac")
                         .attr("stroke", "black")
                         .attr("stroke-width", "1px")
                         .append("title")
-                        .text(function(d, i) { return d.tooltip.slice(0,-13); });
+                        .text(function(d, i) { return "|[" + d.min + "; " + d.max + ">|= " + d.count; });
 
                     return $('<div/>').append(histDiv).html();
                 }
@@ -937,8 +937,8 @@ dataExplorerNamespace = function() {
                 svgHeight = svgHbig;
                 var svgBigHist = d3.select(bigHist).select("#svg"+data.colIndex)[0][0]
                 
-                var min = data.bins[0].def.first;
-                var max = data.bins[data.bins.length - 1].def.second;
+                var min = data.bins[0].min;
+                var max = data.bins[data.bins.length - 1].max;
                 var barWidth = (max - min)/data.bins.length;
                 var dataRange = max - min;
         
@@ -963,7 +963,7 @@ dataExplorerNamespace = function() {
                 var bars = svg.selectAll(".bars")
                     .selectAll(".rect"+data.colIndex)
                     .data(data.bins)
-                    .attr("x", function (d) {return xScale(dataRange == 0? 0: d.def.first);})
+                    .attr("x", function (d) {return xScale(dataRange == 0? 0: d.min);})
                     .attr("y", function(d) {return yScale(d.count);})
                     .attr("width", function(d) {return dataRange == 0? xScale(min) : barWidthScale;})
                     .attr("height", function(d){return svgHeight - 2*margin.top - margin.bottom -  yScale(d.count);})
@@ -977,7 +977,7 @@ dataExplorerNamespace = function() {
                     .data(data.bins)
                     .enter()
                     .append("text")
-                    .attr("x", function (d) {return dataRange == 0? xScale(min)/2 : xScale(d.def.first) + barWidthScale/2;})
+                    .attr("x", function (d) {return dataRange == 0? xScale(min)/2 : xScale(d.min) + barWidthScale/2;})
                     .attr("y", function(d) {return yScale(d.count) - 2;})
                     .text(function(d,i) { 
                         if (dataRange == 0) {
@@ -991,9 +991,9 @@ dataExplorerNamespace = function() {
                 
                 var ticks = [];
                 data.bins.forEach(function(d,i) {
-                    ticks.push(d.def.first);
+                    ticks.push(d.min);
                 })
-                ticks.push(data.bins[data.bins.length - 1].def.second)
+                ticks.push(data.bins[data.bins.length - 1].max)
                 
                 var xAxis = d3.svg.axis()
                     .scale(xScale)

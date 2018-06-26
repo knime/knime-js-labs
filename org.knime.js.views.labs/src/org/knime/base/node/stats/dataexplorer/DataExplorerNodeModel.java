@@ -79,6 +79,8 @@ import org.knime.base.data.statistics.calculation.StandardDeviation;
 import org.knime.base.data.statistics.calculation.Sum;
 import org.knime.base.data.statistics.calculation.Variance;
 import org.knime.base.data.statistics.calculation.ZeroNumber;
+import org.knime.base.node.stats.dataexplorer.JSHistogram.NominalBin;
+import org.knime.base.node.stats.dataexplorer.JSHistogram.NumericBin;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
@@ -271,14 +273,14 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             case NUMERIC:
                 jTable.setSpec(createStatsJSONSpecNumeric(tableRows.length));
                 if (tableRows.length == 0) {
-                    getViewRepresentation().setJsNumericHistograms(new ArrayList<JSNumericHistogram>(0));
+                    getViewRepresentation().setJsNumericHistograms(new ArrayList<>(0));
                 }
                 break;
             case NOMINAL:
                 jTable.setSpec(createStatsJSONSpecNominal(tableRows.length));
                 if (tableRows.length == 0) {
                     getViewRepresentation().setMaxNomValueReached(new String[0]);
-                    getViewRepresentation().setJsNominalHistograms(new ArrayList<JSNominalHistogram>(0));
+                    getViewRepresentation().setJsNominalHistograms(new ArrayList<>(0));
                 }
                 break;
             case PREVIEW:
@@ -335,7 +337,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         }
 
 
-        List<JSNominalHistogram> jsHistograms = new ArrayList<JSNominalHistogram>();
+        List<JSHistogram<NominalBin>> jsHistograms = new ArrayList<>();
         m_javaNominalHistograms = new ArrayList<HistogramModel<?>>();
         JSONDataTableRow[] rows = new JSONDataTableRow[includeColumns.length];
 
@@ -418,10 +420,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             //if we want to include missing values, than do it on the whole set of nominals
             if (m_config.getMissingValuesInHist()) {
                 m_javaNominalHistograms.add(calculateNominalHistograms(nomValue, i, col));
-                jsHistograms.add(new JSNominalHistogram(col, i, nomValue));
+                jsHistograms.add(JSHistogram.createNominalHistogram(col, i, nomValue));
             } else {
                 m_javaNominalHistograms.add(calculateNominalHistograms(nomValueMissingExcl, i, col));
-                jsHistograms.add(new JSNominalHistogram(col, i, nomValueMissingExcl));
+                jsHistograms.add(JSHistogram.createNominalHistogram(col, i, nomValueMissingExcl));
             }
 
             rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
@@ -569,7 +571,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         m_javaNumericHistograms = new ArrayList<HistogramModel<?>>();
         m_javaNumericHistograms.addAll(javaHistograms.values());
 
-        List<JSNumericHistogram> jsHistograms = new ArrayList<JSNumericHistogram>();
+        List<JSHistogram<NumericBin>> jsHistograms = new ArrayList<>();
 
         //TODO is it an optimal solution to use just one boolean for estimation of empty table treatment?
         boolean missingMinMax = false;
@@ -577,8 +579,8 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             if (Double.isNaN(minMax.getMin(includeColumns[i]))) {
                 missingMinMax = true;
             } else {
-                JSNumericHistogram histTest =
-                    new JSNumericHistogram(includeColumns[i], i, table, minMax.getMin(includeColumns[i]),
+                JSHistogram histTest =
+                    JSHistogram.createNumericHistogram(includeColumns[i], i, table, minMax.getMin(includeColumns[i]),
                         minMax.getMax(includeColumns[i]), mean.getResult(includeColumns[i]),
                         m_config.getNumberOfHistogramBars(), m_config.getAdaptNumberOfHistogramBars());
                 jsHistograms.add(histTest);
@@ -868,9 +870,9 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
                 hList.addAll(numHistograms.values());
                 //rep.setJavaNumericHistograms(hList);
 
-                List<JSNumericHistogram> jsNumHist = new ArrayList<JSNumericHistogram>();
+                List<JSHistogram<NumericBin>> jsNumHist = new ArrayList<>();
                 for (int i = 0; i < hList.size(); i++) {
-                    jsNumHist.add(new JSNumericHistogram(hList.get(i)));
+                    jsNumHist.add(JSHistogram.createNumericHistogram(hList.get(i)));
                 }
                 rep.setJsNumericHistograms(jsNumHist);
 
@@ -882,9 +884,9 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             try {
                 Map<Integer, ? extends HistogramModel<?>> nomHistograms = HistogramColumn.loadNominalHistograms(hNomFile, rep.getNominalValuesSize());
 
-                List<JSNominalHistogram> jsNomHist = new ArrayList<JSNominalHistogram>();
+                List<JSHistogram<NominalBin>> jsNomHist = new ArrayList<>();
                 for (HistogramModel<?> hist : nomHistograms.values()) {
-                    jsNomHist.add(new JSNominalHistogram(hist));
+                    jsNomHist.add(JSHistogram.createNominalHistogram(hist));
                 }
                 rep.setJsNominalHistograms(jsNomHist);
 

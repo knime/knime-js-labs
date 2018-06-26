@@ -53,6 +53,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.knime.base.node.stats.dataexplorer.JSHistogram.NominalBin;
+import org.knime.base.node.stats.dataexplorer.JSHistogram.NumericBin;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -109,8 +111,8 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private String m_otherErrorValuesNotation = DataExplorerConfig.DEFAULT_OTHER_ERROR_VALUES_NOTATION;
     private boolean m_missingValuesInHist;
 
-    private List<JSNominalHistogram> m_jsNominalHistograms;
-    private List<JSNumericHistogram> m_jsNumericHistograms;
+    private List<JSHistogram<NominalBin>> m_jsNominalHistograms;
+    private List<JSHistogram<NumericBin>> m_jsNumericHistograms;
 
     /**
      * @return the statistics
@@ -438,28 +440,28 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     /**
      * @return the m_nominalHistograms
      */
-    public List<JSNominalHistogram> getJsNominalHistograms() {
+    public List<JSHistogram<NominalBin>> getJsNominalHistograms() {
         return m_jsNominalHistograms;
     }
 
     /**
      * @param nominalHistograms the m_nominalHistograms to set
      */
-    public void setJsNominalHistograms(final List<JSNominalHistogram> nominalHistograms) {
+    public void setJsNominalHistograms(final List<JSHistogram<NominalBin>> nominalHistograms) {
         this.m_jsNominalHistograms = nominalHistograms;
     }
 
     /**
      * @return the js numeric histogram
      */
-    public List<JSNumericHistogram> getJsNumericHistograms() {
+    public List<JSHistogram<NumericBin>> getJsNumericHistograms() {
         return m_jsNumericHistograms;
     }
 
     /**
      * @param m_numHistogram the js numeric histogram to set
      */
-    public void setJsNumericHistograms(final List<JSNumericHistogram> m_numHistogram) {
+    public void setJsNumericHistograms(final List<JSHistogram<NumericBin>> m_numHistogram) {
         this.m_jsNumericHistograms = m_numHistogram;
     }
 
