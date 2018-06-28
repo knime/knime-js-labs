@@ -40,7 +40,7 @@
                     Check to display non-integer values as percentages.
                 </option>
                 <option name="Display confusion matrix rates">
-                    Check to display the confusion matrix's rows and columns totals as rates. These are the result of the division of the correct prediction on a given row (or cell)
+                    Check to display the confusion matrix's rows and columns totals as rates. These are the result of the division of the number of correct predictions on a given row (or cell)
                     divided by the sum of all values on that row or column.
                 </option>
                 <option name="Display fullscreen button">
@@ -141,8 +141,8 @@
     <interactiveView name="Confusion Matrix"></interactiveView>
     <ports>
     	<inPort name="Input table" index="0">Table containing at least two columns to compare.</inPort>
-    	<outPort name="Confusion matrix" index="0">The confusion matrix. There is an option to display on the side and bottom of it the total for each row or column.
-These values are actually the correct prediction on each row (or column) divided by the sum of all values on that line.</outPort>
+    	<outPort name="Confusion matrix" index="0">The confusion matrix. Row and column rates can be shown via a configuration setting; they are the number of correct predictions divided by the total number of records in the row/column.
+    	</outPort>
     	<outPort name="Class statistics table" index="1">The class statistics table</outPort>
     	<outPort name="Overall statistics table" index="2">The overall statistics table</outPort>
     </ports>
