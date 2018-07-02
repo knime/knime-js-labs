@@ -165,8 +165,8 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_overallAccuracyCheckBox = new JCheckBox("Accuracy");
         m_overallErrorCheckBox = new JCheckBox("Error");
         m_overallCohensKappaCheckBox = new JCheckBox("Cohen's kappa");
-        m_overallCorrectClassifiedCheckBox = new JCheckBox("Correct classified");
-        m_overallWrongClassifiedCheckBox = new JCheckBox("Wrong classified");
+        m_overallCorrectClassifiedCheckBox = new JCheckBox("Correctly classified");
+        m_overallWrongClassifiedCheckBox = new JCheckBox("Incorrectly classified");
 
         m_enableViewControlsCheckBox = new JCheckBox("Enable view edit controls");
         m_enableViewControlsCheckBox.addActionListener(action -> enableControlOptions());
