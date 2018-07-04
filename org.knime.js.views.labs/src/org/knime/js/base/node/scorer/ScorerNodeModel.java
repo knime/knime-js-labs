@@ -56,7 +56,9 @@ import org.knime.base.node.mine.scorer.accuracy.AccuracyScorerCalculator;
 import org.knime.base.node.mine.scorer.accuracy.AccuracyScorerCalculator.ClassStatisticsConfiguration;
 import org.knime.base.node.mine.scorer.accuracy.AccuracyScorerCalculator.OverallStatisticsConfiguration;
 import org.knime.base.node.mine.scorer.accuracy.AccuracyScorerCalculator.ScorerCalculatorConfiguration;
+import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.NominalValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.BufferedDataTableHolder;
@@ -115,6 +117,14 @@ public class ScorerNodeModel extends AbstractWizardNodeModel<ScorerViewRepresent
         }
         if (!inSpec.containsName(firstCol) || !inSpec.containsName(secondCol)) {
             throw new InvalidSettingsException("The chosen columns are not available anymore.");
+        }
+        DataColumnSpec firstColSpec = inSpec.getColumnSpec(firstCol);
+        DataColumnSpec secondColSpec = inSpec.getColumnSpec(secondCol);
+        if (!firstColSpec.getType().isCompatible(NominalValue.class)) {
+            throw new InvalidSettingsException("Column " +  firstCol + " is not string compatible, its type is " + firstColSpec.getType().toString());
+        }
+        if (!secondColSpec.getType().isCompatible(NominalValue.class)) {
+            throw new InvalidSettingsException("Column " +  secondCol + " is not string compatible, its type is " + secondColSpec.getType().toString());
         }
         ScorerCalculatorConfiguration scorerConfig = getScorerConfig();
         DataTableSpec confusionMatrixSpec =
