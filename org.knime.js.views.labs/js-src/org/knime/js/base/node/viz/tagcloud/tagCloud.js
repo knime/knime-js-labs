@@ -776,7 +776,11 @@ knime_tag_cloud = function() {
 			.attr("stroke-width", null)
 			.attr("stroke-opacity", null)
 			.attr("stroke-dasharray", null);
-		return (new XMLSerializer()).serializeToString(svg);
+		
+		var svgElement = svg.getElementsByTagName('svg')[0];
+		knimeService.inlineSvgStyles(svgElement);
+		// Return the SVG as a string.
+		return (new XMLSerializer()).serializeToString(svgElement);
 	}
 
 	return wordCloud;
