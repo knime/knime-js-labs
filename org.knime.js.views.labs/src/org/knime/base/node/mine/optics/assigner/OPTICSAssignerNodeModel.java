@@ -472,6 +472,14 @@ public class OPTICSAssignerNodeModel extends AbstractSVGWizardNodeModel<OPTICSAs
         return m_config.getCustomCSS();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCssStyles(final String styles) {
+        m_config.setCustomCSS(styles);
+    }
+
     @Override
     public ValidationError validateViewValue(final OPTICSAssignerViewValue viewContent) {
         return null;

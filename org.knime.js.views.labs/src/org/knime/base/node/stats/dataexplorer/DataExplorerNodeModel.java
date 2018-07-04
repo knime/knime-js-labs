@@ -228,6 +228,14 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
      * {@inheritDoc}
      */
     @Override
+    public void setCssStyles(final String styles) {
+        m_config.setCustomCSS(styles);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ValidationError validateViewValue(final DataExplorerNodeValue viewContent) {
         /*always valid */
         return null;

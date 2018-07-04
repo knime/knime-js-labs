@@ -227,6 +227,14 @@ public class ScorerNodeModel extends AbstractWizardNodeModel<ScorerViewRepresent
      * {@inheritDoc}
      */
     @Override
+    public void setCssStyles(final String styles) {
+        m_config.setCustomCSS(styles);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ValidationError validateViewValue(final ScorerViewValue viewContent) {
         /* nothing to validate atm */
         return null;
