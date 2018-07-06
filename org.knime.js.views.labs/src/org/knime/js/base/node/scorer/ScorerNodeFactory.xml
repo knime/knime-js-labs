@@ -8,6 +8,7 @@
 	<shortDescription>An Accuracy Scorer Node with a JavaScript view.</shortDescription>
 	<fullDescription>
 		<intro>
+		    <p>
 			Compares two columns by their attribute value pairs and shows
 			the confusion matrix, i.e. how many rows of a given attribute and its
 			classification match. The dialog allows you to select two columns for
@@ -28,6 +29,13 @@
 			like the Overall Accuracy, Overall Error, Cohen's kappa, the
 			Correctly Classified and the Incorrectly Classified values. These
 			three tables are also available as output ports of this node.
+			</p>
+			<p>
+	        The node supports custom CSS styling. 
+	        You can simply put CSS rules into a single string and set it as a flow variable 'customCSS' 
+	        in the node configuration dialog. 
+	        You will find the list of available classes and their description on our <a href="https://knime.com/css-styling">documentation page</a>.
+	        </p>
 		</intro>
 		<tab name="Scorer Options">
 			<option name="Title">

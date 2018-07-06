@@ -13,6 +13,12 @@
             workflow itself.</p>
             <p>Since missing values cannot be displayed in the view, a warning message is displayed instead.</p>
             <p>Additionally, a static SVG image can be rendered, which is then made available at the image output port.</p>
+            <p>
+	        The node supports custom CSS styling. 
+	        You can simply put CSS rules into a single string and set it as a flow variable 'customCSS' 
+	        in the node configuration dialog. 
+	        You will find the list of available classes and their description on our <a href="https://knime.com/css-styling">documentation page</a>.
+	        </p>
         </intro>
         <tab name="Options">
         	<description>This tab contains all general options for controlling the generation and output of the view.</description>

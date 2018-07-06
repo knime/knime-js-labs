@@ -54,6 +54,13 @@ to run OPTICS are values for these parameters.</p>
 the OPTICS Cluster Compute node as input and assigns each point in the
 ordering to a cluster. The assignment depends on the value of
 <b>epsilon-prime</b>, which can be set in the Dialog Options.</p>
+
+<p>
+The node supports custom CSS styling. 
+You can simply put CSS rules into a single string and set it as a flow variable 'customCSS' 
+in the node configuration dialog. 
+You will find the list of available classes and their description on our <a href="https://knime.com/css-styling">documentation page</a>.
+</p>
         </intro>
 	<tab name="Distance Calculation">
 		<description>The first tab allows you to set the value of <b>epsilon-prime</b> and the number of bins.</description>
