@@ -4,11 +4,7 @@
     <name>Scorer (JavaScript)</name>
     <shortDescription>An Accuracy Scorer Node with a JavaScript view.</shortDescription>
     <fullDescription>
-    	<intro>Compares two columns by their attribute value pairs and shows the confusion matrix, i.e. how many rows of a given attribute and its classification match. The dialog allows you to select two columns for comparison; the values from the first selected column are represented in the confusion matrix's rows and the values from the second column by the confusion matrix's columns.
-
-The view of the node displays three tables, the first one is the confusion matrix with the number of matches in each cell. The second table reports a number of accuracy statistics specific to a given class such as True-Positives, False-Positives, True-Negatives, False-Negatives, Accuracy, Balanced Accuracy, Error Rate, False Negative Rate, Recall, Precision, Sensitivity, Specificity, F-measure. The last table contains overall statistics like the Overall Accuracy, Overall Error, Cohen's kappa, the Correctly Classified and the Incorrectly Classified values.
-
-These three tables are also available as output ports of this node.</intro>
+    	<intro>Compares two columns by their attribute value pairs and shows the confusion matrix, i.e. how many rows of a given attribute and its classification match. The dialog allows you to select two columns for comparison; the values from the first selected column are represented in the confusion matrix's rows and the values from the second column by the confusion matrix's columns. The view of the node displays three tables, the first one is the confusion matrix with the number of matches in each cell. Row and column rates can be shown via a configuration setting; they are the number of correct predictions divided by the total number of records in the row/column. Additionally, it is possible to highlight cells of this matrix to select the underlying rows. The selection can be passed to other JavaScript views. The second table reports a number of statistics specific to a given class such as True-Positives, False-Positives, True-Negatives, False-Negatives, Accuracy, Balanced Accuracy, Error Rate, False Negative Rate, Recall, Precision, Sensitivity, Specificity, F-measure. The last table contains overall statistics like the Overall Accuracy, Overall Error, Cohen's kappa, the Correctly Classified and the Incorrectly Classified values. These three tables are also available as output ports of this node.</intro>
 		<tab name="Scorer Options">
 				<option name="Title">
 					The view title
@@ -145,8 +141,7 @@ These three tables are also available as output ports of this node.</intro>
     <interactiveView name="Confusion Matrix"></interactiveView>
     <ports>
     	<inPort name="Input table" index="0">Table containing at least two columns to compare.</inPort>
-    	<outPort name="Confusion matrix" index="0">The confusion matrix. Row and column rates can be shown via a configuration setting; they are the number of correct predictions divided by the total number of records in the row/column. Additionally, it is possible to highlight cells of this matrix to select the underlying rows. Create a wrapped metanode containing this scorer node along with a JS Table View node. Then selecting a given cell in the confusion matrix will select all the rows which contribute to the calculation of that value.
-    	</outPort>
+    	<outPort name="Confusion matrix" index="0">The confusion matrix</outPort>
     	<outPort name="Class statistics table" index="1">The class statistics table</outPort>
     	<outPort name="Overall statistics table" index="2">The overall statistics table</outPort>
     </ports>
