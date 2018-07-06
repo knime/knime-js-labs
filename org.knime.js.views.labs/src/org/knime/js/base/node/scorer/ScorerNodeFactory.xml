@@ -1,149 +1,203 @@
 <?xml version="1.0" encoding="utf-8"?>
-<knimeNode icon="./scorer.png" type="Other" xmlns="http://knime.org/node/v3.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v3.1 http://knime.org/node/v3.1.xsd">
-    
-    <name>Scorer (JavaScript)</name>
-    <shortDescription>An Accuracy Scorer Node with a JavaScript view.</shortDescription>
-    <fullDescription>
-    	<intro>Compares two columns by their attribute value pairs and shows the confusion matrix, i.e. how many rows of a given attribute and its classification match. The dialog allows you to select two columns for comparison; the values from the first selected column are represented in the confusion matrix's rows and the values from the second column by the confusion matrix's columns. The view of the node displays three tables, the first one is the confusion matrix with the number of matches in each cell. Row and column rates can be shown via a configuration setting; they are the number of correct predictions divided by the total number of records in the row/column. Additionally, it is possible to highlight cells of this matrix to select the underlying rows. The selection can be passed to other JavaScript views. The second table reports a number of statistics specific to a given class such as True-Positives, False-Positives, True-Negatives, False-Negatives, Accuracy, Balanced Accuracy, Error Rate, False Negative Rate, Recall, Precision, Sensitivity, Specificity, F-measure. The last table contains overall statistics like the Overall Accuracy, Overall Error, Cohen's kappa, the Correctly Classified and the Incorrectly Classified values. These three tables are also available as output ports of this node.</intro>
+<knimeNode icon="./scorer.png" type="Other"
+	xmlns="http://knime.org/node/v3.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v3.1 http://knime.org/node/v3.1.xsd">
+
+	<name>Scorer (JavaScript)</name>
+	<shortDescription>An Accuracy Scorer Node with a JavaScript view.</shortDescription>
+	<fullDescription>
+		<intro>
+			Compares two columns by their attribute value pairs and shows
+			the confusion matrix, i.e. how many rows of a given attribute and its
+			classification match. The dialog allows you to select two columns for
+			comparison; the values from the first selected column are represented
+			in the confusion matrix's rows and the values from the second column
+			by the confusion matrix's columns. The view of the node displays
+			three tables, the first one is the confusion matrix with the number
+			of matches in each cell. Row and column rates can be shown via a
+			configuration setting; they are the number of correct predictions
+			divided by the total number of records in the row/column.
+			Additionally, it is possible to highlight cells of this matrix to
+			select the underlying rows. The selection can be passed to other
+			JavaScript views. The second table reports a number of statistics
+			specific to a given class such as True-Positives, False-Positives,
+			True-Negatives, False-Negatives, Accuracy, Balanced Accuracy, Error
+			Rate, False Negative Rate, Recall, Precision, Sensitivity,
+			Specificity, F-measure. The last table contains overall statistics
+			like the Overall Accuracy, Overall Error, Cohen's kappa, the
+			Correctly Classified and the Incorrectly Classified values. These
+			three tables are also available as output ports of this node.
+		</intro>
 		<tab name="Scorer Options">
-				<option name="Title">
-					The view title
-				</option>
-				<option name="Subtitle">
-					The view subtitle
-				</option>
-				<option name="Actual column">
-					The actual column contains the actual classes of the data.
-				</option>
-				<option name="Predicted column">
-					The predicted column contains the predicted classes of the data.
-				</option>
- 				<option name="Sorting Strategy">
- 					Whether to sort the labels according to their appearance, or use the lexical/numeric ordering.
-				</option>
-				<option name="Reverse order">
-                    Reverse the order of the elements.
-                </option>
-                <option name="Ignore missing values">
-					Choose how to treat missing values in either the reference or prediction column. Default is to ignore them (treat them as if the row did not exist). Alternatively, you can expect the table to not contain missing values in these two columns. If they do, the node will fail during execution.
-                </option>
-                <option name="Header color">
-					Background color used for the header sections of the tables (rows or column headers).
-				</option>
-				<option name="Diagonal color">
-					Background color used for highlighting the values on the diagonal of the confusion matrix (the correct predictions).
-				</option>
-				<option name="Display number of rows">
-                    Check to display the total number of rows in the top left corner of the confusion matrix.
-                </option>
-                <option name="Display float values as percentages">
-                    Check to display non-integer values as percentages.
-                </option>
-                <option name="Display confusion matrix rates">
-                    Check to display the confusion matrix's rows and columns totals as rates. These are the result of the division of the number of correct predictions on a given row (or cell)
-                    divided by the sum of all values on that row or column.
-                </option>
-                <option name="Display fullscreen button">
-                    Check to display a button which switches the view into fullscreen mode. The button is only available in the KNIME WebPortal.
-                </option>
-                <option name="Show warnings in view">
-                    If checked, warning messages will be displayed in the view when they occur.
-                </option>
+			<option name="Title">
+				The view title
+			</option>
+			<option name="Subtitle">
+				The view subtitle
+			</option>
+			<option name="Actual column">
+				The actual column contains the actual classes of the data.
+			</option>
+			<option name="Predicted column">
+				The predicted column contains the predicted classes of the data.
+			</option>
+			<option name="Sorting Strategy">
+				Whether to sort the labels according to their appearance, or use the
+				lexical/numeric ordering.
+			</option>
+			<option name="Reverse order">
+				Reverse the order of the elements.
+			</option>
+			<option name="Ignore missing values">
+				Choose how to treat missing values in either the reference or prediction
+				column. Default is to ignore them (treat them as if the row did not
+				exist). Alternatively, you can expect the table to not contain
+				missing values in these two columns. If they do, the node will fail
+				during execution.
+			</option>
+			<option name="Header color">
+				Background color used for the header sections of the tables (rows or column
+				headers).
+			</option>
+			<option name="Diagonal color">
+				Background color used for highlighting the values on the diagonal of the
+				confusion matrix (the correct predictions).
+			</option>
+			<option name="Display number of rows">
+				Check to display the total number of rows in the top left corner of the
+				confusion matrix.
+			</option>
+			<option name="Display float values as percentages">
+				Check to display non-integer values as percentages.
+			</option>
+			<option name="Display confusion matrix rates">
+				Check to display the confusion matrix's rows and columns totals as rates.
+				These are the result of the division of the number of correct
+				predictions on a given row (or cell)
+				divided by the sum of all values on that row or column.
+			</option>
+			<option name="Display fullscreen button">
+				Check to display a button which switches the view into fullscreen mode.
+				The button is only available in the KNIME WebPortal.
+			</option>
+			<option name="Show warnings in view">
+				If checked, warning messages will be displayed in the view when they
+				occur.
+			</option>
 		</tab>
 		<tab name="Statistics Options">
-				<option name="Display class statistics table">
-                    Check to display the class statistics table.
-                </option>	
-				<option name="Calculate/display true positives for each class">
-                    Check to display the true positives in the class statistics table.
-                </option>
-                <option name="Calculate/display false positives for each class">
-                    Check to display the false positives in the class statistics table.
-                </option>
-				<option name="Calculate/display true negatives for each class">
-                    Check to display the true negatives in the class statistics table.
-                </option>
-                <option name="Calculate/display false negatives for each class">
-                    Check to display the false negatives in the class statistics table.
-                </option>                
-				<option name="Calculate/display accuracy for each class">
-                    Check to display the accuracy in the class statistics table.
-                </option>
-				<option name="Calculate/display balanced accuracy for each class">
-                    Check to display the balanced accuracy in the class statistics table.
-                </option>                
-				<option name="Calculate/display error rate for each class">
-                    Check to display the error rate in the class statistics table.
-                </option>
-                <option name="Calculate/display false negative rate for each class">
-                    Check to display the false negative rate in the class statistics table.
-                </option>
-				<option name="Calculate/display recall for each class">
-                    Check to display the recall in the class statistics table.
-                </option>
-				<option name="Calculate/display precision for each class">
-                    Check to display the precision in the class statistics table.
-                </option>                
-				<option name="Calculate/display sensitivity for each class">
-                    Check to display the sensitivity in the class statistics table.
-                </option>
-                <option name="Calculate/display specificity rate for each class">
-                    Check to display the specificity in the class statistics table.
-                </option>                
-                <option name="Calculate/display F-measure for each class">
-                    Check to display the F-measure in the class statistics table.
-                </option>
-                <option name="Display overall statistics table">
-                    Check to display the overall statistics table.
-                </option>				
-				<option name="Calculate/display overall accuracy">
-                    Check to display the overall accuracy in the overall statistics table.
-                </option>
-				<option name="Calculate/display overall error">
-                    Check to display the overall error in the overall statistics table.
-                </option>
-				<option name="Calculate/display Cohen's kappa">
-                    Check to display the Cohen's kappa in the overall statistics table.
-                </option>
-				<option name="Calculate/display number of correctly classified values">
-                    Check to display the number of correctly classified values in the overall statistics table.
-                </option>
-				<option name="Calculate/display number of incorrectly classified values">
-                    Check to display the number of incorrectly classified values in the overall statistics table.
-                </option>               
+			<option name="Display class statistics table">
+				Check to display the class statistics table.
+			</option>
+			<option name="Calculate/display true positives for each class">
+				Check to display the true positives in the class statistics table.
+			</option>
+			<option
+				name="Calculate/display false positives for each class">
+				Check to display the false positives in the class statistics table.
+			</option>
+			<option name="Calculate/display true negatives for each class">
+				Check to display the true negatives in the class statistics table.
+			</option>
+			<option
+				name="Calculate/display false negatives for each class">
+				Check to display the false negatives in the class statistics table.
+			</option>
+			<option name="Calculate/display accuracy for each class">
+				Check to display the accuracy in the class statistics table.
+			</option>
+			<option
+				name="Calculate/display balanced accuracy for each class">
+				Check to display the balanced accuracy in the class statistics table.
+			</option>
+			<option name="Calculate/display error rate for each class">
+				Check to display the error rate in the class statistics table.
+			</option>
+			<option
+				name="Calculate/display false negative rate for each class">
+				Check to display the false negative rate in the class statistics table.
+			</option>
+			<option name="Calculate/display recall for each class">
+				Check to display the recall in the class statistics table.
+			</option>
+			<option name="Calculate/display precision for each class">
+				Check to display the precision in the class statistics table.
+			</option>
+			<option name="Calculate/display sensitivity for each class">
+				Check to display the sensitivity in the class statistics table.
+			</option>
+			<option
+				name="Calculate/display specificity rate for each class">
+				Check to display the specificity in the class statistics table.
+			</option>
+			<option name="Calculate/display F-measure for each class">
+				Check to display the F-measure in the class statistics table.
+			</option>
+			<option name="Display overall statistics table">
+				Check to display the overall statistics table.
+			</option>
+			<option name="Calculate/display overall accuracy">
+				Check to display the overall accuracy in the overall statistics table.
+			</option>
+			<option name="Calculate/display overall error">
+				Check to display the overall error in the overall statistics table.
+			</option>
+			<option name="Calculate/display Cohen's kappa">
+				Check to display the Cohen's kappa in the overall statistics table.
+			</option>
+			<option
+				name="Calculate/display number of correctly classified values">
+				Check to display the number of correctly classified values in the overall
+				statistics table.
+			</option>
+			<option
+				name="Calculate/display number of incorrectly classified values">
+				Check to display the number of incorrectly classified values in the
+				overall statistics table.
+			</option>
 		</tab>
 		<tab name="Control Options">
-				<option name="Enable view controls">
-					Check to enable controls in the chart.
-				</option>
-				<option name="Enable Title editing">
-					Check to enable the editing of the title within the view.
-				</option>
-				<option name="Enable Subtitle editing">
-					Check to enable the editing of the subtitle within the view.
-				</option>
-				<option name="Enable Rows Number display">
-					Check to enable the display of the rows number.
-				</option>				
-				<option name="Enable Confusion Matrix rates display">
-					Check to enable the display of the Confusion Matrix's rows and columns totals as rates.
-				</option>				
-				<option name="Enable Class Statistics display">
-					Check to enable the display of the class statistics table.
-				</option>
-				<option name="Enable Overall Statistics display">
-					Check to enable the display of the overall statistics table.
-				</option>
-		</tab>		
-		
-    </fullDescription>
-    
-    <interactiveView name="Confusion Matrix"></interactiveView>
-    <ports>
-    	<inPort name="Input table" index="0">Table containing at least two columns to compare.</inPort>
-    	<outPort name="Confusion matrix" index="0">The confusion matrix</outPort>
-    	<outPort name="Class statistics table" index="1">The class statistics table</outPort>
-    	<outPort name="Overall statistics table" index="2">The overall statistics table</outPort>
-    </ports>
-    
+			<option name="Enable view controls">
+				Check to enable controls in the chart.
+			</option>
+			<option name="Enable Title editing">
+				Check to enable the editing of the title within the view.
+			</option>
+			<option name="Enable Subtitle editing">
+				Check to enable the editing of the subtitle within the view.
+			</option>
+			<option name="Enable Rows Number display">
+				Check to enable the display of the rows number.
+			</option>
+			<option name="Enable Confusion Matrix rates display">
+				Check to enable the display of the Confusion Matrix's rows and columns
+				totals as rates.
+			</option>
+			<option name="Enable Class Statistics display">
+				Check to enable the display of the class statistics table.
+			</option>
+			<option name="Enable Overall Statistics display">
+				Check to enable the display of the overall statistics table.
+			</option>
+		</tab>
+
+	</fullDescription>
+
+	<interactiveView name="Confusion Matrix"></interactiveView>
+	<ports>
+		<inPort name="Input table" index="0">
+			Table containing at least two columns to compare.
+		</inPort>
+		<outPort name="Confusion matrix" index="0">
+			The confusion matrix
+		</outPort>
+		<outPort name="Class statistics table" index="1">
+			The class statistics table
+		</outPort>
+		<outPort name="Overall statistics table" index="2">
+			The overall statistics table
+		</outPort>
+	</ports>
+
 </knimeNode>
