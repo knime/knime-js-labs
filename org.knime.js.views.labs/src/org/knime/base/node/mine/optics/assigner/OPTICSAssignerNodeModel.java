@@ -169,6 +169,10 @@ public class OPTICSAssignerNodeModel extends AbstractSVGWizardNodeModel<OPTICSAs
                 + String.valueOf(dataTable.size()) + " != " + String.valueOf(modelData.getOptPoints().length) + ")");
         }
 
+        if (modelData.getOptPoints().length < 1) {
+            setWarningMessage("No samples for clustering present. View and image output will not contain any data.");
+        }
+
         m_eps = modelData.getEps();
 
         switch (m_config.getEpsCalcMethod()) {
