@@ -25,13 +25,14 @@
     var allNoise = false;
 	
 	optics.init = function(representation, value) {  
-		if ((!representation.keyedDataset)
-				|| representation.keyedDataset.rows.length < 1) {
-			d3.select("body").text("Error: No data available");
-			return;
-		}
 		_representation = representation;
 		_value = value;
+
+		if ((!representation.keyedDataset)
+				|| representation.keyedDataset.rows.length < 1) {
+			d3.select("body").append("p").text("Error: No data available");
+			return;
+		}
         
 		try {
             initEpsPrime = _value.epsPrime;
@@ -844,10 +845,17 @@
 	
 
 	optics.getSVG = function() {
-		var svgElement = d3.select("svg")[0][0];
-		knimeService.inlineSvgStyles(svgElement);
-		// Return the SVG as a string.
-		return (new XMLSerializer()).serializeToString(svgElement);
+		var svg = d3.select("svg");
+		if (!svg.empty()) {
+			var svgElement = d3.select("svg")[0][0];
+			knimeService.inlineSvgStyles(svgElement);
+			// Return the SVG as a string.
+			return (new XMLSerializer()).serializeToString(svgElement);
+		} else {
+			var w = _representation.imageWidth;
+	        var h = _representation.imageHeight;
+			return '<svg height="' + h + '" width="' + w + '"><text x="0" y="15" fill="red">Error: No data available</text></svg>';
+		}
 	}
 
 	return optics;
