@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<knimeNode icon="./dendrogram.png" type="Visualizer"
+	xmlns="http://knime.org/node/v3.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v3.1 http://knime.org/node/v3.1.xsd">
+	<name>Hierarchical Cluster Assigner (JavaScript)</name>
+	<shortDescription>
+		Creates an interactive JavaScript which displays the results of hierarchical clustering and enables cluster assignment.
+	</shortDescription>
+	<fullDescription>
+		<intro>
+			<p>
+				This node takes a hierarchical cluster tree and the
+				<b>same input table</b>
+				that has been used for the creating
+				the clustering, and creates an
+				interactive dendrogram using JavaScript. The interactive view allows
+				for the selection of a threshold, which is used to define clusters
+				and assign rows to clusters.
+			</p>
+			<p>
+				This node is only intended for small data tables (&lt;65,500
+				rows).
+			</p>
+		</intro>
+		<tab name="Options">
+			<option name="Cluster assignment column name">
+				Sets the name of the assigned cluster column in
+				the output data table.
+			</option>
+			<option name="Assign clusters based on">
+				Select if you want to assign clusters based on a
+				fixed number or based on a
+				distance threshold.
+			</option>
+			<option name="Number of clusters">
+				The number of clusters (i.e. the level in the
+				cluster tree) that should
+				be created.
+			</option>
+			<option name="Distance threshold">
+				The distance below which clusters should be
+				selected.
+			</option>
+		</tab>
+		<tab name="View Configuration">
+			<option name="Show warnings in view">
+				If checked, warning messages will be displayed in the view when they
+				occur.
+			</option>
+			<option name="Create image at outport">
+				If checked an SVG image will be created at the
+				outport.
+			</option>
+			<option name="Width of image (in px)">
+				The width in pixels of the generated SVG image.
+			</option>
+			<option name="Height of image (in px)">
+				The height in pixels of the generated SVG image.
+			</option>
+			<option name="Chart title" optional="true">
+				The title shown above the
+				image. If left blank, no title will be shown.
+			</option>
+			<option name="Chart subtitle" optional="true">
+				The subtitle shown
+				above the image. If left blank, no subtitle will be
+				shown.
+			</option>
+			<option name="Enable cluster labels">
+				Displays cluster labels in the view, and enables
+				editing of these labels.
+			</option>
+			<option name="Enable cluster colors">
+				If enabled, tree leaves will be
+				assigned colors
+				based on their cluster membership. Otherwise, the leaf colors will
+				be determined by those
+				specified in the input data table.
+			</option>
+			<option name="Resize view to fill window">
+				Checking this option resizes the view so that it
+				fills the window.
+			</option>
+			<option name="Enable view edit controls">
+				If checked, all edit controls selected below will
+				be rendered in the
+				view. Unchecking this option disables all edit
+				controls.
+			</option>
+			<option name="Enable title and subtitle editing">
+				Displays a text box to change title or subtitle.
+			</option>
+			<option name="Display full screen button">
+				Displays a button enabling full screen mode.
+			</option>
+			<option name="Enable number of clusters specification">
+				Allows for cluster assignment via number of
+				clusters from the view.
+			</option>
+			<option name="Enable numeric specification of threshold">
+				Allows the threshold to be set to a specified
+				numeric value from within the view. Regardless if this is
+				enabled/disabled, the threshold can always manually be set with the
+				horizontal bar in the view.
+			</option>
+			<option name="Enable selection">
+				When this option is checked, data points can be
+				selected in the view. The selection appears in an
+				appended column of
+				the data table.
+			</option>
+			<option name="Selection column name">
+				Sets the name of the selection column in the
+				output data table.
+			</option>
+			<option name="Publish selection events">
+				Checking this option ensures that other views are
+				notified whenever the
+				selection in the current view is changed.
+			</option>
+			<option name="Subscribe to selection events">
+				Checking this option ensures that this view is
+				notified whenever other views publish new selections.
+			</option>
+		</tab>
+	</fullDescription>
+	<interactiveView name="Dendrogram">
+		<p>Displays the resulting dendrogram with a bar for selecting the
+			threshold value, which changes the cluster assignments.
+		</p>
+	</interactiveView>
+	<ports>
+		<inPort name="Cluster Tree" index="0">
+			The hierarchical cluster tree
+			that has been created by the hierarchical clustering node.
+		</inPort>
+		<inPort name="Data to Cluster" index="1">
+			The
+			<b>same data table</b>
+			that has been used to create the clusters.
+		</inPort>
+		<outPort name="Image Port" index="0">
+			An SVG representation of this
+			view.
+		</outPort>
+		<outPort name="Clustered Data" index="1">
+			The input data table with
+			an appended
+			column denoting cluster assignment.
+		</outPort>
+	</ports>
+</knimeNode>

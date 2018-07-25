@@ -32,6 +32,11 @@
             deprecated="false"
             factory-class="org.knime.js.base.node.scorer.ScorerNodeFactory">
       </node>
+      <node
+            category-path="/analytics/mining/clustering"
+            deprecated="false"
+            factory-class="org.knime.base.node.mine.cluster.hierarchical.js.HierarchicalClusterAssignerFactory">
+      </node>
    </extension>
    <extension
          point="org.knime.workbench.repository.categories">
