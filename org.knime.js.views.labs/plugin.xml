@@ -303,6 +303,28 @@
                webResourceBundleID="KnimeTable_1.0.0">
          </webDependency>
       </webResourceBundle>
+      <webResourceBundle
+            debug="true"
+            name="Hierarchical Cluster Assigner"
+            usesDefine="false"
+            version="1.0.0"
+            webResourceBundleID="org.knime.base.node.mine.cluster.hierarchical.bundle">
+         <webResource
+               relativePathSource="js-src/org/knime/base/node/mine/cluster/hierarchical/"
+               relativePathTarget="/org/knime/base/node/mine/cluster/hierarchical/">
+         </webResource>
+         <importResource
+               relativePath="/org/knime/base/node/mine/cluster/hierarchical/dendrogram.js"
+               type="JAVASCRIPT">
+         </importResource>
+         <importResource
+               relativePath="/org/knime/base/node/mine/cluster/hierarchical/dendrogram.css"
+               type="CSS">
+         </importResource>
+         <webDependency
+               webResourceBundleID="D3_4.2.6_Debug">
+         </webDependency>
+      </webResourceBundle>
    </extension>
    <extension
          point="org.knime.js.core.javascriptComponents">
@@ -400,6 +422,16 @@
             javascriptComponentID="org.knime.js.base.node.scorer"
             name="Scorer"
             namespace="scorer_namespace"
+            setValidationError-method-name="setValidationError"
+            validate-method-name="validate">
+      </javascriptComponent>
+      <javascriptComponent
+            getComponentValue-method-name="getComponentValue"
+            implementationBundleID="org.knime.base.node.mine.cluster.hierarchical.bundle"
+            init-method-name="init"
+            javascriptComponentID="org.knime.base.node.mine.cluster.hierarchical"
+            name="Hierarchical Cluster Assigner"
+            namespace="dendrogram_namespace"
             setValidationError-method-name="setValidationError"
             validate-method-name="validate">
       </javascriptComponent>

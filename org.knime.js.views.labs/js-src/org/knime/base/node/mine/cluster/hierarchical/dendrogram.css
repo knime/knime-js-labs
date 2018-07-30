@@ -1,0 +1,15 @@
+.link {
+    fill: none;
+    stroke: #BBB;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.leaf {
+    shape-rendering: crispEdges;
+}
+
+.label {
+    font: 12px sans-serif;
+    text-anchor: end;
+}

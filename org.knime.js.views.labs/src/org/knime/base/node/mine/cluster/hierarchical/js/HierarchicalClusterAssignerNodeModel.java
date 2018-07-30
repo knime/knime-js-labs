@@ -94,7 +94,7 @@ import org.knime.js.core.node.CSSModifiable;
 public class HierarchicalClusterAssignerNodeModel extends AbstractSVGWizardNodeModel<HierarchicalClusterAssignerRepresentation,
 HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifiable {
 
-    private static final String JS_ID = "org.knime.base.node.mine.cluster.hierarchical.js";
+    private static final String JS_ID = "org.knime.base.node.mine.cluster.hierarchical";
 
     private HierarchicalClusterAssignerConfig m_config;
     private ClusterTreeModel m_tree;
