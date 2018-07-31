@@ -413,6 +413,11 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         m_config.setSubtitle(value.getSubtitle());
         m_config.setNumClusters(value.getNumClusters());
         m_config.setThreshold(value.getThreshold());
+        m_config.setXMin(value.getXMin());
+        m_config.setXMax(value.getXMax());
+        m_config.setYMin(value.getYMin());
+        m_config.setYMax(value.getYMax());
+        m_config.setScaleMode(value.getScaleMode());
     }
 
     private void copyConfigToView() {
@@ -434,6 +439,11 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         representation.setPublishSelectionEvents(m_config.getPublishSelectionEvents());
         representation.setSubscribeSelectionEvents(m_config.getSubscribeSelectionEvents());
         representation.setShowWarningsInView(m_config.getShowWarningsInView());
+        representation.setEnableZoomMouse(m_config.getEnableZoomMouse());
+        representation.setEnableZoomDrag(m_config.getEnableZoomDrag());
+        representation.setShowZoomResetButton(m_config.getShowZoomResetButton());
+        representation.setEnablePanning(m_config.getEnablePanning());
+        representation.setEnableScaleOptions(m_config.getEnableScaleOptions());
         representation.setTree(new JSClusterModelTree(m_tree, m_nodeToId));
         representation.setDataTableID(getTableId(1));
 
@@ -453,6 +463,13 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
             value.setThreshold(m_config.getThreshold());
             value.setClusterLabels(m_config.getClusterLabels());
             value.setSelection(m_config.getSelection());
+            value.setXMin(getMinRowKey().toString());
+            value.setXMax(getMaxRowKey().toString());
+            value.setYMin(0);
+            if (m_tree != null) {
+                value.setYMax(m_tree.getClusterDistances()[m_tree.getClusterDistances().length - 1]);
+            }
+            value.setScaleMode(m_config.getScaleMode());
         }
     }
 
@@ -546,5 +563,27 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
             return ((ClusterViewNode) leaf).getLeafRowKey();
         }
         return leaf.getLeafDataPoint().getKey();
+    }
+
+    private RowKey getMinRowKey() {
+        if (m_tree == null) {
+            return null;
+        }
+        DendrogramNode node = m_tree.getRoot();
+        while (!node.isLeaf()) {
+            node = node.getFirstSubnode();
+        }
+        return getLeafRowKey(node);
+    }
+
+    private RowKey getMaxRowKey() {
+        if (m_tree == null) {
+            return null;
+        }
+        DendrogramNode node = m_tree.getRoot();
+        while (!node.isLeaf()) {
+            node = node.getSecondSubnode();
+        }
+        return getLeafRowKey(node);
     }
 }

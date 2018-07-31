@@ -45,7 +45,8 @@
 		</tab>
 		<tab name="View Configuration">
 			<option name="Show warnings in view">
-				If checked, warning messages will be displayed in the view when they
+				If checked, warning messages will be displayed in
+				the view when they
 				occur.
 			</option>
 			<option name="Create image at outport">
@@ -104,6 +105,10 @@
 				enabled/disabled, the threshold can always manually be set with the
 				horizontal bar in the view.
 			</option>
+			<option name="Enable scale options">
+				Enables modification of the y-axis scale (i.e.
+				linear, logarithmic, etc.) within the view.
+			</option>
 			<option name="Enable selection">
 				When this option is checked, data points can be
 				selected in the view. The selection appears in an
@@ -122,6 +127,25 @@
 			<option name="Subscribe to selection events">
 				Checking this option ensures that this view is
 				notified whenever other views publish new selections.
+			</option>
+			<option name="Enable panning">
+				Enable panning on the view. To start panning click and drag the mouse.
+				Note if panning and drag zooming are enabled,
+				panning can be achieved by holding the Ctrl key and dragging the mouse.
+			</option>
+			<option name="Enable mouse wheel zooming">
+				Enable zooming on the view using the mouse wheel.
+			</option>
+			<option name="Enable drag zooming">
+				Enable zooming on the view by dragging the mouse and drawing a zoom
+				rectangle. Dragging from the top-left down
+				will create a zoom rectangle, dragging from the bottom right up will
+				reset the zoom to fit the extends of the plot. Note if panning and
+				drag zooming are enabled, panning can be achieved by holding the Ctrl
+				key and dragging the mouse.
+			</option>
+			<option name="Show zoom reset button">
+				Renders a button to resize the plot to its extent.
 			</option>
 		</tab>
 	</fullDescription>

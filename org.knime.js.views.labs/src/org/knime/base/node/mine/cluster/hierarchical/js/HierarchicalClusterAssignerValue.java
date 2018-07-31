@@ -72,6 +72,11 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
     private double m_threshold;
     private String[] m_selection;
     private String[] m_clusterLabels;
+    private String m_xMin;
+    private String m_xMax;
+    private double m_yMin;
+    private double m_yMax;
+    private String m_scaleMode;
 
     /**
      * @return the title
@@ -158,6 +163,76 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
     }
 
     /**
+     * @return the xMin
+     */
+    public String getXMin() {
+        return m_xMin;
+    }
+
+    /**
+     * @param xMin the xMin to set
+     */
+    public void setXMin(final String xMin) {
+        m_xMin = xMin;
+    }
+
+    /**
+     * @return the xMax
+     */
+    public String getXMax() {
+        return m_xMax;
+    }
+
+    /**
+     * @param xMax the xMax to set
+     */
+    public void setXMax(final String xMax) {
+        m_xMax = xMax;
+    }
+
+    /**
+     * @return the yMin
+     */
+    public double getYMin() {
+        return m_yMin;
+    }
+
+    /**
+     * @param yMin the yMin to set
+     */
+    public void setYMin(final double yMin) {
+        m_yMin = yMin;
+    }
+
+    /**
+     * @return the yMax
+     */
+    public double getYMax() {
+        return m_yMax;
+    }
+
+    /**
+     * @param yMax the yMax to set
+     */
+    public void setYMax(final double yMax) {
+        m_yMax = yMax;
+    }
+
+    /**
+     * @return the scaleMode
+     */
+    public String getScaleMode() {
+        return m_scaleMode;
+    }
+
+    /**
+     * @param scaleMode the scaleMode to set
+     */
+    public void setScaleMode(final String scaleMode) {
+        m_scaleMode = scaleMode;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -168,6 +243,11 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         settings.addDouble(HierarchicalClusterAssignerConfig.CFG_THRESHOLD, getThreshold());
         settings.addStringArray(HierarchicalClusterAssignerConfig.CFG_SELECTION, getSelection());
         settings.addStringArray(HierarchicalClusterAssignerConfig.CFG_CLUSTER_LABELS, getClusterLabels());
+        settings.addString(HierarchicalClusterAssignerConfig.CFG_X_MIN, getXMin());
+        settings.addString(HierarchicalClusterAssignerConfig.CFG_X_MAX, getXMax());
+        settings.addDouble(HierarchicalClusterAssignerConfig.CFG_Y_MIN, getYMin());
+        settings.addDouble(HierarchicalClusterAssignerConfig.CFG_Y_MAX, getYMax());
+        settings.addString(HierarchicalClusterAssignerConfig.CFG_SCALE_MODE, getScaleMode());
     }
 
     /**
@@ -181,6 +261,11 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         m_threshold = settings.getDouble(HierarchicalClusterAssignerConfig.CFG_THRESHOLD);
         m_selection = settings.getStringArray(HierarchicalClusterAssignerConfig.CFG_SELECTION);
         m_clusterLabels = settings.getStringArray(HierarchicalClusterAssignerConfig.CFG_CLUSTER_LABELS);
+        m_xMin = settings.getString(HierarchicalClusterAssignerConfig.CFG_X_MIN);
+        m_xMax = settings.getString(HierarchicalClusterAssignerConfig.CFG_X_MAX);
+        m_yMin = settings.getDouble(HierarchicalClusterAssignerConfig.CFG_Y_MIN);
+        m_yMax = settings.getDouble(HierarchicalClusterAssignerConfig.CFG_Y_MAX);
+        m_scaleMode = settings.getString(HierarchicalClusterAssignerConfig.CFG_SCALE_MODE);
     }
 
     /**
@@ -202,6 +287,11 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_threshold, other.getThreshold())
                 .append(m_selection, other.getSelection())
                 .append(m_clusterLabels, other.getClusterLabels())
+                .append(m_xMin, other.getXMin())
+                .append(m_xMax, other.getXMax())
+                .append(m_yMin, other.getYMin())
+                .append(m_yMax, other.getYMax())
+                .append(m_scaleMode, other.getScaleMode())
                 .isEquals();
     }
 
@@ -217,6 +307,11 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_threshold)
                 .append(m_selection)
                 .append(m_clusterLabels)
+                .append(m_xMin)
+                .append(m_xMax)
+                .append(m_yMin)
+                .append(m_yMax)
+                .append(m_scaleMode)
                 .toHashCode();
     }
 

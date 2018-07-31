@@ -163,6 +163,46 @@ public class HierarchicalClusterAssignerConfig {
     final static boolean DEFAULT_SHOW_WARNINGS_IN_VIEW = true;
     private boolean m_showWarningsInView = DEFAULT_SHOW_WARNINGS_IN_VIEW;
 
+    final static String CFG_ENABLE_ZOOM_MOUSE = "enableZoomMouse";
+    final static boolean DEFAULT_ENABLE_ZOOM_MOUSE = true;
+    private boolean m_enableZoomMouse = DEFAULT_ENABLE_ZOOM_MOUSE;
+
+    final static String CFG_ENABLE_ZOOM_DRAG = "enableZoomDrag";
+    final static boolean DEFAULT_ENABLE_ZOOM_DRAG = false;
+    private boolean m_enableZoomDrag = DEFAULT_ENABLE_ZOOM_DRAG;
+
+    final static String CFG_SHOW_ZOOM_RESET_BUTTON = "showZoomResetButton";
+    final static boolean DEFAULT_SHOW_ZOOM_RESET_BUTTON = false;
+    private boolean m_showZoomResetButton = DEFAULT_SHOW_ZOOM_RESET_BUTTON;
+
+    final static String CFG_ENABLE_PANNING = "enablePanning";
+    final static boolean DEFAULT_ENABLE_PANNING = true;
+    private boolean m_enablePanning = DEFAULT_ENABLE_PANNING;
+
+    final static String CFG_X_MIN = "xMin";
+    final static String DEFAULT_X_MIN = null;
+    private String m_xMin = DEFAULT_X_MIN;
+
+    final static String CFG_X_MAX = "xMax";
+    final static String DEFAULT_X_MAX = null;
+    private String m_xMax = DEFAULT_X_MAX;
+
+    final static String CFG_Y_MIN = "yMin";
+    final static double DEFAULT_Y_MIN = 0.0;
+    private double m_yMin = DEFAULT_Y_MIN;
+
+    final static String CFG_Y_MAX = "yMax";
+    final static double DEFAULT_Y_MAX = 0.0;
+    private double m_yMax = DEFAULT_Y_MAX;
+
+    final static String CFG_ENABLE_SCALE_OPTIONS = "enableScaleOptions";
+    final static boolean DEFAULT_ENABLE_SCALE_OPTIONS = true;
+    private boolean m_enableScaleOptions = DEFAULT_ENABLE_SCALE_OPTIONS;
+
+    final static String CFG_SCALE_MODE = "scaleMode";
+    final static String DEFAULT_SCALE_MODE = "linear";
+    private String m_scaleMode = DEFAULT_SCALE_MODE;
+
     /**
      * @return the hideInWizard
      */
@@ -524,6 +564,146 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
+     * @return the enableZoomMouse
+     */
+    public boolean getEnableZoomMouse() {
+        return m_enableZoomMouse;
+    }
+
+    /**
+     * @param enableZoomMouse the enableZoomMouse to set
+     */
+    public void setEnableZoomMouse(final boolean enableZoomMouse) {
+        m_enableZoomMouse = enableZoomMouse;
+    }
+
+    /**
+     * @return the enableZoomDrag
+     */
+    public boolean getEnableZoomDrag() {
+        return m_enableZoomDrag;
+    }
+
+    /**
+     * @param enableZoomDrag the enableZoomDrag to set
+     */
+    public void setEnableZoomDrag(final boolean enableZoomDrag) {
+        m_enableZoomDrag = enableZoomDrag;
+    }
+
+    /**
+     * @return the showZoomResetButton
+     */
+    public boolean getShowZoomResetButton() {
+        return m_showZoomResetButton;
+    }
+
+    /**
+     * @param showZoomResetButton the showZoomResetButton to set
+     */
+    public void setShowZoomResetButton(final boolean showZoomResetButton) {
+        m_showZoomResetButton = showZoomResetButton;
+    }
+
+    /**
+     * @return the enablePanning
+     */
+    public boolean getEnablePanning() {
+        return m_enablePanning;
+    }
+
+    /**
+     * @param enablePanning the enablePanning to set
+     */
+    public void setEnablePanning(final boolean enablePanning) {
+        m_enablePanning = enablePanning;
+    }
+
+    /**
+     * @return the xMin
+     */
+    public String getXMin() {
+        return m_xMin;
+    }
+
+    /**
+     * @param xMin the xMin to set
+     */
+    public void setXMin(final String xMin) {
+        m_xMin = xMin;
+    }
+
+    /**
+     * @return the xMax
+     */
+    public String getXMax() {
+        return m_xMax;
+    }
+
+    /**
+     * @param xMax the xMax to set
+     */
+    public void setXMax(final String xMax) {
+        m_xMax = xMax;
+    }
+
+    /**
+     * @return the yMin
+     */
+    public double getYMin() {
+        return m_yMin;
+    }
+
+    /**
+     * @param yMin the yMin to set
+     */
+    public void setYMin(final double yMin) {
+        m_yMin = yMin;
+    }
+
+    /**
+     * @return the yMax
+     */
+    public double getYMax() {
+        return m_yMax;
+    }
+
+    /**
+     * @param yMax the yMax to set
+     */
+    public void setYMax(final double yMax) {
+        m_yMax = yMax;
+    }
+
+    /**
+     * @return the enableScaleOptions
+     */
+    public boolean getEnableScaleOptions() {
+        return m_enableScaleOptions;
+    }
+
+    /**
+     * @param enableScaleOptions the enableScaleOptions to set
+     */
+    public void setEnableScaleOptions(final boolean enableScaleOptions) {
+        m_enableScaleOptions = enableScaleOptions;
+    }
+
+    /**
+     * @return the scaleMode
+     */
+    public String getScaleMode() {
+        return m_scaleMode;
+    }
+
+    /**
+     * @param scaleMode the scaleMode to set
+     */
+    public void setScaleMode(final String scaleMode) {
+        m_scaleMode = scaleMode;
+    }
+
+    /**
      * Saves current parameters to settings object.
      *
      * @param settings To save to.
@@ -555,6 +735,16 @@ public class HierarchicalClusterAssignerConfig {
         settings.addString(CFG_SELECTION_COLUMN_NAME, m_selectionColumnName);
         settings.addString(CFG_CLUSTER_COLUMN_NAME, m_clusterColumnName);
         settings.addBoolean(CFG_SHOW_WARNINGS_IN_VIEW, m_showWarningsInView);
+        settings.addBoolean(CFG_ENABLE_ZOOM_MOUSE, m_enableZoomMouse);
+        settings.addBoolean(CFG_ENABLE_ZOOM_DRAG, m_enableZoomDrag);
+        settings.addBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, m_showZoomResetButton);
+        settings.addBoolean(CFG_ENABLE_PANNING, m_enablePanning);
+        settings.addString(CFG_X_MIN, m_xMin);
+        settings.addString(CFG_X_MAX, m_xMax);
+        settings.addDouble(CFG_Y_MIN, m_yMin);
+        settings.addDouble(CFG_Y_MAX, m_yMax);
+        settings.addBoolean(CFG_ENABLE_SCALE_OPTIONS, m_enableScaleOptions);
+        settings.addString(CFG_SCALE_MODE, m_scaleMode);
     }
 
     /**
@@ -587,6 +777,16 @@ public class HierarchicalClusterAssignerConfig {
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME);
         m_clusterColumnName = settings.getString(CFG_CLUSTER_COLUMN_NAME);
         m_showWarningsInView = settings.getBoolean(CFG_SHOW_WARNINGS_IN_VIEW);
+        m_enableZoomMouse = settings.getBoolean(CFG_ENABLE_ZOOM_MOUSE);
+        m_enableZoomDrag = settings.getBoolean(CFG_ENABLE_ZOOM_DRAG);
+        m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON);
+        m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING);
+        m_xMin = settings.getString(CFG_X_MIN);
+        m_xMax = settings.getString(CFG_X_MAX);
+        m_yMin = settings.getDouble(CFG_Y_MIN);
+        m_yMax = settings.getDouble(CFG_Y_MAX);
+        m_enableScaleOptions = settings.getBoolean(CFG_ENABLE_SCALE_OPTIONS);
+        m_scaleMode = settings.getString(CFG_SCALE_MODE);
 
         m_numClusters = settings.getInt(CFG_NUM_CLUSTERS);
         if (m_numClusters < 1) {
@@ -634,5 +834,15 @@ public class HierarchicalClusterAssignerConfig {
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME, DEFAULT_SELECTION_COLUMN_NAME);
         m_clusterColumnName = settings.getString(CFG_CLUSTER_COLUMN_NAME, DEFAULT_CLUSTER_COLUMN_NAME);
         m_showWarningsInView = settings.getBoolean(CFG_SHOW_WARNINGS_IN_VIEW, DEFAULT_SHOW_WARNINGS_IN_VIEW);
+        m_enableZoomMouse = settings.getBoolean(CFG_ENABLE_ZOOM_MOUSE, DEFAULT_ENABLE_ZOOM_MOUSE);
+        m_enableZoomDrag = settings.getBoolean(CFG_ENABLE_ZOOM_DRAG, DEFAULT_ENABLE_ZOOM_DRAG);
+        m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, DEFAULT_SHOW_ZOOM_RESET_BUTTON);
+        m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING, DEFAULT_ENABLE_PANNING);
+        m_xMin = settings.getString(CFG_X_MIN, DEFAULT_X_MIN);
+        m_xMax = settings.getString(CFG_X_MAX, DEFAULT_X_MAX);
+        m_yMin = settings.getDouble(CFG_Y_MIN, DEFAULT_Y_MIN);
+        m_yMax = settings.getDouble(CFG_Y_MAX, DEFAULT_Y_MAX);
+        m_enableScaleOptions = settings.getBoolean(CFG_ENABLE_SCALE_OPTIONS, DEFAULT_ENABLE_SCALE_OPTIONS);
+        m_scaleMode = settings.getString(CFG_SCALE_MODE, DEFAULT_SCALE_MODE);
     }
 }

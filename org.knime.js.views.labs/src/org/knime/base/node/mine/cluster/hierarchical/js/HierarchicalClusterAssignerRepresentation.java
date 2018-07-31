@@ -86,6 +86,12 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
     private boolean m_showWarningsInView;
 
+    private boolean m_enableZoomMouse;
+    private boolean m_enableZoomDrag;
+    private boolean m_showZoomResetButton;
+    private boolean m_enablePanning;
+    private boolean m_enableScaleOptions;
+
     private final static String CFG_DATA_TABLE_ID = "dataTableID";
     private String m_dataTableID;
 
@@ -302,6 +308,76 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the enableZoomMouse
+     */
+    public boolean getEnableZoomMouse() {
+        return m_enableZoomMouse;
+    }
+
+    /**
+     * @param enableZoomMouse the enableZoomMouse to set
+     */
+    public void setEnableZoomMouse(final boolean enableZoomMouse) {
+        m_enableZoomMouse = enableZoomMouse;
+    }
+
+    /**
+     * @return the enableZoomDrag
+     */
+    public boolean getEnableZoomDrag() {
+        return m_enableZoomDrag;
+    }
+
+    /**
+     * @param enableZoomDrag the enableZoomDrag to set
+     */
+    public void setEnableZoomDrag(final boolean enableZoomDrag) {
+        m_enableZoomDrag = enableZoomDrag;
+    }
+
+    /**
+     * @return the showZoomResetButton
+     */
+    public boolean getShowZoomResetButton() {
+        return m_showZoomResetButton;
+    }
+
+    /**
+     * @param showZoomResetButton the showZoomResetButton to set
+     */
+    public void setShowZoomResetButton(final boolean showZoomResetButton) {
+        m_showZoomResetButton = showZoomResetButton;
+    }
+
+    /**
+     * @return the enablePanning
+     */
+    public boolean getEnablePanning() {
+        return m_enablePanning;
+    }
+
+    /**
+     * @param enablePanning the enablePanning to set
+     */
+    public void setEnablePanning(final boolean enablePanning) {
+        m_enablePanning = enablePanning;
+    }
+
+    /**
+     * @return the enableScaleOptions
+     */
+    public boolean getEnableScaleOptions() {
+        return m_enableScaleOptions;
+    }
+
+    /**
+     * @param enableScaleOptions the enableScaleOptions to set
+     */
+    public void setEnableScaleOptions(final boolean enableScaleOptions) {
+        m_enableScaleOptions = enableScaleOptions;
+    }
+
+    /**
      * @return the dataTableID
      */
     public String getDataTableID() {
@@ -355,6 +431,12 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW, getShowWarningsInView());
 
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_MOUSE, getEnableZoomMouse());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_DRAG, getEnableZoomDrag());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_ZOOM_RESET_BUTTON, getShowZoomResetButton());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_PANNING, getEnablePanning());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_SCALE_OPTIONS, getEnableScaleOptions());
+
         settings.addString(CFG_DATA_TABLE_ID, getDataTableID());
         // Don't store JSON representation of tree
     }
@@ -383,6 +465,12 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
         setSubscribeSelectionEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_SELECTION_EVENTS));
 
         setShowWarningsInView(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW));
+
+        setEnableZoomMouse(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_MOUSE));
+        setEnableZoomDrag(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_DRAG));
+        setShowZoomResetButton(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_ZOOM_RESET_BUTTON));
+        setEnablePanning(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_PANNING));
+        setEnableScaleOptions(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_SCALE_OPTIONS));
 
         setDataTableID(settings.getString(CFG_DATA_TABLE_ID));
     }
@@ -417,6 +505,11 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_publishSelectionEvents, other.getPublishSelectionEvents())
                 .append(m_subscribeSelectionEvents, other.getSubscribeSelectionEvents())
                 .append(m_showWarningsInView, other.getShowWarningsInView())
+                .append(m_enableZoomMouse, other.getEnableZoomMouse())
+                .append(m_enableZoomDrag, other.getEnableZoomDrag())
+                .append(m_showZoomResetButton, other.getShowZoomResetButton())
+                .append(m_enablePanning, other.getEnablePanning())
+                .append(m_enableScaleOptions, other.getEnableScaleOptions())
                 .append(m_dataTableID, other.getDataTableID())
                 .append(m_tree, other.getTree())
                 .isEquals();
@@ -443,6 +536,11 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_publishSelectionEvents)
                 .append(m_subscribeSelectionEvents)
                 .append(m_showWarningsInView)
+                .append(m_enableZoomMouse)
+                .append(m_enableZoomDrag)
+                .append(m_showZoomResetButton)
+                .append(m_enablePanning)
+                .append(m_enableScaleOptions)
                 .append(m_dataTableID)
                 .append(m_tree)
                 .toHashCode();

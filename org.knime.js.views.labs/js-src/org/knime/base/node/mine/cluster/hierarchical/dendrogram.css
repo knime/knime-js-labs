@@ -1,7 +1,10 @@
+.viewport {
+    clip-path: url(#viewportClip);
+}
+
 .link {
     fill: none;
-    stroke: #BBB;
-    stroke-width: 1;
+    stroke: #000000;
     shape-rendering: crispEdges;
 }
 
@@ -9,7 +12,15 @@
     shape-rendering: crispEdges;
 }
 
-.label {
-    font: 12px sans-serif;
+.knime-axis.knime-x {
+    clip-path: url(#xAxisClip);
+}
+
+.knime-axis.knime-x .knime-tick-label {
     text-anchor: end;
+    transform: rotate(-90deg);
+}
+
+.knime-axis .knime-tick-line {
+    stroke: #000000;
 }

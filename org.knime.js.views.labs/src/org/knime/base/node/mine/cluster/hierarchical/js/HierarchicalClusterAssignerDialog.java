@@ -99,6 +99,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private final JCheckBox m_displayFullscreenButtonCheckBox;
     private final JCheckBox m_enableNumClusterEditCheckBox;
     private final JCheckBox m_enableThresholdValueCheckBox;
+    private final JCheckBox m_enableScaleOptionsCheckBox;
 
     private final JCheckBox m_enableSelectionCheckBox;
     private final JCheckBox m_publishSelectionEventsCheckBox;
@@ -110,6 +111,12 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private final JRadioButton m_clusterCountModeRadioButton;
     private final JRadioButton m_distanceThresholdModeRadioButton;
     private final JTextField m_clusterColumnNameTextField;
+
+    private final JCheckBox m_enablePanningCheckBox;
+
+    private final JCheckBox m_enableZoomMouseCheckBox;
+    private final JCheckBox m_enableZoomDragCheckBox;
+    private final JCheckBox m_showZoomResetButtonCheckBox;
 
     HierarchicalClusterAssignerDialog() {
         m_numClustersSpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
@@ -147,6 +154,12 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_publishSelectionEventsCheckBox = new JCheckBox("Publish selection events");
         m_subscribeSelectionEventsCheckBox = new JCheckBox("Subscribe to selection events");
         m_selectionColumnNameTextField = new JTextField(TEXT_FIELD_SIZE);
+        m_enableZoomMouseCheckBox = new JCheckBox("Enable mouse wheel zooming");
+        m_enableZoomDragCheckBox = new JCheckBox("Enable drag zooming");
+        m_showZoomResetButtonCheckBox = new JCheckBox("Show zoom reset button");
+        m_enablePanningCheckBox = new JCheckBox("Enable panning");
+        m_enableScaleOptionsCheckBox= new JCheckBox("Enable scale options");
+
 
         m_generateImageCheckBox.addChangeListener(new ChangeListener() {
             @Override
@@ -195,6 +208,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
         config.setEnableNumClusterEdit(m_enableNumClusterEditCheckBox.isSelected());
         config.setEnableThresholdValue(m_enableThresholdValueCheckBox.isSelected());
+        config.setEnableScaleOptions(m_enableScaleOptionsCheckBox.isSelected());
 
         config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
         config.setPublishSelectionEvents(m_publishSelectionEventsCheckBox.isSelected());
@@ -205,6 +219,12 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         config.setThreshold((Double) m_distanceThresholdSpinner.getValue());
         config.setNumClustersMode(m_clusterCountModeRadioButton.isSelected());
         config.setClusterColumnName(m_clusterColumnNameTextField.getText());
+
+        config.setEnablePanning(m_enablePanningCheckBox.isSelected());
+
+        config.setEnableZoomMouse(m_enableZoomMouseCheckBox.isSelected());
+        config.setEnableZoomDrag(m_enableZoomDragCheckBox.isSelected());
+        config.setShowZoomResetButton(m_showZoomResetButtonCheckBox.isSelected());
 
         config.saveSettings(settings);
     }
@@ -234,6 +254,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_displayFullscreenButtonCheckBox.setSelected(config.getDisplayFullscreenButton());
         m_enableNumClusterEditCheckBox.setSelected(config.getEnableNumClusterEdit());
         m_enableThresholdValueCheckBox.setSelected(config.getEnableThresholdValue());
+        m_enableScaleOptionsCheckBox.setSelected(config.getEnableScaleOptions());
 
         m_enableSelectionCheckBox.setSelected(config.getEnableSelection());
         m_publishSelectionEventsCheckBox.setSelected(config.getPublishSelectionEvents());
@@ -247,6 +268,12 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_numClustersSpinner.setEnabled(m_clusterCountModeRadioButton.isSelected());
         m_distanceThresholdSpinner.setEnabled(m_distanceThresholdModeRadioButton.isSelected());
         m_clusterColumnNameTextField.setText(config.getClusterColumnName());
+
+        m_enablePanningCheckBox.setSelected(config.getEnablePanning());
+
+        m_enableZoomMouseCheckBox.setSelected(config.getEnableZoomMouse());
+        m_enableZoomDragCheckBox.setSelected(config.getEnableZoomDrag());
+        m_showZoomResetButtonCheckBox.setSelected(config.getShowZoomResetButton());
 
         enableGenerateImage();
         enableEditView();
@@ -268,6 +295,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_enableNumClusterEditCheckBox.setEnabled(enabled);
         m_enableThresholdValueCheckBox.setEnabled(enabled);
         m_displayFullscreenButtonCheckBox.setEnabled(enabled);
+        m_enableScaleOptionsCheckBox.setEnabled(enabled);
     }
 
     private void enableSelections() {
@@ -417,6 +445,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         viewControlsPanel.add(m_enableThresholdValueCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
+        viewControlsPanel.add(m_enableScaleOptionsCheckBox, viewControlsConstraints);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -441,6 +470,42 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         selectionPanel.add(m_publishSelectionEventsCheckBox, selectionConstraints);
         selectionConstraints.gridx++;
         selectionPanel.add(m_subscribeSelectionEventsCheckBox, selectionConstraints);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+
+        // Panning
+        final JPanel panningPanel = new JPanel(new GridBagLayout());
+        panningPanel.setBorder(BorderFactory.createTitledBorder("Panning"));
+        p.add(panningPanel, gbc);
+        final GridBagConstraints panningConstraints = new GridBagConstraints();
+        panningConstraints.insets = new Insets(5, 5, 5, 5);
+        panningConstraints.anchor = GridBagConstraints.NORTHWEST;
+        panningConstraints.gridx = 0;
+        panningConstraints.gridy = 0;
+        panningPanel.add(m_enablePanningCheckBox, panningConstraints);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+
+        // Zoom
+        final JPanel zoomPanel = new JPanel(new GridBagLayout());
+        zoomPanel.setBorder(BorderFactory.createTitledBorder("Zoom"));
+        p.add(zoomPanel, gbc);
+        final GridBagConstraints zoomConstraints = new GridBagConstraints();
+        zoomConstraints.insets = new Insets(5, 5, 5, 5);
+        zoomConstraints.anchor = GridBagConstraints.NORTHWEST;
+        zoomConstraints.gridx = 0;
+        zoomConstraints.gridy = 0;
+        zoomPanel.add(m_enableZoomMouseCheckBox, zoomConstraints);
+        zoomConstraints.gridx++;
+        zoomPanel.add(m_enableZoomDragCheckBox, zoomConstraints);
+        zoomConstraints.gridx = 0;
+        zoomConstraints.gridy++;
+        zoomPanel.add(m_showZoomResetButtonCheckBox, zoomConstraints);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
 
         return p;
     }
