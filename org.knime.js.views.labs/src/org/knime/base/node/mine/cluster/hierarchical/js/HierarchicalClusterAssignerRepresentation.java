@@ -48,6 +48,8 @@
  */
 package org.knime.base.node.mine.cluster.hierarchical.js;
 
+import java.util.Arrays;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.core.node.InvalidSettingsException;
@@ -86,11 +88,16 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
     private boolean m_showWarningsInView;
 
-    private boolean m_enableZoomMouse;
-    private boolean m_enableZoomDrag;
+    private boolean m_enableZoom;
     private boolean m_showZoomResetButton;
     private boolean m_enablePanning;
-    private boolean m_enableScaleOptions;
+    private boolean m_enableLocalScaleToggle;
+
+    private boolean m_enableChangeOrientation;
+
+    private String[] m_colorPalette;
+
+    private boolean m_subscribeFilterEvents;
 
     private final static String CFG_DATA_TABLE_ID = "dataTableID";
     private String m_dataTableID;
@@ -308,31 +315,17 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     }
 
     /**
-     * @return the enableZoomMouse
+     * @return the enableZoom
      */
-    public boolean getEnableZoomMouse() {
-        return m_enableZoomMouse;
+    public boolean getEnableZoom() {
+        return m_enableZoom;
     }
 
     /**
-     * @param enableZoomMouse the enableZoomMouse to set
+     * @param enableZoom the enableZoomMouse to set
      */
-    public void setEnableZoomMouse(final boolean enableZoomMouse) {
-        m_enableZoomMouse = enableZoomMouse;
-    }
-
-    /**
-     * @return the enableZoomDrag
-     */
-    public boolean getEnableZoomDrag() {
-        return m_enableZoomDrag;
-    }
-
-    /**
-     * @param enableZoomDrag the enableZoomDrag to set
-     */
-    public void setEnableZoomDrag(final boolean enableZoomDrag) {
-        m_enableZoomDrag = enableZoomDrag;
+    public void setEnableZoom(final boolean enableZoom) {
+        m_enableZoom = enableZoom;
     }
 
     /**
@@ -364,17 +357,59 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     }
 
     /**
-     * @return the enableScaleOptions
+     * @return the enableLogScaleToggle
      */
-    public boolean getEnableScaleOptions() {
-        return m_enableScaleOptions;
+    public boolean getEnableLogScaleToggle() {
+        return m_enableLocalScaleToggle;
     }
 
     /**
-     * @param enableScaleOptions the enableScaleOptions to set
+     * @param enableLogScaleToggle the enableLogScaleToggle to set
      */
-    public void setEnableScaleOptions(final boolean enableScaleOptions) {
-        m_enableScaleOptions = enableScaleOptions;
+    public void setEnableLogScaleToggle(final boolean enableLogScaleToggle) {
+        m_enableLocalScaleToggle = enableLogScaleToggle;
+    }
+
+    /**
+     * @return the enableChangeOrientation
+     */
+    public boolean getEnableChangeOrientation() {
+        return m_enableChangeOrientation;
+    }
+
+    /**
+     * @param enableChangeOrientation the enableChangeOrientation to set
+     */
+    public void setEnableChangeOrientation(final boolean enableChangeOrientation) {
+        m_enableChangeOrientation = enableChangeOrientation;
+    }
+
+    /**
+     * @return the colorPalette
+     */
+    public String[] getColorPalette() {
+        return m_colorPalette;
+    }
+
+    /**
+     * @param colorPalette the colorPalette to set
+     */
+    public void setColorPalette(final String[] colorPalette) {
+        m_colorPalette = colorPalette;
+    }
+
+    /**
+     * @return the subscribeFilterEvents
+     */
+    public boolean getSubscribeFilterEvents() {
+        return m_subscribeFilterEvents;
+    }
+
+    /**
+     * @param subscribeFilterEvents the subscribeFilterEvents to set
+     */
+    public void setSubscribeFilterEvents(final boolean subscribeFilterEvents) {
+        m_subscribeFilterEvents = subscribeFilterEvents;
     }
 
     /**
@@ -431,11 +466,16 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW, getShowWarningsInView());
 
-        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_MOUSE, getEnableZoomMouse());
-        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_DRAG, getEnableZoomDrag());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM, getEnableZoom());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_ZOOM_RESET_BUTTON, getShowZoomResetButton());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_PANNING, getEnablePanning());
-        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_SCALE_OPTIONS, getEnableScaleOptions());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_LOG_SCALE_TOGGLE, getEnableLogScaleToggle());
+
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_CHANGE_ORIENTATION, getEnableChangeOrientation());
+
+        settings.addStringArray(HierarchicalClusterAssignerConfig.CFG_COLOR_PALETTE, getColorPalette());
+
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS, getSubscribeFilterEvents());
 
         settings.addString(CFG_DATA_TABLE_ID, getDataTableID());
         // Don't store JSON representation of tree
@@ -466,11 +506,16 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
         setShowWarningsInView(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW));
 
-        setEnableZoomMouse(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_MOUSE));
-        setEnableZoomDrag(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_DRAG));
+        setEnableZoom(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM));
         setShowZoomResetButton(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_ZOOM_RESET_BUTTON));
         setEnablePanning(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_PANNING));
-        setEnableScaleOptions(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_SCALE_OPTIONS));
+        setEnableLogScaleToggle(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_LOG_SCALE_TOGGLE));
+
+        setEnableChangeOrientation(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_CHANGE_ORIENTATION));
+
+        setColorPalette(settings.getStringArray(HierarchicalClusterAssignerConfig.CFG_COLOR_PALETTE));
+
+        setSubscribeFilterEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS));
 
         setDataTableID(settings.getString(CFG_DATA_TABLE_ID));
     }
@@ -505,14 +550,15 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_publishSelectionEvents, other.getPublishSelectionEvents())
                 .append(m_subscribeSelectionEvents, other.getSubscribeSelectionEvents())
                 .append(m_showWarningsInView, other.getShowWarningsInView())
-                .append(m_enableZoomMouse, other.getEnableZoomMouse())
-                .append(m_enableZoomDrag, other.getEnableZoomDrag())
+                .append(m_enableZoom, other.getEnableZoom())
                 .append(m_showZoomResetButton, other.getShowZoomResetButton())
                 .append(m_enablePanning, other.getEnablePanning())
-                .append(m_enableScaleOptions, other.getEnableScaleOptions())
+                .append(m_enableLocalScaleToggle, other.getEnableLogScaleToggle())
+                .append(m_enableChangeOrientation, other.getEnableChangeOrientation())
+                .append(m_subscribeFilterEvents, other.getSubscribeFilterEvents())
                 .append(m_dataTableID, other.getDataTableID())
                 .append(m_tree, other.getTree())
-                .isEquals();
+                .isEquals() && Arrays.equals(m_colorPalette, other.getColorPalette());
     }
 
     /**
@@ -536,11 +582,13 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_publishSelectionEvents)
                 .append(m_subscribeSelectionEvents)
                 .append(m_showWarningsInView)
-                .append(m_enableZoomMouse)
-                .append(m_enableZoomDrag)
+                .append(m_enableZoom)
                 .append(m_showZoomResetButton)
                 .append(m_enablePanning)
-                .append(m_enableScaleOptions)
+                .append(m_enableLocalScaleToggle)
+                .append(m_enableChangeOrientation)
+                .append(m_colorPalette)
+                .append(m_subscribeFilterEvents)
                 .append(m_dataTableID)
                 .append(m_tree)
                 .toHashCode();

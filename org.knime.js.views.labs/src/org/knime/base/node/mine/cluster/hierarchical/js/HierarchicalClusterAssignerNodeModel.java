@@ -100,6 +100,8 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
     private ClusterTreeModel m_tree;
     private BufferedDataTable m_table;
     private Map<DendrogramNode, Integer> m_nodeToId;
+    private List<RowKey> m_rowsWithoutLeaves;
+    private List<RowKey> m_leavesWithoutRows;
 
     /**
      * @param viewName The name of the interactive view
@@ -163,7 +165,7 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         m_tree = (ClusterTreeModel) inObjects[0];
         m_table = (BufferedDataTable) inObjects[1];
 
-        if (m_table.size() < m_config.getNumClusters()) {
+        if (m_table.size() < m_config.getNumClusters() && m_table.size() > 0) {
             throw new InvalidSettingsException("More clusters than data points selected");
         }
 
@@ -184,13 +186,18 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
         BufferedDataTable out = null;
         synchronized (getLock()) {
-            copyValueToConfig();
             final Map<RowKey, String> rowToCluster = assignClusters(m_config.getThreshold());
             final List<String> selection = Arrays.asList(getViewValue().getSelection());
             final ColumnRearranger createColumnRearranger = createColumnAppender(m_table.getDataTableSpec(), m_config.getEnableSelection(), rowToCluster, selection);
             out = exec.createColumnRearrangeTable(m_table, createColumnRearranger, exec);
         }
 
+        if (m_rowsWithoutLeaves != null && !m_rowsWithoutLeaves.isEmpty() && m_table.size() > 0) {
+            setWarningMessage(m_rowsWithoutLeaves.size() + " row(s) cannot be assigned because they are not represented in the given cluster tree");
+        }
+        if (m_leavesWithoutRows != null && !m_leavesWithoutRows.isEmpty() && m_table.size() > 0) {
+            setWarningMessage(m_leavesWithoutRows.size() + " cluster tree leaf(s) do not have corresponding row(s) in the given data table");
+        }
         return new PortObject[]{svgImageFromView, out};
     }
 
@@ -218,6 +225,8 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         m_tree = null;
         m_table = null;
         m_nodeToId = null;
+        m_rowsWithoutLeaves = null;
+        m_leavesWithoutRows = null;
         m_config.setSelection(HierarchicalClusterAssignerConfig.DEFAULT_SELECTION);
         m_config.setClusterLabels(HierarchicalClusterAssignerConfig.DEFAULT_CLUSTER_LABELS);
     }
@@ -351,7 +360,12 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         for (final DataRow row : m_table) {
             final DendrogramNode leaf = leaves.get(row.getKey());
             if (leaf == null) {
-                // Ignore
+                if (m_rowsWithoutLeaves == null) {
+                    m_rowsWithoutLeaves = new ArrayList<>();
+                }
+                if (!m_rowsWithoutLeaves.contains(row.getKey())) {
+                    m_rowsWithoutLeaves.add(row.getKey());
+                }
             } else if (leaf.getLeafDataPoint() == null && !(leaf instanceof ClusterViewNode)) {
                 throw new IllegalArgumentException(
                     "Cannot associate row data with leaf node of type " + leaf.getClass());
@@ -408,16 +422,22 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
     }
 
     private void copyValueToConfig() {
+        // Threshold and numClusters should be sync-ed by the view
         final HierarchicalClusterAssignerValue value = getViewValue();
         m_config.setTitle(value.getTitle());
         m_config.setSubtitle(value.getSubtitle());
         m_config.setNumClusters(value.getNumClusters());
-        m_config.setThreshold(value.getThreshold());
         m_config.setXMin(value.getXMin());
         m_config.setXMax(value.getXMax());
         m_config.setYMin(value.getYMin());
         m_config.setYMax(value.getYMax());
-        m_config.setScaleMode(value.getScaleMode());
+        m_config.setUseLogScale(value.getUseLogScale());
+        m_config.setOrientation(value.getOrientation());
+
+        // the view does not deal with normalized thresholds,
+        // so we want to sync to the non-normalized threshold always
+        m_config.setThreshold(value.getThreshold());
+        syncThresholds(false);
     }
 
     private void copyConfigToView() {
@@ -439,11 +459,13 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         representation.setPublishSelectionEvents(m_config.getPublishSelectionEvents());
         representation.setSubscribeSelectionEvents(m_config.getSubscribeSelectionEvents());
         representation.setShowWarningsInView(m_config.getShowWarningsInView());
-        representation.setEnableZoomMouse(m_config.getEnableZoomMouse());
-        representation.setEnableZoomDrag(m_config.getEnableZoomDrag());
+        representation.setEnableZoom(m_config.getEnableZoom());
         representation.setShowZoomResetButton(m_config.getShowZoomResetButton());
         representation.setEnablePanning(m_config.getEnablePanning());
-        representation.setEnableScaleOptions(m_config.getEnableScaleOptions());
+        representation.setEnableLogScaleToggle(m_config.getEnableLogScaleToggle());
+        representation.setEnableChangeOrientation(m_config.getEnableChangeOrientation());
+        representation.setColorPalette(m_config.getColorPalette());
+        representation.setSubscribeFilterEvents(m_config.getSubscribeFilterEvents());
         representation.setTree(new JSClusterModelTree(m_tree, m_nodeToId));
         representation.setDataTableID(getTableId(1));
 
@@ -454,6 +476,7 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
                 final double threshold = computeThresholdForNumClusters(m_config.getNumClusters());
                 m_config.setThreshold(threshold);
             } else {
+                syncThresholds(m_config.getUseNormalizedDistances());
                 final int numClusters = computeNumClustersFromThreshold(m_config.getThreshold());
                 m_config.setNumClusters(numClusters);
             }
@@ -469,7 +492,8 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
             if (m_tree != null) {
                 value.setYMax(m_tree.getClusterDistances()[m_tree.getClusterDistances().length - 1]);
             }
-            value.setScaleMode(m_config.getScaleMode());
+            value.setUseLogScale(m_config.getUseLogScale());
+            value.setOrientation(m_config.getOrientation());
         }
     }
 
@@ -498,6 +522,9 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
 
                 @Override
                 public DataCell getCell(final DataRow row) {
+                    if (m_rowsWithoutLeaves != null && m_rowsWithoutLeaves.contains(row.getKey())) {
+                        return DataType.getMissingCell();
+                    }
                     if (selection != null && !selection.isEmpty()) {
                         return BooleanCellFactory.create(selection.contains(row.getKey().toString()));
                     }
@@ -539,19 +566,28 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         return assignedClusters;
     }
 
-    private static void assignClusterLabelToRows(final DendrogramNode cluster, final String label, final Map<RowKey, String> assignedClusters) {
+    private void assignClusterLabelToRows(final DendrogramNode cluster, final String label,
+        final Map<RowKey, String> assignedClusters) {
         if (cluster.isLeaf()) {
             assignedClusters.put(getLeafRowKey(cluster), label);
         }
 
         final Deque<DendrogramNode> stack = new ArrayDeque<>();
         stack.push(cluster);
-        while(!stack.isEmpty()) {
+        while (!stack.isEmpty()) {
             final DendrogramNode n = stack.pop();
             if (n.isLeaf()) {
-                assignedClusters.put(getLeafRowKey(n), label);
-            }
-            else {
+                final RowKey key = getLeafRowKey(n);
+                if (n.getLeafDataPoint() == null) {
+                    if (m_leavesWithoutRows == null) {
+                        m_leavesWithoutRows = new ArrayList<>();
+                    }
+                    if (!m_leavesWithoutRows.contains(key)) {
+                        m_leavesWithoutRows.add(key);
+                    }
+                }
+                assignedClusters.put(key, label);
+            } else {
                 stack.push(n.getFirstSubnode());
                 stack.push(n.getSecondSubnode());
             }
@@ -585,5 +621,14 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
             node = node.getSecondSubnode();
         }
         return getLeafRowKey(node);
+    }
+
+    private void syncThresholds(final boolean useNormalized) {
+        final double maxDist = m_tree.getClusterDistances()[m_tree.getClusterDistances().length - 1];
+        if (useNormalized) {
+            m_config.setThreshold(m_config.getNormalizedThreshold() * maxDist);
+        } else {
+            m_config.setNormalizedThreshold(m_config.getThreshold() / maxDist);
+        }
     }
 }

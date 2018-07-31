@@ -143,6 +143,14 @@ public class HierarchicalClusterAssignerConfig {
     final static boolean DEFAULT_NUM_CLUSTERS_MODE = true;
     private boolean m_numClustersMode = DEFAULT_NUM_CLUSTERS_MODE;
 
+    final static String CFG_USE_NORMALIZED_DISTANCES = "useNormalizedDistances";
+    final static boolean DEFAULT_USE_NORMALIZED_DISTANCES = true;
+    private boolean m_useNormalizedDistances = DEFAULT_USE_NORMALIZED_DISTANCES;
+
+    final static String CFG_NORMALIZED_THRESHOLD = "normalizedThreshold";
+    final static double DEFAULT_NORMALIZED_THRESHOLD = 0;
+    private double m_normalizedThreshold = DEFAULT_NORMALIZED_THRESHOLD;
+
     final static String CFG_ENABLE_CLUSTER_COLOR = "enableClusterColor";
     final static boolean DEFAULT_ENABLE_CLUSTER_COLOR = true;
     private boolean m_enableClusterColor = DEFAULT_ENABLE_CLUSTER_COLOR;
@@ -163,13 +171,9 @@ public class HierarchicalClusterAssignerConfig {
     final static boolean DEFAULT_SHOW_WARNINGS_IN_VIEW = true;
     private boolean m_showWarningsInView = DEFAULT_SHOW_WARNINGS_IN_VIEW;
 
-    final static String CFG_ENABLE_ZOOM_MOUSE = "enableZoomMouse";
-    final static boolean DEFAULT_ENABLE_ZOOM_MOUSE = true;
-    private boolean m_enableZoomMouse = DEFAULT_ENABLE_ZOOM_MOUSE;
-
-    final static String CFG_ENABLE_ZOOM_DRAG = "enableZoomDrag";
-    final static boolean DEFAULT_ENABLE_ZOOM_DRAG = false;
-    private boolean m_enableZoomDrag = DEFAULT_ENABLE_ZOOM_DRAG;
+    final static String CFG_ENABLE_ZOOM = "enableZoom";
+    final static boolean DEFAULT_ENABLE_ZOOM = true;
+    private boolean m_enableZoom = DEFAULT_ENABLE_ZOOM;
 
     final static String CFG_SHOW_ZOOM_RESET_BUTTON = "showZoomResetButton";
     final static boolean DEFAULT_SHOW_ZOOM_RESET_BUTTON = false;
@@ -195,13 +199,30 @@ public class HierarchicalClusterAssignerConfig {
     final static double DEFAULT_Y_MAX = 0.0;
     private double m_yMax = DEFAULT_Y_MAX;
 
-    final static String CFG_ENABLE_SCALE_OPTIONS = "enableScaleOptions";
-    final static boolean DEFAULT_ENABLE_SCALE_OPTIONS = true;
-    private boolean m_enableScaleOptions = DEFAULT_ENABLE_SCALE_OPTIONS;
+    final static String CFG_ENABLE_LOG_SCALE_TOGGLE = "enableLogScaleToggle";
+    final static boolean DEFAULT_ENABLE_LOG_SCALE_TOGGLE = true;
+    private boolean m_enableLogScaleToggle = DEFAULT_ENABLE_LOG_SCALE_TOGGLE;
 
-    final static String CFG_SCALE_MODE = "scaleMode";
-    final static String DEFAULT_SCALE_MODE = "linear";
-    private String m_scaleMode = DEFAULT_SCALE_MODE;
+    final static String CFG_USE_LOG_SCALE = "useLogScale";
+    final static boolean DEFAULT_USE_LOG_SCALE = false;
+    private boolean m_useLogScale = DEFAULT_USE_LOG_SCALE;
+
+    final static String CFG_ENABLE_CHANGE_ORIENTATION = "enableChangeOrientation";
+    final static boolean DEFAULT_ENABLE_CHANGE_ORIENTATION = true;
+    private boolean m_enableChangeOrientation = DEFAULT_ENABLE_CHANGE_ORIENTATION;
+
+    final static String CFG_ORIENTATION = "orientation";
+    final static HierarchicalClusterAssignerOrientation DEFAULT_ORIENTATION =
+        HierarchicalClusterAssignerOrientation.VERTICAL;
+    private HierarchicalClusterAssignerOrientation m_orientation = DEFAULT_ORIENTATION;
+
+    final static String CFG_COLOR_PALETTE = "colorPalette";
+    final static String[] DEFAULT_COLOR_PALETTE = ColorPaletteUtil.PALETTE_SET1;
+    private String[] m_colorPalette = DEFAULT_COLOR_PALETTE;
+
+    final static String CFG_SUBSCRIBE_FILTER_EVENTS = "subscribeFilterEvents";
+    final static boolean DEFAULT_SUBSCRIBE_FILTER_EVENTS = true;
+    private boolean m_subscribeFilterEvents = DEFAULT_SUBSCRIBE_FILTER_EVENTS;
 
     /**
      * @return the hideInWizard
@@ -494,6 +515,34 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
+     * @return the useNormalizedDistances
+     */
+    public boolean getUseNormalizedDistances() {
+        return m_useNormalizedDistances;
+    }
+
+    /**
+     * @param useNormalizedDistances the useNormalizedDistances to set
+     */
+    public void setUseNormalizedDistances(final boolean useNormalizedDistances) {
+        m_useNormalizedDistances = useNormalizedDistances;
+    }
+
+    /**
+     * @return the normalizedThreshold
+     */
+    public double getNormalizedThreshold() {
+        return m_normalizedThreshold;
+    }
+
+    /**
+     * @param normalizedThreshold the normalizedThreshold to set
+     */
+    public void setNormalizedThreshold(final double normalizedThreshold) {
+        m_normalizedThreshold = normalizedThreshold;
+    }
+
+    /**
      * @return the enableClusterColor
      */
     public boolean getEnableClusterColor() {
@@ -564,31 +613,17 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
-     * @return the enableZoomMouse
+     * @return the enableZoom
      */
-    public boolean getEnableZoomMouse() {
-        return m_enableZoomMouse;
+    public boolean getEnableZoom() {
+        return m_enableZoom;
     }
 
     /**
-     * @param enableZoomMouse the enableZoomMouse to set
+     * @param enableZoom the enableZoomMouse to set
      */
-    public void setEnableZoomMouse(final boolean enableZoomMouse) {
-        m_enableZoomMouse = enableZoomMouse;
-    }
-
-    /**
-     * @return the enableZoomDrag
-     */
-    public boolean getEnableZoomDrag() {
-        return m_enableZoomDrag;
-    }
-
-    /**
-     * @param enableZoomDrag the enableZoomDrag to set
-     */
-    public void setEnableZoomDrag(final boolean enableZoomDrag) {
-        m_enableZoomDrag = enableZoomDrag;
+    public void setEnableZoom(final boolean enableZoom) {
+        m_enableZoom = enableZoom;
     }
 
     /**
@@ -676,31 +711,87 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
-     * @return the enableScaleOptions
+     * @return the enableLogScaleToggle
      */
-    public boolean getEnableScaleOptions() {
-        return m_enableScaleOptions;
+    public boolean getEnableLogScaleToggle() {
+        return m_enableLogScaleToggle;
     }
 
     /**
-     * @param enableScaleOptions the enableScaleOptions to set
+     * @param enableLogScaleToggle the enableLogScaleToggle to set
      */
-    public void setEnableScaleOptions(final boolean enableScaleOptions) {
-        m_enableScaleOptions = enableScaleOptions;
+    public void setEnableLogScaleToggle(final boolean enableLogScaleToggle) {
+        m_enableLogScaleToggle = enableLogScaleToggle;
     }
 
     /**
-     * @return the scaleMode
+     * @return the useLogScale
      */
-    public String getScaleMode() {
-        return m_scaleMode;
+    public boolean getUseLogScale() {
+        return m_useLogScale;
     }
 
     /**
-     * @param scaleMode the scaleMode to set
+     * @param useLogScale the useLogScale to set
      */
-    public void setScaleMode(final String scaleMode) {
-        m_scaleMode = scaleMode;
+    public void setUseLogScale(final boolean useLogScale) {
+        m_useLogScale = useLogScale;
+    }
+
+    /**
+     * @return the enableChangeOrientation
+     */
+    public boolean getEnableChangeOrientation() {
+        return m_enableChangeOrientation;
+    }
+
+    /**
+     * @param enableChangeOrientation the enableChangeOrientation to set
+     */
+    public void setEnableChangeOrientation(final boolean enableChangeOrientation) {
+        m_enableChangeOrientation = enableChangeOrientation;
+    }
+
+    /**
+     * @return the orientation
+     */
+    public HierarchicalClusterAssignerOrientation getOrientation() {
+        return m_orientation;
+    }
+
+    /**
+     * @param orientation the orientation to set
+     */
+    public void setOrientation(final HierarchicalClusterAssignerOrientation orientation) {
+        m_orientation = orientation;
+    }
+
+    /**
+     * @return the colorPalette
+     */
+    public String[] getColorPalette() {
+        return m_colorPalette;
+    }
+
+    /**
+     * @param colorPalette the colorPalette to set
+     */
+    public void setColorPalette(final String[] colorPalette) {
+        m_colorPalette = colorPalette;
+    }
+
+    /**
+     * @return the subscribeFilterEvents
+     */
+    public boolean getSubscribeFilterEvents() {
+        return m_subscribeFilterEvents;
+    }
+
+    /**
+     * @param subscribeFilterEvents the subscribeFilterEvents to set
+     */
+    public void setSubscribeFilterEvents(final boolean subscribeFilterEvents) {
+        m_subscribeFilterEvents = subscribeFilterEvents;
     }
 
     /**
@@ -730,21 +821,26 @@ public class HierarchicalClusterAssignerConfig {
         settings.addInt(CFG_NUM_CLUSTERS, m_numClusters);
         settings.addDouble(CFG_THRESHOLD, m_threshold);
         settings.addBoolean(CFG_NUM_CLUSTERS_MODE, m_numClustersMode);
+        settings.addBoolean(CFG_USE_NORMALIZED_DISTANCES, m_useNormalizedDistances);
+        settings.addDouble(CFG_NORMALIZED_THRESHOLD, m_normalizedThreshold);
         settings.addBoolean(CFG_ENABLE_CLUSTER_COLOR, m_enableClusterColor);
         settings.addBoolean(CFG_ENABLE_THRESHOLD_VALUE, m_enableThresholdValue);
         settings.addString(CFG_SELECTION_COLUMN_NAME, m_selectionColumnName);
         settings.addString(CFG_CLUSTER_COLUMN_NAME, m_clusterColumnName);
         settings.addBoolean(CFG_SHOW_WARNINGS_IN_VIEW, m_showWarningsInView);
-        settings.addBoolean(CFG_ENABLE_ZOOM_MOUSE, m_enableZoomMouse);
-        settings.addBoolean(CFG_ENABLE_ZOOM_DRAG, m_enableZoomDrag);
+        settings.addBoolean(CFG_ENABLE_ZOOM, m_enableZoom);
         settings.addBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, m_showZoomResetButton);
         settings.addBoolean(CFG_ENABLE_PANNING, m_enablePanning);
         settings.addString(CFG_X_MIN, m_xMin);
         settings.addString(CFG_X_MAX, m_xMax);
         settings.addDouble(CFG_Y_MIN, m_yMin);
         settings.addDouble(CFG_Y_MAX, m_yMax);
-        settings.addBoolean(CFG_ENABLE_SCALE_OPTIONS, m_enableScaleOptions);
-        settings.addString(CFG_SCALE_MODE, m_scaleMode);
+        settings.addBoolean(CFG_ENABLE_LOG_SCALE_TOGGLE, m_enableLogScaleToggle);
+        settings.addBoolean(CFG_USE_LOG_SCALE, m_useLogScale);
+        settings.addBoolean(CFG_ENABLE_CHANGE_ORIENTATION, m_enableChangeOrientation);
+        settings.addString(CFG_ORIENTATION, m_orientation.toValue());
+        settings.addStringArray(CFG_COLOR_PALETTE, m_colorPalette);
+        settings.addBoolean(CFG_SUBSCRIBE_FILTER_EVENTS, m_subscribeFilterEvents);
     }
 
     /**
@@ -777,24 +873,33 @@ public class HierarchicalClusterAssignerConfig {
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME);
         m_clusterColumnName = settings.getString(CFG_CLUSTER_COLUMN_NAME);
         m_showWarningsInView = settings.getBoolean(CFG_SHOW_WARNINGS_IN_VIEW);
-        m_enableZoomMouse = settings.getBoolean(CFG_ENABLE_ZOOM_MOUSE);
-        m_enableZoomDrag = settings.getBoolean(CFG_ENABLE_ZOOM_DRAG);
+        m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM);
         m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON);
         m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING);
         m_xMin = settings.getString(CFG_X_MIN);
         m_xMax = settings.getString(CFG_X_MAX);
         m_yMin = settings.getDouble(CFG_Y_MIN);
         m_yMax = settings.getDouble(CFG_Y_MAX);
-        m_enableScaleOptions = settings.getBoolean(CFG_ENABLE_SCALE_OPTIONS);
-        m_scaleMode = settings.getString(CFG_SCALE_MODE);
+        m_enableLogScaleToggle = settings.getBoolean(CFG_ENABLE_LOG_SCALE_TOGGLE);
+        m_useLogScale = settings.getBoolean(CFG_USE_LOG_SCALE);
+        m_enableChangeOrientation = settings.getBoolean(CFG_ENABLE_CHANGE_ORIENTATION);
+        m_orientation = HierarchicalClusterAssignerOrientation.forValue(settings.getString(CFG_ORIENTATION));
+        m_colorPalette = settings.getStringArray(CFG_COLOR_PALETTE);
+        m_subscribeFilterEvents = settings.getBoolean(CFG_SUBSCRIBE_FILTER_EVENTS);
 
         m_numClusters = settings.getInt(CFG_NUM_CLUSTERS);
         if (m_numClusters < 1) {
             throw new InvalidSettingsException(
                 "Invalid number of clusters: " + m_numClusters + ". There must be at least 1 cluster.");
         }
+        m_useNormalizedDistances = settings.getBoolean(CFG_USE_NORMALIZED_DISTANCES);
+        m_normalizedThreshold = settings.getDouble(CFG_NORMALIZED_THRESHOLD);
+        if (m_useNormalizedDistances && (m_normalizedThreshold > 1 || m_normalizedThreshold < 0)) {
+            throw new InvalidSettingsException(
+                "Invalid normalized threshold " + m_normalizedThreshold + ". Normalized threshold must be between 0 and 1");
+        }
         m_threshold = settings.getDouble(CFG_THRESHOLD);
-        if (m_threshold < 0) {
+        if (m_threshold < 0 && !m_useNormalizedDistances) {
             throw new InvalidSettingsException("Invalid threshold, " + m_threshold + ". Threshold cannot be negative");
         }
 
@@ -831,18 +936,24 @@ public class HierarchicalClusterAssignerConfig {
         m_numClusters = settings.getInt(CFG_NUM_CLUSTERS, DEFAULT_NUM_CLUSTERS);
         m_threshold = settings.getDouble(CFG_THRESHOLD, DEFAULT_THRESHOLD);
         m_numClustersMode = settings.getBoolean(CFG_NUM_CLUSTERS_MODE, DEFAULT_NUM_CLUSTERS_MODE);
+        m_useNormalizedDistances = settings.getBoolean(CFG_USE_NORMALIZED_DISTANCES, DEFAULT_USE_NORMALIZED_DISTANCES);
+        m_normalizedThreshold = settings.getDouble(CFG_NORMALIZED_THRESHOLD, DEFAULT_NORMALIZED_THRESHOLD);
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME, DEFAULT_SELECTION_COLUMN_NAME);
         m_clusterColumnName = settings.getString(CFG_CLUSTER_COLUMN_NAME, DEFAULT_CLUSTER_COLUMN_NAME);
         m_showWarningsInView = settings.getBoolean(CFG_SHOW_WARNINGS_IN_VIEW, DEFAULT_SHOW_WARNINGS_IN_VIEW);
-        m_enableZoomMouse = settings.getBoolean(CFG_ENABLE_ZOOM_MOUSE, DEFAULT_ENABLE_ZOOM_MOUSE);
-        m_enableZoomDrag = settings.getBoolean(CFG_ENABLE_ZOOM_DRAG, DEFAULT_ENABLE_ZOOM_DRAG);
+        m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM, DEFAULT_ENABLE_ZOOM);
         m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, DEFAULT_SHOW_ZOOM_RESET_BUTTON);
         m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING, DEFAULT_ENABLE_PANNING);
         m_xMin = settings.getString(CFG_X_MIN, DEFAULT_X_MIN);
         m_xMax = settings.getString(CFG_X_MAX, DEFAULT_X_MAX);
         m_yMin = settings.getDouble(CFG_Y_MIN, DEFAULT_Y_MIN);
         m_yMax = settings.getDouble(CFG_Y_MAX, DEFAULT_Y_MAX);
-        m_enableScaleOptions = settings.getBoolean(CFG_ENABLE_SCALE_OPTIONS, DEFAULT_ENABLE_SCALE_OPTIONS);
-        m_scaleMode = settings.getString(CFG_SCALE_MODE, DEFAULT_SCALE_MODE);
+        m_enableLogScaleToggle = settings.getBoolean(CFG_ENABLE_LOG_SCALE_TOGGLE, DEFAULT_ENABLE_LOG_SCALE_TOGGLE);
+        m_useLogScale = settings.getBoolean(CFG_USE_LOG_SCALE, DEFAULT_USE_LOG_SCALE);
+        m_enableChangeOrientation = settings.getBoolean(CFG_ENABLE_CHANGE_ORIENTATION, DEFAULT_ENABLE_CHANGE_ORIENTATION);
+        m_orientation = HierarchicalClusterAssignerOrientation
+            .forValue(settings.getString(CFG_ORIENTATION, DEFAULT_ORIENTATION.toValue()));
+        m_colorPalette = settings.getStringArray(CFG_COLOR_PALETTE, DEFAULT_COLOR_PALETTE);
+        m_subscribeFilterEvents = settings.getBoolean(CFG_SUBSCRIBE_FILTER_EVENTS, DEFAULT_SUBSCRIBE_FILTER_EVENTS);
     }
 }

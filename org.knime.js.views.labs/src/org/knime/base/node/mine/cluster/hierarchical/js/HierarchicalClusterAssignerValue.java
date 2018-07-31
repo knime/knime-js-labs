@@ -76,7 +76,8 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
     private String m_xMax;
     private double m_yMin;
     private double m_yMax;
-    private String m_scaleMode;
+    private boolean m_useLogScale;
+    private HierarchicalClusterAssignerOrientation m_orientation;
 
     /**
      * @return the title
@@ -219,17 +220,31 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
     }
 
     /**
-     * @return the scaleMode
+     * @return the useLogScale
      */
-    public String getScaleMode() {
-        return m_scaleMode;
+    public boolean getUseLogScale() {
+        return m_useLogScale;
     }
 
     /**
-     * @param scaleMode the scaleMode to set
+     * @param useLogScale the useLogScale to set
      */
-    public void setScaleMode(final String scaleMode) {
-        m_scaleMode = scaleMode;
+    public void setUseLogScale(final boolean useLogScale) {
+        m_useLogScale = useLogScale;
+    }
+
+    /**
+     * @return the orientation
+     */
+    public HierarchicalClusterAssignerOrientation getOrientation() {
+        return m_orientation;
+    }
+
+    /**
+     * @param orientation the orientation to set
+     */
+    public void setOrientation(final HierarchicalClusterAssignerOrientation orientation) {
+        m_orientation = orientation;
     }
 
     /**
@@ -247,7 +262,8 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         settings.addString(HierarchicalClusterAssignerConfig.CFG_X_MAX, getXMax());
         settings.addDouble(HierarchicalClusterAssignerConfig.CFG_Y_MIN, getYMin());
         settings.addDouble(HierarchicalClusterAssignerConfig.CFG_Y_MAX, getYMax());
-        settings.addString(HierarchicalClusterAssignerConfig.CFG_SCALE_MODE, getScaleMode());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_USE_LOG_SCALE, getUseLogScale());
+        settings.addString(HierarchicalClusterAssignerConfig.CFG_ORIENTATION, getOrientation().toValue());
     }
 
     /**
@@ -265,7 +281,9 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         m_xMax = settings.getString(HierarchicalClusterAssignerConfig.CFG_X_MAX);
         m_yMin = settings.getDouble(HierarchicalClusterAssignerConfig.CFG_Y_MIN);
         m_yMax = settings.getDouble(HierarchicalClusterAssignerConfig.CFG_Y_MAX);
-        m_scaleMode = settings.getString(HierarchicalClusterAssignerConfig.CFG_SCALE_MODE);
+        m_useLogScale = settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_USE_LOG_SCALE);
+        m_orientation = HierarchicalClusterAssignerOrientation
+            .forValue(settings.getString(HierarchicalClusterAssignerConfig.CFG_ORIENTATION));
     }
 
     /**
@@ -291,7 +309,8 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_xMax, other.getXMax())
                 .append(m_yMin, other.getYMin())
                 .append(m_yMax, other.getYMax())
-                .append(m_scaleMode, other.getScaleMode())
+                .append(m_useLogScale, other.getUseLogScale())
+                .append(m_orientation, other.getOrientation())
                 .isEquals();
     }
 
@@ -311,7 +330,8 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_xMax)
                 .append(m_yMin)
                 .append(m_yMax)
-                .append(m_scaleMode)
+                .append(m_useLogScale)
+                .append(m_orientation)
                 .toHashCode();
     }
 

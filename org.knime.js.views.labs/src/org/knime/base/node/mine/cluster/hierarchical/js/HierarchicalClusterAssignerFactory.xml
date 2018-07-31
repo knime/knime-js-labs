@@ -42,6 +42,10 @@
 				The distance below which clusters should be
 				selected.
 			</option>
+			<option name="Use normalized distances for threshold">
+				When checked the value in the "Distance
+				Threshold" field will be interpreted as a normalized distance.
+			</option>
 		</tab>
 		<tab name="View Configuration">
 			<option name="Show warnings in view">
@@ -53,11 +57,19 @@
 				If checked an SVG image will be created at the
 				outport.
 			</option>
-			<option name="Width of image (in px)">
-				The width in pixels of the generated SVG image.
+			<option name="Resize view to fill window">
+				Checking this option resizes the view so that it
+				fills the window.
 			</option>
-			<option name="Height of image (in px)">
-				The height in pixels of the generated SVG image.
+			<option name="Width (in px)">
+				The width, in pixels, of the generated SVG image.
+				This is also the width of the view if "Resize view to fill window"
+				is not selected.
+			</option>
+			<option name="Height (in px)">
+				The height, in pixels, of the generated SVG
+				image. This is also the height of the view if "Resize view to fill
+				window" is not selected.
 			</option>
 			<option name="Chart title" optional="true">
 				The title shown above the
@@ -68,21 +80,46 @@
 				above the image. If left blank, no subtitle will be
 				shown.
 			</option>
+			<option name="Chart Orientation">
+				The orientation of the chart. The following orientations are
+				supported:
+				<ul>
+					<li>Vertical: Standard dendrogram layout with the root node at the
+						top, and the leaves as the bottom of the cart
+					</li>
+					<li>Horizontal (left): Horizontal dendrogram with the root node on
+						the left and leaves on the right
+					</li>
+					<li>Horizontal (right): Horizontal dendrogram with the root node on
+						the right and leaves on the left
+					</li>
+				</ul>
+			</option>
 			<option name="Enable cluster labels">
 				Displays cluster labels in the view, and enables
 				editing of these labels.
 			</option>
-			<option name="Enable cluster colors">
-				If enabled, tree leaves will be
+			<option name="Use log scale for y-axis">
+				Checking this option switches the scaling of the
+				y-axis to logarithmic.
+			</option>
+			<option name="Use cluster colors">
+				If selected, tree leaves will be
 				assigned colors
-				based on their cluster membership. Otherwise, the leaf colors will
-				be determined by those
+				based on their cluster membership.
+			</option>
+			<option name="Use table colors">
+				If selected the leaf colors will
+				be determined by
+				those
 				specified in the input data table.
 			</option>
-			<option name="Resize view to fill window">
-				Checking this option resizes the view so that it
-				fills the window.
+			<option name="Select a color palette">
+				The selected color palette will be used to color
+				the clusters in the view.
 			</option>
+		</tab>
+		<tab name="Interactivity">
 			<option name="Enable view edit controls">
 				If checked, all edit controls selected below will
 				be rendered in the
@@ -105,9 +142,14 @@
 				enabled/disabled, the threshold can always manually be set with the
 				horizontal bar in the view.
 			</option>
-			<option name="Enable scale options">
-				Enables modification of the y-axis scale (i.e.
-				linear, logarithmic, etc.) within the view.
+			<option name="Enable switching y-axis scale">
+				Enables switching between log and linear scaling
+				of the y-axis from within the view.
+			</option>
+			<option name="Enable changing chart orientation">
+				Enables modification of the chart's orientation
+				(i.e. horizontal, vertical,
+				etc.) from within the view.
 			</option>
 			<option name="Enable selection">
 				When this option is checked, data points can be
@@ -128,24 +170,24 @@
 				Checking this option ensures that this view is
 				notified whenever other views publish new selections.
 			</option>
-			<option name="Enable panning">
-				Enable panning on the view. To start panning click and drag the mouse.
-				Note if panning and drag zooming are enabled,
-				panning can be achieved by holding the Ctrl key and dragging the mouse.
+			<option name="Subscribe to filter events">
+				If checked, the view reacts when applied filters
+				have been changed.
 			</option>
-			<option name="Enable mouse wheel zooming">
+			<option name="Enable panning">
+				Enable panning on the view. To start panning
+				click and drag the mouse.
+				Note if panning and drag zooming are
+				enabled,
+				panning can be achieved by holding the Ctrl key and dragging
+				the mouse.
+			</option>
+			<option name="Enable zooming">
 				Enable zooming on the view using the mouse wheel.
 			</option>
-			<option name="Enable drag zooming">
-				Enable zooming on the view by dragging the mouse and drawing a zoom
-				rectangle. Dragging from the top-left down
-				will create a zoom rectangle, dragging from the bottom right up will
-				reset the zoom to fit the extends of the plot. Note if panning and
-				drag zooming are enabled, panning can be achieved by holding the Ctrl
-				key and dragging the mouse.
-			</option>
 			<option name="Show zoom reset button">
-				Renders a button to resize the plot to its extent.
+				Renders a button to resize the plot to its
+				extent.
 			</option>
 		</tab>
 	</fullDescription>

@@ -54,10 +54,12 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -92,14 +94,16 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private final JTextField m_titleTextField;
     private final JTextField m_subtitleTextField;
     private final JCheckBox m_enableClusterLabelsCheckBox;
-    private final JCheckBox m_enableClusterColorCheckBox;
+    private final JCheckBox m_useLogScaleCheckBox;
+    private final JComboBox<HierarchicalClusterAssignerOrientation> m_orientationComboBox;
 
     private final JCheckBox m_enableViewEditCheckBox;
     private final JCheckBox m_enableTitleEditCheckBox;
     private final JCheckBox m_displayFullscreenButtonCheckBox;
     private final JCheckBox m_enableNumClusterEditCheckBox;
     private final JCheckBox m_enableThresholdValueCheckBox;
-    private final JCheckBox m_enableScaleOptionsCheckBox;
+    private final JCheckBox m_enableLogScaleToggleCheckBox;
+    private final JCheckBox m_enableChangeOrientationCheckBox;
 
     private final JCheckBox m_enableSelectionCheckBox;
     private final JCheckBox m_publishSelectionEventsCheckBox;
@@ -111,30 +115,47 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private final JRadioButton m_clusterCountModeRadioButton;
     private final JRadioButton m_distanceThresholdModeRadioButton;
     private final JTextField m_clusterColumnNameTextField;
+    private final JCheckBox m_useNormalizedDistancesCheckBox;
 
     private final JCheckBox m_enablePanningCheckBox;
 
-    private final JCheckBox m_enableZoomMouseCheckBox;
-    private final JCheckBox m_enableZoomDragCheckBox;
+    private final JCheckBox m_enableZoomCheckBox;
     private final JCheckBox m_showZoomResetButtonCheckBox;
+
+    private final JRadioButton m_enableClusterColorRadioButton;
+    private final JRadioButton m_enableTableColorRadioButton;
+    private final JRadioButton m_useColorPaletteSet1RadioButton;
+    private final JRadioButton m_useColorPaletteSet2RadioButton;
+    private final JRadioButton m_useColorPaletteSet3RadioButton;
+
+    private final JCheckBox m_subscribeFilterEventsCheckBox;
 
     HierarchicalClusterAssignerDialog() {
         m_numClustersSpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
-        m_distanceThresholdSpinner = new JSpinner(new SpinnerNumberModel(0.5, 0, Double.MAX_VALUE, 0.01));
+        // maximum is 1, because use normalized distances is enabled by default
+        m_distanceThresholdSpinner = new JSpinner(new SpinnerNumberModel(0.5, 0, 1, 0.01));
         m_clusterCountModeRadioButton = new JRadioButton("Cluster count");
         m_distanceThresholdModeRadioButton = new JRadioButton("Distance threshold");
         m_clusterColumnNameTextField = new JTextField(TEXT_FIELD_SIZE);
+        m_useNormalizedDistancesCheckBox = new JCheckBox("Use normalized distances for threshold");
 
         final ActionListener al = new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
                 m_numClustersSpinner.setEnabled(m_clusterCountModeRadioButton.isSelected());
-                m_distanceThresholdSpinner.setEnabled(m_distanceThresholdModeRadioButton
-                        .isSelected());
+                m_distanceThresholdSpinner.setEnabled(m_distanceThresholdModeRadioButton.isSelected());
+                m_useNormalizedDistancesCheckBox.setEnabled(m_distanceThresholdModeRadioButton.isSelected());
             }
         };
         m_clusterCountModeRadioButton.addActionListener(al);
         m_distanceThresholdModeRadioButton.addActionListener(al);
+        m_useNormalizedDistancesCheckBox.addActionListener(al);
+        m_useNormalizedDistancesCheckBox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                enableNormalizedDistances();
+            }
+        });
 
         m_showWarningsInViewCheckBox = new JCheckBox("Show warnings in view");
         m_generateImageCheckBox = new JCheckBox("Create image at outport");
@@ -149,24 +170,22 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_enableNumClusterEditCheckBox = new JCheckBox("Enable number of clusters specification");
         m_enableThresholdValueCheckBox = new JCheckBox("Enable numeric specification of threshold");
         m_enableClusterLabelsCheckBox = new JCheckBox("Enable cluster labels");
-        m_enableClusterColorCheckBox = new JCheckBox("Enable cluster colors");
         m_enableSelectionCheckBox = new JCheckBox("Enable selection");
         m_publishSelectionEventsCheckBox = new JCheckBox("Publish selection events");
         m_subscribeSelectionEventsCheckBox = new JCheckBox("Subscribe to selection events");
         m_selectionColumnNameTextField = new JTextField(TEXT_FIELD_SIZE);
-        m_enableZoomMouseCheckBox = new JCheckBox("Enable mouse wheel zooming");
-        m_enableZoomDragCheckBox = new JCheckBox("Enable drag zooming");
+        m_enableZoomCheckBox = new JCheckBox("Enable zooming");
         m_showZoomResetButtonCheckBox = new JCheckBox("Show zoom reset button");
         m_enablePanningCheckBox = new JCheckBox("Enable panning");
-        m_enableScaleOptionsCheckBox= new JCheckBox("Enable scale options");
+        m_enableLogScaleToggleCheckBox= new JCheckBox("Enable switching y-axis scale");
+        m_useLogScaleCheckBox = new JCheckBox("Use log scale for y-axis");
+        m_enableChangeOrientationCheckBox = new JCheckBox("Enable changing chart orientation");
+        m_orientationComboBox = new JComboBox<>();
+        for (final HierarchicalClusterAssignerOrientation type : HierarchicalClusterAssignerOrientation.values()) {
+            m_orientationComboBox.addItem(type);
+        }
+        m_subscribeFilterEventsCheckBox = new JCheckBox("Subscribe to filter events");
 
-
-        m_generateImageCheckBox.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(final ChangeEvent e) {
-                enableGenerateImage();
-            }
-        });
         m_enableViewEditCheckBox.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(final ChangeEvent e) {
@@ -181,8 +200,22 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
             }
         });
 
+        m_enableClusterColorRadioButton = new JRadioButton("Use cluster colors");
+        m_enableTableColorRadioButton = new JRadioButton("Use table colors");
+        m_useColorPaletteSet1RadioButton = new JRadioButton("Set 1");
+        m_useColorPaletteSet2RadioButton = new JRadioButton("Set 2");
+        m_useColorPaletteSet3RadioButton = new JRadioButton("Set 3 (color blind safe)");
+
+        m_enableClusterColorRadioButton.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                enableColors();
+            }
+        });
+
         addTab("Options", optionsPanel());
         addTab("View Configuration", viewConfigPanel());
+        addTab("Interactivity", interactivityPanel());
     }
 
     /**
@@ -201,30 +234,42 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         config.setTitle(m_titleTextField.getText());
         config.setSubtitle(m_subtitleTextField.getText());
         config.setEnableClusterLabels(m_enableClusterLabelsCheckBox.isSelected());
-        config.setEnableClusterColor(m_enableClusterColorCheckBox.isSelected());
+        config.setUseLogScale(m_useLogScaleCheckBox.isSelected());
+        config.setOrientation((HierarchicalClusterAssignerOrientation) m_orientationComboBox.getSelectedItem());
 
         config.setEnableViewEdit(m_enableViewEditCheckBox.isSelected());
         config.setEnableTitleEdit(m_enableTitleEditCheckBox.isSelected());
         config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
         config.setEnableNumClusterEdit(m_enableNumClusterEditCheckBox.isSelected());
         config.setEnableThresholdValue(m_enableThresholdValueCheckBox.isSelected());
-        config.setEnableScaleOptions(m_enableScaleOptionsCheckBox.isSelected());
+        config.setEnableLogScaleToggle(m_enableLogScaleToggleCheckBox.isSelected());
+        config.setEnableChangeOrientation(m_enableChangeOrientationCheckBox.isSelected());
 
         config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
         config.setPublishSelectionEvents(m_publishSelectionEventsCheckBox.isSelected());
         config.setSubscribeSelectionEvents(m_subscribeSelectionEventsCheckBox.isSelected());
         config.setSelectionColumnName(m_selectionColumnNameTextField.getText());
 
+        config.setSubscribeFilterEvents(m_subscribeFilterEventsCheckBox.isSelected());
+
         config.setNumClusters((Integer) m_numClustersSpinner.getValue());
-        config.setThreshold((Double) m_distanceThresholdSpinner.getValue());
         config.setNumClustersMode(m_clusterCountModeRadioButton.isSelected());
         config.setClusterColumnName(m_clusterColumnNameTextField.getText());
+        config.setUseNormalizedDistances(m_useNormalizedDistancesCheckBox.isSelected());
+        if (m_useNormalizedDistancesCheckBox.isSelected()) {
+            config.setNormalizedThreshold((Double) m_distanceThresholdSpinner.getValue());
+        }
+        else {
+            config.setThreshold((Double) m_distanceThresholdSpinner.getValue());
+        }
 
         config.setEnablePanning(m_enablePanningCheckBox.isSelected());
 
-        config.setEnableZoomMouse(m_enableZoomMouseCheckBox.isSelected());
-        config.setEnableZoomDrag(m_enableZoomDragCheckBox.isSelected());
+        config.setEnableZoom(m_enableZoomCheckBox.isSelected());
         config.setShowZoomResetButton(m_showZoomResetButtonCheckBox.isSelected());
+
+        config.setEnableClusterColor(m_enableClusterColorRadioButton.isSelected());
+        config.setColorPalette(getColorPalette());
 
         config.saveSettings(settings);
     }
@@ -247,46 +292,70 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_titleTextField.setText(config.getTitle());
         m_subtitleTextField.setText(config.getSubtitle());
         m_enableClusterLabelsCheckBox.setSelected(config.getEnableClusterLabels());
-        m_enableClusterColorCheckBox.setSelected(config.getEnableClusterColor());
+        m_useLogScaleCheckBox.setSelected(config.getUseLogScale());
+        m_orientationComboBox.setSelectedItem(config.getOrientation());
 
         m_enableViewEditCheckBox.setSelected(config.getEnableViewEdit());
         m_enableTitleEditCheckBox.setSelected(config.getEnableTitleEdit());
         m_displayFullscreenButtonCheckBox.setSelected(config.getDisplayFullscreenButton());
         m_enableNumClusterEditCheckBox.setSelected(config.getEnableNumClusterEdit());
         m_enableThresholdValueCheckBox.setSelected(config.getEnableThresholdValue());
-        m_enableScaleOptionsCheckBox.setSelected(config.getEnableScaleOptions());
+        m_enableLogScaleToggleCheckBox.setSelected(config.getEnableLogScaleToggle());
+        m_enableChangeOrientationCheckBox.setSelected(config.getEnableChangeOrientation());
 
         m_enableSelectionCheckBox.setSelected(config.getEnableSelection());
         m_publishSelectionEventsCheckBox.setSelected(config.getPublishSelectionEvents());
         m_subscribeSelectionEventsCheckBox.setSelected(config.getSubscribeSelectionEvents());
         m_selectionColumnNameTextField.setText(config.getSelectionColumnName());
 
+        m_subscribeFilterEventsCheckBox.setSelected(config.getSubscribeFilterEvents());
+
         m_numClustersSpinner.setValue(config.getNumClusters());
-        m_distanceThresholdSpinner.setValue(config.getThreshold());
         m_clusterCountModeRadioButton.setSelected(config.getNumClustersMode());
         m_distanceThresholdModeRadioButton.setSelected(!config.getNumClustersMode());
         m_numClustersSpinner.setEnabled(m_clusterCountModeRadioButton.isSelected());
         m_distanceThresholdSpinner.setEnabled(m_distanceThresholdModeRadioButton.isSelected());
         m_clusterColumnNameTextField.setText(config.getClusterColumnName());
+        m_useNormalizedDistancesCheckBox.setSelected(config.getUseNormalizedDistances());
+        m_useNormalizedDistancesCheckBox.setEnabled(m_distanceThresholdModeRadioButton.isSelected());
+        if (m_useNormalizedDistancesCheckBox.isSelected() && m_useNormalizedDistancesCheckBox.isEnabled()) {
+            m_distanceThresholdSpinner.setValue(config.getNormalizedThreshold());
+        }
+        else {
+            m_distanceThresholdSpinner.setValue(config.getThreshold());
+        }
 
         m_enablePanningCheckBox.setSelected(config.getEnablePanning());
 
-        m_enableZoomMouseCheckBox.setSelected(config.getEnableZoomMouse());
-        m_enableZoomDragCheckBox.setSelected(config.getEnableZoomDrag());
+        m_enableZoomCheckBox.setSelected(config.getEnableZoom());
         m_showZoomResetButtonCheckBox.setSelected(config.getShowZoomResetButton());
 
-        enableGenerateImage();
+        m_enableClusterColorRadioButton.setSelected(config.getEnableClusterColor());
+        m_enableTableColorRadioButton.setSelected(!config.getEnableClusterColor());
+        setColorPaletteRadioButtons(config.getColorPalette());
+
+        setNumberOfFilters((DataTableSpec) specs[1]);
         enableEditView();
         enableSelections();
+        enableColors();
         getPanel().repaint();
     }
 
     // -- Helper methods --
 
-    private void enableGenerateImage() {
-        final boolean enabled = m_generateImageCheckBox.isSelected();
-        m_imageWidthSpinner.setEnabled(enabled);
-        m_imageHeightSpinner.setEnabled(enabled);
+    private void setNumberOfFilters(final DataTableSpec spec) {
+        int numFilters = 0;
+        for (int i = 0; i < spec.getNumColumns(); i++) {
+            if (spec.getColumnSpec(i).getFilterHandler().isPresent()) {
+                numFilters++;
+            }
+        }
+        StringBuilder builder = new StringBuilder("Subscribe to filter events");
+        builder.append(" (");
+        builder.append(numFilters == 0 ? "no" : numFilters);
+        builder.append(numFilters == 1 ? " filter" : " filters");
+        builder.append(" available)");
+        m_subscribeFilterEventsCheckBox.setText(builder.toString());
     }
 
     private void enableEditView() {
@@ -295,7 +364,8 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_enableNumClusterEditCheckBox.setEnabled(enabled);
         m_enableThresholdValueCheckBox.setEnabled(enabled);
         m_displayFullscreenButtonCheckBox.setEnabled(enabled);
-        m_enableScaleOptionsCheckBox.setEnabled(enabled);
+        m_enableLogScaleToggleCheckBox.setEnabled(enabled);
+        m_enableChangeOrientationCheckBox.setEnabled(enabled);
     }
 
     private void enableSelections() {
@@ -303,6 +373,24 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_publishSelectionEventsCheckBox.setEnabled(enabled);
         m_subscribeSelectionEventsCheckBox.setEnabled(enabled);
         m_selectionColumnNameTextField.setEnabled(enabled);
+    }
+
+    private void enableNormalizedDistances() {
+        if (m_useNormalizedDistancesCheckBox.isSelected()) {
+            if ((double)m_distanceThresholdSpinner.getValue() > 1) {
+                m_distanceThresholdSpinner.setValue(1);
+            }
+            ((SpinnerNumberModel)m_distanceThresholdSpinner.getModel()).setMaximum(new Double(1));
+        } else {
+            ((SpinnerNumberModel)m_distanceThresholdSpinner.getModel()).setMaximum(Double.MAX_VALUE);
+        }
+    }
+
+    private void enableColors() {
+        final boolean enabled = m_enableClusterColorRadioButton.isSelected();
+        m_useColorPaletteSet1RadioButton.setEnabled(enabled);
+        m_useColorPaletteSet2RadioButton.setEnabled(enabled);
+        m_useColorPaletteSet3RadioButton.setEnabled(enabled);
     }
 
     private Component optionsPanel() {
@@ -348,6 +436,11 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         gbc.gridx = 2;
         p.add(m_distanceThresholdSpinner, gbc);
         ((JSpinner.NumberEditor)m_distanceThresholdSpinner.getEditor()).getTextField().setColumns(5);
+        gbc.gridy++;
+        p.add(m_useNormalizedDistancesCheckBox, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
 
         return p;
     }
@@ -363,7 +456,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         gbc.gridy = 0;
         gbc.gridy++;
 
-        // Image
+        // General
         final JPanel generalPanel = new JPanel(new GridBagLayout());
         generalPanel.setBorder(BorderFactory.createTitledBorder("General"));
         p.add(generalPanel, gbc);
@@ -376,6 +469,9 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         generalConstraints.gridx = 0;
         generalConstraints.gridy++;
         generalPanel.add(m_generateImageCheckBox, generalConstraints);
+        generalConstraints.gridx = 0;
+        generalConstraints.gridy++;
+        generalPanel.add(m_resizeToWindowCheckBox, generalConstraints);
         generalConstraints.gridx = 0;
         generalConstraints.gridy++;
         generalPanel.add(new JLabel("Width (px): "), generalConstraints);
@@ -411,16 +507,77 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         displayPanel.add(m_subtitleTextField, displayConstraints);
         displayConstraints.gridx = 0;
         displayConstraints.gridy++;
-        displayPanel.add(m_enableClusterLabelsCheckBox, displayConstraints);
+        displayPanel.add(new JLabel("Chart Orientation: "), displayConstraints);
         displayConstraints.gridx++;
-        displayPanel.add(m_enableClusterColorCheckBox, displayConstraints);
+        displayPanel.add(m_orientationComboBox, displayConstraints);
         displayConstraints.gridx = 0;
         displayConstraints.gridy++;
-        displayPanel.add(m_resizeToWindowCheckBox, displayConstraints);
+        displayPanel.add(m_enableClusterLabelsCheckBox, displayConstraints);
+        displayConstraints.gridx++;
+        displayPanel.add(m_useLogScaleCheckBox, displayConstraints);
         displayConstraints.gridx = 0;
         displayConstraints.gridy++;
 
         gbc.gridx = 0;
+        gbc.gridy++;
+
+        // Color
+        final JPanel colorPanel = new JPanel(new GridBagLayout());
+        colorPanel.setBorder(BorderFactory.createTitledBorder("Color"));
+        final Component set1 = ColorPaletteUtil.getColorPaletteSet1AsComponent();
+        set1.setEnabled(false);
+        p.add(colorPanel, gbc);
+        final ButtonGroup clusterOrTableColors = new ButtonGroup();
+        clusterOrTableColors.add(m_enableClusterColorRadioButton);
+        clusterOrTableColors.add(m_enableTableColorRadioButton);
+        final ButtonGroup colorPalettes = new ButtonGroup();
+        colorPalettes.add(m_useColorPaletteSet1RadioButton);
+        colorPalettes.add(m_useColorPaletteSet2RadioButton);
+        colorPalettes.add(m_useColorPaletteSet3RadioButton);
+        final GridBagConstraints colorConstraints = new GridBagConstraints();
+        colorConstraints.insets = new Insets(5, 5, 5, 5);
+        colorConstraints.anchor = GridBagConstraints.NORTHWEST;
+        colorConstraints.gridx = 0;
+        colorConstraints.gridy = 0;
+        colorPanel.add(m_enableClusterColorRadioButton, colorConstraints);
+        colorConstraints.gridx++;
+        colorPanel.add(m_enableTableColorRadioButton, colorConstraints);
+        colorConstraints.gridx = 0;
+        colorConstraints.gridy++;
+        colorPanel.add(new JLabel("Select a color palette:"), colorConstraints);
+        colorConstraints.gridx = 0;
+        colorConstraints.gridy++;
+        colorPanel.add(m_useColorPaletteSet1RadioButton, colorConstraints);
+        colorConstraints.gridx++;
+        colorPanel.add(set1, colorConstraints);
+        colorConstraints.gridx = 0;
+        colorConstraints.gridy++;
+        colorPanel.add(m_useColorPaletteSet2RadioButton, colorConstraints);
+        colorConstraints.gridx++;
+        colorPanel.add(ColorPaletteUtil.getColorPaletteSet2AsComponent(), colorConstraints);
+        colorConstraints.gridx = 0;
+        colorConstraints.gridy++;
+        colorPanel.add(m_useColorPaletteSet3RadioButton, colorConstraints);
+        colorConstraints.gridx++;
+        colorPanel.add(ColorPaletteUtil.getColorPaletteSet3AsComponent(), colorConstraints);
+        colorConstraints.gridx = 0;
+        colorConstraints.gridy++;
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+
+        return p;
+    }
+
+    private Component interactivityPanel() {
+        final JPanel p = new JPanel(new GridBagLayout());
+        final GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridwidth = 2;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         gbc.gridy++;
 
         // View Edit Controls
@@ -445,7 +602,9 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         viewControlsPanel.add(m_enableThresholdValueCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
-        viewControlsPanel.add(m_enableScaleOptionsCheckBox, viewControlsConstraints);
+        viewControlsPanel.add(m_enableLogScaleToggleCheckBox, viewControlsConstraints);
+        viewControlsConstraints.gridx += 2;
+        viewControlsPanel.add(m_enableChangeOrientationCheckBox, viewControlsConstraints);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -474,6 +633,22 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         gbc.gridx = 0;
         gbc.gridy++;
 
+        // Filter
+        final JPanel filterPanel = new JPanel(new GridBagLayout());
+        filterPanel.setBorder(BorderFactory.createTitledBorder("Filter"));
+        p.add(filterPanel, gbc);
+        final GridBagConstraints filterConstraints = new GridBagConstraints();
+        filterConstraints.insets = new Insets(5, 5, 5, 5);
+        filterConstraints.anchor = GridBagConstraints.NORTHWEST;
+        filterConstraints.gridx = 0;
+        filterConstraints.gridy = 0;
+        filterPanel.add(m_subscribeFilterEventsCheckBox, filterConstraints);
+        filterConstraints.gridx = 0;
+        filterConstraints.gridy++;
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+
         // Panning
         final JPanel panningPanel = new JPanel(new GridBagLayout());
         panningPanel.setBorder(BorderFactory.createTitledBorder("Panning"));
@@ -497,16 +672,32 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         zoomConstraints.anchor = GridBagConstraints.NORTHWEST;
         zoomConstraints.gridx = 0;
         zoomConstraints.gridy = 0;
-        zoomPanel.add(m_enableZoomMouseCheckBox, zoomConstraints);
+        zoomPanel.add(m_enableZoomCheckBox, zoomConstraints);
         zoomConstraints.gridx++;
-        zoomPanel.add(m_enableZoomDragCheckBox, zoomConstraints);
-        zoomConstraints.gridx = 0;
-        zoomConstraints.gridy++;
         zoomPanel.add(m_showZoomResetButtonCheckBox, zoomConstraints);
 
         gbc.gridx = 0;
         gbc.gridy++;
 
         return p;
+    }
+
+    private String[] getColorPalette() {
+        if (m_useColorPaletteSet1RadioButton.isSelected()) {
+            return ColorPaletteUtil.PALETTE_SET1;
+        }
+        if (m_useColorPaletteSet2RadioButton.isSelected()) {
+            return ColorPaletteUtil.PALETTE_SET2;
+        }
+        if (m_useColorPaletteSet3RadioButton.isSelected()) {
+            return ColorPaletteUtil.PALETTE_SET3;
+        }
+        return null;
+    }
+
+    private void setColorPaletteRadioButtons(final String[] colorPalette) {
+        m_useColorPaletteSet1RadioButton.setSelected(Arrays.equals(colorPalette, ColorPaletteUtil.PALETTE_SET1));
+        m_useColorPaletteSet2RadioButton.setSelected(Arrays.equals(colorPalette, ColorPaletteUtil.PALETTE_SET2));
+        m_useColorPaletteSet3RadioButton.setSelected(Arrays.equals(colorPalette, ColorPaletteUtil.PALETTE_SET3));
     }
 }

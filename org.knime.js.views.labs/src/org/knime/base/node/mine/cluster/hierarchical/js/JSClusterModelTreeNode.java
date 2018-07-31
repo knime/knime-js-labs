@@ -76,6 +76,8 @@ public class JSClusterModelTreeNode {
 
     private String color;
 
+    private boolean hasRowData;
+
     private JSClusterModelTreeNode[] children;
 
     /**
@@ -90,11 +92,13 @@ public class JSClusterModelTreeNode {
             children = null;
             rowKey = ((ClusterViewNode)node).getLeafRowKey().getString();
             color = CSSUtils.cssHexStringFromColor(spec.getRowColor(node.getLeafDataPoint()).getColor());
+            hasRowData = node.getLeafDataPoint() != null;
         } else {
             children = new JSClusterModelTreeNode[]{new JSClusterModelTreeNode(node.getFirstSubnode(), ids, spec),
                 new JSClusterModelTreeNode(node.getSecondSubnode(), ids, spec)};
             rowKey = null;
             color = null;
+            hasRowData = false;
         }
     }
 
@@ -124,6 +128,14 @@ public class JSClusterModelTreeNode {
      */
     public String getColor() {
         return color;
+    }
+
+    /**
+     * @return {@code true} if the node is a leaf which represents a row in the table, {@code false} if the node is not
+     *         a leaf or if it is a leaf node which represents a row not in the data table
+     */
+    public boolean getHasRowData() {
+        return hasRowData;
     }
 
     /**
@@ -162,6 +174,7 @@ public class JSClusterModelTreeNode {
                 .append(id, other.getId())
                 .append(distance, other.getDistance())
                 .append(rowKey, other.getRowKey())
+                .append(hasRowData, other.getHasRowData())
                 .isEquals() && childrenEqual;
     }
 
@@ -175,6 +188,7 @@ public class JSClusterModelTreeNode {
                 .append(distance)
                 .append(children)
                 .append(rowKey)
+                .append(hasRowData)
                 .toHashCode();
     }
 
