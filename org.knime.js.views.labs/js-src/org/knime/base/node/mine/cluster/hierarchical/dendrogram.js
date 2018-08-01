@@ -44,7 +44,6 @@
 
 		var dendrogramEl = svg.append('g').attr('class', 'viewport').attr('transform', 'translate(' + yAxisWidth + ',0)').append('g');
 
-
 		// load data into d3 hierarchy representation
 		var root_node = d3.hierarchy(_representation.tree.root);
 		var cluster = d3.cluster().size([svgSize.width - yAxisWidth, svgSize.height - xAxisHeight]).separation(function (a, b) {
@@ -83,6 +82,10 @@
 		yAxisEl.selectAll('line').attr('class', 'knime-tick-line');
 		yAxisEl.selectAll('text').attr('class', 'knime-tick-label')
 
+		// apply the distance of each node
+		nodes.each(function (n) {
+			n.y = y(n.data.distance);
+		});
 
 		// draw links
 		var linkEls = dendrogramEl.selectAll('.link').data(links).enter().append('path').attr('class', 'link').attr('stroke-width', linkStrokeWidth).attr('d', function (l) {
