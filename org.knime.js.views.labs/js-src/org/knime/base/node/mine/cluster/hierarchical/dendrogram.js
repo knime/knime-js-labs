@@ -14,19 +14,26 @@
 
 		// TODO detect image export mode
 		var isImageExport = false;
+		var resizeToWindow = _representation.resizeToWindow;
 
 		var xAxisHeight = 100,
 			yAxisWidth = 30,
 			labelMargin = 10,
+			xAxisLabelWidth = 15,
 			linkStrokeWidth = 1,
-			clusterMarkerRadius = 4;
+			clusterMarkerRadius = 4,
+			viewportMarginTop = 10,
+			leafWidth = 8,
+			leafHeight = 20;
 
 		// create SVG
 		var svg = d3.select('body').insert('svg:svg')
-			.attr('width', isImageExport ? _representation.imageWidth : '100%')
-			.attr('height', isImageExport ? _representation.imageHeight : '100%');
+			.attr('width', resizeToWindow ? '100%' : _representation.imageWidth)
+			.attr('height', resizeToWindow ? '100%' : _representation.imageHeight);
 
 		var svgSize = d3.select('svg').node().getClientRects()[0];
+		var viewportWidth = svgSize.width - yAxisWidth;
+		var viewportHeight = svgSize.height - xAxisHeight;
 
 		// create clipping path for viewport (needed for zooming & panning)
 		var defs = svg.append('defs');
@@ -34,7 +41,7 @@
 			.attr('id', 'viewportClip')
 			.append('rect')
 			.style('width', 'calc(100% - ' + yAxisWidth + 'px)')
-			.style('height', 'calc(100% - ' + xAxisHeight + 'px)');
+			.style('height', 'calc(100% - ' + (xAxisHeight - viewportMarginTop) + 'px)');
 
 		defs.append('clipPath')
 			.attr('id', 'xAxisClip')
@@ -42,11 +49,11 @@
 			.style('width', 'calc(100% - ' + yAxisWidth + 'px)')
 			.attr('height', xAxisHeight);
 
-		var dendrogramEl = svg.append('g').attr('class', 'viewport').attr('transform', 'translate(' + yAxisWidth + ',0)').append('g');
+		var dendrogramEl = svg.append('g').attr('class', 'viewport').attr('transform', 'translate(' + yAxisWidth + ',0)').append('g').attr('transform', 'translate(0,' + viewportMarginTop + ')').append('g');
 
 		// load data into d3 hierarchy representation
 		var root_node = d3.hierarchy(_representation.tree.root);
-		var cluster = d3.cluster().size([svgSize.width - yAxisWidth, svgSize.height - xAxisHeight]).separation(function (a, b) {
+		var cluster = d3.cluster().size([viewportWidth, viewportHeight - viewportMarginTop]).separation(function (a, b) {
 			return 1;
 		});
 		var nodes = cluster(root_node);
@@ -57,10 +64,12 @@
 		var x = d3.scaleBand()
 			.domain(labels)
 			.range([0, svgSize.width - yAxisWidth]);
-		var xAxis = d3.axisBottom(x);
+		var xShowNthTicks = Math.round(x.domain().length / (viewportWidth / xAxisLabelWidth));
+		var xAxis = d3.axisBottom(x)
+			.tickValues(x.domain().filter(function (d, i) { return !(i % xShowNthTicks) }));
 		var xAxisEl = svg.append('g')
 			.attr('class', 'knime-axis knime-x')
-			.attr('transform', 'translate(' + yAxisWidth + ',' + (svgSize.height - xAxisHeight) + ')')
+			.attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')')
 			.call(xAxis);
 		xAxisEl.selectAll('.tick').attr('class', 'tick knime-tick');
 		xAxisEl.selectAll('line').attr('class', 'knime-tick-line');
@@ -71,12 +80,13 @@
 		// draw y axis
 		var y = d3.scaleLinear()
 			.domain([0, root_node.data.distance])
-			.range([svgSize.height - xAxisHeight, 0]);
+				.range([viewportHeight, 0])
+				.nice();
 		var yAxis = d3.axisLeft(y)
 			.ticks(5);
 		var yAxisEl = svg.append('g')
 			.attr('class', 'knime-axis knime-y')
-			.attr('transform', 'translate(' + yAxisWidth + ',0)')
+			.attr('transform', 'translate(' + yAxisWidth + ',' + viewportMarginTop + ')')
 			.call(yAxis);
 		yAxisEl.selectAll('.tick').attr('class', 'tick knime-tick');
 		yAxisEl.selectAll('line').attr('class', 'knime-tick-line');
@@ -93,17 +103,10 @@
 		});
 
 		// draw leaves
-		dendrogramEl.selectAll('.leaf').data(nodes.leaves()).enter().append('rect').attr('class', 'leaf').attr('x', -4).attr('y', -20).attr('width', 8).attr('height', 20).attr('transform', function (d) {
+		var leafEls = dendrogramEl.selectAll('.leaf').data(nodes.leaves()).enter().append('rect').attr('class', 'leaf').attr('x', -leafWidth / 2).attr('y', -leafHeight).attr('width', leafWidth).attr('height', leafHeight).attr('transform', function (d) {
 			return 'translate(' + d.x + ',' + d.y + ')';
 		}).attr('fill', function (d) {
 			return d.data.color;
-		});
-
-		// calculate interpolated colors to fill cluster markers
-		nodes.eachAfter(function (n) {
-			if (n.children) {
-				n.color = d3.interpolateRgb(n.children[0].data.color, n.children[1].data.color)(0.5);
-			}
 		});
 
 		// draw cluster markers
@@ -123,20 +126,33 @@
 			.on('zoom', function () {
 				dendrogramEl.attr('transform', d3.event.transform);
 
-				x.range([0, svgSize.width - yAxisWidth].map(function (d) { return d3.event.transform.applyX(d); }));
+				// TODO refactor this
+				var xShowNthTicks = Math.round(x.domain().length / (viewportWidth * d3.event.transform.k / 15));
+				xAxis.tickValues(x.domain().filter(function (d, i) { return !(i % xShowNthTicks) }));
+				x.range([0, viewportWidth].map(function (d) { return d3.event.transform.applyX(d); }));
+				xAxisEl.selectAll('.tick').attr('class', 'tick knime-tick');
+				xAxisEl.selectAll('line').attr('class', 'knime-tick-line');
+				xAxisEl.selectAll('text').attr('class', 'knime-tick-label')
+					.attr('dx', labelMargin * -1 + 'px')
+					.attr('dy', '-5px');
+
 				xAxisEl.call(xAxis);
 				yAxisEl.call(yAxis.scale(d3.event.transform.rescaleY(y)));
 
 				// rescale line widths and markers
 				linkEls.attr('stroke-width', linkStrokeWidth / d3.event.transform.k);
 				clusterMarkerEl.attr('r', clusterMarkerRadius / d3.event.transform.k);
+				leafEls.attr('width', leafWidth / d3.event.transform.k);
+				leafEls.attr('height', leafHeight / d3.event.transform.k);
+				leafEls.attr('x', -(leafWidth / d3.event.transform.k) / 2);
+				leafEls.attr('y', -(leafHeight / d3.event.transform.k));
 			}))
 
 
 
 		// TODO handle window resize
 		d3.select(window).on('resize', function () {
-			//alert('TODO handle window resize');
+			alert('window resize not supported yet, press "reset" to reload');
 		});
 	}
 
