@@ -8,8 +8,29 @@
     shape-rendering: crispEdges;
 }
 
+.link.outOfThreshold {
+    stroke: #d3cece;
+}
+
 .leaf {
     shape-rendering: crispEdges;
+}
+
+.cluster {
+    fill: #a3a2a2;
+}
+
+.cluster.root {
+    fill: #000000;
+}
+
+.cluster.outOfThreshold {
+    fill: #d3cece;
+}
+
+.threshold {
+    fill: red;
+    cursor: ns-resize;
 }
 
 .knime-axis.knime-x {

@@ -24,7 +24,8 @@
 			clusterMarkerRadius = 4,
 			viewportMarginTop = 10,
 			leafWidth = 8,
-			leafHeight = 20;
+			leafHeight = 20,
+			thresholdHeight = 2;
 
 		// create SVG
 		var svg = d3.select('body').insert('svg:svg')
@@ -80,8 +81,8 @@
 		// draw y axis
 		var y = d3.scaleLinear()
 			.domain([0, root_node.data.distance])
-				.range([viewportHeight, 0])
-				.nice();
+			.range([viewportHeight, 0])
+			.nice();
 		var yAxis = d3.axisLeft(y)
 			.ticks(5);
 		var yAxisEl = svg.append('g')
@@ -114,10 +115,59 @@
 			return n.children != null;
 		})).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius).attr('transform', function (d) {
 			return 'translate(' + d.x + ',' + d.y + ')';
-		}).attr('fill', function (d) {
-			return d.color;
 		});
 
+		// draw threshold handle
+		var maxDistance = y.domain()[1];
+		var thresholdFormat = d3.format('.3f');
+		var onThresholdChange = function (threshold) {
+			var numberOfRootClusters = 0;
+			clusterMarkerEl.each(function (n) {
+				// mark nodes out of threshold
+				d3.select(this).classed('outOfThreshold', n.data.distance >= threshold);
+				// mark after-threshold root nodes
+				if (n.data.distance <= threshold && (!n.parent || n.parent && n.parent.data.distance >= threshold)) {
+					d3.select(this).classed('root', true);
+					numberOfRootClusters++;
+				}
+				else {
+					d3.select(this).classed('root', false);
+				}
+			});
+			// update threshold display
+			var thresholdFormatted = thresholdFormat(threshold);
+			thresholdDisplayEl.text('Threshold: ' + thresholdFormatted);
+			thresholdClusterDisplayEl.text('Clusters: ' + numberOfRootClusters);
+			// mark links
+			linkEls.each(function (n) {
+				d3.select(this).classed('outOfThreshold', n.source.data.distance >= threshold);
+			});
+		};
+		var thresholdEl = dendrogramEl.append('rect').attr('class', 'threshold')
+			.attr('width', '100%').attr('height', thresholdHeight)
+			.attr('transform', 'translate(0,' + y(value.threshold) + ')')
+			.call(d3.drag()
+				.on('drag', function () {
+					// abort if dragged outside min or max distance
+					var newThreshold = y.invert(d3.event.y);
+					if (newThreshold <= 0 || newThreshold >= maxDistance) {
+						return false;
+					}
+
+					// move threshold handle
+					thresholdEl.attr('transform', 'translate(0,' + d3.event.y + ')');
+
+					onThresholdChange(newThreshold);
+
+					// save new threshold
+					_value.threshold = newThreshold;
+				}));
+
+		var thresholdDisplayEl = svg.append('text').attr('class', 'thresholdDisplay')
+			.attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 20 + ')');
+
+		var thresholdClusterDisplayEl = svg.append('text').attr('class', 'thresholdClusterDisplay')
+			.attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 35 + ')');
 
 		// init zooming & panning
 		svg.call(d3.zoom()
@@ -146,8 +196,11 @@
 				leafEls.attr('height', leafHeight / d3.event.transform.k);
 				leafEls.attr('x', -(leafWidth / d3.event.transform.k) / 2);
 				leafEls.attr('y', -(leafHeight / d3.event.transform.k));
-			}))
+				thresholdEl.attr('height', thresholdHeight / d3.event.transform.k);
+			}));
 
+		// initial threshold
+		onThresholdChange(value.threshold);
 
 
 		// TODO handle window resize

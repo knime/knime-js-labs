@@ -173,6 +173,11 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
             final String[] defaultLabels = initialSetUp();
             m_config.setClusterLabels(defaultLabels);
         }
+        else {
+            // m_tree is a new reference, and the model doesn't overrride equals(), so the HashMap is no longer valid
+            // Populate the leaves, and regenerate nodeToId but DON'T reset cluster labels to defaults!
+            initialSetUp();
+        }
         synchronized (getLock()) {
             copyConfigToView();
         }
@@ -426,7 +431,6 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         final HierarchicalClusterAssignerValue value = getViewValue();
         m_config.setTitle(value.getTitle());
         m_config.setSubtitle(value.getSubtitle());
-        m_config.setNumClusters(value.getNumClusters());
         m_config.setXMin(value.getXMin());
         m_config.setXMax(value.getXMax());
         m_config.setYMin(value.getYMin());
@@ -438,6 +442,11 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         // so we want to sync to the non-normalized threshold always
         m_config.setThreshold(value.getThreshold());
         syncThresholds(false);
+
+        // The view more or less ignores this value, and we always assume that the threshold is updates
+        final int numClusters = computeNumClustersFromThreshold(value.getThreshold());
+        value.setNumClusters(numClusters);
+        m_config.setNumClusters(value.getNumClusters());
     }
 
     private void copyConfigToView() {
