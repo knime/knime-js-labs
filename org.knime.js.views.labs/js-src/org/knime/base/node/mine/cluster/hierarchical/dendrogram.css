@@ -12,12 +12,17 @@
     stroke: #d3cece;
 }
 
+.link.selected {
+    stroke: #ffa600;
+}
+
 .leaf {
     shape-rendering: crispEdges;
 }
 
 .cluster {
     fill: #a3a2a2;
+    cursor: pointer;
 }
 
 .cluster.root {
@@ -26,6 +31,11 @@
 
 .cluster.outOfThreshold {
     fill: #d3cece;
+}
+
+.cluster.selected,
+.cluster:hover {
+    fill: #ffa600;
 }
 
 .threshold {
@@ -40,6 +50,11 @@
 .knime-axis.knime-x .knime-tick-label {
     text-anchor: end;
     transform: rotate(-90deg);
+    cursor: pointer;
+}
+
+.knime-axis.knime-x .tick.selected .knime-tick-label {
+    fill: #ffa600;
 }
 
 .knime-axis .knime-tick-line {

@@ -2,6 +2,7 @@
 
 	var dendrogram = {};
 	var _representation, _value;
+	var selectedRows = [];
 
 	dendrogram.init = function (representation, value) {
 		_representation = representation;
@@ -72,11 +73,14 @@
 			.attr('class', 'knime-axis knime-x')
 			.attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')')
 			.call(xAxis);
-		xAxisEl.selectAll('.tick').attr('class', 'tick knime-tick');
-		xAxisEl.selectAll('line').attr('class', 'knime-tick-line');
-		xAxisEl.selectAll('text').attr('class', 'knime-tick-label')
+		xAxisEl.selectAll('.tick').classed('knime-tick', true);
+		xAxisEl.selectAll('line').classed('knime-tick-line', true);
+		xAxisEl.selectAll('text').classed('knime-tick-label', true)
 			.attr('dx', labelMargin * -1 + 'px')
-			.attr('dy', '-5px');
+			.attr('dy', '-5px')
+			.on('click', function (rowKey) {
+				toggleSelectRow(rowKey);
+			});
 
 		// draw y axis
 		var y = d3.scaleLinear()
@@ -89,9 +93,9 @@
 			.attr('class', 'knime-axis knime-y')
 			.attr('transform', 'translate(' + yAxisWidth + ',' + viewportMarginTop + ')')
 			.call(yAxis);
-		yAxisEl.selectAll('.tick').attr('class', 'tick knime-tick');
-		yAxisEl.selectAll('line').attr('class', 'knime-tick-line');
-		yAxisEl.selectAll('text').attr('class', 'knime-tick-label')
+		yAxisEl.selectAll('.tick').classed('knime-tick', true);
+		yAxisEl.selectAll('line').classed('knime-tick-line', true);
+		yAxisEl.selectAll('text').classed('knime-tick-label', true);
 
 		// apply the distance of each node
 		nodes.each(function (n) {
@@ -115,6 +119,11 @@
 			return n.children != null;
 		})).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius).attr('transform', function (d) {
 			return 'translate(' + d.x + ',' + d.y + ')';
+		}).on('click', function () {
+			toggleSelectCluster(this);
+		});
+		clusterMarkerEl.append('title').text(function (d) {
+			return d.data.distance;
 		});
 
 		// draw threshold handle
@@ -197,11 +206,101 @@
 				leafEls.attr('x', -(leafWidth / d3.event.transform.k) / 2);
 				leafEls.attr('y', -(leafHeight / d3.event.transform.k));
 				thresholdEl.attr('height', thresholdHeight / d3.event.transform.k);
-			}));
+
+				// TODO this should not be called here!
+				// find other way so x axis selection won't get lost after zoom/panning
+				updateSelectionInView();
+			}))
+			.on('dblclick.zoom', null); // prevent zoom on double click
+
+		var toggleSelectRow = function (rowKey) {
+			var select = selectedRows.indexOf(rowKey) === -1 ? true : false;
+			if (select) {
+				selectedRows.push(rowKey);
+				knimeService.addRowsToSelection(_representation.dataTableID, [rowKey], onSelectionChange);
+			} else {
+				selectedRows = selectedRows.filter(function (item) {
+					return item !== rowKey
+				});
+				knimeService.removeRowsFromSelection(_representation.dataTableID, [rowKey], onSelectionChange);
+			}
+
+			updateSelectionInView();
+		};
+
+		var toggleSelectCluster = function (clusterEl) {
+			var select = clusterEl.__data__.selected ? false : true;
+
+			var leaves = clusterEl.__data__.leaves();
+			leaves.forEach(function (n) {
+				var rowKey = n.data.rowKey;
+				if (select) {
+					if (selectedRows.indexOf(rowKey) === -1) {
+						selectedRows.push(rowKey);
+					}
+				} else {
+					selectedRows = selectedRows.filter(function (item) {
+						return item !== rowKey
+					});
+				}
+			});
+
+			knimeService.setSelectedRows(_representation.dataTableID, selectedRows, onSelectionChange);
+
+			updateSelectionInView();
+		};
+
+		var updateSelectionInView = function () {
+			// add selected flag for leaves
+			nodes.leaves().forEach(function (n) {
+				if (selectedRows.indexOf(n.data.rowKey) != -1) {
+					n.selected = true;
+				} else {
+					n.selected = false;
+				}
+			});
+
+			// also select cluster if both children are selected
+			nodes.eachAfter(function (n) {
+				if (n.children) {
+					n.selected = n.children[0].selected && n.children[1].selected;
+				}
+			});
+
+			// set/remove styles for selected rows and cluster and links
+			clusterMarkerEl.classed('selected', function (d) {
+				return d.selected;
+			});
+			linkEls.classed('selected', function (d) {
+				return d.source.selected && d.target.selected;
+			});
+			xAxisEl.selectAll('.tick').classed('selected', function (rowKey) {
+				return selectedRows.indexOf(rowKey) !== -1;
+			});
+		};
+
 
 		// initial threshold
 		onThresholdChange(value.threshold);
 
+		var onSelectionChange = function (data) {
+			if (data.changeSet.removed) {
+				selectedRows = selectedRows.filter(function (item) {
+					return data.changeSet.removed.indexOf(item) === -1;
+				});
+			}
+			if (data.changeSet.added) {
+				data.changeSet.added.forEach(function (item) {
+					if (selectedRows.indexOf(item) === -1) {
+						selectedRows.push(item);
+					}
+				});
+			}
+
+			updateSelectionInView();
+		};
+
+		knimeService.subscribeToSelection(_representation.dataTableID, onSelectionChange);
 
 		// TODO handle window resize
 		d3.select(window).on('resize', function () {
