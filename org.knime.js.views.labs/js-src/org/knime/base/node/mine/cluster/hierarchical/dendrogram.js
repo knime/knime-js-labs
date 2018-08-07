@@ -215,39 +215,60 @@
 
 		var toggleSelectRow = function (rowKey) {
 			var select = selectedRows.indexOf(rowKey) === -1 ? true : false;
+			var multiSelect = d3.event.ctrlKey || d3.event.shiftKey || d3.event.metaKey;
+
 			if (select) {
-				selectedRows.push(rowKey);
-				knimeService.addRowsToSelection(_representation.dataTableID, [rowKey], onSelectionChange);
-			} else {
-				selectedRows = selectedRows.filter(function (item) {
-					return item !== rowKey
-				});
-				knimeService.removeRowsFromSelection(_representation.dataTableID, [rowKey], onSelectionChange);
-			}
-
-			updateSelectionInView();
-		};
-
-		var toggleSelectCluster = function (clusterEl) {
-			var select = clusterEl.__data__.selected ? false : true;
-
-			var leaves = clusterEl.__data__.leaves();
-			leaves.forEach(function (n) {
-				var rowKey = n.data.rowKey;
-				if (select) {
+				if (multiSelect) {
 					if (selectedRows.indexOf(rowKey) === -1) {
 						selectedRows.push(rowKey);
 					}
 				} else {
+					selectedRows = [rowKey];
+				}
+			} else {
+				if (multiSelect) {
 					selectedRows = selectedRows.filter(function (item) {
 						return item !== rowKey
 					});
+				} else {
+					selectedRows = [rowKey];
 				}
-			});
-
-			knimeService.setSelectedRows(_representation.dataTableID, selectedRows, onSelectionChange);
+			}
 
 			updateSelectionInView();
+			knimeService.setSelectedRows(_representation.dataTableID, selectedRows, onSelectionChange);
+		};
+
+		var toggleSelectCluster = function (clusterEl) {
+			var select = !clusterEl.__data__.selected;
+			var multiSelect = d3.event.ctrlKey || d3.event.shiftKey || d3.event.metaKey;
+
+			var leaves = clusterEl.__data__.leaves();
+			var rowsToSelect = leaves.map(function (leaf) { return leaf.data.rowKey });
+			if (select) {
+				if (multiSelect) {
+					rowsToSelect.forEach(function (rowKey) {
+						if (selectedRows.indexOf(rowKey) === -1) {
+							selectedRows.push(rowKey);
+						}
+					});
+				} else {
+					selectedRows = rowsToSelect;
+				}
+			} else {
+				if (multiSelect) {
+					selectedRows = selectedRows.filter(function (item) {
+						return rowsToSelect.indexOf(item) === -1;
+					});
+				} else {
+					selectedRows = selectedRows.filter(function (item) {
+						return rowsToSelect.indexOf(item) !== -1;
+					});
+				}
+			}
+
+			updateSelectionInView();
+			knimeService.setSelectedRows(_representation.dataTableID, selectedRows, onSelectionChange);
 		};
 
 		var updateSelectionInView = function () {
