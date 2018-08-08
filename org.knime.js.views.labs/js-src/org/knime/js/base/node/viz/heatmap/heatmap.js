@@ -1,9 +1,8 @@
 heatmap_namespace = (function() {
     var heatmap = {};
-    var _representation, _value, _table;
+    var _representation, _value, _table, _imageColumnName;
 
     // Hardcoded Default Settings
-    var _imageColumnName = 'svg';
     var _colorRange = ['#FF0700', '#fff', '#00FF56'];
     var _itemSize = 17;
     var _margin = { top: 125, left: 50 };
@@ -29,12 +28,12 @@ heatmap_namespace = (function() {
     heatmap.init = function(representation, value) {
         debugger;
 
-        if (!representation.inObjects[0]) {
+        if (!representation.table) {
             //todo: error
             return;
         }
 
-        if (!representation.options.heatmapCols.length) {
+        if (!representation.columns.length) {
             //todo: error
             return;
         }
@@ -43,7 +42,8 @@ heatmap_namespace = (function() {
         _representation = representation;
         _value = Object.assign(defaultViewValues, value);
         _table = new kt();
-        _table.setDataTable(representation.inObjects[0]);
+        _table.setDataTable(representation.table);
+        _imageColumnName = representation.svgLabelColumn;
 
         knimeService.subscribeToSelection(_table.getTableId(), onSelectionChange);
 
@@ -86,7 +86,7 @@ heatmap_namespace = (function() {
         container.innerHTML = '';
 
         var svgWrapper = '<div class="knime-svg-container"></div>';
-        var toolTipWrapper = '<div class="tooltip"></div>';
+        var toolTipWrapper = '<div class="knime-tooltip"></div>';
 
         var paginationData = createPagination(getFilteredData());
         var pagination = getPaginationHtml(paginationData);
@@ -252,8 +252,8 @@ heatmap_namespace = (function() {
         var colNames = [];
 
         // Get valid indexes for heatmap columns by comparing them to input colNames
-        repColNames = _representation.inObjects[0].spec.colNames;
-        _representation.options.heatmapCols.map(function(hmColName) {
+        var repColNames = _representation.table.spec.colNames;
+        _representation.columns.map(function(hmColName) {
             colNames[repColNames.indexOf(hmColName)] = hmColName;
         });
 
@@ -385,7 +385,7 @@ heatmap_namespace = (function() {
         if (!_value.tooltipsEnabled && innerHtml) {
             return;
         }
-        var tooltip = document.querySelector('.tooltip');
+        var tooltip = document.querySelector('.knime-tooltip');
         tooltip.classList.add('active');
         e.target.classList.add('active');
         tooltip.innerHTML = innerHtml;
@@ -394,7 +394,7 @@ heatmap_namespace = (function() {
     }
 
     function hideTooltip() {
-        var tooltip = document.querySelector('.tooltip');
+        var tooltip = document.querySelector('.knime-tooltip');
         tooltip.classList.remove('active');
     }
 
@@ -461,11 +461,11 @@ heatmap_namespace = (function() {
             var data = d3.select(e.target).data()[0];
 
             toolTipInnerHTML =
-                '<span class="position">x:' +
+                '<span class="knime-tooltip-caption">x:' +
                 data.x +
                 ' y:' +
                 data.y +
-                '</span><span class="value knime-double">' +
+                '</span><span class="knime-tooltip-value knime-double">' +
                 data.value +
                 '</span>';
 
@@ -563,7 +563,7 @@ heatmap_namespace = (function() {
                 return d;
             })
             .on('click', function(d) {
-                selectSingleRow(d.y);
+                selectSingleRow(d);
             });
 
         // Initialize zoom
@@ -578,7 +578,7 @@ heatmap_namespace = (function() {
         var legend = d3
             .select('.knime-svg-container')
             .append('svg')
-            .attr('class', 'legend')
+            .attr('class', 'knime-legend')
             .attr('width', legendWidth + 2 * legendMargin)
             .attr('height', legendHeight + 2 * legendMargin)
             .attr('style', 'position: absolute; left: ' + _margin.left + 'px; top:8px');

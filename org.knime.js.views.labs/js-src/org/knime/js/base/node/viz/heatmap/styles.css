@@ -64,7 +64,7 @@ body {
     stroke-width: 0.3rem;
 }
 
-.tooltip {
+.knime-tooltip {
     position: absolute;
     font-size: 0.8rem;
     padding: 0.25rem 0.5rem;
@@ -80,17 +80,17 @@ body {
     transition: all 0.1s ease-out;
 }
 
-.tooltip.active {
+.knime-tooltip.active {
     opacity: 0.9;
 }
 
-.tooltip .position {
+.knime-tooltip-caption {
     display: block;
     font-size: 0.8rem;
     margin-bottom: 0.4rem;
 }
 
-.tooltip .value {
+.knime-tooltip-value {
     display: block;
     font-size: 1.1rem;
 }
@@ -136,7 +136,7 @@ form {
     color: #000;
 }
 
-.legend {
+.knime-legend {
     background-color: rgba(255, 255, 255, 0.9);
     padding: 2px;
 }

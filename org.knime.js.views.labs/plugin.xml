@@ -396,6 +396,9 @@
          <webDependency
                webResourceBundleID="renderQueue_1.0.0">
          </webDependency>
+         <webDependency
+               webResourceBundleID="KnimeTable_1.0.0">
+         </webDependency>
       </webResourceBundle>
    </extension>
    <extension
