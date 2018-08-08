@@ -131,9 +131,11 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private final JCheckBox m_subscribeFilterEventsCheckBox;
 
     HierarchicalClusterAssignerDialog() {
-        m_numClustersSpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
+        m_numClustersSpinner = new JSpinner(
+            new SpinnerNumberModel(HierarchicalClusterAssignerConfig.DEFAULT_NUM_CLUSTERS, 1, Integer.MAX_VALUE, 1));
         // maximum is 1, because use normalized distances is enabled by default
-        m_distanceThresholdSpinner = new JSpinner(new SpinnerNumberModel(0.5, 0, 1, 0.01));
+        m_distanceThresholdSpinner = new JSpinner(
+            new SpinnerNumberModel(HierarchicalClusterAssignerConfig.DEFAULT_NORMALIZED_THRESHOLD, 0, 1, 0.01));
         m_clusterCountModeRadioButton = new JRadioButton("Cluster count");
         m_distanceThresholdModeRadioButton = new JRadioButton("Distance threshold");
         m_clusterColumnNameTextField = new JTextField(TEXT_FIELD_SIZE);
@@ -227,8 +229,8 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
 
         config.setShowWarningsInView(m_showWarningsInViewCheckBox.isSelected());
         config.setGenerateImage(m_generateImageCheckBox.isSelected());
-        config.setImageWidth((Integer) m_imageWidthSpinner.getValue());
-        config.setImageHeight((Integer) m_imageHeightSpinner.getValue());
+        config.setImageWidth((int) m_imageWidthSpinner.getValue());
+        config.setImageHeight((int) m_imageHeightSpinner.getValue());
 
         config.setResizeToWindow(m_resizeToWindowCheckBox.isSelected());
         config.setTitle(m_titleTextField.getText());
@@ -252,15 +254,15 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
 
         config.setSubscribeFilterEvents(m_subscribeFilterEventsCheckBox.isSelected());
 
-        config.setNumClusters((Integer) m_numClustersSpinner.getValue());
+        config.setNumClusters((int) m_numClustersSpinner.getValue());
         config.setNumClustersMode(m_clusterCountModeRadioButton.isSelected());
         config.setClusterColumnName(m_clusterColumnNameTextField.getText());
         config.setUseNormalizedDistances(m_useNormalizedDistancesCheckBox.isSelected());
         if (m_useNormalizedDistancesCheckBox.isSelected()) {
-            config.setNormalizedThreshold((Double) m_distanceThresholdSpinner.getValue());
+            config.setNormalizedThreshold((double) m_distanceThresholdSpinner.getValue());
         }
         else {
-            config.setThreshold((Double) m_distanceThresholdSpinner.getValue());
+            config.setThreshold((double) m_distanceThresholdSpinner.getValue());
         }
 
         config.setEnablePanning(m_enablePanningCheckBox.isSelected());
@@ -310,7 +312,6 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
 
         m_subscribeFilterEventsCheckBox.setSelected(config.getSubscribeFilterEvents());
 
-        m_numClustersSpinner.setValue(config.getNumClusters());
         m_clusterCountModeRadioButton.setSelected(config.getNumClustersMode());
         m_distanceThresholdModeRadioButton.setSelected(!config.getNumClustersMode());
         m_numClustersSpinner.setEnabled(m_clusterCountModeRadioButton.isSelected());
@@ -318,10 +319,10 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_clusterColumnNameTextField.setText(config.getClusterColumnName());
         m_useNormalizedDistancesCheckBox.setSelected(config.getUseNormalizedDistances());
         m_useNormalizedDistancesCheckBox.setEnabled(m_distanceThresholdModeRadioButton.isSelected());
-        if (m_useNormalizedDistancesCheckBox.isSelected() && m_useNormalizedDistancesCheckBox.isEnabled()) {
+        m_numClustersSpinner.setValue(config.getNumClusters());
+        if (m_useNormalizedDistancesCheckBox.isSelected()) {
             m_distanceThresholdSpinner.setValue(config.getNormalizedThreshold());
-        }
-        else {
+        } else {
             m_distanceThresholdSpinner.setValue(config.getThreshold());
         }
 
@@ -451,6 +452,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -465,9 +467,9 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         generalConstraints.anchor = GridBagConstraints.NORTHWEST;
         generalConstraints.gridx = 0;
         generalConstraints.gridy = 0;
+        generalConstraints.weightx = 1;
         generalPanel.add(m_showWarningsInViewCheckBox, generalConstraints);
-        generalConstraints.gridx = 0;
-        generalConstraints.gridy++;
+        generalConstraints.gridx++;
         generalPanel.add(m_generateImageCheckBox, generalConstraints);
         generalConstraints.gridx = 0;
         generalConstraints.gridy++;
@@ -497,6 +499,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         displayConstraints.anchor = GridBagConstraints.NORTHWEST;
         displayConstraints.gridx = 0;
         displayConstraints.gridy = 0;
+        displayConstraints.weightx = 1;
         displayPanel.add(new JLabel("Chart title: "), displayConstraints);
         displayConstraints.gridx++;
         displayPanel.add(m_titleTextField, displayConstraints);
@@ -539,6 +542,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         colorConstraints.anchor = GridBagConstraints.NORTHWEST;
         colorConstraints.gridx = 0;
         colorConstraints.gridy = 0;
+        colorConstraints.weightx = 1;
         colorPanel.add(m_enableClusterColorRadioButton, colorConstraints);
         colorConstraints.gridx++;
         colorPanel.add(m_enableTableColorRadioButton, colorConstraints);
@@ -575,6 +579,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -589,6 +594,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         viewControlsConstraints.anchor = GridBagConstraints.NORTHWEST;
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy = 0;
+        viewControlsConstraints.weightx = 1;
         viewControlsPanel.add(m_enableViewEditCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
@@ -611,14 +617,17 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
 
         // Selection
         final JPanel selectionPanel = new JPanel(new GridBagLayout());
-        selectionPanel.setBorder(BorderFactory.createTitledBorder("Selection"));
+        selectionPanel.setBorder(BorderFactory.createTitledBorder("Selection & Filtering"));
         p.add(selectionPanel, gbc);
         final GridBagConstraints selectionConstraints = new GridBagConstraints();
         selectionConstraints.insets = new Insets(5, 5, 5, 5);
         selectionConstraints.anchor = GridBagConstraints.NORTHWEST;
         selectionConstraints.gridx = 0;
         selectionConstraints.gridy = 0;
+        selectionConstraints.weightx = 1;
         selectionPanel.add(m_enableSelectionCheckBox, selectionConstraints);
+        selectionConstraints.gridx++;
+        selectionPanel.add(m_subscribeFilterEventsCheckBox, selectionConstraints);
         selectionConstraints.gridx = 0;
         selectionConstraints.gridy++;
         selectionPanel.add(new JLabel("Selection column name: "), selectionConstraints);
@@ -633,47 +642,21 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         gbc.gridx = 0;
         gbc.gridy++;
 
-        // Filter
-        final JPanel filterPanel = new JPanel(new GridBagLayout());
-        filterPanel.setBorder(BorderFactory.createTitledBorder("Filter"));
-        p.add(filterPanel, gbc);
-        final GridBagConstraints filterConstraints = new GridBagConstraints();
-        filterConstraints.insets = new Insets(5, 5, 5, 5);
-        filterConstraints.anchor = GridBagConstraints.NORTHWEST;
-        filterConstraints.gridx = 0;
-        filterConstraints.gridy = 0;
-        filterPanel.add(m_subscribeFilterEventsCheckBox, filterConstraints);
-        filterConstraints.gridx = 0;
-        filterConstraints.gridy++;
-
-        gbc.gridx = 0;
-        gbc.gridy++;
-
-        // Panning
-        final JPanel panningPanel = new JPanel(new GridBagLayout());
-        panningPanel.setBorder(BorderFactory.createTitledBorder("Panning"));
-        p.add(panningPanel, gbc);
-        final GridBagConstraints panningConstraints = new GridBagConstraints();
-        panningConstraints.insets = new Insets(5, 5, 5, 5);
-        panningConstraints.anchor = GridBagConstraints.NORTHWEST;
-        panningConstraints.gridx = 0;
-        panningConstraints.gridy = 0;
-        panningPanel.add(m_enablePanningCheckBox, panningConstraints);
-
-        gbc.gridx = 0;
-        gbc.gridy++;
-
         // Zoom
         final JPanel zoomPanel = new JPanel(new GridBagLayout());
-        zoomPanel.setBorder(BorderFactory.createTitledBorder("Zoom"));
+        zoomPanel.setBorder(BorderFactory.createTitledBorder("Zoom & Panning"));
         p.add(zoomPanel, gbc);
         final GridBagConstraints zoomConstraints = new GridBagConstraints();
         zoomConstraints.insets = new Insets(5, 5, 5, 5);
         zoomConstraints.anchor = GridBagConstraints.NORTHWEST;
         zoomConstraints.gridx = 0;
         zoomConstraints.gridy = 0;
+        zoomConstraints.weightx = 1;
         zoomPanel.add(m_enableZoomCheckBox, zoomConstraints);
         zoomConstraints.gridx++;
+        zoomPanel.add(m_enablePanningCheckBox, zoomConstraints);
+        zoomConstraints.gridx = 0;
+        zoomConstraints.gridy++;
         zoomPanel.add(m_showZoomResetButtonCheckBox, zoomConstraints);
 
         gbc.gridx = 0;

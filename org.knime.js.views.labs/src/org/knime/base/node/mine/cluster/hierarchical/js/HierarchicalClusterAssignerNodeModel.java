@@ -55,6 +55,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.knime.base.data.xml.SvgCell;
 import org.knime.base.node.mine.cluster.hierarchical.ClusterTreeModel;
@@ -71,19 +72,26 @@ import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.BooleanCell.BooleanCellFactory;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.property.filter.FilterHandler;
 import org.knime.core.node.BufferedDataTable;
-import org.knime.core.node.BufferedDataTableHolder;
+import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
+import org.knime.core.node.port.PortObjectHolder;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.image.ImagePortObject;
 import org.knime.core.node.port.image.ImagePortObjectSpec;
 import org.knime.core.node.port.inactive.InactiveBranchPortObjectSpec;
 import org.knime.core.node.web.ValidationError;
+import org.knime.js.core.JSONDataTable;
+import org.knime.js.core.layout.LayoutTemplateProvider;
+import org.knime.js.core.layout.bs.JSONLayoutViewContent;
+import org.knime.js.core.layout.bs.JSONLayoutViewContent.ResizeMethod;
 import org.knime.js.core.node.AbstractSVGWizardNodeModel;
 import org.knime.js.core.node.CSSModifiable;
 
@@ -92,8 +100,9 @@ import org.knime.js.core.node.CSSModifiable;
  * @author Alison Walter
  */
 public class HierarchicalClusterAssignerNodeModel extends AbstractSVGWizardNodeModel<HierarchicalClusterAssignerRepresentation,
-HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifiable {
+HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, LayoutTemplateProvider {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(HierarchicalClusterAssignerNodeModel.class);
     private static final String JS_ID = "org.knime.base.node.mine.cluster.hierarchical";
 
     private HierarchicalClusterAssignerConfig m_config;
@@ -132,6 +141,40 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
      * {@inheritDoc}
      */
     @Override
+    public HierarchicalClusterAssignerRepresentation getViewRepresentation() {
+        final HierarchicalClusterAssignerRepresentation rep = super.getViewRepresentation();
+        synchronized (getLock()) {
+            if (m_nodeToId == null) {
+                initialSetUp();
+            }
+            // create table
+            if (rep.getTable() == null && m_table != null) {
+                try {
+                    final JSONDataTable jTable = createJSONDataTable(null);
+                    jTable.setId(rep.getDataTableID());
+                    jTable.getSpec().setFilterIds(rep.getFilterIds());
+                    rep.setTable(jTable);
+                } catch (Exception e) {
+                    LOGGER.error("Could not create JSON table: " + e.getMessage(), e);
+                }
+            }
+            // create tree
+            if (rep.getTree() == null && m_tree != null) {
+                try {
+                    final JSClusterModelTree jTree = new JSClusterModelTree(m_tree, m_nodeToId);
+                    rep.setTree(jTree);
+                } catch (Exception e) {
+                    LOGGER.error("Could not create JSON cluster tree: " + e.getMessage(), e);
+                }
+            }
+        }
+        return rep;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ValidationError validateViewValue(final HierarchicalClusterAssignerValue viewContent) {
         return null;
     }
@@ -141,7 +184,7 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
      */
     @Override
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        if (!inSpecs[0].equals(inSpecs[1])) {
+        if (!((DataTableSpec) inSpecs[1]).equalStructure((DataTableSpec) inSpecs[0])) {
             throw new InvalidSettingsException("Incompatible data table for cluster tree");
         }
         final ColumnRearranger createColumnRearranger = createColumnAppender((DataTableSpec)inSpecs[1],
@@ -162,16 +205,17 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
      */
     @Override
     protected void performExecuteCreateView(final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
+        // get before setting table/tree to avoid creating them twice
+        final HierarchicalClusterAssignerRepresentation rep = getViewRepresentation();
+        String[] defaultLabels = null;
         m_tree = (ClusterTreeModel) inObjects[0];
         m_table = (BufferedDataTable) inObjects[1];
 
         if (m_table.size() < m_config.getNumClusters() && m_table.size() > 0) {
             throw new InvalidSettingsException("More clusters than data points selected");
         }
-
         if (m_nodeToId == null) {
-            final String[] defaultLabels = initialSetUp();
-            m_config.setClusterLabels(defaultLabels);
+            defaultLabels = initialSetUp();
         }
         else {
             // m_tree is a new reference, and the model doesn't overrride equals(), so the HashMap is no longer valid
@@ -179,7 +223,7 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
             initialSetUp();
         }
         synchronized (getLock()) {
-            copyConfigToView();
+            copyConfigToView(rep, exec, defaultLabels);
         }
     }
 
@@ -191,8 +235,8 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
         BufferedDataTable out = null;
         synchronized (getLock()) {
-            final Map<RowKey, String> rowToCluster = assignClusters(m_config.getThreshold());
-            final List<String> selection = Arrays.asList(getViewValue().getSelection());
+            final Map<RowKey, String> rowToCluster = assignClusters(getAssignmentThreshold());
+            final List<String> selection = getViewValue().getSelection() == null ? null : Arrays.asList(getViewValue().getSelection());
             final ColumnRearranger createColumnRearranger = createColumnAppender(m_table.getDataTableSpec(), m_config.getEnableSelection(), rowToCluster, selection);
             out = exec.createColumnRearrangeTable(m_table, createColumnRearranger, exec);
         }
@@ -203,6 +247,7 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         if (m_leavesWithoutRows != null && !m_leavesWithoutRows.isEmpty() && m_table.size() > 0) {
             setWarningMessage(m_leavesWithoutRows.size() + " cluster tree leaf(s) do not have corresponding row(s) in the given data table");
         }
+        getViewRepresentation().setRunningInView(true);
         return new PortObject[]{svgImageFromView, out};
     }
 
@@ -210,16 +255,17 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
      * {@inheritDoc}
      */
     @Override
-    public BufferedDataTable[] getInternalTables() {
-        return new BufferedDataTable[]{m_table};
+    public PortObject[] getInternalPortObjects() {
+        return new PortObject[]{m_tree, m_table};
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setInternalTables(final BufferedDataTable[] tables) {
-        m_table = tables[0];
+    public void setInternalPortObjects(final PortObject[] portObjects) {
+        m_tree = (ClusterTreeModel)portObjects[0];
+        m_table = (BufferedDataTable)portObjects[1];
     }
 
     /**
@@ -232,8 +278,6 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         m_nodeToId = null;
         m_rowsWithoutLeaves = null;
         m_leavesWithoutRows = null;
-        m_config.setSelection(HierarchicalClusterAssignerConfig.DEFAULT_SELECTION);
-        m_config.setClusterLabels(HierarchicalClusterAssignerConfig.DEFAULT_CLUSTER_LABELS);
     }
 
     /**
@@ -327,6 +371,20 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         m_config.setCustomCSS(styles);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public JSONLayoutViewContent getLayoutTemplate() {
+        final JSONLayoutViewContent template = new JSONLayoutViewContent();
+        if (m_config.getResizeToWindow()) {
+            template.setResizeMethod(ResizeMethod.ASPECT_RATIO_4by3);
+        } else {
+            template.setResizeMethod(ResizeMethod.VIEW_TAGGED_ELEMENT);
+        }
+        return template;
+    }
+
     // -- Helper methods --
 
     private String[] initialSetUp() {
@@ -380,7 +438,7 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         }
     }
 
-    private double computeThresholdForNumClusters(final int numClusters) {
+    private double computeThresholdFromNumClusters(final int numClusters) {
         if (numClusters <= 0) {
             throw new IllegalArgumentException("Cannot have " + numClusters + " clusters!");
         }
@@ -388,7 +446,7 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
             return m_tree.getRoot().getDist() + 0.01;
         }
         if (numClusters >= m_tree.getClusterDistances().length + 1) {
-            return 0;
+            return m_tree.getClusterDistances()[0] * 0.5;
         }
         final double[] clusterDistances = m_tree.getClusterDistances();
         final int upperBound = clusterDistances.length - (numClusters - 1);
@@ -431,27 +489,28 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         final HierarchicalClusterAssignerValue value = getViewValue();
         m_config.setTitle(value.getTitle());
         m_config.setSubtitle(value.getSubtitle());
-        m_config.setXMin(value.getXMin());
-        m_config.setXMax(value.getXMax());
-        m_config.setYMin(value.getYMin());
-        m_config.setYMax(value.getYMax());
         m_config.setUseLogScale(value.getUseLogScale());
         m_config.setOrientation(value.getOrientation());
 
-        // the view does not deal with normalized thresholds,
-        // so we want to sync to the non-normalized threshold always
-        m_config.setThreshold(value.getThreshold());
-        syncThresholds(false);
-
-        // The view more or less ignores this value, and we always assume that the threshold is updates
-        final int numClusters = computeNumClustersFromThreshold(value.getThreshold());
-        value.setNumClusters(numClusters);
-        m_config.setNumClusters(value.getNumClusters());
+        if (m_config.getNumClustersMode()) {
+            // The view more or less ignores this value, and we always assume that the threshold is updates
+            final int numClusters = computeNumClustersFromThreshold(value.getThreshold());
+            value.setNumClusters(numClusters);
+            m_config.setNumClusters(value.getNumClusters());
+        } else if (!m_config.getNumClustersMode() && m_config.getUseNormalizedDistances()) {
+            final double maxDist = m_tree.getClusterDistances()[m_tree.getClusterDistances().length - 1];
+            final double normThreshold = value.getThreshold() / maxDist;
+            // Needs to be rounded to three decimal places for the dialog. The spinner automatically switches the value
+            // to have three decimal places. So if you change nothing but load a value with more than 3 decimal places,
+            // you'll save a value with only three decimal places to the settings which causes issues.
+            m_config.setNormalizedThreshold(roundThreeDecimalPlaces(normThreshold));
+        } else {
+            m_config.setThreshold(roundThreeDecimalPlaces(value.getThreshold()));
+        }
     }
 
-    private void copyConfigToView() {
-        final HierarchicalClusterAssignerRepresentation representation = getViewRepresentation();
-
+    private void copyConfigToView(final HierarchicalClusterAssignerRepresentation representation,
+        final ExecutionContext exc, final String[] defaultLabels) throws CanceledExecutionException {
         // Copy to representation
         representation.setGenerateImage(m_config.getGenerateImage());
         representation.setImageWidth(m_config.getImageWidth());
@@ -477,24 +536,37 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         representation.setSubscribeFilterEvents(m_config.getSubscribeFilterEvents());
         representation.setTree(new JSClusterModelTree(m_tree, m_nodeToId));
         representation.setDataTableID(getTableId(1));
+        representation.setTable(createJSONDataTable(exc));
+
+        final String[] filterIds = new String[m_table.getSpec().getNumColumns()];
+        for (int i = 0; i < filterIds.length; i++) {
+            final Optional<FilterHandler> optional = m_table.getSpec().getColumnSpec(i).getFilterHandler();
+            if (optional != null && optional.isPresent()) {
+                filterIds[i] = optional.get().getModel().getFilterUUID().toString();
+            } else {
+                filterIds[i] = null;
+            }
+        }
+        representation.setFilterIds(filterIds);
 
         // Copy to value
         final HierarchicalClusterAssignerValue value = getViewValue();
         if (isViewValueEmpty()) {
+            int nc = 1;
+            double t = 0;
             if (m_config.getNumClustersMode()) {
-                final double threshold = computeThresholdForNumClusters(m_config.getNumClusters());
-                m_config.setThreshold(threshold);
+                t = computeThresholdFromNumClusters(m_config.getNumClusters());
+                nc = m_config.getNumClusters();
+
             } else {
-                syncThresholds(m_config.getUseNormalizedDistances());
-                final int numClusters = computeNumClustersFromThreshold(m_config.getThreshold());
-                m_config.setNumClusters(numClusters);
+                t = m_config.getUseNormalizedDistances() ? computeThresholdFromNormThreshold()
+                    : m_config.getThreshold();
+                nc = computeNumClustersFromThreshold(t);
             }
+            value.setNumClusters(nc);
+            value.setThreshold(t);
             value.setTitle(m_config.getTitle());
             value.setSubtitle(m_config.getSubtitle());
-            value.setNumClusters(m_config.getNumClusters());
-            value.setThreshold(m_config.getThreshold());
-            value.setClusterLabels(m_config.getClusterLabels());
-            value.setSelection(m_config.getSelection());
             value.setXMin(getMinRowKey().toString());
             value.setXMax(getMaxRowKey().toString());
             value.setYMin(0);
@@ -503,6 +575,7 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
             }
             value.setUseLogScale(m_config.getUseLogScale());
             value.setOrientation(m_config.getOrientation());
+            value.setClusterLabels(defaultLabels);
         }
     }
 
@@ -564,7 +637,7 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         int clusterID = 0;
         for (final DendrogramNode node : clusterNodes) {
             final int id = m_nodeToId.get(node);
-            String label = m_config.getClusterLabels()[id];
+            String label = getViewValue().getClusterLabels()[id];
             if (label == null || label.isEmpty()) {
                 label = "Cluster " + clusterID;
                 clusterID++;
@@ -632,12 +705,35 @@ HierarchicalClusterAssignerValue> implements BufferedDataTableHolder, CSSModifia
         return getLeafRowKey(node);
     }
 
-    private void syncThresholds(final boolean useNormalized) {
-        final double maxDist = m_tree.getClusterDistances()[m_tree.getClusterDistances().length - 1];
-        if (useNormalized) {
-            m_config.setThreshold(m_config.getNormalizedThreshold() * maxDist);
-        } else {
-            m_config.setNormalizedThreshold(m_config.getThreshold() / maxDist);
-        }
+    private JSONDataTable createJSONDataTable(final ExecutionContext exec)
+        throws CanceledExecutionException {
+        JSONDataTable jsonTable = JSONDataTable.newBuilder()
+                .setDataTable(m_table)
+                .setId(getTableId(1))
+                .setFirstRow(1)
+                .keepFilterColumns(m_config.getSubscribeFilterEvents())
+                .setExcludeColumns(m_table.getSpec().getColumnNames())
+                .calculateDataHash(true)
+                .build(exec);
+        return jsonTable;
     }
-}
+
+    private double computeThresholdFromNormThreshold() {
+        final double maxDist = m_tree.getClusterDistances()[m_tree.getClusterDistances().length - 1];
+        return m_config.getNormalizedThreshold() * maxDist;
+    }
+
+    private static double roundThreeDecimalPlaces(final double number) {
+        return Math.round(number * 1000.0) / 1000.0;
+    }
+
+    private double getAssignmentThreshold() {
+        if (m_config.getNumClustersMode()) {
+            return computeThresholdFromNumClusters(m_config.getNumClusters());
+        }
+        if (m_config.getUseNormalizedDistances()) {
+            return computeThresholdFromNormThreshold();
+        }
+        return m_config.getThreshold();
+    }
+ }

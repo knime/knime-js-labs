@@ -111,10 +111,6 @@ public class HierarchicalClusterAssignerConfig {
     final static boolean DEFAULT_ENABLE_CLUSTER_LABELS = true;
     private boolean m_enableClusterLabels = DEFAULT_ENABLE_CLUSTER_LABELS;
 
-    final static String CFG_CLUSTER_LABELS = "clusterLabels";
-    final static String[] DEFAULT_CLUSTER_LABELS = new String[0];
-    private String[] m_clusterLabels = DEFAULT_CLUSTER_LABELS;
-
     final static String CFG_ENABLE_SELECTION = "enableSelection";
     final static boolean DEFAULT_ENABLE_SELECTION = true;
     private boolean m_enableSelection = DEFAULT_ENABLE_SELECTION;
@@ -126,10 +122,6 @@ public class HierarchicalClusterAssignerConfig {
     final static String CFG_SUBSCRIBE_SELECTION_EVENTS = "subscribeSelectionEvents";
     final static boolean DEFAULT_SUBSCRIBE_SELECTION_EVENTS = true;
     private boolean m_subscribeSelectionEvents = DEFAULT_SUBSCRIBE_SELECTION_EVENTS;
-
-    final static String CFG_SELECTION = "selection";
-    final static String[] DEFAULT_SELECTION = new String[0];
-    private String[] m_selection = DEFAULT_SELECTION;
 
     final static String CFG_NUM_CLUSTERS = "numClusters";
     final static int DEFAULT_NUM_CLUSTERS = 1;
@@ -182,22 +174,6 @@ public class HierarchicalClusterAssignerConfig {
     final static String CFG_ENABLE_PANNING = "enablePanning";
     final static boolean DEFAULT_ENABLE_PANNING = true;
     private boolean m_enablePanning = DEFAULT_ENABLE_PANNING;
-
-    final static String CFG_X_MIN = "xMin";
-    final static String DEFAULT_X_MIN = null;
-    private String m_xMin = DEFAULT_X_MIN;
-
-    final static String CFG_X_MAX = "xMax";
-    final static String DEFAULT_X_MAX = null;
-    private String m_xMax = DEFAULT_X_MAX;
-
-    final static String CFG_Y_MIN = "yMin";
-    final static double DEFAULT_Y_MIN = 0.0;
-    private double m_yMin = DEFAULT_Y_MIN;
-
-    final static String CFG_Y_MAX = "yMax";
-    final static double DEFAULT_Y_MAX = 0.0;
-    private double m_yMax = DEFAULT_Y_MAX;
 
     final static String CFG_ENABLE_LOG_SCALE_TOGGLE = "enableLogScaleToggle";
     final static boolean DEFAULT_ENABLE_LOG_SCALE_TOGGLE = true;
@@ -407,16 +383,6 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
-     * @return the clusterLabels
-     */
-    public String[] getClusterLabels() { return m_clusterLabels; }
-
-    /**
-     * @param clusterLabels the clusterLabels to set
-     */
-    public void setClusterLabels(final String[] clusterLabels) { m_clusterLabels = clusterLabels; }
-
-    /**
      * @return the enableSelection
      */
     public boolean getEnableSelection() {
@@ -459,20 +425,6 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
-     * @return the selection
-     */
-    public String[] getSelection() {
-        return m_selection;
-    }
-
-    /**
-     * @param selection the selection to set
-     */
-    public void setSelection(final String[] selection) {
-        m_selection = selection;
-    }
-
-    /**
      * @return the numClusters
      */
     public int getNumClusters() {
@@ -498,6 +450,10 @@ public class HierarchicalClusterAssignerConfig {
      */
     public void setThreshold(final double threshold) {
         m_threshold = threshold;
+
+        // The dialog only stores one threshold, so if
+        // one is set the other must be the default
+        m_normalizedThreshold = DEFAULT_NORMALIZED_THRESHOLD;
     }
 
     /**
@@ -540,6 +496,10 @@ public class HierarchicalClusterAssignerConfig {
      */
     public void setNormalizedThreshold(final double normalizedThreshold) {
         m_normalizedThreshold = normalizedThreshold;
+
+        // The dialog only stores one threshold, so if
+        // one is set the other must be the default
+        m_threshold = DEFAULT_THRESHOLD;
     }
 
     /**
@@ -655,62 +615,6 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
-     * @return the xMin
-     */
-    public String getXMin() {
-        return m_xMin;
-    }
-
-    /**
-     * @param xMin the xMin to set
-     */
-    public void setXMin(final String xMin) {
-        m_xMin = xMin;
-    }
-
-    /**
-     * @return the xMax
-     */
-    public String getXMax() {
-        return m_xMax;
-    }
-
-    /**
-     * @param xMax the xMax to set
-     */
-    public void setXMax(final String xMax) {
-        m_xMax = xMax;
-    }
-
-    /**
-     * @return the yMin
-     */
-    public double getYMin() {
-        return m_yMin;
-    }
-
-    /**
-     * @param yMin the yMin to set
-     */
-    public void setYMin(final double yMin) {
-        m_yMin = yMin;
-    }
-
-    /**
-     * @return the yMax
-     */
-    public double getYMax() {
-        return m_yMax;
-    }
-
-    /**
-     * @param yMax the yMax to set
-     */
-    public void setYMax(final double yMax) {
-        m_yMax = yMax;
-    }
-
-    /**
      * @return the enableLogScaleToggle
      */
     public boolean getEnableLogScaleToggle() {
@@ -813,11 +717,9 @@ public class HierarchicalClusterAssignerConfig {
         settings.addBoolean(CFG_ENABLE_TITLE_EDIT, m_enableTitleEdit);
         settings.addBoolean(CFG_ENABLE_NUM_CLUSTER_EDIT, m_enableNumClusterEdit);
         settings.addBoolean(CFG_ENABLE_CLUSTER_LABELS, m_enableClusterLabels);
-        settings.addStringArray(CFG_CLUSTER_LABELS, m_clusterLabels);
         settings.addBoolean(CFG_ENABLE_SELECTION, m_enableSelection);
         settings.addBoolean(CFG_PUBLISH_SELECTION_EVENTS, m_publishSelectionEvents);
         settings.addBoolean(CFG_SUBSCRIBE_SELECTION_EVENTS, m_subscribeSelectionEvents);
-        settings.addStringArray(CFG_SELECTION, m_selection);
         settings.addInt(CFG_NUM_CLUSTERS, m_numClusters);
         settings.addDouble(CFG_THRESHOLD, m_threshold);
         settings.addBoolean(CFG_NUM_CLUSTERS_MODE, m_numClustersMode);
@@ -831,10 +733,6 @@ public class HierarchicalClusterAssignerConfig {
         settings.addBoolean(CFG_ENABLE_ZOOM, m_enableZoom);
         settings.addBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, m_showZoomResetButton);
         settings.addBoolean(CFG_ENABLE_PANNING, m_enablePanning);
-        settings.addString(CFG_X_MIN, m_xMin);
-        settings.addString(CFG_X_MAX, m_xMax);
-        settings.addDouble(CFG_Y_MIN, m_yMin);
-        settings.addDouble(CFG_Y_MAX, m_yMax);
         settings.addBoolean(CFG_ENABLE_LOG_SCALE_TOGGLE, m_enableLogScaleToggle);
         settings.addBoolean(CFG_USE_LOG_SCALE, m_useLogScale);
         settings.addBoolean(CFG_ENABLE_CHANGE_ORIENTATION, m_enableChangeOrientation);
@@ -863,11 +761,9 @@ public class HierarchicalClusterAssignerConfig {
         m_enableTitleEdit = settings.getBoolean(CFG_ENABLE_TITLE_EDIT);
         m_enableNumClusterEdit = settings.getBoolean(CFG_ENABLE_NUM_CLUSTER_EDIT);
         m_enableClusterLabels = settings.getBoolean(CFG_ENABLE_CLUSTER_LABELS);
-        m_clusterLabels = settings.getStringArray(CFG_CLUSTER_LABELS);
         m_enableSelection = settings.getBoolean(CFG_ENABLE_SELECTION);
         m_publishSelectionEvents = settings.getBoolean(CFG_PUBLISH_SELECTION_EVENTS);
         m_subscribeSelectionEvents = settings.getBoolean(CFG_SUBSCRIBE_SELECTION_EVENTS);
-        m_selection = settings.getStringArray(CFG_SELECTION);
         m_enableClusterColor = settings.getBoolean(CFG_ENABLE_CLUSTER_COLOR);
         m_enableThresholdValue = settings.getBoolean(CFG_ENABLE_THRESHOLD_VALUE);
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME);
@@ -876,10 +772,6 @@ public class HierarchicalClusterAssignerConfig {
         m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM);
         m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON);
         m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING);
-        m_xMin = settings.getString(CFG_X_MIN);
-        m_xMax = settings.getString(CFG_X_MAX);
-        m_yMin = settings.getDouble(CFG_Y_MIN);
-        m_yMax = settings.getDouble(CFG_Y_MAX);
         m_enableLogScaleToggle = settings.getBoolean(CFG_ENABLE_LOG_SCALE_TOGGLE);
         m_useLogScale = settings.getBoolean(CFG_USE_LOG_SCALE);
         m_enableChangeOrientation = settings.getBoolean(CFG_ENABLE_CHANGE_ORIENTATION);
@@ -926,11 +818,9 @@ public class HierarchicalClusterAssignerConfig {
         m_enableTitleEdit = settings.getBoolean(CFG_ENABLE_TITLE_EDIT, DEFAULT_ENABLE_TITLE_EDIT);
         m_enableNumClusterEdit = settings.getBoolean(CFG_ENABLE_NUM_CLUSTER_EDIT, DEFAULT_ENABLE_NUM_CLUSTER_EDIT);
         m_enableClusterLabels = settings.getBoolean(CFG_ENABLE_CLUSTER_LABELS, DEFAULT_ENABLE_CLUSTER_LABELS);
-        m_clusterLabels = settings.getStringArray(CFG_CLUSTER_LABELS, DEFAULT_CLUSTER_LABELS);
         m_enableSelection = settings.getBoolean(CFG_ENABLE_SELECTION, DEFAULT_ENABLE_SELECTION);
         m_publishSelectionEvents = settings.getBoolean(CFG_PUBLISH_SELECTION_EVENTS, DEFAULT_PUBLISH_SELECTION_EVENTS);
         m_subscribeSelectionEvents = settings.getBoolean(CFG_SUBSCRIBE_SELECTION_EVENTS, DEFAULT_SUBSCRIBE_SELECTION_EVENTS);
-        m_selection = settings.getStringArray(CFG_SELECTION, DEFAULT_SELECTION);
         m_enableClusterColor = settings.getBoolean(CFG_ENABLE_CLUSTER_COLOR, DEFAULT_ENABLE_CLUSTER_COLOR);
         m_enableThresholdValue = settings.getBoolean(CFG_ENABLE_THRESHOLD_VALUE, DEFAULT_ENABLE_THRESHOLD_VALUE);
         m_numClusters = settings.getInt(CFG_NUM_CLUSTERS, DEFAULT_NUM_CLUSTERS);
@@ -944,10 +834,6 @@ public class HierarchicalClusterAssignerConfig {
         m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM, DEFAULT_ENABLE_ZOOM);
         m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, DEFAULT_SHOW_ZOOM_RESET_BUTTON);
         m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING, DEFAULT_ENABLE_PANNING);
-        m_xMin = settings.getString(CFG_X_MIN, DEFAULT_X_MIN);
-        m_xMax = settings.getString(CFG_X_MAX, DEFAULT_X_MAX);
-        m_yMin = settings.getDouble(CFG_Y_MIN, DEFAULT_Y_MIN);
-        m_yMax = settings.getDouble(CFG_Y_MAX, DEFAULT_Y_MAX);
         m_enableLogScaleToggle = settings.getBoolean(CFG_ENABLE_LOG_SCALE_TOGGLE, DEFAULT_ENABLE_LOG_SCALE_TOGGLE);
         m_useLogScale = settings.getBoolean(CFG_USE_LOG_SCALE, DEFAULT_USE_LOG_SCALE);
         m_enableChangeOrientation = settings.getBoolean(CFG_ENABLE_CHANGE_ORIENTATION, DEFAULT_ENABLE_CHANGE_ORIENTATION);

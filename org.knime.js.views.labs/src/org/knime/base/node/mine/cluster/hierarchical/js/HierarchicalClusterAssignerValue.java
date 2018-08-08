@@ -66,16 +66,23 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class HierarchicalClusterAssignerValue extends JSONViewContent {
 
+    final static String CFG_CLUSTER_LABELS = "clusterLabels";
+    private String[] m_clusterLabels;
+    final static String CFG_X_MIN = "xMin";
+    private String m_xMin;
+    final static String CFG_X_MAX = "xMax";
+    private String m_xMax;
+    final static String CFG_Y_MIN = "yMin";
+    private double m_yMin;
+    final static String CFG_Y_MAX = "yMax";
+    private double m_yMax;
+    final static String CFG_SELECTION = "selection";
+    private String[] m_selection;
+
     private String m_title;
     private String m_subtitle;
     private int m_numClusters;
     private double m_threshold;
-    private String[] m_selection;
-    private String[] m_clusterLabels;
-    private String m_xMin;
-    private String m_xMax;
-    private double m_yMin;
-    private double m_yMax;
     private boolean m_useLogScale;
     private HierarchicalClusterAssignerOrientation m_orientation;
 
@@ -256,12 +263,12 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         settings.addString(HierarchicalClusterAssignerConfig.CFG_SUBTITLE, getSubtitle());
         settings.addInt(HierarchicalClusterAssignerConfig.CFG_NUM_CLUSTERS, getNumClusters());
         settings.addDouble(HierarchicalClusterAssignerConfig.CFG_THRESHOLD, getThreshold());
-        settings.addStringArray(HierarchicalClusterAssignerConfig.CFG_SELECTION, getSelection());
-        settings.addStringArray(HierarchicalClusterAssignerConfig.CFG_CLUSTER_LABELS, getClusterLabels());
-        settings.addString(HierarchicalClusterAssignerConfig.CFG_X_MIN, getXMin());
-        settings.addString(HierarchicalClusterAssignerConfig.CFG_X_MAX, getXMax());
-        settings.addDouble(HierarchicalClusterAssignerConfig.CFG_Y_MIN, getYMin());
-        settings.addDouble(HierarchicalClusterAssignerConfig.CFG_Y_MAX, getYMax());
+        settings.addStringArray(CFG_SELECTION, getSelection());
+        settings.addStringArray(CFG_CLUSTER_LABELS, getClusterLabels());
+        settings.addString(CFG_X_MIN, getXMin());
+        settings.addString(CFG_X_MAX, getXMax());
+        settings.addDouble(CFG_Y_MIN, getYMin());
+        settings.addDouble(CFG_Y_MAX, getYMax());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_USE_LOG_SCALE, getUseLogScale());
         settings.addString(HierarchicalClusterAssignerConfig.CFG_ORIENTATION, getOrientation().toValue());
     }
@@ -275,12 +282,12 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         m_subtitle = settings.getString(HierarchicalClusterAssignerConfig.CFG_SUBTITLE);
         m_numClusters = settings.getInt(HierarchicalClusterAssignerConfig.CFG_NUM_CLUSTERS);
         m_threshold = settings.getDouble(HierarchicalClusterAssignerConfig.CFG_THRESHOLD);
-        m_selection = settings.getStringArray(HierarchicalClusterAssignerConfig.CFG_SELECTION);
-        m_clusterLabels = settings.getStringArray(HierarchicalClusterAssignerConfig.CFG_CLUSTER_LABELS);
-        m_xMin = settings.getString(HierarchicalClusterAssignerConfig.CFG_X_MIN);
-        m_xMax = settings.getString(HierarchicalClusterAssignerConfig.CFG_X_MAX);
-        m_yMin = settings.getDouble(HierarchicalClusterAssignerConfig.CFG_Y_MIN);
-        m_yMax = settings.getDouble(HierarchicalClusterAssignerConfig.CFG_Y_MAX);
+        m_selection = settings.getStringArray(CFG_SELECTION);
+        m_clusterLabels = settings.getStringArray(CFG_CLUSTER_LABELS);
+        m_xMin = settings.getString(CFG_X_MIN);
+        m_xMax = settings.getString(CFG_X_MAX);
+        m_yMin = settings.getDouble(CFG_Y_MIN);
+        m_yMax = settings.getDouble(CFG_Y_MAX);
         m_useLogScale = settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_USE_LOG_SCALE);
         m_orientation = HierarchicalClusterAssignerOrientation
             .forValue(settings.getString(HierarchicalClusterAssignerConfig.CFG_ORIENTATION));

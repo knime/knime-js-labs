@@ -55,9 +55,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.JSONViewContent;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
@@ -101,8 +103,13 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
     private final static String CFG_DATA_TABLE_ID = "dataTableID";
     private String m_dataTableID;
+    private final static String CFG_FILTER_IDS = "filterIds";
+    private String[] m_filterIds;
+    private final static String CFG_RUNNING_IN_VIEW = "runningInView";
+    private boolean m_runningInView;
 
     private JSClusterModelTree m_tree;
+    private JSONDataTable m_table;
 
     /**
      * @return the generateImage
@@ -415,6 +422,7 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     /**
      * @return the dataTableID
      */
+    @JsonIgnore
     public String getDataTableID() {
         return m_dataTableID;
     }
@@ -422,8 +430,39 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     /**
      * @param dataTableID the dataTableID to set
      */
+    @JsonIgnore
     public void setDataTableID(final String dataTableID) {
         m_dataTableID = dataTableID;
+    }
+
+    /**
+     * @return the filterIds
+     */
+    @JsonIgnore
+    public String[] getFilterIds() {
+        return m_filterIds;
+    }
+
+    /**
+     * @param filterIds the filterIds to set
+     */
+    @JsonIgnore
+    public void setFilterIds(final String[] filterIds) {
+        m_filterIds = filterIds;
+    }
+
+    /**
+     * @return the runningInView
+     */
+    public boolean getRunningInView() {
+        return m_runningInView;
+    }
+
+    /**
+     * @param runningInView the runningInView to set
+     */
+    public void setRunningInView(final boolean runningInView) {
+        m_runningInView = runningInView;
     }
 
     /**
@@ -438,6 +477,20 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
      */
     public void setTree(final JSClusterModelTree tree) {
         m_tree = tree;
+    }
+
+    /**
+     * @return the table
+     */
+    public JSONDataTable getTable() {
+        return m_table;
+    }
+
+    /**
+     * @param table the table to set
+     */
+    public void setTable(final JSONDataTable table) {
+        m_table = table;
     }
 
     /**
@@ -478,6 +531,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS, getSubscribeFilterEvents());
 
         settings.addString(CFG_DATA_TABLE_ID, getDataTableID());
+        settings.addStringArray(CFG_FILTER_IDS, m_filterIds);
+        settings.addBoolean(CFG_RUNNING_IN_VIEW, m_runningInView);
         // Don't store JSON representation of tree
     }
 
@@ -518,6 +573,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
         setSubscribeFilterEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS));
 
         setDataTableID(settings.getString(CFG_DATA_TABLE_ID));
+        setFilterIds(settings.getStringArray(CFG_FILTER_IDS));
+        setRunningInView(settings.getBoolean(CFG_RUNNING_IN_VIEW));
     }
 
 
@@ -557,7 +614,10 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_enableChangeOrientation, other.getEnableChangeOrientation())
                 .append(m_subscribeFilterEvents, other.getSubscribeFilterEvents())
                 .append(m_dataTableID, other.getDataTableID())
+                .append(m_filterIds, other.getFilterIds())
+                .append(m_runningInView, other.getRunningInView())
                 .append(m_tree, other.getTree())
+                .append(m_table, other.getTable())
                 .isEquals() && Arrays.equals(m_colorPalette, other.getColorPalette());
     }
 
@@ -590,7 +650,10 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_colorPalette)
                 .append(m_subscribeFilterEvents)
                 .append(m_dataTableID)
+                .append(m_filterIds)
+                .append(m_runningInView)
                 .append(m_tree)
+                .append(m_table)
                 .toHashCode();
     }
 
