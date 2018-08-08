@@ -18,7 +18,8 @@ window.dendrogram_namespace = (function () {
         thresholdHandleHeight = 2;
 
     // hierarchy related variables
-    var nodes,
+    var cluster,
+        nodes,
         leaves,
         links;
 
@@ -27,6 +28,8 @@ window.dendrogram_namespace = (function () {
         svgSize,
         viewportWidth,
         viewportHeight,
+        viewportClipEl,
+        xAxisClipEl,
         dendrogramEl,
         clusterMarkerEl,
         leafEl,
@@ -37,7 +40,8 @@ window.dendrogram_namespace = (function () {
         xScale,
         yAxis,
         yAxisEl,
-        yScale;
+        yScale,
+        zoom;
 
     dendrogram.init = function (representation, value) {
         _representation = representation;
@@ -56,12 +60,20 @@ window.dendrogram_namespace = (function () {
         drawThresholdHandle();
 
         initZoomingAndPanning();
+
+        resizeDiagram();
+
         initSelection();
 
-        // TODO handle window resize
-        d3.select(window).on('resize', function () {
-            alert('window resize not supported yet, press "reset" to reload');
-        });
+        if (_representation.resizeToWindow) {
+            initWindowResize();
+        }
+    };
+
+    const calcSVGSize = function () {
+        svgSize = d3.select('svg').node().getClientRects()[0];
+        viewportWidth = svgSize.width - yAxisWidth;
+        viewportHeight = svgSize.height - xAxisHeight;
     };
 
     const drawSVG = function () {
@@ -74,34 +86,28 @@ window.dendrogram_namespace = (function () {
             .attr('width', resizeToWindow ? '100%' : _representation.imageWidth)
             .attr('height', resizeToWindow ? '100%' : _representation.imageHeight);
 
-        svgSize = d3.select('svg').node().getClientRects()[0];
-        viewportWidth = svgSize.width - yAxisWidth;
-        viewportHeight = svgSize.height - xAxisHeight;
-
         // create clipping path for viewport (needed for zooming & panning)
         const defs = svg.append('defs');
-        defs.append('clipPath')
+        viewportClipEl = defs.append('clipPath')
             .attr('id', 'viewportClip')
-            .append('rect')
-            .style('width', 'calc(100% - ' + yAxisWidth + 'px)')
-            .style('height', 'calc(100% - ' + (xAxisHeight - viewportMarginTop) + 'px)');
+            .append('rect');
 
-        defs.append('clipPath')
+        xAxisClipEl = defs.append('clipPath')
             .attr('id', 'xAxisClip')
             .append('rect')
-            .style('width', 'calc(100% - ' + yAxisWidth + 'px)')
             .attr('height', xAxisHeight);
 
         dendrogramEl = svg.append('g').attr('class', 'viewport').attr('transform', 'translate(' + yAxisWidth + ',0)').append('g').attr('transform', 'translate(0,' + viewportMarginTop + ')').append('g');
+
+        calcSVGSize();
     };
 
     const createHierarchyFromTree = function () {
         // load data into d3 hierarchy representation
-        const root_node = d3.hierarchy(_representation.tree.root);
-        const cluster = d3.cluster().size([viewportWidth, viewportHeight - viewportMarginTop]).separation(function () {
+        nodes = d3.hierarchy(_representation.tree.root);
+        cluster = d3.cluster().separation(function () {
             return 1;
         });
-        nodes = cluster(root_node);
         links = nodes.links();
         leaves = nodes.leaves();
     };
@@ -109,43 +115,28 @@ window.dendrogram_namespace = (function () {
     const drawXAxis = function () {
         const labels = leaves.map(function (n) { return n.data.rowKey; });
         xScale = d3.scaleBand()
-            .domain(labels)
-            .range([0, svgSize.width - yAxisWidth]);
-        var xShowNthTicks = Math.round(xScale.domain().length / (viewportWidth / xAxisLabelWidth));
-        xAxis = d3.axisBottom(xScale)
-            .tickValues(xScale.domain().filter(function (d, i) { return !(i % xShowNthTicks); }));
+            .domain(labels);
+        xAxis = d3.axisBottom(xScale);
         xAxisEl = svg.append('g')
             .attr('class', 'knime-axis knime-x')
-            .attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')')
-            .call(xAxis)
             .on('click', function () { // register event listener on container to also catch dynamically added labels
                 if (d3.event.target.nodeName === 'text') {
                     var rowKey = d3.event.target.__data__;
                     toggleSelectRow(rowKey);
                 }
             });
-        xAxisEl.selectAll('.tick').classed('knime-tick', true);
-        xAxisEl.selectAll('line').classed('knime-tick-line', true);
-        xAxisEl.selectAll('text').classed('knime-tick-label', true)
-            .attr('dx', labelMargin * -1 + 'px')
-            .attr('dy', '-5px');
     };
 
     const drawYAxis = function () {
         const maxDistance = nodes.data.distance;
         yScale = d3.scaleLinear()
             .domain([0, maxDistance])
-            .range([viewportHeight, 0])
             .nice();
         yAxis = d3.axisLeft(yScale)
             .ticks(5);
         yAxisEl = svg.append('g')
             .attr('class', 'knime-axis knime-y')
             .attr('transform', 'translate(' + yAxisWidth + ',' + viewportMarginTop + ')')
-            .call(yAxis);
-        yAxisEl.selectAll('.tick').classed('knime-tick', true);
-        yAxisEl.selectAll('line').classed('knime-tick-line', true);
-        yAxisEl.selectAll('text').classed('knime-tick-label', true);
 
         // apply the distance of each node
         nodes.each(function (n) {
@@ -155,23 +146,22 @@ window.dendrogram_namespace = (function () {
 
     const drawDendrogram = function () {
         // draw links
-        linkEl = dendrogramEl.selectAll('.link').data(links).enter().append('path').attr('class', 'link').attr('stroke-width', linkStrokeWidth).attr('d', function (l) {
-            return 'M' + l.source.x + ' ' + l.source.y + ' L' + l.target.x + ' ' + l.source.y + ' L' + l.target.x + ' ' + l.target.y;
-        });
+        linkEl = dendrogramEl.selectAll('.link').data(links).enter().append('path').attr('class', 'link')
+            .attr('stroke-width', linkStrokeWidth);
 
         // draw leaves
-        leafEl = dendrogramEl.selectAll('.leaf').data(leaves).enter().append('rect').attr('class', 'leaf').attr('x', -leafWidth / 2).attr('y', -leafHeight).attr('width', leafWidth).attr('height', leafHeight).attr('transform', function (d) {
-            return 'translate(' + d.x + ',' + d.y + ')';
-        }).attr('fill', function (d) {
-            return d.data.color;
-        });
+        leafEl = dendrogramEl.selectAll('.leaf').data(leaves).enter().append('rect').attr('class', 'leaf')
+            .attr('x', -leafWidth / 2)
+            .attr('y', -leafHeight).attr('width', leafWidth)
+            .attr('height', leafHeight)
+            .attr('fill', function (d) {
+                return d.data.color;
+            });
 
         // draw cluster markers
         clusterMarkerEl = dendrogramEl.selectAll('.cluster').data(nodes.descendants().filter(function (n) {
             return n.children != null;
-        })).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius).attr('transform', function (d) {
-            return 'translate(' + d.x + ',' + d.y + ')';
-        });
+        })).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius);
         clusterMarkerEl.append('title').text(function (d) {
             return d.data.distance;
         });
@@ -188,7 +178,6 @@ window.dendrogram_namespace = (function () {
 
         thresholdEl = dendrogramEl.append('rect').attr('class', 'threshold')
             .attr('width', '100%').attr('height', thresholdHandleHeight)
-            .attr('transform', 'translate(0,' + yScale(_value.threshold) + ')')
             .call(d3.drag()
                 .on('drag', function () {
                     // abort if dragged outside min or max distance
@@ -207,25 +196,23 @@ window.dendrogram_namespace = (function () {
                 }));
 
         const thresholdDisplayEl = svg.append('text').attr('class', 'thresholdDisplay')
-            .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 20 + ')');
+            .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 25 + ')');
 
         const thresholdClusterDisplayEl = svg.append('text').attr('class', 'thresholdClusterDisplay')
-            .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 35 + ')');
+            .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 40 + ')');
 
         const onThresholdChange = function (threshold) {
             var numberOfRootCluster = 0;
             clusterMarkerEl.each(function (n) {
-                // mark nodes out of threshold
-                d3.select(this).classed('outOfThreshold', n.data.distance >= threshold);
-
-                // mark after-threshold root nodes
-                if (n.data.distance <= threshold && (!n.parent || n.parent && n.parent.data.distance >= threshold)) {
-                    d3.select(this).classed('root', true);
+                const isRoot = n.data.distance <= threshold && (!n.parent || n.parent && n.parent.data.distance >= threshold);
+                if (isRoot) {
                     numberOfRootCluster++;
                 }
-                else {
-                    d3.select(this).classed('root', false);
-                }
+
+                // mark nodes out of threshold and after-threshold root nodes
+                d3.select(this)
+                    .classed('outOfThreshold', n.data.distance >= threshold)
+                    .classed('root', isRoot);
             });
 
             // count all leaves which represent a single cluster
@@ -249,10 +236,83 @@ window.dendrogram_namespace = (function () {
         onThresholdChange(_value.threshold);
     };
 
+    const resizeDiagram = function () {
+        calcSVGSize();
+
+        viewportClipEl.style('width', viewportWidth + 'px')
+            .style('height', viewportHeight + viewportMarginTop + 'px');
+
+        xAxisClipEl.style('width', viewportWidth + yAxisWidth + 'px');
+
+        // recalculate cluster
+        cluster.size([viewportWidth, viewportHeight - viewportMarginTop]);
+        cluster(nodes);
+
+        // update x axis
+        xScale.range([0, svgSize.width - yAxisWidth]);
+        const xShowNthTicks = Math.round(xScale.domain().length / (viewportWidth / xAxisLabelWidth));
+        xAxis.tickValues(xScale.domain().filter(function (d, i) { return !(i % xShowNthTicks); }));
+        xAxisEl.attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')');
+        xAxisEl.call(xAxis);
+        xAxisEl.selectAll('.tick').classed('knime-tick', true);
+        xAxisEl.selectAll('line').classed('knime-tick-line', true);
+        xAxisEl.selectAll('text').classed('knime-tick-label', true)
+            .attr('dx', labelMargin * -1 + 'px')
+            .attr('dy', '-5px');
+
+        // update y axis
+        yScale.range([viewportHeight, 0]);
+        yAxisEl.call(yAxis);
+        yAxisEl.selectAll('.tick').classed('knime-tick', true);
+        yAxisEl.selectAll('line').classed('knime-tick-line', true);
+        yAxisEl.selectAll('text').classed('knime-tick-label', true);
+
+        // apply the distance of each node
+        nodes.each(function (n) {
+            n.y = yScale(n.data.distance);
+        });
+
+        // re-position elements
+        linkEl.attr('d', function (l) {
+            return 'M' + l.source.x + ' ' + l.source.y + ' L' + l.target.x + ' ' + l.source.y + ' L' + l.target.x + ' ' + l.target.y;
+        });
+
+        leafEl.attr('transform', function (d) {
+            return 'translate(' + d.x + ',' + d.y + ')';
+        });
+
+        clusterMarkerEl.attr('transform', function (d) {
+            return 'translate(' + d.x + ',' + d.y + ')';
+        });
+
+        thresholdEl.attr('transform', 'translate(0,' + yScale(_value.threshold) + ')');
+
+        // zoom out? TODO maybe there is a smarter behaviour here
+        svg.transition()
+            .duration(750)
+            .call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
+
+        zoom.translateExtent([[0, 0], [svgSize.width, svgSize.height]]);
+    };
+
+    const initWindowResize = function () {
+        const debounce = function (func, delay) {
+            var timeout;
+            return function () {
+                const context = this, args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(function () {
+                    timeout = null;
+                    func.apply(context, args);
+                }, delay);
+            };
+        };
+        d3.select(window).on('resize', debounce(resizeDiagram, 75));
+    };
+
     const initZoomingAndPanning = function () {
-        svg.call(d3.zoom()
+        zoom = d3.zoom()
             .scaleExtent([1, 20])
-            .translateExtent([[0, 0], [svgSize.width, svgSize.height]])
             .on('zoom', function () {
                 dendrogramEl.attr('transform', d3.event.transform);
 
@@ -279,7 +339,9 @@ window.dendrogram_namespace = (function () {
                     .attr('x', -(leafWidth / d3.event.transform.k) / 2)
                     .attr('y', -(leafHeight / d3.event.transform.k));
                 thresholdEl.attr('height', thresholdHandleHeight / d3.event.transform.k);
-            }))
+            });
+
+        svg.call(zoom)
             .on('dblclick.zoom', null); // prevent zoom on double click
     };
 
