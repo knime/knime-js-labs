@@ -46,6 +46,10 @@ heatmap_namespace = (function() {
         _imageColumnName = representation.svgLabelColumn;
 
         knimeService.subscribeToSelection(_table.getTableId(), onSelectionChange);
+        var filterIds = _table.getFilterIds();
+        for (let i = 0; i < filterIds.length; i++) {
+            knimeService.subscribeToFilter(_table.getTableId(), onFilterChange, filterIds[i]);
+        }
 
         drawControls();
 
@@ -58,18 +62,25 @@ heatmap_namespace = (function() {
         return _value;
     };
 
+    function onFilterChange(data) {
+        // Filter
+        var filteredData = _table.getRows().filter(function(row) {
+            return _table.isRowIncludedInFilter(row.rowKey, data);
+        });
+        drawChart(filteredData);
+    }
+
     function onSelectionChange(data) {
         _value.selectedRowsBuffer.concat(data.changeSet.added);
         _value.selectedRowsBuffer.filter(function(rowId) {
-            if (data.changedSet.removed.indexOf(rowId)) {
+            if (data.changedSet.removed.indexOf(rowId) > -1) {
                 return false;
             }
             return true;
         });
     }
 
-    function getFilteredData() {
-        var data = _table.getRows();
+    function getSelectionData(data) {
         if (_value.showOnlySelectedRows) {
             data = data.filter(function(row) {
                 return _value.selectedRowsBuffer.indexOf(row.rowKey) > -1;
@@ -81,14 +92,15 @@ heatmap_namespace = (function() {
     /**
      * Draw and re-draw the whole chart
      */
-    function drawChart() {
+    function drawChart(filteredData) {
         var container = document.querySelector('.knime-layout-container');
         container.innerHTML = '';
 
         var svgWrapper = '<div class="knime-svg-container"></div>';
         var toolTipWrapper = '<div class="knime-tooltip"></div>';
 
-        var paginationData = createPagination(getFilteredData());
+        var data = filteredData ? getSelectionData(filteredData) : getSelectionData(_table.getRows());
+        var paginationData = createPagination(data);
         var pagination = getPaginationHtml(paginationData);
 
         container.insertAdjacentHTML('beforeend', svgWrapper + pagination + toolTipWrapper);
