@@ -10,24 +10,22 @@ heatmap_namespace = (function() {
         _axis,
         _scales,
         _drawCellQueue,
-        _tooltip;
+        _tooltip,
+        _colorRange;
 
     // Hardcoded Default Settings
-    var _itemSize = 17;
-    var _margin = { top: 125, left: 50 };
+    var _cellSize = 15;
+    var _margin = { top: 130, left: 50 };
 
     // State managment objects
     var defaultViewValues = {
         selectedRowsBuffer: [],
-        scaleType: 'linear',
         currentPage: 1,
-        rowsPerPage: 200,
-        tooltipsEnabled: true,
         zoomEnabled: false,
         paginationEnabled: true,
         selectionEnabled: false,
         showOnlySelectedRows: false,
-        initialZoomLevel: {
+        currentZoomLevel: {
             x: 0,
             y: 0,
             k: 1
@@ -144,7 +142,7 @@ heatmap_namespace = (function() {
     }
 
     function drawMetaInfo(paginationData) {
-        var paginationHtml = getPaginationHtml(paginationData);
+        var paginationHtml = _representation.enablePaging ? getPaginationHtml(paginationData) : '';
         var displayedRows =
             '<p>Showing ' +
             (paginationData.pageRowStartIndex + 1) +
@@ -153,15 +151,45 @@ heatmap_namespace = (function() {
             ' of ' +
             paginationData.totalRowCount +
             ' entries</p>';
-
         document.body.querySelector('.info-wrapper').innerHTML = displayedRows + paginationHtml;
+    }
+
+    function updateTitles() {
+        var chartTitleEl = document.querySelector('.knime-title');
+        chartTitleEl.textContent = _value.chartTitle;
+        var subTitleEl = document.querySelector('.knime-subtitle');
+        subTitleEl.textContent = _value.subtitle;
     }
 
     function drawControls() {
         knimeService.allowFullscreen();
 
-        // var chartTitleText = knimeService.createMenuTextField('chartTitleText', 'foobar', function() {}, true);
-        // knimeService.addMenuItem('Chart Title:', 'header', chartTitleText);
+        if (_representation.enableTitleChange) {
+            var chartTitleText = knimeService.createMenuTextField(
+                'chartTitleText',
+                _value.chartTitle,
+                function() {
+                    if (_value.chartTitle != this.value) {
+                        _value.chartTitle = this.value;
+                        updateTitles();
+                    }
+                },
+                true
+            );
+            knimeService.addMenuItem('Chart Title:', 'header', chartTitleText);
+            var chartSubtitleText = knimeService.createMenuTextField(
+                'chartSubtitleText',
+                _value.subtitle,
+                function() {
+                    if (_value.subtitle != this.value) {
+                        _value.subtitle = this.value;
+                        updateTitles();
+                    }
+                },
+                true
+            );
+            knimeService.addMenuItem('Chart Subtitle:', 'header', chartSubtitleText, null, knimeService.SMALL_ICON);
+        }
 
         var panButtonClicked = function() {
             _value.zoomEnabled = !_value.zoomEnabled;
@@ -176,26 +204,32 @@ heatmap_namespace = (function() {
 
         knimeService.addMenuDivider();
 
-        var selectionButtonClicked = function() {
-            _value.selectionEnabled = !_value.selectionEnabled;
-            var button = document.getElementById('heatmap-selection-mode');
-            button.classList.toggle('active');
-            if (_value.selectionEnabled === true) {
-                panButtonClicked();
-            }
-        };
-        knimeService.addButton(
-            'heatmap-selection-mode',
-            'check-square-o',
-            'Mouse Mode "Select"',
-            selectionButtonClicked
-        );
-        panButtonClicked();
+        if (_representation.enableSelection) {
+            var selectionButtonClicked = function() {
+                _value.selectionEnabled = !_value.selectionEnabled;
+                var button = document.getElementById('heatmap-selection-mode');
+                button.classList.toggle('active');
+                if (_value.selectionEnabled === true) {
+                    panButtonClicked();
+                }
+            };
+            knimeService.addButton(
+                'heatmap-selection-mode',
+                'check-square-o',
+                'Mouse Mode "Select"',
+                selectionButtonClicked
+            );
+            panButtonClicked();
+        }
 
-        var tooltipsEnabled = knimeService.createMenuCheckbox('tooltipsEnabled', _value.tooltipsEnabled, function() {
-            _value.tooltipsEnabled = this.checked;
-        });
-        knimeService.addMenuItem('Show Tooltips', 'info', tooltipsEnabled);
+        var displayDataCellToolTip = knimeService.createMenuCheckbox(
+            'displayDataCellToolTip',
+            _value.displayDataCellToolTip,
+            function() {
+                _value.displayDataCellToolTip = this.checked;
+            }
+        );
+        knimeService.addMenuItem('Show Tooltips', 'info', displayDataCellToolTip);
 
         var showOnlySelectedRows = knimeService.createMenuCheckbox(
             'showOnlySelectedRows',
@@ -207,27 +241,28 @@ heatmap_namespace = (function() {
         );
         knimeService.addMenuItem('Show Selected Rows Only', 'filter', showOnlySelectedRows);
 
-        var scaleType = knimeService.createMenuSelect(
-            'scaleType',
-            _value.scaleType,
-            ['linear', 'quantize'],
+        var enableContinuousGradient = knimeService.createMenuCheckbox(
+            'continuousGradient',
+            _value.continuousGradient,
             function() {
-                _value.scaleType = this.value;
+                _value.continuousGradient = this.checked;
                 drawChart();
             }
         );
-        knimeService.addMenuItem('Scale Type', 'exchange', scaleType);
+        knimeService.addMenuItem('Continous Gradient', 'exchange', enableContinuousGradient);
 
-        var rowsPerPage = knimeService.createMenuSelect(
-            'rowsPerPage',
-            _value.rowsPerPage,
-            [100, 200, 500, 1000],
-            function() {
-                _value.rowsPerPage = this.value;
-                drawChart();
-            }
-        );
-        knimeService.addMenuItem('Rows per Page', 'table', rowsPerPage);
+        if (_representation.enablePageSizeChange) {
+            var initialPageSize = knimeService.createMenuSelect(
+                'initialPageSize',
+                _value.initialPageSize,
+                _representation.allowedPageSizes,
+                function() {
+                    _value.initialPageSize = this.value;
+                    drawChart();
+                }
+            );
+            knimeService.addMenuItem('Rows per Page', 'table', initialPageSize);
+        }
     }
 
     function getPaginationHtml(pagination) {
@@ -322,13 +357,13 @@ heatmap_namespace = (function() {
         if (!_value.paginationEnabled) {
             return { rows: data };
         }
-        var pageCount = Math.ceil(data.length / _value.rowsPerPage);
+        var pageCount = Math.ceil(data.length / _value.initialPageSize);
 
         // jump to page 1 if total number of pages exceeds current page
         _value.currentPage = _value.currentPage <= pageCount ? _value.currentPage : 1;
 
-        var pageRowEndIndex = _value.rowsPerPage * _value.currentPage;
-        var pageRowStartIndex = _value.rowsPerPage * (_value.currentPage - 1);
+        var pageRowEndIndex = _value.initialPageSize * _value.currentPage;
+        var pageRowStartIndex = _value.initialPageSize * (_value.currentPage - 1);
         var rows = data.slice(pageRowStartIndex, pageRowEndIndex);
 
         return {
@@ -414,8 +449,8 @@ heatmap_namespace = (function() {
     function getLinearColorDomain(minimum, maximum) {
         var domain = [];
         var interpolator = d3.interpolateNumber(minimum, maximum);
-        for (var i = 0; i < _representation.threeColorGradient.length; i++) {
-            domain.push(interpolator(i / (_representation.threeColorGradient.length - 1)));
+        for (var i = 0; i < _colorRange.length; i++) {
+            domain.push(interpolator(i / (_colorRange.length - 1)));
         }
         return domain;
     }
@@ -425,22 +460,20 @@ heatmap_namespace = (function() {
             x: d3
                 .scaleBand()
                 .domain(_colNames)
-                .range([_margin.left, _colNames.length * _itemSize - 1 + _margin.left]),
+                .range([_margin.left, _colNames.length * _cellSize - 1 + _margin.left]),
             y: d3
                 .scaleBand()
                 .domain(formattedDataset.rowNames)
-                .range([_margin.top, formattedDataset.rowNames.length * _itemSize - 1 + _margin.top]),
-            colorScale:
-                _value.scaleType === 'quantize'
-                    ? d3
-                          .scaleQuantize()
-                          .domain([formattedDataset.minimum, formattedDataset.maximum])
-                          .range(_value.threeColorGradient)
-                    : d3
-                          .scaleLinear()
-                          .domain(getLinearColorDomain(formattedDataset.minimum, formattedDataset.maximum))
-                          .domain([_extent.minimum, _extent.maximum])
-                          .range(_value.threeColorGradient)
+                .range([_margin.top, formattedDataset.rowNames.length * _cellSize - 1 + _margin.top]),
+            colorScale: _value.continuousGradient
+                ? d3
+                      .scaleLinear()
+                      .domain(getLinearColorDomain(_extent.minimum, _extent.maximum))
+                      .range(_colorRange)
+                : d3
+                      .scaleQuantize()
+                      .domain([_extent.minimum, _extent.maximum])
+                      .range(_colorRange)
         };
     }
 
@@ -461,8 +494,7 @@ heatmap_namespace = (function() {
     }
 
     function initializeZoom() {
-        var svgEl = document.querySelector('.knime-svg-container  svg');
-        var svgD3 = d3.select(svgEl);
+        var svgD3 = d3.select('.knime-svg-container  svg');
 
         var xAxisD3El = svgD3.select('.knime-axis.knime-x');
         var yAxisD3El = svgD3.select('.knime-axis.knime-y');
@@ -479,12 +511,12 @@ heatmap_namespace = (function() {
                 t.y = d3.min([t.y, (1 - t.k) * _margin.top]);
 
                 // Save current zoom level
-                _value.initialZoomLevel = t;
+                _value.currentZoomLevel = t;
 
                 xAxisD3El.attr('transform', 'translate(' + t.x + ', ' + _margin.top + ') scale(' + t.k + ')');
                 yAxisD3El.attr('transform', 'translate(' + _margin.left + ', ' + t.y + ') scale(' + t.k + ')');
 
-                _wrapper.attr('transform', 'translate(' + t.x + ', ' + t.y + ') scale(' + t.k + ')');
+                _wrapper.attr('transform', t);
             });
 
         if (_value.zoomEnabled) {
@@ -496,14 +528,14 @@ heatmap_namespace = (function() {
     }
 
     function showTooltip(e, innerHtml) {
-        if (!_value.tooltipsEnabled && innerHtml) {
+        if (!_value.displayDataCellToolTip && innerHtml) {
             return;
         }
         _tooltip.classList.add('active');
         e.target.classList.add('active');
         _tooltip.innerHTML = innerHtml;
-        _tooltip.style.left = event.clientX + _itemSize + 'px';
-        _tooltip.style.top = event.clientY - _itemSize + 'px';
+        _tooltip.style.left = event.clientX + _cellSize + 'px';
+        _tooltip.style.top = event.clientY - _cellSize + 'px';
     }
 
     function hideTooltip() {
@@ -516,8 +548,8 @@ heatmap_namespace = (function() {
             .append('g')
             .append('rect')
             .attr('class', 'cell')
-            .attr('width', _itemSize - 1)
-            .attr('height', _itemSize - 1)
+            .attr('width', _cellSize - 1)
+            .attr('height', _cellSize - 1)
             .attr('y', function(d) {
                 return _scales.y(d.y);
             })
@@ -543,9 +575,9 @@ heatmap_namespace = (function() {
         var currentRowKey = data[0].y;
 
         data.forEach(function(cell) {
-            rowItemsWidth = rowItemsWidth + _itemSize;
+            rowItemsWidth = rowItemsWidth + _cellSize * _value.currentZoomLevel.k;
             if (cell.y == currentRowKey) {
-                if (rowItemsWidth < viewportSize.width) {
+                if (rowItemsWidth < viewportSize.width - _value.currentZoomLevel.x) {
                     priorityCells.push(cell);
                 } else {
                     delayedCells.push(cell);
@@ -566,7 +598,11 @@ heatmap_namespace = (function() {
         if (_drawCellQueue) {
             _drawCellQueue.invalidate();
         }
+
         var formattedDataset = formatPageData(rows);
+        _colorRange = _value.continuousGradient
+            ? _representation.threeColorGradient
+            : _representation.discreteGradientColors;
 
         _tooltip = document.querySelector('.knime-tooltip');
         _scales = createScales(formattedDataset);
@@ -726,6 +762,18 @@ heatmap_namespace = (function() {
         var zoom = initializeZoom();
         resetZoom(zoom);
 
+        // Create titles
+        svg.append('text')
+            .attr('class', 'knime-title')
+            .attr('x', _margin.left)
+            .attr('y', 30)
+            .text(_value.chartTitle);
+        svg.append('text')
+            .attr('class', 'knime-subtitle')
+            .attr('x', _margin.left)
+            .attr('y', 50)
+            .text(_value.subtitle);
+
         // Legend
         var legendWidth = 100;
         var legendHeight = 50;
@@ -733,12 +781,11 @@ heatmap_namespace = (function() {
         var legendMargin = 5;
 
         var legend = d3
-            .select('.knime-svg-container')
+            .select('.info-wrapper')
             .append('svg')
             .attr('class', 'knime-legend')
             .attr('width', legendWidth + 2 * legendMargin)
-            .attr('height', legendHeight + 2 * legendMargin)
-            .attr('style', 'position: absolute; left: ' + _margin.left + 'px; top:8px');
+            .attr('height', legendHeight + 2 * legendMargin);
 
         var legendDefs = legend.append('defs');
         var legendGradient = legendDefs.append('linearGradient').attr('id', 'legendGradient');
@@ -756,7 +803,7 @@ heatmap_namespace = (function() {
             .attr('fill', 'url(#legendGradient)');
 
         // set gradient stops
-        if (_value.scaleType === 'linear') {
+        if (_value.continuousGradient) {
             for (var i = 0; i < colorDomain.length; i++) {
                 var percentage = (100 / (colorDomain.length - 1)) * i;
                 legendGradient
@@ -764,7 +811,7 @@ heatmap_namespace = (function() {
                     .attr('offset', percentage + '%')
                     .attr('style', 'stop-opacity:1; stop-color:' + _scales.colorScale(colorDomain[i]));
             }
-        } else if (_value.scaleType === 'quantize') {
+        } else if (!_value.continuousGradient) {
             var legendCellPercentage = 100 / colorDomain.length;
             var previousPercentage = 0;
             var interpolator = d3.interpolateNumber(_extent.minimum, _extent.maximum);
@@ -813,8 +860,8 @@ heatmap_namespace = (function() {
         var svg = d3.select('.knime-svg-container svg');
         zoom.transform(svg, function() {
             return d3.zoomIdentity
-                .translate(_value.initialZoomLevel.x, _value.initialZoomLevel.y)
-                .scale(_value.initialZoomLevel.k);
+                .translate(_value.currentZoomLevel.x, _value.currentZoomLevel.y)
+                .scale(_value.currentZoomLevel.k);
         });
     }
 
