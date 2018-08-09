@@ -3,7 +3,6 @@ heatmap_namespace = (function() {
     var _representation, _value, _table, _imageColumnName, _colNames, _extent;
 
     // Hardcoded Default Settings
-    var _colorRange = ['#FF0700', '#fff', '#00FF56'];
     var _itemSize = 17;
     var _margin = { top: 125, left: 50 };
 
@@ -357,8 +356,8 @@ heatmap_namespace = (function() {
     function getLinearColorDomain(minimum, maximum) {
         var domain = [];
         var interpolator = d3.interpolateNumber(minimum, maximum);
-        for (var i = 0; i < _colorRange.length; i++) {
-            domain.push(interpolator(i / (_colorRange.length - 1)));
+        for (var i = 0; i < _value.threeColorGradient.length; i++) {
+            domain.push(interpolator(i / (_value.threeColorGradient.length - 1)));
         }
         return domain;
     }
@@ -377,21 +376,13 @@ heatmap_namespace = (function() {
                 _value.scaleType === 'quantize'
                     ? d3
                           .scaleQuantize()
-<<<<<<< HEAD
                           .domain([formattedDataset.minimum, formattedDataset.maximum])
-                          .range(_colorRange)
+                          .range(_value.threeColorGradient)
                     : d3
                           .scaleLinear()
                           .domain(getLinearColorDomain(formattedDataset.minimum, formattedDataset.maximum))
-                          .range(_colorRange)
-=======
                           .domain([_extent.minimum, _extent.maximum])
                           .range(_value.threeColorGradient)
-                    : d3
-                          .scaleLinear()
-                          .domain(getLinearColorDomain(_extent.minimum, _extent.maximum))
-                          .range(_value.threeColorGradient)
->>>>>>> ef57916e... AP-10183: Calculate minimum/maximum on all rows
         };
     }
 
@@ -507,6 +498,9 @@ heatmap_namespace = (function() {
                 return scales.x(d.x);
             })
             .attr('fill', function(d) {
+                if (d.value === null) {
+                    return _value.missingValueColor;
+                }
                 return scales.colorScale(d.value);
             })
             .attr('selection', function(d) {
