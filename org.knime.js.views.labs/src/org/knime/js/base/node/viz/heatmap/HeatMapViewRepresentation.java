@@ -78,8 +78,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
 
     private boolean m_enableViewConfiguration;
     private boolean m_enableTitleChange;
-    private boolean m_enableGradientSpecification;
-    private boolean m_enableMissingValueColorEdit;
+    private boolean m_enableColorModeEdit;
 
     final static String CFG_INCLUDED_COLUMNS = "includedColumns";
     private String[] m_columns;
@@ -97,7 +96,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     private boolean m_enablePageSizeChange;
     private int[] m_allowedPageSizes;
     private boolean m_pageSizeShowAll;
-    private boolean m_enableJumpToPage;
 
     private boolean m_displayDataCellToolTip;
     private boolean m_displayRowToolTip;
@@ -227,31 +225,17 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     }
 
     /**
-     * @return the enableGradientSpecification
+     * @return the enableColorModeEdit
      */
-    public boolean getEnableGradientSpecification() {
-        return m_enableGradientSpecification;
+    public boolean getEnableColorModeEdit() {
+        return m_enableColorModeEdit;
     }
 
     /**
-     * @param enableGradientSpecification the enableGradientSpecification to set
+     * @param enableColorModeEdit the enableColorModeEdit to set
      */
-    public void setEnableGradientSpecification(final boolean enableGradientSpecification) {
-        m_enableGradientSpecification = enableGradientSpecification;
-    }
-
-    /**
-     * @return the enableMissingValueColorEdit
-     */
-    public boolean getEnableMissingValueColorEdit() {
-        return m_enableMissingValueColorEdit;
-    }
-
-    /**
-     * @param enableMissingValueColorEdit the enableMissingValueColorEdit to set
-     */
-    public void setEnableMissingValueColorEdit(final boolean enableMissingValueColorEdit) {
-        m_enableMissingValueColorEdit = enableMissingValueColorEdit;
+    public void setEnableColorModeEdit(final boolean enableColorModeEdit) {
+        m_enableColorModeEdit = enableColorModeEdit;
     }
 
     // -- Columns getters & setters --
@@ -430,20 +414,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_pageSizeShowAll = enableShowAll;
     }
 
-    /**
-     * @return the enableJumpToPage
-     */
-    public boolean getEnableJumpToPage() {
-        return m_enableJumpToPage;
-    }
-
-    /**
-     * @param enableJumpToPage the enableJumpToPage to set
-     */
-    public void setEnableJumpToPage(final boolean enableJumpToPage) {
-        m_enableJumpToPage = enableJumpToPage;
-    }
-
     // -- Tool tip getters & setters --
 
     /**
@@ -566,8 +536,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
 
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_CONFIG, m_enableViewConfiguration);
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_TTILE_CHANGE, m_enableTitleChange);
-        settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_GRADIENT_SPECIFICATION, m_enableGradientSpecification);
-        settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_MISSING_VALUE_COLOR_EDIT, m_enableMissingValueColorEdit);
+        settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_COLOR_MODE_EDIT, m_enableColorModeEdit);
 
         settings.addStringArray(CFG_INCLUDED_COLUMNS, m_columns);
         settings.addString(HeatMapViewConfig.CFG_LABEL_COLUMN, m_labelColumn);
@@ -584,7 +553,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_PAGE_SIZE_CHANGE, m_enablePageSizeChange);
         settings.addIntArray(HeatMapViewConfig.CFG_PAGE_SIZES, m_allowedPageSizes);
         settings.addBoolean(HeatMapViewConfig.CFG_PAGE_SIZE_SHOW_ALL, m_pageSizeShowAll);
-        settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_JUMP_TO_PAGE, m_enableJumpToPage);
 
         settings.addBoolean(HeatMapViewConfig.CFG_DISPLAY_DATA_CELL_TOOL_TIP, m_displayDataCellToolTip);
         settings.addBoolean(HeatMapViewConfig.CFG_DISPLAY_ROW_TOOL_TIP, m_displayRowToolTip);
@@ -610,8 +578,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
 
         m_enableViewConfiguration = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_TTILE_CHANGE);
-        m_enableGradientSpecification = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_GRADIENT_SPECIFICATION);
-        m_enableMissingValueColorEdit = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_MISSING_VALUE_COLOR_EDIT);
+        m_enableColorModeEdit = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_COLOR_MODE_EDIT);
 
         m_columns = settings.getStringArray(CFG_INCLUDED_COLUMNS);
         m_labelColumn = settings.getString(HeatMapViewConfig.CFG_LABEL_COLUMN);
@@ -628,7 +595,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_enablePageSizeChange = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_PAGE_SIZE_CHANGE);
         m_allowedPageSizes = settings.getIntArray(HeatMapViewConfig.CFG_PAGE_SIZES);
         m_pageSizeShowAll = settings.getBoolean(HeatMapViewConfig.CFG_PAGE_SIZE_SHOW_ALL);
-        m_enableJumpToPage = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_JUMP_TO_PAGE);
 
         m_displayDataCellToolTip = settings.getBoolean(HeatMapViewConfig.CFG_DISPLAY_DATA_CELL_TOOL_TIP);
         m_displayRowToolTip = settings.getBoolean(HeatMapViewConfig.CFG_DISPLAY_ROW_TOOL_TIP);
@@ -664,8 +630,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_displayFullscreenButton, other.getDisplayFullscreenButton())
                 .append(m_enableViewConfiguration, other.getEnableViewConfiguration())
                 .append(m_enableTitleChange, other.getEnableTitleChange())
-                .append(m_enableGradientSpecification, other.getEnableGradientSpecification())
-                .append(m_enableMissingValueColorEdit, other.getEnableMissingValueColorEdit())
+                .append(m_enableColorModeEdit, other.getEnableColorModeEdit())
                 .append(m_columns, other.getColumns())
                 .append(m_labelColumn, other.getLabelColumn())
                 .append(m_svgLabelColumn, other.getSvgLabelColumn())
@@ -678,7 +643,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enablePageSizeChange, other.getEnablePageSizeChange())
                 .append(m_allowedPageSizes, other.getAllowedPageSizes())
                 .append(m_pageSizeShowAll, other.getEnableShowAll())
-                .append(m_enableJumpToPage, other.getEnableJumpToPage())
                 .append(m_displayDataCellToolTip, other.getDisplayDataCellToolTip())
                 .append(m_displayRowToolTip, other.getDisplayRowToolTip())
                 .append(m_enableZoom, other.getEnableZoom())
@@ -703,8 +667,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_displayFullscreenButton)
                 .append(m_enableViewConfiguration)
                 .append(m_enableTitleChange)
-                .append(m_enableGradientSpecification)
-                .append(m_enableMissingValueColorEdit)
+                .append(m_enableColorModeEdit)
                 .append(m_columns)
                 .append(m_labelColumn)
                 .append(m_svgLabelColumn)
@@ -717,7 +680,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enablePageSizeChange)
                 .append(m_allowedPageSizes)
                 .append(m_pageSizeShowAll)
-                .append(m_enableJumpToPage)
                 .append(m_displayDataCellToolTip)
                 .append(m_displayRowToolTip)
                 .append(m_enableZoom)

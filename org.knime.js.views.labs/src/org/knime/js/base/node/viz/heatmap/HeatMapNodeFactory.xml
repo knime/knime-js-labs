@@ -37,25 +37,6 @@
 				Select the columns to display in the heatmap.
 			</option>
 		</tab>
-		<tab name="Colors">
-			<option name="Use discrete gradient">
-				If checked, a discrete gradient will be used to
-				color the heatmap. If not, a continuous gradient is used.
-			</option>
-			<option name="Number of colors">
-				If using a discrete gradient, this is the number
-				of discrete points to used. A minimum of three colors is required,
-				and the number must be odd.
-			</option>
-			<option name="Select gradient colors">
-				The three base colors used to define the
-				gradient.
-			</option>
-			<option name="Select color for missing values">
-				Sets the color used to represent missing values
-				in the heatmap.
-			</option>
-		</tab>
 		<tab name="View Configuration">
 			<option name="Image width in pixels">
 				The width, in pixels, of the output SVG image. If
@@ -103,6 +84,23 @@
 				about the given row will be displayed when hovering over a row
 				label.
 			</option>
+			<option name="Use discrete gradient">
+				If checked, a discrete gradient will be used to
+				color the heatmap. If not, a continuous gradient is used.
+			</option>
+			<option name="Number of colors">
+				If using a discrete gradient, this is the number
+				of discrete points to used. A minimum of three colors is required,
+				and the number must be odd.
+			</option>
+			<option name="Select gradient colors">
+				The three base colors used to define the
+				gradient.
+			</option>
+			<option name="Select color for missing values">
+				Sets the color used to represent missing values
+				in the heatmap.
+			</option>
 		</tab>
 		<tab name="Interactivity">
 			<option name="Enable view edit">
@@ -114,13 +112,9 @@
 				Renders a text box to change the chart title and
 				subtitle in the view.
 			</option>
-			<option name="Enable gradient modification">
-				Enables modifying the heatmap's gradient from
-				within the view.
-			</option>
-			<option name="Enable missing value color edit controls">
-				If checked, the color used to represent missing
-				values can be changed from within the view.
+			<option name="Enable color mode edit">
+				If checked, the color gradient can be toggled
+				between continuous and discrete from within the view.
 			</option>
 			<option name="Subscribe to filter events">
 				If checked, the view reacts when applied filters
@@ -154,10 +148,6 @@
 				When enabled use the options below to further refine the pagination
 				settings.
 			</option>
-			<option name="Display field to jump to a page directly">
-				If checked, a field will be displayed which
-				allows jumping to a page directly.
-			</option>
 			<option name="Initial page size">
 				Set the page size to be used on initial layout. A
 				page size is defined as the number of rows the table displays on one
@@ -168,13 +158,13 @@
 				Enable or disable the control to change the page
 				size interactively in the view.
 			</option>
-			<option name="Add &quot;All&quot; option to page sizes">
-				When checked, an additional 'All' option will be
-				available in the page size control.
-			</option>
 			<option name="Selectable page sizes">
 				Define a comma-separated list of allowed page
 				sizes for the page size control.
+			</option>
+			<option name="Add &quot;All&quot; option to page sizes">
+				When checked, an additional 'All' option will be
+				available in the page size control.
 			</option>
 			<option name="Enable panning">
 				Enable panning on the plot. To start panning

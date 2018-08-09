@@ -114,13 +114,9 @@ public final class HeatMapViewConfig {
     final static boolean DEFAULT_ENABLE_TTILE_CHANGE = true;
     private boolean m_enableTitleChange = DEFAULT_ENABLE_TTILE_CHANGE;
 
-    final static String CFG_ENABLE_GRADIENT_SPECIFICATION = "enableGradientSpecification";
-    final static boolean DEFAULT_ENABLE_GRADIENT_SPECIFICATION = true;
-    private boolean m_enableGradientSpecification = DEFAULT_ENABLE_GRADIENT_SPECIFICATION;
-
-    final static String CFG_ENABLE_MISSING_VALUE_COLOR_EDIT = "enableMissingValueColorEdit";
-    final static boolean DEFAULT_ENABLE_MISSING_VALUE_COLOR_EDIT = true;
-    private boolean m_enableMissingValueColorEdit = DEFAULT_ENABLE_MISSING_VALUE_COLOR_EDIT;
+    final static String CFG_ENABLE_COLOR_MODE_EDIT = "enableColorModeEdit";
+    final static boolean DEFAULT_ENABLE_COLOR_MODE_EDIT = true;
+    private boolean m_enableColorModeEdit = DEFAULT_ENABLE_COLOR_MODE_EDIT;
 
     // Gradient
     final static String CFG_THREE_COLOR_GRADIENT = "threeColorGradient";
@@ -191,7 +187,7 @@ public final class HeatMapViewConfig {
     private boolean m_enablePaging = DEFAULT_ENABLE_PAGING;
 
     final static String CFG_INITIAL_PAGE_SIZE = "initialPageSize";
-    final static int DEFAULT_INITIAL_PAGE_SIZE = 10;
+    final static int DEFAULT_INITIAL_PAGE_SIZE = 100;
     private int m_initialPageSize = DEFAULT_INITIAL_PAGE_SIZE;
 
     final static String CFG_ENABLE_PAGE_SIZE_CHANGE = "enablePageSizeChange";
@@ -199,16 +195,12 @@ public final class HeatMapViewConfig {
     private boolean m_enablePageSizeChange = DEFAULT_ENABLE_PAGE_SIZE_CHANGE;
 
     final static String CFG_PAGE_SIZES = "allowedPageSizes";
-    final static int[] DEFAULT_PAGE_SIZES = new int[]{10, 25, 50, 100};
+    final static int[] DEFAULT_PAGE_SIZES = new int[]{100, 250, 500, 1000};
     private int[] m_allowedPageSizes = DEFAULT_PAGE_SIZES;
 
     final static String CFG_PAGE_SIZE_SHOW_ALL = "enableShowAll";
     final static boolean DEFAULT_PAGE_SIZE_SHOW_ALL = false;
     private boolean m_pageSizeShowAll = DEFAULT_PAGE_SIZE_SHOW_ALL;
-
-    final static String CFG_ENABLE_JUMP_TO_PAGE = "enableJumpToPage";
-    final static boolean DEFAULT_ENABLE_JUMP_TO_PAGE = false;
-    private boolean m_enableJumpToPage = DEFAULT_ENABLE_JUMP_TO_PAGE;
 
     // Tool tip
     final static String CFG_DISPLAY_DATA_CELL_TOOL_TIP = "displayDataCellToolTip";
@@ -421,31 +413,17 @@ public final class HeatMapViewConfig {
     }
 
     /**
-     * @return the enableGradientSpecification
+     * @return the enableColorModeEdit
      */
-    public boolean getEnableGradientSpecification() {
-        return m_enableGradientSpecification;
+    public boolean getEnableColorModeEdit() {
+        return m_enableColorModeEdit;
     }
 
     /**
-     * @param enableGradientSpecification the enableGradientSpecification to set
+     * @param enableColorModeEdit the enableColorModeEdit to set
      */
-    public void setEnableGradientSpecification(final boolean enableGradientSpecification) {
-        m_enableGradientSpecification = enableGradientSpecification;
-    }
-
-    /**
-     * @return the enableMissingValueColorEdit
-     */
-    public boolean getEnableMissingValueColorEdit() {
-        return m_enableMissingValueColorEdit;
-    }
-
-    /**
-     * @param enableMissingValueColorEdit the enableMissingValueColorEdit to set
-     */
-    public void setEnableMissingValueColorEdit(final boolean enableMissingValueColorEdit) {
-        m_enableMissingValueColorEdit = enableMissingValueColorEdit;
+    public void setEnableColorModeEdit(final boolean enableColorModeEdit) {
+        m_enableColorModeEdit = enableColorModeEdit;
     }
 
     // -- Gradient getters & setters --
@@ -710,20 +688,6 @@ public final class HeatMapViewConfig {
         m_pageSizeShowAll = enableShowAll;
     }
 
-    /**
-     * @return the enableJumpToPage
-     */
-    public boolean getEnableJumpToPage() {
-        return m_enableJumpToPage;
-    }
-
-    /**
-     * @param enableJumpToPage the enableJumpToPage to set
-     */
-    public void setEnableJumpToPage(final boolean enableJumpToPage) {
-        m_enableJumpToPage = enableJumpToPage;
-    }
-
     // -- Tool tip getters & setters --
 
     /**
@@ -873,8 +837,7 @@ public final class HeatMapViewConfig {
 
         settings.addBoolean(CFG_ENABLE_CONFIG, m_enableViewConfiguration);
         settings.addBoolean(CFG_ENABLE_TTILE_CHANGE, m_enableTitleChange);
-        settings.addBoolean(CFG_ENABLE_GRADIENT_SPECIFICATION, m_enableGradientSpecification);
-        settings.addBoolean(CFG_ENABLE_MISSING_VALUE_COLOR_EDIT, m_enableMissingValueColorEdit);
+        settings.addBoolean(CFG_ENABLE_COLOR_MODE_EDIT, m_enableColorModeEdit);
 
         settings.addStringArray(CFG_THREE_COLOR_GRADIENT, m_threeColorGradient);
         settings.addBoolean(CFG_CONTINUOUS_GRADIENT, m_continuousGradient);
@@ -898,7 +861,6 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_ENABLE_PAGE_SIZE_CHANGE, m_enablePageSizeChange);
         settings.addIntArray(CFG_PAGE_SIZES, m_allowedPageSizes);
         settings.addBoolean(CFG_PAGE_SIZE_SHOW_ALL, m_pageSizeShowAll);
-        settings.addBoolean(CFG_ENABLE_JUMP_TO_PAGE, m_enableJumpToPage);
 
         settings.addBoolean(CFG_DISPLAY_DATA_CELL_TOOL_TIP, m_displayDataCellToolTip);
         settings.addBoolean(CFG_DISPLAY_ROW_TOOL_TIP, m_displayRowToolTip);
@@ -930,8 +892,7 @@ public final class HeatMapViewConfig {
 
         m_enableViewConfiguration = settings.getBoolean(CFG_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(CFG_ENABLE_TTILE_CHANGE);
-        m_enableGradientSpecification = settings.getBoolean(CFG_ENABLE_GRADIENT_SPECIFICATION);
-        m_enableMissingValueColorEdit = settings.getBoolean(CFG_ENABLE_MISSING_VALUE_COLOR_EDIT);
+        m_enableColorModeEdit = settings.getBoolean(CFG_ENABLE_COLOR_MODE_EDIT);
 
         m_threeColorGradient = settings.getStringArray(CFG_THREE_COLOR_GRADIENT);
         m_continuousGradient = settings.getBoolean(CFG_CONTINUOUS_GRADIENT);
@@ -955,7 +916,6 @@ public final class HeatMapViewConfig {
         m_enablePageSizeChange = settings.getBoolean(CFG_ENABLE_PAGE_SIZE_CHANGE);
         m_allowedPageSizes = settings.getIntArray(CFG_PAGE_SIZES);
         m_pageSizeShowAll = settings.getBoolean(CFG_PAGE_SIZE_SHOW_ALL);
-        m_enableJumpToPage = settings.getBoolean(CFG_ENABLE_JUMP_TO_PAGE);
 
         m_displayDataCellToolTip = settings.getBoolean(CFG_DISPLAY_DATA_CELL_TOOL_TIP);
         m_displayRowToolTip = settings.getBoolean(CFG_DISPLAY_ROW_TOOL_TIP);
@@ -987,8 +947,7 @@ public final class HeatMapViewConfig {
 
         m_enableViewConfiguration = settings.getBoolean(CFG_ENABLE_CONFIG, DEFAULT_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(CFG_ENABLE_TTILE_CHANGE, DEFAULT_ENABLE_TTILE_CHANGE);
-        m_enableGradientSpecification = settings.getBoolean(CFG_ENABLE_GRADIENT_SPECIFICATION, DEFAULT_ENABLE_GRADIENT_SPECIFICATION);
-        m_enableMissingValueColorEdit = settings.getBoolean(CFG_ENABLE_MISSING_VALUE_COLOR_EDIT, DEFAULT_ENABLE_GRADIENT_SPECIFICATION);
+        m_enableColorModeEdit = settings.getBoolean(CFG_ENABLE_COLOR_MODE_EDIT, DEFAULT_ENABLE_COLOR_MODE_EDIT);
 
         m_threeColorGradient = settings.getStringArray(CFG_THREE_COLOR_GRADIENT, DEFAULT_THREE_COLOR_GRADIENT);
         m_continuousGradient = settings.getBoolean(CFG_CONTINUOUS_GRADIENT, DEFAULT_CONTINUOUS_GRADIENT);
@@ -1012,7 +971,6 @@ public final class HeatMapViewConfig {
         m_enablePageSizeChange = settings.getBoolean(CFG_ENABLE_PAGE_SIZE_CHANGE, DEFAULT_ENABLE_PAGE_SIZE_CHANGE);
         m_allowedPageSizes = settings.getIntArray(CFG_PAGE_SIZES, DEFAULT_PAGE_SIZES);
         m_pageSizeShowAll = settings.getBoolean(CFG_PAGE_SIZE_SHOW_ALL, DEFAULT_PAGE_SIZE_SHOW_ALL);
-        m_enableJumpToPage = settings.getBoolean(CFG_ENABLE_JUMP_TO_PAGE, DEFAULT_ENABLE_JUMP_TO_PAGE);
 
         m_displayDataCellToolTip = settings.getBoolean(CFG_DISPLAY_DATA_CELL_TOOL_TIP, DEFAULT_DISPLAY_DATA_CELL_TOOL_TIP);
         m_displayRowToolTip = settings.getBoolean(CFG_DISPLAY_ROW_TOOL_TIP, DEFAULT_DISPLAY_ROW_TOOL_TIP);

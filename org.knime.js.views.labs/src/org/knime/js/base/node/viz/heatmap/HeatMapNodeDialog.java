@@ -50,7 +50,6 @@ package org.knime.js.base.node.viz.heatmap;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -60,7 +59,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
@@ -94,8 +92,6 @@ public class HeatMapNodeDialog extends NodeDialogPane {
     private final ColumnSelectionPanel m_labelColumnColumnSelectionPanel;
     private final ColumnSelectionPanel m_svgLabelColumnColumnSelectionPanel;
 
-    private final JTextArea m_errorMsg;
-
     private final DialogComponentColorChooser m_firstColorColorChooser;
     private final DialogComponentColorChooser m_secondColorColorChooser;
     private final DialogComponentColorChooser m_thirdColorColorChooser;
@@ -117,8 +113,7 @@ public class HeatMapNodeDialog extends NodeDialogPane {
 
     private final JCheckBox m_enableViewConfigurationCheckBox;
     private final JCheckBox m_enableTitleChangeCheckBox;
-    private final JCheckBox m_enableGradientSpecificationCheckBox;
-    private final JCheckBox m_enableMissingValueColorEditCheckBox;
+    private final JCheckBox m_enableColorModeEditCheckBox;
     private final JCheckBox m_subscribeFilterCheckBox;
     private final JCheckBox m_enableSelectionCheckBox;
     private final JCheckBox m_publishSelectionCheckBox;
@@ -129,7 +124,6 @@ public class HeatMapNodeDialog extends NodeDialogPane {
     private final JCheckBox m_enablePageSizeChangeCheckBox;
     private final JTextField m_allowedPageSizesTextField;
     private final JCheckBox m_pageSizeShowAllCheckBox;
-    private final JCheckBox m_enableJumpToPageCheckBox;
     private final JCheckBox m_enableZoomCheckBox;
     private final JCheckBox m_enablePanningCheckBox;
     private final JCheckBox m_showZoomResetButtonCheckBox;
@@ -141,17 +135,10 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_labelColumnColumnSelectionPanel =
             new ColumnSelectionPanel(BorderFactory.createTitledBorder("Choose a label column: "),
                 new DataValueColumnFilter(NominalValue.class), false, true);
-        m_svgLabelColumnColumnSelectionPanel = new ColumnSelectionPanel("Choose an image column: ", SvgValue.class);
-
-        m_errorMsg = new JTextArea();
-        m_errorMsg.setEditable(false);
-        m_errorMsg.setLineWrap(true);
-        m_errorMsg.setWrapStyleWord(true);
-        m_errorMsg.setBackground(getPanel().getBackground());
-        m_errorMsg.setFont(new Font(m_errorMsg.getFont().getName(), Font.BOLD, m_errorMsg.getFont().getSize()));
-        m_errorMsg.setMinimumSize(new Dimension(350, 50));
-        m_errorMsg.setMaximumSize(new Dimension(350, 100));
-        m_errorMsg.setForeground(Color.RED);
+        m_svgLabelColumnColumnSelectionPanel =
+            new ColumnSelectionPanel(BorderFactory.createTitledBorder("Choose an image column: "),
+                new DataValueColumnFilter(SvgValue.class), true, false);
+        m_svgLabelColumnColumnSelectionPanel.setRequired(false);
 
         m_gradientColors = new ThreeColorGradientComponent(Color.BLACK, Color.BLACK, Color.BLACK);
         m_firstColorColorChooser = new DialogComponentColorChooser(new SettingsModelColor("firstGradientColor", Color.BLACK), null, true) {
@@ -176,7 +163,7 @@ public class HeatMapNodeDialog extends NodeDialogPane {
             }
         };
         m_useBinsCheckBox = new JCheckBox("Use discrete gradient");
-        m_numberOfBinsSpinner = new JSpinner(new SpinnerNumberModel(3, 3, 233, 2));
+        m_numberOfBinsSpinner = new JSpinner(new SpinnerNumberModel(3, 3, 21, 2));
         m_useBinsCheckBox.addChangeListener(e -> enableSpinner());
         m_numberOfBinsSpinner.addChangeListener(e -> updateNumberOfBins());
         m_missingValueColorColorChooser = new DialogComponentColorChooser(new SettingsModelColor("thirdGradientColor", Color.BLACK), "Select color for missing values:", true);
@@ -195,8 +182,7 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_enableViewConfigurationCheckBox = new JCheckBox("Enable view edit controls");
         m_enableViewConfigurationCheckBox.addChangeListener(e -> enableViewEdit());
         m_enableTitleChangeCheckBox = new JCheckBox("Enable title/subtitle edit controls");
-        m_enableGradientSpecificationCheckBox = new JCheckBox("Enable gradient edit controls");
-        m_enableMissingValueColorEditCheckBox = new JCheckBox("Enable missing value color edit controls");
+        m_enableColorModeEditCheckBox = new JCheckBox("Enable color mode edit");
         m_subscribeFilterCheckBox = new JCheckBox("Subscribe to filter events");
         m_enableSelectionCheckBox = new JCheckBox("Enable selection");
         m_enableSelectionCheckBox.addChangeListener(e -> enableSelection());
@@ -210,13 +196,11 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_enablePageSizeChangeCheckBox.addChangeListener(e -> enablePaging());
         m_allowedPageSizesTextField = new JTextField(TEXT_FIELD_SIZE);
         m_pageSizeShowAllCheckBox = new JCheckBox("Add \"All\" option to page sizes");
-        m_enableJumpToPageCheckBox = new JCheckBox("Display field to jump to a page directly");
         m_enableZoomCheckBox = new JCheckBox("Enable zooming");
         m_enablePanningCheckBox = new JCheckBox("Enable panning");
         m_showZoomResetButtonCheckBox = new JCheckBox("Show zoom reset button");
 
         addTab("Options", createOptionsTab());
-        addTab("Colors", createColorTab());
         addTab("View Configuration", createViewConfigTab());
         addTab("Interactivity", createInteractivityTab());
     }
@@ -251,8 +235,7 @@ public class HeatMapNodeDialog extends NodeDialogPane {
 
         config.setEnableViewConfiguration(m_enableViewConfigurationCheckBox.isSelected());
         config.setEnableTitleChange(m_enableTitleChangeCheckBox.isSelected());
-        config.setEnableGradientSpecification(m_enableGradientSpecificationCheckBox.isSelected());
-        config.setEnableMissingValueColorEdit(m_enableMissingValueColorEditCheckBox.isSelected());
+        config.setEnableColorModeEdit(m_enableColorModeEditCheckBox.isSelected());
         config.setSubscribeFilter(m_subscribeFilterCheckBox.isSelected());
         config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
         config.setPublishSelection(m_publishSelectionCheckBox.isSelected());
@@ -264,7 +247,6 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
         config.setAllowedPageSizes(getAllowedPageSizes());
         config.setEnableShowAll(m_pageSizeShowAllCheckBox.isSelected());
-        config.setEnableJumpToPage(m_enableJumpToPageCheckBox.isSelected());
         config.setEnableZoom(m_enableZoomCheckBox.isSelected());
         config.setEnablePanning(m_enablePanningCheckBox.isSelected());
         config.setShowZoomResetButton(m_showZoomResetButtonCheckBox.isSelected());
@@ -308,8 +290,7 @@ public class HeatMapNodeDialog extends NodeDialogPane {
 
         m_enableViewConfigurationCheckBox.setSelected(config.getEnableViewConfiguration());
         m_enableTitleChangeCheckBox.setSelected(config.getEnableTitleChange());
-        m_enableGradientSpecificationCheckBox.setSelected(config.getEnableGradientSpecification());
-        m_enableMissingValueColorEditCheckBox.setSelected(config.getEnableMissingValueColorEdit());
+        m_enableColorModeEditCheckBox.setSelected(config.getEnableColorModeEdit());
         m_subscribeFilterCheckBox.setSelected(config.getSubscribeFilter());
         m_enableSelectionCheckBox.setSelected(config.getEnableSelection());
         m_publishSelectionCheckBox.setSelected(config.getPublishSelection());
@@ -320,7 +301,6 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_enablePageSizeChangeCheckBox.setSelected(config.getEnablePageSizeChange());
         m_allowedPageSizesTextField.setText(getAllowedPageSizesString(config.getAllowedPageSizes()));
         m_pageSizeShowAllCheckBox.setSelected(config.getEnableShowAll());
-        m_enableJumpToPageCheckBox.setSelected(config.getEnableJumpToPage());
         m_enableZoomCheckBox.setSelected(config.getEnableZoom());
         m_enablePanningCheckBox.setSelected(config.getEnablePanning());
         m_showZoomResetButtonCheckBox.setSelected(config.getShowZoomResetButton());
@@ -340,86 +320,26 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         c.insets = new Insets(5, 5, 5, 5);
         c.gridx = 0;
         c.gridy = 0;
-        c.weightx = 1;
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.NORTHWEST;
         c.fill = GridBagConstraints.HORIZONTAL;
 
+        c.weightx = 1;
         m_labelColumnColumnSelectionPanel.setPreferredSize(new Dimension(260, 50));
         panel.add(m_labelColumnColumnSelectionPanel, c);
-        c.gridx = 2;
+        c.gridx++;
         m_svgLabelColumnColumnSelectionPanel.setPreferredSize(new Dimension(260, 50));
-        m_svgLabelColumnColumnSelectionPanel.setMaximumSize(new Dimension(260, 50));
         panel.add(m_svgLabelColumnColumnSelectionPanel, c);
-        c.gridx = 0;
-        c.gridy++;
-        c.gridwidth = 3;
-        panel.add(m_columnsFilterPanel, c);
-        c.gridx = 0;
-        c.gridy++;
-
-        return panel;
-    }
-
-    private JPanel createColorTab() {
-        final JPanel panel = new JPanel(new GridBagLayout());
-        final GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(5, 5, 5, 5);
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 1;
-        c.weightx = 1;
-        c.anchor = GridBagConstraints.NORTHWEST;
-        c.fill = GridBagConstraints.HORIZONTAL;
-
-        final JPanel gradientPanel = new JPanel(new GridBagLayout());
-        gradientPanel.setBorder(BorderFactory.createTitledBorder("Gradient colors"));
-        panel.add(gradientPanel, c);
-        final GridBagConstraints gradientConstraints = DialogUtil.defaultGridBagConstraints();
-        gradientConstraints.weightx = 1;
-        gradientPanel.add(m_useBinsCheckBox, gradientConstraints);
-        gradientConstraints.gridx = 0;
-        gradientConstraints.gridy++;
-        gradientPanel.add(new JLabel("Number of colors: "), gradientConstraints);
-        gradientConstraints.gridx++;
-        gradientPanel.add(m_numberOfBinsSpinner, gradientConstraints);
-        gradientConstraints.gridx = 0;
-        gradientConstraints.gridy++;
-        gradientPanel.add(new JLabel("Select gradient colors: "), gradientConstraints);
-        gradientConstraints.gridx = 0;
-        gradientConstraints.gridy++;
-        gradientPanel.add(m_firstColorColorChooser.getComponentPanel(), gradientConstraints);
-        gradientConstraints.gridx++;
-        gradientPanel.add(m_secondColorColorChooser.getComponentPanel(), gradientConstraints);
-        gradientConstraints.gridx++;
-        gradientPanel.add(m_thirdColorColorChooser.getComponentPanel(), gradientConstraints);
-        gradientConstraints.gridx = 0;
-        gradientConstraints.gridy++;
-        gradientConstraints.gridwidth = 3;
-        gradientPanel.add(m_gradientColors, gradientConstraints);
-        gradientConstraints.gridx = 0;
-        gradientConstraints.gridy++;
 
         c.gridx = 0;
         c.gridy++;
+        c.gridwidth = 2;
 
-        final JPanel missingValuePanel = new JPanel(new GridBagLayout());
-        missingValuePanel.setBorder(BorderFactory.createTitledBorder("Missing value color"));
-        panel.add(missingValuePanel, c);
-        final GridBagConstraints missingValueConstraints = DialogUtil.defaultGridBagConstraints();
-        missingValueConstraints.weightx = 1;
-        missingValuePanel.add(m_missingValueColorColorChooser.getComponentPanel(), missingValueConstraints);
-        missingValueConstraints.gridx = 0;
-        missingValueConstraints.gridy++;
-
-        c.gridx = 0;
-        c.gridy++;
         c.weightx = 0;
-        c.gridwidth = 5;
-        c.fill = GridBagConstraints.BOTH;
-        c.weighty = 0.01;
-        c.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(m_errorMsg, c);
+        panel.add(m_columnsFilterPanel, c);
+
+        c.gridx = 0;
+        c.gridy++;
 
         return panel;
     }
@@ -431,7 +351,6 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 1;
-        c.weightx = 1;
         c.anchor = GridBagConstraints.NORTHWEST;
         c.fill = GridBagConstraints.HORIZONTAL;
 
@@ -488,6 +407,52 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         c.gridx = 0;
         c.gridy++;
 
+        final JPanel gradientPanel = new JPanel(new GridBagLayout());
+        gradientPanel.setBorder(BorderFactory.createTitledBorder("Gradient colors"));
+        panel.add(gradientPanel, c);
+        final GridBagConstraints gradientConstraints = DialogUtil.defaultGridBagConstraints();
+        gradientConstraints.weightx = 1;
+        gradientPanel.add(m_useBinsCheckBox, gradientConstraints);
+        gradientConstraints.gridx++;
+        gradientPanel.add(new JLabel("Number of colors (odd): "), gradientConstraints);
+        gradientConstraints.gridx++;
+        gradientPanel.add(m_numberOfBinsSpinner, gradientConstraints);
+        gradientConstraints.gridx = 0;
+        gradientConstraints.gridy++;
+        gradientPanel.add(new JLabel("Select gradient colors: "), gradientConstraints);
+        gradientConstraints.gridx = 0;
+        gradientConstraints.gridy++;
+        gradientConstraints.anchor = GridBagConstraints.WEST;
+        gradientPanel.add(m_firstColorColorChooser.getComponentPanel(), gradientConstraints);
+        gradientConstraints.gridx++;
+        gradientConstraints.anchor = GridBagConstraints.CENTER;
+        gradientPanel.add(m_secondColorColorChooser.getComponentPanel(), gradientConstraints);
+        gradientConstraints.gridx++;
+        gradientConstraints.anchor = GridBagConstraints.EAST;
+        gradientPanel.add(m_thirdColorColorChooser.getComponentPanel(), gradientConstraints);
+        gradientConstraints.gridx = 0;
+        gradientConstraints.gridy++;
+        gradientConstraints.gridwidth = 3;
+        gradientConstraints.weightx = 0;
+        gradientPanel.add(m_gradientColors, gradientConstraints);
+        gradientConstraints.gridx = 0;
+        gradientConstraints.gridy++;
+
+        c.gridx = 0;
+        c.gridy++;
+
+        final JPanel missingValuePanel = new JPanel(new GridBagLayout());
+        missingValuePanel.setBorder(BorderFactory.createTitledBorder("Missing value color"));
+        panel.add(missingValuePanel, c);
+        final GridBagConstraints missingValueConstraints = DialogUtil.defaultGridBagConstraints();
+        missingValueConstraints.weightx = 1;
+        missingValuePanel.add(m_missingValueColorColorChooser.getComponentPanel(), missingValueConstraints);
+        missingValueConstraints.gridx = 0;
+        missingValueConstraints.gridy++;
+
+        c.gridx = 0;
+        c.gridy++;
+
         return panel;
     }
 
@@ -498,7 +463,6 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 1;
-        c.weightx = 1;
         c.anchor = GridBagConstraints.NORTHWEST;
         c.fill = GridBagConstraints.HORIZONTAL;
 
@@ -508,38 +472,25 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         final GridBagConstraints viewEditPanelConstraints = DialogUtil.defaultGridBagConstraints();
         viewEditPanelConstraints.weightx = 1;
         viewEditPanel.add(m_enableViewConfigurationCheckBox, viewEditPanelConstraints);
-        viewEditPanelConstraints.gridx = 0;
-        viewEditPanelConstraints.gridy++;
-        viewEditPanel.add(m_enableTitleChangeCheckBox, viewEditPanelConstraints);
         viewEditPanelConstraints.gridx++;
-        viewEditPanel.add(m_enableGradientSpecificationCheckBox, viewEditPanelConstraints);
+        viewEditPanel.add(m_enableTitleChangeCheckBox, viewEditPanelConstraints);
         viewEditPanelConstraints.gridx = 0;
         viewEditPanelConstraints.gridy++;
-        viewEditPanel.add(m_enableMissingValueColorEditCheckBox, viewEditPanelConstraints);
+        viewEditPanel.add(m_enableColorModeEditCheckBox, viewEditPanelConstraints);
         viewEditPanelConstraints.gridx = 0;
         viewEditPanelConstraints.gridy++;
-
-        c.gridx = 0;
-        c.gridy++;
-
-        final JPanel filterPanel = new JPanel(new GridBagLayout());
-        filterPanel.setBorder(BorderFactory.createTitledBorder("Filtering"));
-        panel.add(filterPanel, c);
-        final GridBagConstraints filterPanelConstraints = DialogUtil.defaultGridBagConstraints();
-        filterPanelConstraints.weightx = 1;
-        filterPanel.add(m_subscribeFilterCheckBox, filterPanelConstraints);
-        filterPanelConstraints.gridx = 0;
-        filterPanelConstraints.gridy++;
 
         c.gridx = 0;
         c.gridy++;
 
         final JPanel selectionPanel = new JPanel(new GridBagLayout());
-        selectionPanel.setBorder(BorderFactory.createTitledBorder("Selection"));
+        selectionPanel.setBorder(BorderFactory.createTitledBorder("Filtering & Selection"));
         panel.add(selectionPanel, c);
         final GridBagConstraints selectionPanelConstraints = DialogUtil.defaultGridBagConstraints();
         selectionPanelConstraints.weightx = 1;
         selectionPanel.add(m_enableSelectionCheckBox, selectionPanelConstraints);
+        selectionPanelConstraints.gridx++;
+        selectionPanel.add(m_subscribeFilterCheckBox, selectionPanelConstraints);
         selectionPanelConstraints.gridx = 0;
         selectionPanelConstraints.gridy++;
         selectionPanel.add(m_publishSelectionCheckBox, selectionPanelConstraints);
@@ -564,9 +515,6 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         paginationPanel.add(m_enablePagingCheckBox, paginationPanelConstraints);
         paginationPanelConstraints.gridx = 0;
         paginationPanelConstraints.gridy++;
-        paginationPanel.add(m_enableJumpToPageCheckBox, paginationPanelConstraints);
-        paginationPanelConstraints.gridx = 0;
-        paginationPanelConstraints.gridy++;
         paginationPanel.add(new JLabel("Initial page size:"), paginationPanelConstraints);
         paginationPanelConstraints.gridx++;
         paginationPanel.add(m_initialPageSizeSpinner, paginationPanelConstraints);
@@ -575,12 +523,12 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         paginationPanel.add(m_enablePageSizeChangeCheckBox, paginationPanelConstraints);
         paginationPanelConstraints.gridx = 0;
         paginationPanelConstraints.gridy++;
-        paginationPanel.add(m_pageSizeShowAllCheckBox, paginationPanelConstraints);
-        paginationPanelConstraints.gridx = 0;
-        paginationPanelConstraints.gridy++;
         paginationPanel.add(new JLabel("Selectable page sizes:"), paginationPanelConstraints);
         paginationPanelConstraints.gridx++;
         paginationPanel.add(m_allowedPageSizesTextField, paginationPanelConstraints);
+        paginationPanelConstraints.gridx = 0;
+        paginationPanelConstraints.gridy++;
+        paginationPanel.add(m_pageSizeShowAllCheckBox, paginationPanelConstraints);
         paginationPanelConstraints.gridx = 0;
         paginationPanelConstraints.gridy++;
 
@@ -592,12 +540,12 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         panel.add(zoomPanel, c);
         final GridBagConstraints zoomPanelConstraints = DialogUtil.defaultGridBagConstraints();
         zoomPanelConstraints.weightx = 1;
-        zoomPanel.add(m_enablePanningCheckBox, zoomPanelConstraints);
-        zoomPanelConstraints.gridx = 0;
-        zoomPanelConstraints.gridy++;
         zoomPanel.add(m_enableZoomCheckBox, zoomPanelConstraints);
         zoomPanelConstraints.gridx++;
         zoomPanel.add(m_showZoomResetButtonCheckBox, zoomPanelConstraints);
+        zoomPanelConstraints.gridx = 0;
+        zoomPanelConstraints.gridy++;
+        zoomPanel.add(m_enablePanningCheckBox, zoomPanelConstraints);
         zoomPanelConstraints.gridx = 0;
         zoomPanelConstraints.gridy++;
 
@@ -609,37 +557,37 @@ public class HeatMapNodeDialog extends NodeDialogPane {
 
     private void loadSvgColumn(final DataTableSpec spec, final HeatMapViewConfig config)
         throws NotConfigurableException {
-        String svgColumn = config.getSvgLabelColumn();
-        if ((svgColumn == null) || svgColumn.isEmpty()) {
-            for (int i = 0; i < spec.getNumColumns(); i++) {
-                if (spec.getColumnSpec(i).getType().isCompatible(SvgValue.class)) {
-                    svgColumn = spec.getColumnSpec(i).getName();
-                    break;
-                }
+        boolean hasSVGCol = false;
+        final String svgColumn = config.getSvgLabelColumn();
+        for (int i = 0; i < spec.getNumColumns(); i++) {
+            if (spec.getColumnSpec(i).getType().isCompatible(SvgValue.class)) {
+                hasSVGCol = true;
+                break;
             }
         }
         // If there are no SVG Columns then just disable the option
-        if ((svgColumn == null) || svgColumn.isEmpty()) {
+        if (!hasSVGCol) {
             m_svgLabelColumnColumnSelectionPanel.setEnabled(false);
         } else {
-            m_svgLabelColumnColumnSelectionPanel.update(spec, svgColumn);
+            m_svgLabelColumnColumnSelectionPanel.setEnabled(true);
         }
+        m_svgLabelColumnColumnSelectionPanel.update(spec, svgColumn, false);
     }
 
     private void enableSpinner() {
         final boolean enabled = m_useBinsCheckBox.isSelected();
         m_numberOfBinsSpinner.setEnabled(enabled);
         m_gradientColors.useBins(enabled);
-        if (enabled) {
-            m_gradientColors.setNumberOfBins((int) m_numberOfBinsSpinner.getValue());
+        final int numBins = (int) m_numberOfBinsSpinner.getValue();
+        if (enabled && numBins % 2 != 0) {
+            m_gradientColors.setNumberOfBins(numBins);
         }
     }
 
     private void enableViewEdit() {
         final boolean enabled = m_enableViewConfigurationCheckBox.isSelected();
         m_enableTitleChangeCheckBox.setEnabled(enabled);
-        m_enableGradientSpecificationCheckBox.setEnabled(enabled);
-        m_enableMissingValueColorEditCheckBox.setEnabled(enabled);
+        m_enableColorModeEditCheckBox.setEnabled(enabled);
     }
 
     private void enablePaging() {
@@ -649,7 +597,6 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_enablePageSizeChangeCheckBox.setEnabled(enabled);
         m_allowedPageSizesTextField.setEnabled(enabled && enableSize);
         m_pageSizeShowAllCheckBox.setEnabled(enabled && enableSize);
-        m_enableJumpToPageCheckBox.setEnabled(enabled);
     }
 
     private void enableSelection() {
@@ -660,13 +607,18 @@ public class HeatMapNodeDialog extends NodeDialogPane {
     }
 
     private void updateNumberOfBins() {
-        final int numBins = (int) m_numberOfBinsSpinner.getValue();
+        final int numBins = (int)m_numberOfBinsSpinner.getValue();
         if (numBins % 2 != 0) {
             m_gradientColors.setNumberOfBins(numBins);
-            m_errorMsg.setText("");
-        }
-        else {
-            m_errorMsg.setText("Number of colors must be odd");
+        } else if (numBins < 3) {
+            m_gradientColors.setNumberOfBins(3);
+            m_numberOfBinsSpinner.setValue(3);
+        } else if (numBins > 21) {
+            m_gradientColors.setNumberOfBins(21);
+            m_numberOfBinsSpinner.setValue(21);
+        } else {
+            m_gradientColors.setNumberOfBins(numBins + 1);
+            m_numberOfBinsSpinner.setValue(numBins + 1);
         }
     }
 

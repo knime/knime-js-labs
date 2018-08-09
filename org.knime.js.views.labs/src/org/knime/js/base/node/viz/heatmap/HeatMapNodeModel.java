@@ -313,8 +313,7 @@ implements CSSModifiable {
         representation.setDisplayFullscreenButton(m_config.getDisplayFullscreenButton());
         representation.setEnableViewConfiguration(m_config.getEnableViewConfiguration());
         representation.setEnableTitleChange(m_config.getEnableTitleChange());
-        representation.setEnableGradientSpecification(m_config.getEnableGradientSpecification());
-        representation.setEnableMissingValueColorEdit(m_config.getEnableMissingValueColorEdit());
+        representation.setEnableColorModeEdit(m_config.getEnableColorModeEdit());
         representation.setColumns(m_config.getColumns().applyTo(m_table.getDataTableSpec()).getIncludes());
         representation.setLabelColumn(m_config.getLabelColumn());
         representation.setSvgLabelColumn(m_config.getSvgLabelColumn());
@@ -327,7 +326,6 @@ implements CSSModifiable {
         representation.setEnablePageSizeChange(m_config.getEnablePageSizeChange());
         representation.setAllowedPageSizes(m_config.getAllowedPageSizes());
         representation.setEnableShowAll(m_config.getEnableShowAll());
-        representation.setEnableJumpToPage(m_config.getEnableJumpToPage());
         representation.setDisplayDataCellToolTip(m_config.getDisplayDataCellToolTip());
         representation.setDisplayRowToolTip(m_config.getDisplayRowToolTip());
         representation.setEnableZoom(m_config.getEnableZoom());
