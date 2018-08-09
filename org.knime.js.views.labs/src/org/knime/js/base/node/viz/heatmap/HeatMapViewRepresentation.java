@@ -71,7 +71,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public class HeatMapViewRepresentation extends JSONViewContent {
 
     private boolean m_showWarningInView;
-    private boolean m_generateImage;
     private int m_imageWidth;
     private int m_imageHeight;
     private boolean m_resizeToWindow;
@@ -114,6 +113,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     private String m_dataTableId;
     private final static String CFG_FILTER_IDS = "filterIds";
     private String[] m_filterIds;
+    private final static String CFG_RUNNING_IN_VIEW = "runningInView";
+    private boolean m_runningInView = true;
     private JSONDataTable m_table;
 
     // -- General getters & setters --
@@ -130,20 +131,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
      */
     public void setShowWarningInView(final boolean showWarningInView) {
         m_showWarningInView = showWarningInView;
-    }
-
-    /**
-     * @return the generateImage
-     */
-    public boolean getGenerateImage() {
-        return m_generateImage;
-    }
-
-    /**
-     * @param generateImage the generateImage to set
-     */
-    public void setGenerateImage(final boolean generateImage) {
-        m_generateImage = generateImage;
     }
 
     /**
@@ -589,6 +576,20 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the runningInView
+     */
+    public boolean getRunningInView() {
+        return m_runningInView;
+    }
+
+    /**
+     * @param runningInView the runningInView to set
+     */
+    public void setRunningInView(final boolean runningInView) {
+        m_runningInView = runningInView;
+    }
+
+    /**
      * @return The JSON data table.
      */
     @JsonProperty("table")
@@ -612,7 +613,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     @Override
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         settings.addBoolean(HeatMapViewConfig.CFG_SHOW_WARNING_IN_VIEW, m_showWarningInView);
-        settings.addBoolean(HeatMapViewConfig.CFG_GENERATE_IMAGE, m_generateImage);
         settings.addInt(HeatMapViewConfig.CFG_IMAGE_WIDTH, m_imageWidth);
         settings.addInt(HeatMapViewConfig.CFG_IMAGE_HEIGHT, m_imageHeight);
         settings.addBoolean(HeatMapViewConfig.CFG_RESIZE_TO_WINDOW, m_resizeToWindow);
@@ -652,6 +652,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
 
         settings.addString(CFG_DATA_TABLE_ID, m_dataTableId);
         settings.addStringArray(CFG_FILTER_IDS, m_filterIds);
+        settings.addBoolean(CFG_RUNNING_IN_VIEW, m_runningInView);
     }
 
     /**
@@ -660,7 +661,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     @Override
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_showWarningInView = settings.getBoolean(HeatMapViewConfig.CFG_SHOW_WARNING_IN_VIEW);
-        m_generateImage = settings.getBoolean(HeatMapViewConfig.CFG_GENERATE_IMAGE);
         m_imageWidth = settings.getInt(HeatMapViewConfig.CFG_IMAGE_WIDTH);
         m_imageHeight = settings.getInt(HeatMapViewConfig.CFG_IMAGE_HEIGHT);
         m_resizeToWindow = settings.getBoolean(HeatMapViewConfig.CFG_RESIZE_TO_WINDOW);
@@ -700,6 +700,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
 
         m_dataTableId = settings.getString(CFG_DATA_TABLE_ID);
         m_filterIds = settings.getStringArray(CFG_FILTER_IDS);
+        m_runningInView = settings.getBoolean(CFG_RUNNING_IN_VIEW);
     }
 
     /**
@@ -719,7 +720,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         final HeatMapViewRepresentation other = (HeatMapViewRepresentation) obj;
         return new EqualsBuilder()
                 .append(m_showWarningInView, other.getShowWarningInView())
-                .append(m_generateImage, other.getGenerateImage())
                 .append(m_imageWidth, other.getImageWidth())
                 .append(m_imageHeight, other.getImageHeight())
                 .append(m_resizeToWindow, other.getResizeToWindow())
@@ -750,6 +750,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_showZoomResetButton, other.getShowZoomResetButton())
                 .append(m_dataTableId, other.getDataTableId())
                 .append(m_filterIds, other.getFilterIds())
+                .append(m_runningInView, other.getRunningInView())
                 .append(m_table, other.getTable())
                 .isEquals();
     }
@@ -761,7 +762,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(m_showWarningInView)
-                .append(m_generateImage)
                 .append(m_imageWidth)
                 .append(m_imageHeight)
                 .append(m_resizeToWindow)
@@ -792,6 +792,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_showZoomResetButton)
                 .append(m_dataTableId)
                 .append(m_filterIds)
+                .append(m_runningInView)
                 .append(m_table)
                 .toHashCode();
     }

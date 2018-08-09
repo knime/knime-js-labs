@@ -251,7 +251,6 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
             final HeatMapViewRepresentation representation = getViewRepresentation();
             m_table = (BufferedDataTable)inObjects[0];
             representation.setShowWarningInView(m_config.getShowWarningInView());
-            representation.setGenerateImage(m_config.getGenerateImage());
             representation.setImageWidth(m_config.getImageWidth());
             representation.setImageHeight(m_config.getImageHeight());
             representation.setResizeToWindow(m_config.getResizeToWindow());
@@ -285,6 +284,7 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
             final JSONDataTable jsonTable = createJSONTableFromBufferedDataTable(exec);
             representation.setTable(jsonTable);
             representation.setFilterIds(jsonTable.getSpec().getFilterIds());
+            representation.setRunningInView(false);
 
             final HeatMapViewValue value = getViewValue();
             if (isViewValueEmpty()) {
@@ -315,6 +315,7 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
                     createColumnAppender(m_table.getDataTableSpec(), selection);
                 out = exec.createColumnRearrangeTable(m_table, createColumnRearranger, exec);
             }
+            getViewRepresentation().setRunningInView(true);
         }
         return new PortObject[]{svgImageFromView, out};
     }
