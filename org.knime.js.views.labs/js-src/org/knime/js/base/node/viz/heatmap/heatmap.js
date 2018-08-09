@@ -80,13 +80,20 @@ heatmap_namespace = (function() {
     }
 
     function onSelectionChange(data) {
-        _value.selectedRowsBuffer.concat(data.changeSet.added);
-        _value.selectedRowsBuffer.filter(function(rowId) {
-            if (data.changedSet.removed.indexOf(rowId) > -1) {
-                return false;
-            }
-            return true;
-        });
+        var removed = data.changedSet.removed;
+        var added = data.changedSet.added;
+
+        if (added) {
+            _value.selectedRowsBuffer.concat(data.changeSet.added);
+        }
+        if (removed) {
+            _value.selectedRowsBuffer.filter(function(rowId) {
+                if (removed.indexOf(rowId) > -1) {
+                    return false;
+                }
+                return true;
+            });
+        }
     }
 
     function getSelectionData(data) {
