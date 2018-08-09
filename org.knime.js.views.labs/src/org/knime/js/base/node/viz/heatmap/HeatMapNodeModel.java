@@ -48,6 +48,7 @@
  */
 package org.knime.js.base.node.viz.heatmap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -368,12 +369,23 @@ implements CSSModifiable {
     }
 
     private JSONDataTable createJSONTableFromBufferedDataTable(final ExecutionContext exec) throws CanceledExecutionException {
-        FilterResult filter = m_config.getColumns().applyTo(m_table.getDataTableSpec());
+        final boolean keepFilterCols = m_config.getSubscribeFilter();
+        final FilterResult filter = m_config.getColumns().applyTo(m_table.getDataTableSpec());
+        final List<String> include = new ArrayList<>(Arrays.asList(filter.getIncludes()));
+        if (m_config.getDisplayRowToolTip() && m_config.getSvgLabelColumn() != null && !m_config.getSvgLabelColumn().isEmpty()) {
+            include.add(m_config.getSvgLabelColumn());
+        }
+        if (m_config.getLabelColumn() != null && !m_config.getLabelColumn().isEmpty() && !include.contains(m_config.getLabelColumn())) {
+            include.add(m_config.getLabelColumn());
+        }
+        final String[] includeCols = include.toArray(new String[include.size()]);
+
         JSONDataTable jsonTable = JSONDataTable.newBuilder()
                 .setDataTable(m_table)
                 .setId(getTableId(0))
                 .setFirstRow(1)
-                .setExcludeColumns(filter.getExcludes())
+                .keepFilterColumns(keepFilterCols)
+                .setIncludeColumns(includeCols)
                 .calculateDataHash(true)
                 .build(exec);
         return jsonTable;
