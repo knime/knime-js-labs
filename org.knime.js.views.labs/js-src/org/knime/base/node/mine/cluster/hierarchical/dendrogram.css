@@ -9,14 +9,10 @@
 }
 
 .link.outOfThreshold {
-    stroke: #d3cece;
+    stroke: #e9e9e9;
 }
 
 .link.outOfFilter {
-    stroke: #d3cece;
-}
-
-.link.outOfThreshold.outOfFilter {
     stroke: #e9e9e9;
 }
 
@@ -33,11 +29,18 @@
 }
 
 .leaf.outOfFilter {
-    fill: #d3cece;
+    fill: #e9e9e9;
+}
+
+.selectionEnabled .leaf:not(.outOfFilter) {
+    cursor: pointer;
 }
 
 .cluster {
     fill: #a3a2a2;
+}
+
+.selectionEnabled .cluster:not(.outOfFilter) {
     cursor: pointer;
 }
 
@@ -46,19 +49,18 @@
 }
 
 .cluster.outOfThreshold {
-    fill: #d3cece;
-}
-
-.cluster.outOfFilter {
-    fill: #d3cece;
-}
-
-.cluster.outOfThreshold.outOfFilter {
     fill: #e9e9e9;
 }
 
-.cluster.selected,
-.cluster:hover {
+.cluster.outOfFilter {
+    fill: #e9e9e9;
+}
+
+.cluster.selected {
+    fill: #ffa600;
+}
+
+.selectionEnabled .cluster:not(.outOfFilter):hover {
     fill: #ffa600;
 }
 
@@ -67,7 +69,10 @@
 }
 
 .threshold {
-    fill: red;
+    fill: #ff0000;
+}
+
+.thresholdEnabled .threshold {
     cursor: ns-resize;
 }
 
@@ -78,6 +83,9 @@
 .knime-axis.knime-x .knime-tick-label {
     text-anchor: end;
     transform: rotate(-90deg);
+}
+
+.selectionEnabled .knime-axis.knime-x .tick:not(.outOfFilter) .knime-tick-label {
     cursor: pointer;
 }
 
@@ -96,6 +104,7 @@
 .knime-axis.knime-x .tick.outOfFilter .knime-tick-label {
     fill: #d3cece;
 }
+
 .knime-axis.knime-x .tick.outOfFilter .knime-tick-line {
     stroke: #d3cece;
 }

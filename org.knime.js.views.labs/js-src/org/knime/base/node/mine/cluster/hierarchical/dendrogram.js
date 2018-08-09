@@ -122,12 +122,22 @@ window.dendrogram_namespace = (function () {
     };
 
     const drawSVG = function () {
+        d3.select('html').style('width', '100%').style('height', '100%');
+        d3.select('body').style('width', '100%').style('height', '100%');
+
         const resizeToWindow = _representation.runningInView && _representation.resizeToWindow;
 
         // create SVG
         svg = d3.select('body').insert('svg:svg')
             .attr('width', resizeToWindow ? '100%' : _representation.imageWidth)
             .attr('height', resizeToWindow ? '100%' : _representation.imageHeight);
+
+        if (_representation.runningInView) {
+            // tag element for iframe resizer
+            svg.attr('data-iframe-width', '').attr('data-iframe-height', '');
+        }
+
+        calcSVGSize();
 
         // create clipping path for viewport (needed for zooming & panning)
         const defs = svg.append('defs');
@@ -140,9 +150,10 @@ window.dendrogram_namespace = (function () {
             .append('rect')
             .attr('height', xAxisHeight);
 
-        dendrogramEl = svg.append('g').attr('class', 'viewport').attr('transform', 'translate(' + yAxisWidth + ',0)').append('g').attr('transform', 'translate(0,' + viewportMarginTop + ')').append('g');
+        dendrogramEl = svg.append('g').attr('class', 'viewport').attr('transform', 'translate(' + yAxisWidth + ',0)')
+            .append('g').attr('transform', 'translate(0,' + viewportMarginTop + ')')
+            .append('g');
 
-        calcSVGSize();
     };
 
     const createHierarchyFromTree = function () {
@@ -206,11 +217,13 @@ window.dendrogram_namespace = (function () {
             return n.children != null;
         })).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius);
         clusterMarkerEl.append('title').text(function (d) {
-            return d.data.distance;
+            return 'Cluster ' + d.data.id + '; Distance: ' + d.data.distance;
         });
         dendrogramEl.on('click', function () { // make use of event bubbling and only register one listener
             if (d3.event.target.nodeName === 'circle') {
                 toggleSelectCluster(d3.event.target.__data__);
+            } else if (d3.event.target.nodeName === 'rect') {
+                toggleSelectRow(d3.event.target.__data__.data.rowKey);
             }
         });
     };
@@ -245,6 +258,10 @@ window.dendrogram_namespace = (function () {
 
         // set initial threshold
         onThresholdChange(_value.threshold);
+
+        if (_representation.runningInView) {
+            svg.classed('thresholdEnabled', true);
+        }
     };
 
     const onThresholdChange = function (threshold) {
@@ -281,10 +298,10 @@ window.dendrogram_namespace = (function () {
     const resizeDiagram = function () {
         calcSVGSize();
 
-        viewportClipEl.style('width', viewportWidth + 'px')
-            .style('height', viewportHeight + viewportMarginTop + 'px');
+        viewportClipEl.attr('width', viewportWidth)
+            .attr('height', viewportHeight + viewportMarginTop);
 
-        xAxisClipEl.style('width', viewportWidth + yAxisWidth + 'px');
+        xAxisClipEl.attr('width', viewportWidth + yAxisWidth);
 
         // recalculate cluster
         cluster.size([viewportWidth, viewportHeight - viewportMarginTop]);
@@ -296,18 +313,19 @@ window.dendrogram_namespace = (function () {
         xAxis.tickValues(xScale.domain().filter(function (d, i) { return !(i % xShowNthTicks); }));
         xAxisEl.attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')');
         xAxisEl.call(xAxis);
-        xAxisEl.selectAll('.tick').classed('knime-tick', true);
-        xAxisEl.selectAll('line').classed('knime-tick-line', true);
-        xAxisEl.selectAll('text').classed('knime-tick-label', true)
+        const xTickEls = xAxisEl.selectAll('.tick').classed('knime-tick', true);
+        xTickEls.selectAll('line').classed('knime-tick-line', true);
+        xTickEls.selectAll('text').classed('knime-tick-label', true)
             .attr('dx', labelMargin * -1 + 'px')
             .attr('dy', '-5px');
 
         // update y axis
         yScale.range([viewportHeight, 0]);
         yAxisEl.call(yAxis);
-        yAxisEl.selectAll('.tick').classed('knime-tick', true);
-        yAxisEl.selectAll('line').classed('knime-tick-line', true);
-        yAxisEl.selectAll('text').classed('knime-tick-label', true);
+        const yTickEls = xAxisEl.selectAll('.tick')
+            .classed('knime-tick', true);
+        yTickEls.selectAll('line').classed('knime-tick-line', true);
+        yTickEls.selectAll('text').classed('knime-tick-label', true);
 
         // apply the distance of each node
         nodes.each(function (n) {
@@ -330,11 +348,12 @@ window.dendrogram_namespace = (function () {
         thresholdEl.attr('transform', 'translate(0,' + yScale(_value.threshold) + ')');
 
         // zoom out? TODO maybe there is a smarter behaviour here
+        zoom.translateExtent([[0, 0], [viewportWidth, viewportHeight]]);
+        zoom.extent([[0, 0], [viewportWidth, viewportHeight]]);
+        svg.call(zoom).on('dblclick.zoom', null); // prevent zoom on double click
         svg.transition()
             .duration(750)
             .call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
-
-        zoom.translateExtent([[0, 0], [svgSize.width, svgSize.height]]);
     };
 
     const initWindowResize = function () {
@@ -355,18 +374,24 @@ window.dendrogram_namespace = (function () {
     const initZoomingAndPanning = function () {
         zoom = d3.zoom()
             .scaleExtent([1, 20])
+            .translateExtent([[0, 0], [viewportWidth, viewportHeight]])
+            .extent([[0, 0], [viewportWidth, viewportHeight]])
             .on('zoom', function () {
                 dendrogramEl.attr('transform', d3.event.transform);
 
                 // TODO refactor this
+                const isFiltering = !!filteredRows.length;
                 const xShowNthTicks = Math.round(xScale.domain().length / (viewportWidth * d3.event.transform.k / 15));
                 xAxis.tickValues(xScale.domain().filter(function (d, i) { return !(i % xShowNthTicks); }));
                 xScale.range([0, viewportWidth].map(function (d) { return d3.event.transform.applyX(d); }));
-                xAxisEl.selectAll('.tick').classed('knime-tick', true).classed('selected', function (rowKey) {
-                    return selectedRows.indexOf(rowKey) !== -1;
-                });
-                xAxisEl.selectAll('line').classed('knime-tick-line', true);
-                xAxisEl.selectAll('text').classed('knime-tick-label', true)
+                const xTickEls = xAxisEl.selectAll('.tick')
+                    .classed('knime-tick', true).classed('selected', function (rowKey) {
+                        return selectedRows.indexOf(rowKey) !== -1;
+                    }).classed('outOfFilter', function (rowKey) {
+                        return isFiltering && !(filteredRows.indexOf(rowKey) !== -1);
+                    });
+                xTickEls.selectAll('line').classed('knime-tick-line', true);
+                xTickEls.selectAll('text').classed('knime-tick-label', true)
                     .attr('dx', labelMargin * -1 + 'px')
                     .attr('dy', '-5px');
 
@@ -390,11 +415,7 @@ window.dendrogram_namespace = (function () {
     const updateSelectionInView = function () {
         // add selected flag for leaves
         leaves.forEach(function (n) {
-            if (selectedRows.indexOf(n.data.rowKey) != -1) {
-                n.selected = true;
-            } else {
-                n.selected = false;
-            }
+            n.selected = selectedRows.indexOf(n.data.rowKey) !== -1;
         });
 
         // also select cluster if both children are selected
@@ -409,7 +430,7 @@ window.dendrogram_namespace = (function () {
             return d.selected;
         });
         linkEl.classed('selected', function (d) {
-            return d.source.selected && d.target.selected;
+            return (d.source.selected && d.target.selected) || d.target.selected && !d.target.children;
         });
         xAxisEl.selectAll('.tick').classed('selected', function (rowKey) {
             return selectedRows.indexOf(rowKey) !== -1;
@@ -434,6 +455,10 @@ window.dendrogram_namespace = (function () {
     };
 
     const toggleSelectRow = function (rowKey) {
+        if (filteredRows.length && filteredRows.indexOf(rowKey) === -1) {
+            // abort if row is filtered out
+            return;
+        }
         const select = selectedRows.indexOf(rowKey) === -1 ? true : false;
         const multiSelect = d3.event.ctrlKey || d3.event.shiftKey || d3.event.metaKey;
 
@@ -456,10 +481,14 @@ window.dendrogram_namespace = (function () {
         }
 
         updateSelectionInView();
-        knimeService.setSelectedRows(_representation.dataTableID, selectedRows, onSelectionChange);
+        knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
     };
 
     const toggleSelectCluster = function (clusterNode) {
+        if (clusterNode.outOfFilter) {
+            // abort if cluster is filtered out
+            return;
+        }
         const select = !clusterNode.selected;
         const multiSelect = d3.event.ctrlKey || d3.event.shiftKey || d3.event.metaKey;
 
@@ -488,11 +517,15 @@ window.dendrogram_namespace = (function () {
         }
 
         updateSelectionInView();
-        knimeService.setSelectedRows(_representation.dataTableID, selectedRows, onSelectionChange);
+        knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
     };
 
     const initSelection = function () {
-        knimeService.subscribeToSelection(_representation.dataTableID, onSelectionChange);
+        knimeService.subscribeToSelection(table.getTableId(), onSelectionChange);
+
+        if (_representation.runningInView) {
+            svg.classed('selectionEnabled', true);
+        }
     };
 
     const updateFilterInView = function () {
