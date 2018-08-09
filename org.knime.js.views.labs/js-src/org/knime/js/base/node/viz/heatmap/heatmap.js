@@ -1,6 +1,6 @@
 heatmap_namespace = (function() {
     var heatmap = {};
-    var _representation, _value, _table, _imageColumnName;
+    var _representation, _value, _table, _imageColumnName, _colNames, _extent;
 
     // Hardcoded Default Settings
     var _colorRange = ['#FF0700', '#fff', '#00FF56'];
@@ -44,6 +44,16 @@ heatmap_namespace = (function() {
         _table = new kt();
         _table.setDataTable(representation.table);
         _imageColumnName = representation.svgLabelColumn;
+
+        // Get valid indexes for heatmap columns by comparing them to input colNames
+        _colNames = [];
+        var repColNames = _representation.table.spec.colNames;
+        _representation.columns.map(function(hmColName) {
+            _colNames[repColNames.indexOf(hmColName)] = hmColName;
+        });
+
+        // Get min max of all rows
+        _extent = getMinMaxFromAllRows(_table.getRows());
 
         knimeService.subscribeToSelection(_table.getTableId(), onSelectionChange);
         var filterIds = _table.getFilterIds();
@@ -98,18 +108,35 @@ heatmap_namespace = (function() {
 
         var svgWrapper = '<div class="knime-svg-container"></div>';
         var toolTipWrapper = '<div class="knime-tooltip"></div>';
+        var infoWrapperEl = '<div class="info-wrapper"></div>';
 
         var data = filteredData ? getSelectionData(filteredData) : getSelectionData(_table.getRows());
-        var paginationData = createPagination(data);
-        var pagination = getPaginationHtml(paginationData);
 
-        container.insertAdjacentHTML('beforeend', svgWrapper + pagination + toolTipWrapper);
+        container.insertAdjacentHTML('beforeend', svgWrapper + infoWrapperEl + toolTipWrapper);
+
+        // Meta info
+        var paginationData = createPagination(data);
+        drawMetaInfo(paginationData);
 
         // Build svg based on the current data
         buildSvg(paginationData.rows);
 
         // Events
         registerDomEvents();
+    }
+
+    function drawMetaInfo(paginationData) {
+        var paginationHtml = getPaginationHtml(paginationData);
+        var displayedRows =
+            '<p>Showing ' +
+            (paginationData.pageRowStartIndex + 1) +
+            ' to ' +
+            paginationData.pageRowEndIndex +
+            ' of ' +
+            paginationData.totalRowCount +
+            ' entries</p>';
+
+        document.body.querySelector('.info-wrapper').innerHTML = displayedRows + paginationHtml;
     }
 
     function drawControls() {
@@ -171,7 +198,7 @@ heatmap_namespace = (function() {
                 drawChart();
             }
         );
-        knimeService.addMenuItem('Scale Type', 'long-arrow-right', scaleType);
+        knimeService.addMenuItem('Scale Type', 'exchange', scaleType);
 
         var rowsPerPage = knimeService.createMenuSelect(
             'rowsPerPage',
@@ -182,14 +209,14 @@ heatmap_namespace = (function() {
                 drawChart();
             }
         );
-        knimeService.addMenuItem('Rows per Page', 'long-arrow-right', rowsPerPage);
+        knimeService.addMenuItem('Rows per Page', 'table', rowsPerPage);
     }
 
     function getPaginationHtml(pagination) {
         if (pagination.pageCount <= 1 || !_value.paginationEnabled) {
             return '';
         }
-        var html = '<div class="paginationWrapper"><ul class="pagination">';
+        var html = '<ul class="pagination">';
 
         if (pagination.prev) {
             html += '<li><a href="#' + pagination.prev + '">&laquo;</a></li>';
@@ -213,7 +240,7 @@ heatmap_namespace = (function() {
         } else {
             html += '<li class="disabled"><span>&raquo;</span></li>';
         }
-        html += '</ul></div>';
+        html += '</ul>';
         return html;
     }
 
@@ -243,35 +270,59 @@ heatmap_namespace = (function() {
         // jump to page 1 if total number of pages exceeds current page
         _value.currentPage = _value.currentPage <= pageCount ? _value.currentPage : 1;
 
-        var currentPage = _value.currentPage;
-        var nextPageRowEnd = _value.rowsPerPage * currentPage;
-        var nextPageRowStart = _value.rowsPerPage * (currentPage - 1);
-        var rows = data.slice(nextPageRowStart, nextPageRowEnd);
+        var pageRowEndIndex = _value.rowsPerPage * _value.currentPage;
+        var pageRowStartIndex = _value.rowsPerPage * (_value.currentPage - 1);
+        var rows = data.slice(pageRowStartIndex, pageRowEndIndex);
 
         return {
+            totalRowCount: data.length,
             rows: rows,
             pageCount: pageCount,
-            next: nextPageRowEnd < data.length ? currentPage + 1 : false,
-            prev: nextPageRowStart > 0 ? currentPage - 1 : false
+            pageRowEndIndex: pageRowEndIndex > data.length ? data.length : pageRowEndIndex,
+            pageRowStartIndex: pageRowStartIndex,
+            next: pageRowEndIndex < data.length ? _value.currentPage + 1 : false,
+            prev: pageRowStartIndex > 0 ? _value.currentPage - 1 : false
         };
     }
 
-    function formatData(rows) {
-        var minimum = Number.POSITIVE_INFINITY;
-        var maximum = Number.NEGATIVE_INFINITY;
+    function getMinMaxFromAllRows(allRows) {
+        return allRows.reduce(
+            function(accumulator, row) {
+                var rowMaxMin = row.data.reduce(
+                    function(rowAcc, currentValue, currentIndex) {
+                        if (_colNames[currentIndex] === undefined) {
+                            return rowAcc;
+                        }
+                        if (currentValue === null) {
+                            return rowAcc;
+                        }
+                        rowAcc.minimum = Math.min(rowAcc.minimum, currentValue);
+                        rowAcc.maximum = Math.max(rowAcc.maximum, currentValue);
+                        return rowAcc;
+                    },
+                    {
+                        minimum: accumulator.minimum,
+                        maximum: accumulator.maximum
+                    }
+                );
+
+                accumulator.minimum = Math.min(accumulator.minimum, rowMaxMin.minimum);
+                accumulator.maximum = Math.max(accumulator.maximum, rowMaxMin.maximum);
+                return accumulator;
+            },
+            {
+                minimum: Number.POSITIVE_INFINITY,
+                maximum: Number.NEGATIVE_INFINITY
+            }
+        );
+    }
+
+    function formatPageData(rows) {
         var images = [];
         var rowNames = [];
-        var colNames = [];
-
-        // Get valid indexes for heatmap columns by comparing them to input colNames
-        var repColNames = _representation.table.spec.colNames;
-        _representation.columns.map(function(hmColName) {
-            colNames[repColNames.indexOf(hmColName)] = hmColName;
-        });
 
         var allValues = rows.reduce(function(accumulator, row) {
             rowNames.push(row.rowKey);
-            // var rowIsSelected = knimeService.isRowSelected(tableId, row.rowKey);
             var rowIsSelected = _value.selectedRowsBuffer.indexOf(row.rowKey) > -1;
 
             // Storing images in an separate array is enough
@@ -281,18 +332,15 @@ heatmap_namespace = (function() {
 
             // Set values for each cell
             var vals = row.data.reduce(function(rowAcc, value, currentIndex) {
-                if (colNames[currentIndex] === undefined) {
+                if (_colNames[currentIndex] === undefined) {
                     return rowAcc;
                 }
                 var newItem = {};
                 newItem.y = row.rowKey;
-                newItem.x = colNames[currentIndex];
+                newItem.x = _colNames[currentIndex];
                 newItem.value = value;
                 newItem.initallySelected = rowIsSelected;
 
-                // Good opportunity to determine min and max
-                minimum = Math.min(minimum, newItem.value);
-                maximum = Math.max(maximum, newItem.value);
                 rowAcc.push(newItem);
                 return rowAcc;
             }, []);
@@ -302,10 +350,7 @@ heatmap_namespace = (function() {
         return {
             images: images,
             data: allValues,
-            rowNames: rowNames,
-            colNames: colNames,
-            minimum: minimum,
-            maximum: maximum
+            rowNames: rowNames
         };
     }
 
@@ -322,8 +367,8 @@ heatmap_namespace = (function() {
         return {
             x: d3
                 .scaleBand()
-                .domain(formattedDataset.colNames)
-                .range([_margin.left, formattedDataset.colNames.length * _itemSize - 1 + _margin.left]),
+                .domain(_colNames)
+                .range([_margin.left, _colNames.length * _itemSize - 1 + _margin.left]),
             y: d3
                 .scaleBand()
                 .domain(formattedDataset.rowNames)
@@ -332,12 +377,21 @@ heatmap_namespace = (function() {
                 _value.scaleType === 'quantize'
                     ? d3
                           .scaleQuantize()
+<<<<<<< HEAD
                           .domain([formattedDataset.minimum, formattedDataset.maximum])
                           .range(_colorRange)
                     : d3
                           .scaleLinear()
                           .domain(getLinearColorDomain(formattedDataset.minimum, formattedDataset.maximum))
                           .range(_colorRange)
+=======
+                          .domain([_extent.minimum, _extent.maximum])
+                          .range(_value.threeColorGradient)
+                    : d3
+                          .scaleLinear()
+                          .domain(getLinearColorDomain(_extent.minimum, _extent.maximum))
+                          .range(_value.threeColorGradient)
+>>>>>>> ef57916e... AP-10183: Calculate minimum/maximum on all rows
         };
     }
 
@@ -411,7 +465,7 @@ heatmap_namespace = (function() {
     }
 
     function buildSvg(rows) {
-        var formattedDataset = formatData(rows);
+        var formattedDataset = formatPageData(rows);
 
         var scales = createScales(formattedDataset);
         var axis = createAxis(scales);
@@ -477,8 +531,10 @@ heatmap_namespace = (function() {
                 data.x +
                 ' y:' +
                 data.y +
-                '</span><span class="knime-tooltip-value knime-double">' +
-                data.value +
+                '</span><span class="knime-tooltip-value">' +
+                (data.value === null
+                    ? '<span class="missing-value">?</span>'
+                    : '<span class="knime-double">' + data.value + '</span>') +
                 '</span>';
 
             showTooltip(e, toolTipInnerHTML);
@@ -601,7 +657,7 @@ heatmap_namespace = (function() {
             .attr('id', 'legendGradient')
             .attr('transform', 'translate(' + legendMargin + ', ' + legendHeight + ')');
 
-        var colorDomain = getLinearColorDomain(formattedDataset.minimum, formattedDataset.maximum);
+        var colorDomain = getLinearColorDomain(_extent.minimum, _extent.maximum);
 
         // append a single rect to display a gradient
         legend
@@ -625,9 +681,9 @@ heatmap_namespace = (function() {
         } else if (_value.scaleType === 'quantize') {
             var legendCellPercentage = 100 / colorDomain.length;
             var previousPercentage = 0;
-            var interpolator = d3.interpolateNumber(formattedDataset.minimum, formattedDataset.maximum);
+            var interpolator = d3.interpolateNumber(_extent.minimum, _extent.maximum);
             var tickValues = [];
-            tickValues.push(formattedDataset.minimum, formattedDataset.maximum);
+            tickValues.push(_extent.minimum, _extent.maximum);
 
             for (var i = 0; i < colorDomain.length; i++) {
                 var currentPercentage = legendCellPercentage * (i + 1);
@@ -648,7 +704,7 @@ heatmap_namespace = (function() {
 
         var legendScale = d3
             .scaleLinear()
-            .domain([formattedDataset.minimum, formattedDataset.maximum])
+            .domain([_extent.minimum, _extent.maximum])
             .range([0, legendWidth]);
 
         var legendAxis = d3
