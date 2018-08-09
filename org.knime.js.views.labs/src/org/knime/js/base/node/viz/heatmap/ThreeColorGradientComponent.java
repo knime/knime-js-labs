@@ -73,6 +73,7 @@ public class ThreeColorGradientComponent extends JComponent {
     private Color end;
     private boolean binMode;
     private int bins;
+    private Color[] discreteColors;
 
     /**
      * @param first
@@ -188,6 +189,32 @@ public class ThreeColorGradientComponent extends JComponent {
         repaint();
     }
 
+    /**
+     * @return All colors in the gradient. If the gradient discrete, this includes all discrete color. But if it is
+     *         continuous this is just the three main colors.
+     */
+    public Color[] getAllColors() {
+        if (binMode) {
+            return discreteColors;
+        }
+        return getColors();
+    }
+
+    /**
+     * @return All colors in the gradient as hex (@code String}s. If the gradient discrete, this includes all discrete
+     *         color. But if it is continuous this is just the three main colors.
+     */
+    public String[] getAllColorsHex() {
+        if (!binMode) {
+            return getColorsAsHex();
+        }
+        final String[] hexColors = new String[discreteColors.length];
+        for (int i = 0; i < hexColors.length; i++) {
+            hexColors[i] = CSSUtils.cssHexStringFromColor(discreteColors[i]);
+        }
+        return hexColors;
+    }
+
     @Override
      public void paint(final Graphics g) {
         if (!binMode || bins <= 0 || bins > 600) {
@@ -212,6 +239,8 @@ public class ThreeColorGradientComponent extends JComponent {
     }
 
     private void paintBins(final Graphics graphics) {
+        discreteColors = new Color[bins];
+
         final int binWidth = (700 / bins) - 2;
         final double percent = 1 / (bins / 2.0);
         final boolean isOdd = bins % 2 != 0;
@@ -224,31 +253,27 @@ public class ThreeColorGradientComponent extends JComponent {
 
         for (int i = 0; i < bins; i++) {
             int binWidthI = binWidth;
+            Color currentColor = null;
             if (remainder > 0 && i > (Math.floor(bins / 2.0) - (remainder / 2))) {
                 binWidthI++;
                 remainder--;
             }
+
             if (isOdd && i == Math.floor(bins / 2.0)) {
-                paintRectangle(graphics, binWidthI, middle, x);
-                x+=(binWidthI + space);
-                continue;
+                currentColor = middle;
             }
-            if (i < (bins/2)) {
-                int r = (int) (start.getRed() * (1 - percentFirst) + middle.getRed() * percentFirst);
-                int g = (int) (start.getGreen() * (1 - percentFirst) + middle.getGreen() * percentFirst);
-                int b = (int) (start.getBlue() * (1 - percentFirst) + middle.getBlue() * percentFirst);
-                paintRectangle(graphics, binWidthI, new Color(r, g, b), x);
-                x+=(binWidthI + space);
+            else if (i < (bins/2)) {
+                currentColor = computeColor(start, middle, percentFirst);
                 percentFirst+=percent;
             }
             else {
-                int r = (int) (middle.getRed() * (1 - percentSecond) + end.getRed() * percentSecond);
-                int g = (int) (middle.getGreen() * (1 - percentSecond) + end.getGreen() * percentSecond);
-                int b = (int) (middle.getBlue() * (1 - percentSecond) + end.getBlue() * percentSecond);
-                paintRectangle(graphics, binWidthI, new Color(r, g, b), x);
-                x+=(binWidthI + space);
+                currentColor = computeColor(middle, end, percentSecond);
                 percentSecond+=percent;
             }
+
+            paintRectangle(graphics, binWidthI, currentColor, x);
+            x+=(binWidthI + space);
+            discreteColors[i] = currentColor;
         }
     }
 
@@ -257,4 +282,10 @@ public class ThreeColorGradientComponent extends JComponent {
         g.fillRect(x, 0, width, 50);
     }
 
+    private static Color computeColor(final Color firstColor, final Color secondColor, final double percent) {
+        final int r = (int) (firstColor.getRed() * (1 - percent) + secondColor.getRed() * percent);
+        final int g = (int) (firstColor.getGreen() * (1 - percent) + secondColor.getGreen() * percent);
+        final int b = (int) (firstColor.getBlue() * (1 - percent) + secondColor.getBlue() * percent);
+        return new Color(r, g, b);
+    }
 }

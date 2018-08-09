@@ -120,8 +120,11 @@ public final class HeatMapViewConfig {
 
     // Gradient
     final static String CFG_THREE_COLOR_GRADIENT = "threeColorGradient";
-    final static String[] DEFAULT_THREE_COLOR_GRADIENT = new String[] {"#e66101", "#f7f7f7", "#5e3c99"};
+    final static String[] DEFAULT_THREE_COLOR_GRADIENT = new String[] {"#5e3c99", "#f7f7f7", "#e66101"};
     private String[] m_threeColorGradient = DEFAULT_THREE_COLOR_GRADIENT;
+
+    final static String CFG_DISCRETE_GRADIENT_COLORS = "discreteGradientColors";
+    private String[] m_discreteGradientColors = DEFAULT_THREE_COLOR_GRADIENT;
 
     final static String CFG_CONTINUOUS_GRADIENT = "continuousGradient";
     final static boolean DEFAULT_CONTINUOUS_GRADIENT = true;
@@ -132,7 +135,7 @@ public final class HeatMapViewConfig {
     private int m_numDiscreteColors = DEFAULT_NUM_DISCRETE_COLORS;
 
     final static String CFG_MISSING_VALUE_COLOR = "missingValueColor";
-    final static String DEFAULT_MISSING_VALUE_COLOR = "#cccccc";
+    final static String DEFAULT_MISSING_VALUE_COLOR = "#000000";
     private String m_missingValueColor = DEFAULT_MISSING_VALUE_COLOR;
 
     // Columns
@@ -440,6 +443,20 @@ public final class HeatMapViewConfig {
      */
     public void setThreeColorGradient(final String[] threeColorGradient) {
         m_threeColorGradient = threeColorGradient;
+    }
+
+    /**
+     * @return the discreteGradientColors
+     */
+    public String[] getDiscreteGradientColors() {
+        return m_discreteGradientColors;
+    }
+
+    /**
+     * @param discreteGradientColors the discreteGradientColors to set
+     */
+    public void setDiscreteGradientColors(final String[] discreteGradientColors) {
+        m_discreteGradientColors = discreteGradientColors;
     }
 
     /**
@@ -840,6 +857,7 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_ENABLE_COLOR_MODE_EDIT, m_enableColorModeEdit);
 
         settings.addStringArray(CFG_THREE_COLOR_GRADIENT, m_threeColorGradient);
+        settings.addStringArray(CFG_DISCRETE_GRADIENT_COLORS, m_discreteGradientColors);
         settings.addBoolean(CFG_CONTINUOUS_GRADIENT, m_continuousGradient);
         settings.addInt(CFG_NUM_DISCRETE_COLORS, m_numDiscreteColors);
         settings.addString(CFG_MISSING_VALUE_COLOR, m_missingValueColor);
@@ -895,6 +913,7 @@ public final class HeatMapViewConfig {
         m_enableColorModeEdit = settings.getBoolean(CFG_ENABLE_COLOR_MODE_EDIT);
 
         m_threeColorGradient = settings.getStringArray(CFG_THREE_COLOR_GRADIENT);
+        m_discreteGradientColors = settings.getStringArray(CFG_DISCRETE_GRADIENT_COLORS);
         m_continuousGradient = settings.getBoolean(CFG_CONTINUOUS_GRADIENT);
         m_numDiscreteColors = settings.getInt(CFG_NUM_DISCRETE_COLORS);
         m_missingValueColor = settings.getString(CFG_MISSING_VALUE_COLOR);
@@ -950,6 +969,7 @@ public final class HeatMapViewConfig {
         m_enableColorModeEdit = settings.getBoolean(CFG_ENABLE_COLOR_MODE_EDIT, DEFAULT_ENABLE_COLOR_MODE_EDIT);
 
         m_threeColorGradient = settings.getStringArray(CFG_THREE_COLOR_GRADIENT, DEFAULT_THREE_COLOR_GRADIENT);
+        m_discreteGradientColors = settings.getStringArray(CFG_DISCRETE_GRADIENT_COLORS, DEFAULT_THREE_COLOR_GRADIENT);
         m_continuousGradient = settings.getBoolean(CFG_CONTINUOUS_GRADIENT, DEFAULT_CONTINUOUS_GRADIENT);
         m_numDiscreteColors = settings.getInt(CFG_NUM_DISCRETE_COLORS, DEFAULT_NUM_DISCRETE_COLORS);
         m_missingValueColor = settings.getString(CFG_MISSING_VALUE_COLOR, DEFAULT_MISSING_VALUE_COLOR);

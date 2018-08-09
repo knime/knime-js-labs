@@ -70,10 +70,7 @@ public class HeatMapViewValue extends JSONViewContent {
     private String m_chartTitle;
     private String m_chartSubtitle;
 
-    private String[] m_threeColorGradient;
     private boolean m_continuousGradient;
-    private int m_numDiscreteColors;
-    private String m_missingValueColor;
 
     private String[] m_selection;
 
@@ -117,20 +114,6 @@ public class HeatMapViewValue extends JSONViewContent {
     // -- Gradient getters & setters --
 
     /**
-     * @return the threeColorGradient
-     */
-    public String[] getThreeColorGradient() {
-        return m_threeColorGradient;
-    }
-
-    /**
-     * @param threeColorGradient the threeColorGradient to set
-     */
-    public void setThreeColorGradient(final String[] threeColorGradient) {
-        m_threeColorGradient = threeColorGradient;
-    }
-
-    /**
      * @return the continuousGradient
      */
     public boolean getContinuousGradient() {
@@ -142,34 +125,6 @@ public class HeatMapViewValue extends JSONViewContent {
      */
     public void setContinuousGradient(final boolean continuousGradient) {
         m_continuousGradient = continuousGradient;
-    }
-
-    /**
-     * @return the numDiscreteColors
-     */
-    public int getNumDiscreteColors() {
-        return m_numDiscreteColors;
-    }
-
-    /**
-     * @param numDiscreteColors the numDiscreteColors to set
-     */
-    public void setNumDiscreteColors(final int numDiscreteColors) {
-        m_numDiscreteColors = numDiscreteColors;
-    }
-
-    /**
-     * @return the missingValueColor
-     */
-    public String getMissingValueColor() {
-        return m_missingValueColor;
-    }
-
-    /**
-     * @param missingValueColor the missingValueColor to set
-     */
-    public void setMissingValueColor(final String missingValueColor) {
-        m_missingValueColor = missingValueColor;
     }
 
     // -- Selection getters & setters --
@@ -272,10 +227,7 @@ public class HeatMapViewValue extends JSONViewContent {
         settings.addString(HeatMapViewConfig.CFG_CHART_TITLE, m_chartTitle);
         settings.addString(HeatMapViewConfig.CFG_CHART_SUBTITLE, m_chartSubtitle);
 
-        settings.addStringArray(HeatMapViewConfig.CFG_THREE_COLOR_GRADIENT, m_threeColorGradient);
         settings.addBoolean(HeatMapViewConfig.CFG_CONTINUOUS_GRADIENT, m_continuousGradient);
-        settings.addInt(HeatMapViewConfig.CFG_NUM_DISCRETE_COLORS, m_numDiscreteColors);
-        settings.addString(HeatMapViewConfig.CFG_MISSING_VALUE_COLOR, m_missingValueColor);
 
         settings.addStringArray(HeatMapViewConfig.CFG_SELECTION, m_selection);
 
@@ -295,10 +247,7 @@ public class HeatMapViewValue extends JSONViewContent {
         m_chartTitle = settings.getString(HeatMapViewConfig.CFG_CHART_TITLE);
         m_chartSubtitle = settings.getString(HeatMapViewConfig.CFG_CHART_SUBTITLE);
 
-        m_threeColorGradient = settings.getStringArray(HeatMapViewConfig.CFG_THREE_COLOR_GRADIENT);
         m_continuousGradient = settings.getBoolean(HeatMapViewConfig.CFG_CONTINUOUS_GRADIENT);
-        m_numDiscreteColors = settings.getInt(HeatMapViewConfig.CFG_NUM_DISCRETE_COLORS);
-        m_missingValueColor = settings.getString(HeatMapViewConfig.CFG_MISSING_VALUE_COLOR);
 
         m_selection = settings.getStringArray(HeatMapViewConfig.CFG_SELECTION);
 
@@ -328,10 +277,7 @@ public class HeatMapViewValue extends JSONViewContent {
         return new EqualsBuilder()
                 .append(m_chartTitle, other.getChartTitle())
                 .append(m_chartSubtitle, other.getChartSubtitle())
-                .append(m_threeColorGradient, other.getThreeColorGradient())
                 .append(m_continuousGradient, other.getContinuousGradient())
-                .append(m_numDiscreteColors, other.getNumDiscreteColors())
-                .append(m_missingValueColor, other.getMissingValueColor())
                 .append(m_selection, other.getSelection())
                 .append(m_initialPageSize, other.getInitialPageSize())
                 .append(m_xMin, other.getXMin())
@@ -349,10 +295,7 @@ public class HeatMapViewValue extends JSONViewContent {
         return new HashCodeBuilder()
                 .append(m_chartTitle)
                 .append(m_chartSubtitle)
-                .append(m_threeColorGradient)
                 .append(m_continuousGradient)
-                .append(m_numDiscreteColors)
-                .append(m_missingValueColor)
                 .append(m_selection)
                 .append(m_initialPageSize)
                 .append(m_xMin)

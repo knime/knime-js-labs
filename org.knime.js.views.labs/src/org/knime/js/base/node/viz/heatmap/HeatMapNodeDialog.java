@@ -218,6 +218,7 @@ public class HeatMapNodeDialog extends NodeDialogPane {
             ? m_svgLabelColumnColumnSelectionPanel.getSelectedColumn() : null);
 
         config.setThreeColorGradient(m_gradientColors.getColorsAsHex());
+        config.setDiscreteGradientColors(m_gradientColors.getAllColorsHex());
         config.setContinuousGradient(!m_useBinsCheckBox.isSelected());
         config.setNumDiscreteColors((int) m_numberOfBinsSpinner.getValue());
         config.setMissingValueColor(CSSUtils.cssHexStringFromColor(m_missingValueColorColorChooser.getColor()));

@@ -315,6 +315,10 @@ implements CSSModifiable {
         representation.setEnableViewConfiguration(m_config.getEnableViewConfiguration());
         representation.setEnableTitleChange(m_config.getEnableTitleChange());
         representation.setEnableColorModeEdit(m_config.getEnableColorModeEdit());
+        representation.setThreeColorGradient(m_config.getThreeColorGradient());
+        representation.setDiscreteGradientColors(m_config.getDiscreteGradientColors());
+        representation.setNumDiscreteColors(m_config.getNumDiscreteColors());
+        representation.setMissingValueColor(m_config.getMissingValueColor());
         representation.setColumns(m_config.getColumns().applyTo(m_table.getDataTableSpec()).getIncludes());
         representation.setLabelColumn(m_config.getLabelColumn());
         representation.setSvgLabelColumn(m_config.getSvgLabelColumn());
@@ -339,10 +343,7 @@ implements CSSModifiable {
         if (isViewValueEmpty()) {
             value.setChartTitle(m_config.getChartTitle());
             value.setChartSubtitle(m_config.getChartSubtitle());
-            value.setThreeColorGradient(m_config.getThreeColorGradient());
             value.setContinuousGradient(m_config.getContinuousGradient());
-            value.setNumDiscreteColors(m_config.getNumDiscreteColors());
-            value.setMissingValueColor(m_config.getMissingValueColor());
             value.setSelection(m_config.getSelection());
             value.setInitialPageSize(m_config.getInitialPageSize());
             value.setXMin(m_config.getXMin());
@@ -356,10 +357,7 @@ implements CSSModifiable {
         final HeatMapViewValue viewValue = getViewValue();
         m_config.setChartTitle(viewValue.getChartTitle());
         m_config.setChartSubtitle(viewValue.getChartSubtitle());
-        m_config.setThreeColorGradient(viewValue.getThreeColorGradient());
         m_config.setContinuousGradient(viewValue.getContinuousGradient());
-        m_config.setNumDiscreteColors(viewValue.getNumDiscreteColors());
-        m_config.setMissingValueColor(viewValue.getMissingValueColor());
         m_config.setSelection(viewValue.getSelection());
         m_config.setInitialPageSize(viewValue.getInitialPageSize());
         m_config.setXMin(viewValue.getXMin());

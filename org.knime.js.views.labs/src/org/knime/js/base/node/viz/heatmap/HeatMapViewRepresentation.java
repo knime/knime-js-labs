@@ -80,6 +80,11 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     private boolean m_enableTitleChange;
     private boolean m_enableColorModeEdit;
 
+    private String[] m_threeColorGradient;
+    private String[] m_discreteGradientColors;
+    private int m_numDiscreteColors;
+    private String m_missingValueColor;
+
     final static String CFG_INCLUDED_COLUMNS = "includedColumns";
     private String[] m_columns;
     private String m_labelColumn;
@@ -236,6 +241,64 @@ public class HeatMapViewRepresentation extends JSONViewContent {
      */
     public void setEnableColorModeEdit(final boolean enableColorModeEdit) {
         m_enableColorModeEdit = enableColorModeEdit;
+    }
+
+    // -- Gradient getters & setters --
+
+    /**
+     * @return the threeColorGradient
+     */
+    public String[] getThreeColorGradient() {
+        return m_threeColorGradient;
+    }
+
+    /**
+     * @param threeColorGradient the threeColorGradient to set
+     */
+    public void setThreeColorGradient(final String[] threeColorGradient) {
+        m_threeColorGradient = threeColorGradient;
+    }
+
+    /**
+     * @return the discreteGradientColors
+     */
+    public String[] getDiscreteGradientColors() {
+        return m_discreteGradientColors;
+    }
+
+    /**
+     * @param discreteGradientColors the discreteGradientColors to set
+     */
+    public void setDiscreteGradientColors(final String[] discreteGradientColors) {
+        m_discreteGradientColors = discreteGradientColors;
+    }
+
+    /**
+     * @return the numDiscreteColors
+     */
+    public int getNumDiscreteColors() {
+        return m_numDiscreteColors;
+    }
+
+    /**
+     * @param numDiscreteColors the numDiscreteColors to set
+     */
+    public void setNumDiscreteColors(final int numDiscreteColors) {
+        m_numDiscreteColors = numDiscreteColors;
+    }
+
+    /**
+     * @return the missingValueColor
+     */
+    public String getMissingValueColor() {
+        return m_missingValueColor;
+    }
+
+    /**
+     * @param missingValueColor the missingValueColor to set
+     */
+    public void setMissingValueColor(final String missingValueColor) {
+        m_missingValueColor = missingValueColor;
     }
 
     // -- Columns getters & setters --
@@ -538,6 +601,11 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_TTILE_CHANGE, m_enableTitleChange);
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_COLOR_MODE_EDIT, m_enableColorModeEdit);
 
+        settings.addStringArray(HeatMapViewConfig.CFG_THREE_COLOR_GRADIENT, m_threeColorGradient);
+        settings.addStringArray(HeatMapViewConfig.CFG_DISCRETE_GRADIENT_COLORS, m_discreteGradientColors);
+        settings.addInt(HeatMapViewConfig.CFG_NUM_DISCRETE_COLORS, m_numDiscreteColors);
+        settings.addString(HeatMapViewConfig.CFG_MISSING_VALUE_COLOR, m_missingValueColor);
+
         settings.addStringArray(CFG_INCLUDED_COLUMNS, m_columns);
         settings.addString(HeatMapViewConfig.CFG_LABEL_COLUMN, m_labelColumn);
         settings.addString(HeatMapViewConfig.CFG_SVG_LABEL_COLUMN, m_svgLabelColumn);
@@ -579,6 +647,11 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_enableViewConfiguration = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_TTILE_CHANGE);
         m_enableColorModeEdit = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_COLOR_MODE_EDIT);
+
+        m_threeColorGradient = settings.getStringArray(HeatMapViewConfig.CFG_THREE_COLOR_GRADIENT);
+        m_discreteGradientColors = settings.getStringArray(HeatMapViewConfig.CFG_DISCRETE_GRADIENT_COLORS);
+        m_numDiscreteColors = settings.getInt(HeatMapViewConfig.CFG_NUM_DISCRETE_COLORS);
+        m_missingValueColor = settings.getString(HeatMapViewConfig.CFG_MISSING_VALUE_COLOR);
 
         m_columns = settings.getStringArray(CFG_INCLUDED_COLUMNS);
         m_labelColumn = settings.getString(HeatMapViewConfig.CFG_LABEL_COLUMN);
@@ -631,6 +704,10 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enableViewConfiguration, other.getEnableViewConfiguration())
                 .append(m_enableTitleChange, other.getEnableTitleChange())
                 .append(m_enableColorModeEdit, other.getEnableColorModeEdit())
+                .append(m_threeColorGradient, other.getThreeColorGradient())
+                .append(m_discreteGradientColors, other.getDiscreteGradientColors())
+                .append(m_numDiscreteColors, other.getNumDiscreteColors())
+                .append(m_missingValueColor, other.getMissingValueColor())
                 .append(m_columns, other.getColumns())
                 .append(m_labelColumn, other.getLabelColumn())
                 .append(m_svgLabelColumn, other.getSvgLabelColumn())
@@ -668,6 +745,10 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enableViewConfiguration)
                 .append(m_enableTitleChange)
                 .append(m_enableColorModeEdit)
+                .append(m_threeColorGradient)
+                .append(m_discreteGradientColors)
+                .append(m_numDiscreteColors)
+                .append(m_missingValueColor)
                 .append(m_columns)
                 .append(m_labelColumn)
                 .append(m_svgLabelColumn)
