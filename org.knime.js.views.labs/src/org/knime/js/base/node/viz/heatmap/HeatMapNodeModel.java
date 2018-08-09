@@ -68,6 +68,7 @@ import org.knime.core.node.BufferedDataTableHolder;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
@@ -90,6 +91,7 @@ import org.knime.js.core.node.CSSModifiable;
 public class HeatMapNodeModel extends AbstractSVGWizardNodeModel<HeatMapViewRepresentation, HeatMapViewValue>
 implements CSSModifiable, BufferedDataTableHolder {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(HeatMapNodeModel.class);
     private final static String JAVASCRIPT_ID = "org.knime.js.base.node.viz.heatmap";
 
     private final HeatMapViewConfig m_config;
@@ -139,6 +141,28 @@ implements CSSModifiable, BufferedDataTableHolder {
     @Override
     public HeatMapViewValue createEmptyViewValue() {
         return new HeatMapViewValue();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public HeatMapViewRepresentation getViewRepresentation() {
+        final HeatMapViewRepresentation rep = super.getViewRepresentation();
+        synchronized (getLock()) {
+            if (rep.getTable() == null && m_table != null) {
+                // set internal table
+                try {
+                    final JSONDataTable jT = createJSONTableFromBufferedDataTable(null);
+                    jT.setId(rep.getDataTableId());
+                    jT.getSpec().setFilterIds(rep.getFilterIds());
+                    rep.setTable(jT);
+                } catch (Exception e) {
+                    LOGGER.error("Could not create JSON table: " + e.getMessage(), e);
+                }
+            }
+        }
+        return rep;
     }
 
     /**
@@ -218,10 +242,59 @@ implements CSSModifiable, BufferedDataTableHolder {
      * {@inheritDoc}
      */
     @Override
-    protected void performExecuteCreateView(final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
-        m_table = (BufferedDataTable)inObjects[0];
+    protected void performExecuteCreateView(final PortObject[] inObjects, final ExecutionContext exec)
+        throws Exception {
         synchronized (getLock()) {
-            copyConfigToView(exec);
+            final HeatMapViewRepresentation representation = getViewRepresentation();
+            m_table = (BufferedDataTable)inObjects[0];
+            representation.setShowWarningInView(m_config.getShowWarningInView());
+            representation.setGenerateImage(m_config.getGenerateImage());
+            representation.setImageWidth(m_config.getImageWidth());
+            representation.setImageHeight(m_config.getImageHeight());
+            representation.setResizeToWindow(m_config.getResizeToWindow());
+            representation.setDisplayFullscreenButton(m_config.getDisplayFullscreenButton());
+            representation.setEnableViewConfiguration(m_config.getEnableViewConfiguration());
+            representation.setEnableTitleChange(m_config.getEnableTitleChange());
+            representation.setEnableColorModeEdit(m_config.getEnableColorModeEdit());
+            representation.setThreeColorGradient(m_config.getThreeColorGradient());
+            representation.setDiscreteGradientColors(m_config.getDiscreteGradientColors());
+            representation.setNumDiscreteColors(m_config.getNumDiscreteColors());
+            representation.setMissingValueColor(m_config.getMissingValueColor());
+            representation.setColumns(m_config.getColumns().applyTo(m_table.getDataTableSpec()).getIncludes());
+            representation.setLabelColumn(m_config.getLabelColumn());
+            representation.setSvgLabelColumn(m_config.getSvgLabelColumn());
+            representation.setSubscribeFilter(m_config.getSubscribeFilter());
+            representation.setEnableSelection(m_config.getEnableSelection());
+            representation.setPublishSelection(m_config.getPublishSelection());
+            representation.setSubscribeSelection(m_config.getSubscribeSelection());
+            representation.setSelectionColumnName(m_config.getSelectionColumnName());
+            representation.setEnablePaging(m_config.getEnablePaging());
+            representation.setEnablePageSizeChange(m_config.getEnablePageSizeChange());
+            representation.setAllowedPageSizes(m_config.getAllowedPageSizes());
+            representation.setEnableShowAll(m_config.getEnableShowAll());
+            representation.setDisplayDataCellToolTip(m_config.getDisplayDataCellToolTip());
+            representation.setDisplayRowToolTip(m_config.getDisplayRowToolTip());
+            representation.setEnableZoom(m_config.getEnableZoom());
+            representation.setEnablePanning(m_config.getEnablePanning());
+            representation.setShowZoomResetButton(m_config.getShowZoomResetButton());
+            representation.setDataTableId(getTableId(0));
+
+            final JSONDataTable jsonTable = createJSONTableFromBufferedDataTable(exec);
+            representation.setTable(jsonTable);
+            representation.setFilterIds(jsonTable.getSpec().getFilterIds());
+
+            final HeatMapViewValue value = getViewValue();
+            if (isViewValueEmpty()) {
+                value.setChartTitle(m_config.getChartTitle());
+                value.setChartSubtitle(m_config.getChartSubtitle());
+                value.setContinuousGradient(m_config.getContinuousGradient());
+                value.setSelection(m_config.getSelection());
+                value.setInitialPageSize(m_config.getInitialPageSize());
+                value.setXMin(m_config.getXMin());
+                value.setXMax(m_config.getXMax());
+                value.setYMin(m_config.getYMin());
+                value.setYMax(m_config.getYMax());
+            }
         }
     }
 
@@ -319,55 +392,6 @@ implements CSSModifiable, BufferedDataTableHolder {
         };
         rearranger.append(fac);
         return rearranger;
-    }
-
-    private void copyConfigToView(final ExecutionContext exec) throws CanceledExecutionException {
-        final HeatMapViewRepresentation representation = getViewRepresentation();
-        representation.setShowWarningInView(m_config.getShowWarningInView());
-        representation.setGenerateImage(m_config.getGenerateImage());
-        representation.setImageWidth(m_config.getImageWidth());
-        representation.setImageHeight(m_config.getImageHeight());
-        representation.setResizeToWindow(m_config.getResizeToWindow());
-        representation.setDisplayFullscreenButton(m_config.getDisplayFullscreenButton());
-        representation.setEnableViewConfiguration(m_config.getEnableViewConfiguration());
-        representation.setEnableTitleChange(m_config.getEnableTitleChange());
-        representation.setEnableColorModeEdit(m_config.getEnableColorModeEdit());
-        representation.setThreeColorGradient(m_config.getThreeColorGradient());
-        representation.setDiscreteGradientColors(m_config.getDiscreteGradientColors());
-        representation.setNumDiscreteColors(m_config.getNumDiscreteColors());
-        representation.setMissingValueColor(m_config.getMissingValueColor());
-        representation.setColumns(m_config.getColumns().applyTo(m_table.getDataTableSpec()).getIncludes());
-        representation.setLabelColumn(m_config.getLabelColumn());
-        representation.setSvgLabelColumn(m_config.getSvgLabelColumn());
-        representation.setSubscribeFilter(m_config.getSubscribeFilter());
-        representation.setEnableSelection(m_config.getEnableSelection());
-        representation.setPublishSelection(m_config.getPublishSelection());
-        representation.setSubscribeSelection(m_config.getSubscribeSelection());
-        representation.setSelectionColumnName(m_config.getSelectionColumnName());
-        representation.setEnablePaging(m_config.getEnablePaging());
-        representation.setEnablePageSizeChange(m_config.getEnablePageSizeChange());
-        representation.setAllowedPageSizes(m_config.getAllowedPageSizes());
-        representation.setEnableShowAll(m_config.getEnableShowAll());
-        representation.setDisplayDataCellToolTip(m_config.getDisplayDataCellToolTip());
-        representation.setDisplayRowToolTip(m_config.getDisplayRowToolTip());
-        representation.setEnableZoom(m_config.getEnableZoom());
-        representation.setEnablePanning(m_config.getEnablePanning());
-        representation.setShowZoomResetButton(m_config.getShowZoomResetButton());
-        representation.setDataTableId(getTableId(0));
-        representation.setTable(createJSONTableFromBufferedDataTable(exec));
-
-        final HeatMapViewValue value = getViewValue();
-        if (isViewValueEmpty()) {
-            value.setChartTitle(m_config.getChartTitle());
-            value.setChartSubtitle(m_config.getChartSubtitle());
-            value.setContinuousGradient(m_config.getContinuousGradient());
-            value.setSelection(m_config.getSelection());
-            value.setInitialPageSize(m_config.getInitialPageSize());
-            value.setXMin(m_config.getXMin());
-            value.setXMax(m_config.getXMax());
-            value.setYMin(m_config.getYMin());
-            value.setYMax(m_config.getYMax());
-        }
     }
 
     private void copyViewValueToConfig() {

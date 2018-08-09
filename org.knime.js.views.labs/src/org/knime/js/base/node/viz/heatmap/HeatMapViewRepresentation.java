@@ -57,6 +57,7 @@ import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.JSONViewContent;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -111,6 +112,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
 
     private final static String CFG_DATA_TABLE_ID = "dataTableId";
     private String m_dataTableId;
+    private final static String CFG_FILTER_IDS = "filterIds";
+    private String[] m_filterIds;
     private JSONDataTable m_table;
 
     // -- General getters & setters --
@@ -556,6 +559,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     /**
      * @return the dataTableId
      */
+    @JsonIgnore
     public String getDataTableId() {
         return m_dataTableId;
     }
@@ -563,8 +567,25 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     /**
      * @param dataTableId the dataTableId to set
      */
+    @JsonIgnore
     public void setDataTableId(final String dataTableId) {
         m_dataTableId = dataTableId;
+    }
+
+    /**
+     * @return the filterIds
+     */
+    @JsonIgnore
+    public String[] getFilterIds() {
+        return m_filterIds;
+    }
+
+    /**
+     * @param filterIds the filterIds to set
+     */
+    @JsonIgnore
+    public void setFilterIds(final String[] filterIds) {
+        m_filterIds = filterIds;
     }
 
     /**
@@ -630,6 +651,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         settings.addBoolean(HeatMapViewConfig.CFG_SHOW_ZOOM_RESET_BUTTON, m_showZoomResetButton);
 
         settings.addString(CFG_DATA_TABLE_ID, m_dataTableId);
+        settings.addStringArray(CFG_FILTER_IDS, m_filterIds);
     }
 
     /**
@@ -677,6 +699,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_showZoomResetButton = settings.getBoolean(HeatMapViewConfig.CFG_SHOW_ZOOM_RESET_BUTTON);
 
         m_dataTableId = settings.getString(CFG_DATA_TABLE_ID);
+        m_filterIds = settings.getStringArray(CFG_FILTER_IDS);
     }
 
     /**
@@ -726,6 +749,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enablePanning, other.getEnablePanning())
                 .append(m_showZoomResetButton, other.getShowZoomResetButton())
                 .append(m_dataTableId, other.getDataTableId())
+                .append(m_filterIds, other.getFilterIds())
                 .append(m_table, other.getTable())
                 .isEquals();
     }
@@ -767,6 +791,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enablePanning)
                 .append(m_showZoomResetButton)
                 .append(m_dataTableId)
+                .append(m_filterIds)
                 .append(m_table)
                 .toHashCode();
     }
