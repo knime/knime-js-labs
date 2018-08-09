@@ -1,6 +1,16 @@
 heatmap_namespace = (function() {
     var heatmap = {};
-    var _representation, _value, _table, _imageColumnName, _colNames, _extent;
+    var _representation,
+        _value,
+        _table,
+        _imageColumnName,
+        _colNames,
+        _extent,
+        _wrapper,
+        _axis,
+        _scales,
+        _drawCellQueue,
+        _tooltip;
 
     // Hardcoded Default Settings
     var _itemSize = 17;
@@ -25,8 +35,6 @@ heatmap_namespace = (function() {
     };
 
     heatmap.init = function(representation, value) {
-        debugger;
-
         if (!representation.table) {
             //todo: error
             return;
@@ -56,7 +64,7 @@ heatmap_namespace = (function() {
 
         knimeService.subscribeToSelection(_table.getTableId(), onSelectionChange);
         var filterIds = _table.getFilterIds();
-        for (let i = 0; i < filterIds.length; i++) {
+        for (var i = 0; i < filterIds.length; i++) {
             knimeService.subscribeToFilter(_table.getTableId(), onFilterChange, filterIds[i]);
         }
 
@@ -363,8 +371,8 @@ heatmap_namespace = (function() {
     function getLinearColorDomain(minimum, maximum) {
         var domain = [];
         var interpolator = d3.interpolateNumber(minimum, maximum);
-        for (var i = 0; i < _value.threeColorGradient.length; i++) {
-            domain.push(interpolator(i / (_value.threeColorGradient.length - 1)));
+        for (var i = 0; i < _representation.threeColorGradient.length; i++) {
+            domain.push(interpolator(i / (_representation.threeColorGradient.length - 1)));
         }
         return domain;
     }
@@ -393,13 +401,13 @@ heatmap_namespace = (function() {
         };
     }
 
-    function createAxis(scales) {
+    function createAxis() {
         return {
-            x: d3.axisTop(scales.x).tickFormat(function(d) {
+            x: d3.axisTop(_scales.x).tickFormat(function(d) {
                 return d;
             }),
 
-            y: d3.axisLeft(scales.y).tickFormat(function(d) {
+            y: d3.axisLeft(_scales.y).tickFormat(function(d) {
                 return d;
             })
         };
@@ -413,7 +421,6 @@ heatmap_namespace = (function() {
         var svgEl = document.querySelector('.knime-svg-container  svg');
         var svgD3 = d3.select(svgEl);
 
-        var wrapper = svgD3.select(':scope .wrapper');
         var xAxisD3El = svgD3.select('.knime-axis.knime-x');
         var yAxisD3El = svgD3.select('.knime-axis.knime-y');
 
@@ -434,7 +441,7 @@ heatmap_namespace = (function() {
                 xAxisD3El.attr('transform', 'translate(' + t.x + ', ' + _margin.top + ') scale(' + t.k + ')');
                 yAxisD3El.attr('transform', 'translate(' + _margin.left + ', ' + t.y + ') scale(' + t.k + ')');
 
-                wrapper.attr('transform', 'translate(' + t.x + ', ' + t.y + ') scale(' + t.k + ')');
+                _wrapper.attr('transform', 'translate(' + t.x + ', ' + t.y + ') scale(' + t.k + ')');
             });
 
         if (_value.zoomEnabled) {
@@ -449,39 +456,87 @@ heatmap_namespace = (function() {
         if (!_value.tooltipsEnabled && innerHtml) {
             return;
         }
-        var tooltip = document.querySelector('.knime-tooltip');
-        tooltip.classList.add('active');
+        _tooltip.classList.add('active');
         e.target.classList.add('active');
-        tooltip.innerHTML = innerHtml;
-        tooltip.style.left = event.clientX + _itemSize + 'px';
-        tooltip.style.top = event.clientY - _itemSize + 'px';
+        _tooltip.innerHTML = innerHtml;
+        _tooltip.style.left = event.clientX + _itemSize + 'px';
+        _tooltip.style.top = event.clientY - _itemSize + 'px';
     }
 
     function hideTooltip() {
-        var tooltip = document.querySelector('.knime-tooltip');
-        tooltip.classList.remove('active');
+        _tooltip.classList.remove('active');
+    }
+
+    function drawCell(cell) {
+        _wrapper
+            .data([cell])
+            .append('g')
+            .append('rect')
+            .attr('class', 'cell')
+            .attr('width', _itemSize - 1)
+            .attr('height', _itemSize - 1)
+            .attr('y', function(d) {
+                return _scales.y(d.y);
+            })
+            .attr('x', function(d) {
+                return _scales.x(d.x);
+            })
+            .attr('fill', function(d) {
+                if (d.value === null) {
+                    return _representation.missingValueColor;
+                }
+                return _scales.colorScale(d.value);
+            })
+            .attr('selection', function(d) {
+                //initialize selection if already selected
+                return d.initallySelected ? 'active' : 'inactive';
+            });
+    }
+
+    function prioritizeCells(viewportSize, data) {
+        var priorityCells = [];
+        var delayedCells = [];
+        var rowItemsWidth = 0;
+        var currentRowKey = data[0].y;
+
+        data.forEach(function(cell) {
+            rowItemsWidth = rowItemsWidth + _itemSize;
+            if (cell.y == currentRowKey) {
+                if (rowItemsWidth < viewportSize.width) {
+                    priorityCells.push(cell);
+                } else {
+                    delayedCells.push(cell);
+                }
+            } else {
+                rowItemsWidth = 0;
+                currentRowKey = cell.y;
+                priorityCells.push(cell);
+            }
+        });
+        return {
+            priorityCells: priorityCells,
+            delayedCells: delayedCells
+        };
     }
 
     function buildSvg(rows) {
+        if (_drawCellQueue) {
+            _drawCellQueue.invalidate();
+        }
         var formattedDataset = formatPageData(rows);
 
-        var scales = createScales(formattedDataset);
-        var axis = createAxis(scales);
+        _tooltip = document.querySelector('.knime-tooltip');
+        _scales = createScales(formattedDataset);
+        _axis = createAxis();
 
         var svg = d3
             .select('.knime-svg-container')
             .append('svg')
             .attr('class', 'heatmap');
 
-        var viewport = svg
-            .append('g')
-            .attr('class', 'viewport')
-            .attr('clip-path', 'url(#clip)');
-
-        var wrapper = viewport.append('g').attr('class', 'wrapper');
-
         var defs = svg.append('defs');
-        defs.append('clipPath')
+        var clipPath = defs
+            .append('clipPath')
             .attr('id', 'clip')
             .append('rect')
             .attr('y', _margin.top)
@@ -489,31 +544,19 @@ heatmap_namespace = (function() {
             .attr('width', '100%')
             .attr('height', '100%');
 
-        var cells = wrapper
-            .selectAll('rect')
-            .data(formattedDataset.data)
-            .enter()
+        var viewport = svg
             .append('g')
-            .append('rect')
-            .attr('class', 'cell')
-            .attr('width', _itemSize - 1)
-            .attr('height', _itemSize - 1)
-            .attr('y', function(d) {
-                return scales.y(d.y);
-            })
-            .attr('x', function(d) {
-                return scales.x(d.x);
-            })
-            .attr('fill', function(d) {
-                if (d.value === null) {
-                    return _value.missingValueColor;
-                }
-                return scales.colorScale(d.value);
-            })
-            .attr('selection', function(d) {
-                //initialize selection if already selected
-                return d.initallySelected ? 'active' : 'inactive';
-            });
+            .attr('class', 'viewport')
+            .attr('clip-path', 'url(#clip)');
+
+        _wrapper = viewport.append('g').attr('class', 'wrapper');
+
+        // Improve performance: render cells progressivley
+        var viewportSize = clipPath.node().getBoundingClientRect();
+        var sortedData = prioritizeCells(viewportSize, formattedDataset.data);
+        _drawCellQueue = renderQueue(drawCell).rate(250);
+        _drawCellQueue(sortedData.priorityCells);
+        _drawCellQueue.add(sortedData.delayedCells);
 
         // Events for the svg are native js event listeners not
         // d3 event listeners for better performance
@@ -586,7 +629,7 @@ heatmap_namespace = (function() {
         axisWrapper
             .append('g')
             .attr('class', 'knime-axis knime-y')
-            .call(axis.y)
+            .call(_axis.y)
             .selectAll('text')
             .attr('font-weight', 'normal')
             .on('mouseover', function(d) {
@@ -605,7 +648,7 @@ heatmap_namespace = (function() {
         axisWrapper
             .append('g')
             .attr('class', 'knime-axis knime-x')
-            .call(axis.x)
+            .call(_axis.x)
             .selectAll('text')
             .attr('font-weight', 'normal')
             .style('text-anchor', 'start')
@@ -616,11 +659,12 @@ heatmap_namespace = (function() {
             });
 
         // general tick styling
-        var ticks = d3.selectAll('.tick').attr('class', 'knime-tick');
+        var ticks = axisWrapper.selectAll('.tick').attr('class', 'knime-tick');
         ticks.select('text').attr('class', 'knime-tick-label');
         ticks.select('line').attr('class', 'knime-tick-line');
 
-        d3.selectAll('.knime-axis.knime-y .knime-tick')
+        axisWrapper
+            .selectAll('.knime-axis.knime-y .knime-tick')
             .attr('class', function(d) {
                 if (_value.selectedRowsBuffer.indexOf(d) > -1) {
                     return 'knime-tick active';
@@ -677,7 +721,7 @@ heatmap_namespace = (function() {
                 legendGradient
                     .append('stop')
                     .attr('offset', percentage + '%')
-                    .attr('style', 'stop-opacity:1; stop-color:' + scales.colorScale(colorDomain[i]));
+                    .attr('style', 'stop-opacity:1; stop-color:' + _scales.colorScale(colorDomain[i]));
             }
         } else if (_value.scaleType === 'quantize') {
             var legendCellPercentage = 100 / colorDomain.length;
@@ -694,11 +738,11 @@ heatmap_namespace = (function() {
                 legendGradient
                     .append('stop')
                     .attr('offset', previousPercentage + '%')
-                    .attr('style', 'stop-opacity:1; stop-color:' + scales.colorScale(colorDomain[i]));
+                    .attr('style', 'stop-opacity:1; stop-color:' + _scales.colorScale(colorDomain[i]));
                 legendGradient
                     .append('stop')
                     .attr('offset', currentPercentage + '%')
-                    .attr('style', 'stop-opacity:1; stop-color:' + scales.colorScale(colorDomain[i]));
+                    .attr('style', 'stop-opacity:1; stop-color:' + _scales.colorScale(colorDomain[i]));
                 previousPercentage = currentPercentage;
             }
         }
