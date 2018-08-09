@@ -80,6 +80,9 @@ import org.knime.core.node.port.inactive.InactiveBranchPortObjectSpec;
 import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
 import org.knime.core.node.web.ValidationError;
 import org.knime.js.core.JSONDataTable;
+import org.knime.js.core.layout.LayoutTemplateProvider;
+import org.knime.js.core.layout.bs.JSONLayoutViewContent;
+import org.knime.js.core.layout.bs.JSONLayoutViewContent.ResizeMethod;
 import org.knime.js.core.node.AbstractSVGWizardNodeModel;
 import org.knime.js.core.node.CSSModifiable;
 
@@ -89,7 +92,7 @@ import org.knime.js.core.node.CSSModifiable;
  * @author Alison Walter, KNIME GmbH, Konstanz, Germany
  */
 public class HeatMapNodeModel extends AbstractSVGWizardNodeModel<HeatMapViewRepresentation, HeatMapViewValue>
-implements CSSModifiable, BufferedDataTableHolder {
+implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(HeatMapNodeModel.class);
     private final static String JAVASCRIPT_ID = "org.knime.js.base.node.viz.heatmap";
@@ -366,6 +369,20 @@ implements CSSModifiable, BufferedDataTableHolder {
         m_config.loadSettings(settings);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public JSONLayoutViewContent getLayoutTemplate() {
+        final JSONLayoutViewContent template = new JSONLayoutViewContent();
+        if (m_config.getResizeToWindow()) {
+            template.setResizeMethod(ResizeMethod.ASPECT_RATIO_16by9);
+        } else {
+            template.setResizeMethod(ResizeMethod.VIEW_TAGGED_ELEMENT);
+        }
+        return template;
+    }
+
     // -- Helper methods --
 
     private ColumnRearranger createColumnAppender(final DataTableSpec spec, final List<String> selectionList) {
@@ -429,4 +446,5 @@ implements CSSModifiable, BufferedDataTableHolder {
                 .build(exec);
         return jsonTable;
     }
+
 }
