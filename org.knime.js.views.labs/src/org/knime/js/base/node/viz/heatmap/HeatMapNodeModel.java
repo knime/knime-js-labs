@@ -64,6 +64,7 @@ import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.node.BufferedDataTable;
+import org.knime.core.node.BufferedDataTableHolder;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
@@ -87,7 +88,7 @@ import org.knime.js.core.node.CSSModifiable;
  * @author Alison Walter, KNIME GmbH, Konstanz, Germany
  */
 public class HeatMapNodeModel extends AbstractSVGWizardNodeModel<HeatMapViewRepresentation, HeatMapViewValue>
-implements CSSModifiable {
+implements CSSModifiable, BufferedDataTableHolder {
 
     private final static String JAVASCRIPT_ID = "org.knime.js.base.node.viz.heatmap";
 
@@ -195,6 +196,22 @@ implements CSSModifiable {
     @Override
     public void setCssStyles(final String styles) {
         m_config.setCustomCSS(styles);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BufferedDataTable[] getInternalTables() {
+        return new BufferedDataTable[]{m_table};
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setInternalTables(final BufferedDataTable[] tables) {
+        m_table = tables[0];
     }
 
     /**
