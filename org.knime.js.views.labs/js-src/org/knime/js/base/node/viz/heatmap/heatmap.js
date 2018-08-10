@@ -227,30 +227,36 @@ heatmap_namespace = (function() {
     }
 
     function getPaginationHtml(pagination) {
-        if (pagination.pageCount <= 1 || !_value.paginationEnabled) {
+        var paginationRange = createPaginationRange(pagination);
+
+        if (paginationRange.length === 0 || !_value.paginationEnabled) {
             return '';
         }
         var html = '<ul class="pagination">';
 
-        if (pagination.prev) {
-            html += '<li><a href="#' + pagination.prev + '">&laquo;</a></li>';
+        if (paginationRange.prev) {
+            html += '<li><a href="#' + paginationRange.prev + '">&laquo;</a></li>';
         } else {
             html += '<li class="disabled"><span>&laquo;</span></li>';
         }
 
-        for (var i = 1; i <= pagination.pageCount; i++) {
-            html +=
-                '<li class="' +
-                (_value.currentPage === i ? 'active' : '') +
-                '"><a href="#' +
-                i +
-                '">' +
-                i +
-                '</a></li>';
-        }
+        paginationRange.pages.map(function(item) {
+            if (item === '...') {
+                html += '<li class="disabled"><span>' + item + '</span></li>';
+            } else {
+                html +=
+                    '<li class="' +
+                    (_value.currentPage === item ? 'active' : '') +
+                    '"><a href="#' +
+                    item +
+                    '">' +
+                    item +
+                    '</a></li>';
+            }
+        });
 
-        if (pagination.next) {
-            html += '<li><a href="#' + pagination.next + '">&raquo;</a></li>';
+        if (paginationRange.next) {
+            html += '<li><a href="#' + paginationRange.next + '">&raquo;</a></li>';
         } else {
             html += '<li class="disabled"><span>&raquo;</span></li>';
         }
@@ -269,6 +275,39 @@ heatmap_namespace = (function() {
                 }
             });
         }
+    }
+
+    function createPaginationRange(pagination) {
+        var delta = 2; // number of pages displayed left and right to "center"
+        var left = _value.currentPage - delta;
+        var right = _value.currentPage + delta + 1;
+        var range = [];
+        var paginationRange = [];
+        var curPage;
+
+        for (var i = 1; i <= pagination.pageCount; i++) {
+            if (i == 1 || i == pagination.pageCount || (i >= left && i < right)) {
+                range.push(i);
+            }
+        }
+
+        range.map(function(page) {
+            if (curPage) {
+                if (page - curPage === delta) {
+                    paginationRange.push(page + 1);
+                } else if (page - curPage !== 1) {
+                    paginationRange.push('...');
+                }
+            }
+            paginationRange.push(page);
+            curPage = page;
+        });
+
+        return {
+            prev: pagination.prev,
+            next: pagination.next,
+            pages: paginationRange
+        };
     }
 
     /**
