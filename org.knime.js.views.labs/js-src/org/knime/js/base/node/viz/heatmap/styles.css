@@ -118,7 +118,7 @@ form {
     align-items: center;
     justify-content: center;
     list-style-type: none;
-    padding: 0 1rem;
+    padding: 0;
 }
 
 .pagination li {

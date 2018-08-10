@@ -685,8 +685,9 @@ heatmap_namespace = (function() {
 
         // Legend
         var legendWidth = 100;
-        var legendHeight = 25;
-        var legendMargin = 10;
+        var legendHeight = 50;
+        var legendColorRangeHeight = 25;
+        var legendMargin = 5;
 
         var legend = d3
             .select('.knime-svg-container')
@@ -697,10 +698,7 @@ heatmap_namespace = (function() {
             .attr('style', 'position: absolute; left: ' + _margin.left + 'px; top:8px');
 
         var legendDefs = legend.append('defs');
-        var legendGradient = legendDefs
-            .append('linearGradient')
-            .attr('id', 'legendGradient')
-            .attr('transform', 'translate(' + legendMargin + ', ' + legendHeight + ')');
+        var legendGradient = legendDefs.append('linearGradient').attr('id', 'legendGradient');
 
         var colorDomain = getLinearColorDomain(_extent.minimum, _extent.maximum);
 
@@ -710,7 +708,7 @@ heatmap_namespace = (function() {
             .attr('y', 0)
             .attr('x', legendMargin)
             .attr('width', legendWidth)
-            .attr('height', legendHeight)
+            .attr('height', legendColorRangeHeight)
             .attr('right', legendMargin)
             .attr('fill', 'url(#legendGradient)');
 
@@ -756,13 +754,13 @@ heatmap_namespace = (function() {
             .axisBottom(legendScale)
             .tickValues(tickValues || colorDomain)
             .tickFormat(function(d) {
-                return Math.round(d * 1000) / 1000;
+                return Math.round(d * 100) / 100;
             });
 
         legend
             .append('g')
-            .attr('transform', 'translate(' + legendMargin + ', ' + legendHeight + ')')
-            .attr('class', 'legendAxis')
+            .attr('transform', 'translate(' + legendMargin + ', ' + legendColorRangeHeight + ')')
+            .attr('class', 'legend-axis')
             .call(legendAxis)
             .selectAll('text')
             .attr('font-weight', 'normal');
