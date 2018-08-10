@@ -3,7 +3,9 @@ window.dendrogram_namespace = (function () {
 
     var _representation,
         _value,
-        selectedRows = [];
+        table,
+        selectedRows = [],
+        filteredRows = [];
 
     // view related settings
     const xAxisHeight = 100,
@@ -15,7 +17,8 @@ window.dendrogram_namespace = (function () {
         viewportMarginTop = 10,
         leafWidth = 8,
         leafHeight = 20,
-        thresholdHandleHeight = 2;
+        thresholdHandleHeight = 2,
+        thresholdFormat = d3.format('.3f');
 
     // hierarchy related variables
     var cluster,
@@ -35,6 +38,8 @@ window.dendrogram_namespace = (function () {
         leafEl,
         linkEl,
         thresholdEl,
+        thresholdDisplayEl,
+        thresholdClusterDisplayEl,
         xAxis,
         xAxisEl,
         xScale,
@@ -52,6 +57,11 @@ window.dendrogram_namespace = (function () {
             return;
         }
 
+        table = new kt();
+        table.setDataTable(_representation.table);
+
+        drawControls();
+
         drawSVG();
         createHierarchyFromTree();
         drawXAxis();
@@ -64,10 +74,45 @@ window.dendrogram_namespace = (function () {
         resizeDiagram();
 
         initSelection();
+        initFiltering();
 
         if (_representation.resizeToWindow) {
             initWindowResize();
         }
+    };
+
+    const drawControls = function () {
+        if (_representation.displayFullscreenButton) {
+            knimeService.allowFullscreen();
+        }
+
+        // var chartTitleText = knimeService.createMenuTextField('chartTitleText', 'foobar', function() {}, true);
+        // knimeService.addMenuItem('Chart Title:', 'header', chartTitleText);
+
+        knimeService.addButton('heatmap-mouse-mode-pan', 'arrows', 'Mouse Mode "Pan"', function () {
+            // _value.zoomEnabled = !_value.zoomEnabled;
+            // initializeZoom();
+            // var button = document.getElementById('heatmap-mouse-mode-pan');
+            // button.classList.toggle('active');
+            // if (_value.zoomEnabled === true) {
+            //     selectionButtonClicked();
+            // }
+        });
+
+        knimeService.addMenuDivider();
+
+
+        knimeService.addMenuItem('Show Tooltips', 'info', knimeService.createMenuCheckbox('tooltipsEnabled', _value.tooltipsEnabled, function () {
+            _value.tooltipsEnabled = this.checked;
+        }));
+
+        knimeService.addMenuItem('Show Filtered Rows Only', 'filter', knimeService.createMenuCheckbox(
+            'showOnlySelectedRows',
+            _value.showOnlySelectedRows,
+            function () {
+                _value.showOnlySelectedRows = this.checked;
+            }
+        ));
     };
 
     const calcSVGSize = function () {
@@ -77,9 +122,7 @@ window.dendrogram_namespace = (function () {
     };
 
     const drawSVG = function () {
-        // TODO detect image export mode
-        //const isImageExport = false;
-        const resizeToWindow = _representation.resizeToWindow;
+        const resizeToWindow = _representation.runningInView && _representation.resizeToWindow;
 
         // create SVG
         svg = d3.select('body').insert('svg:svg')
@@ -174,7 +217,6 @@ window.dendrogram_namespace = (function () {
 
     const drawThresholdHandle = function () {
         const maxDistance = yScale.domain()[1];
-        const thresholdFormat = d3.format('.3f');
 
         thresholdEl = dendrogramEl.append('rect').attr('class', 'threshold')
             .attr('width', '100%').attr('height', thresholdHandleHeight)
@@ -195,45 +237,45 @@ window.dendrogram_namespace = (function () {
                     _value.threshold = newThreshold;
                 }));
 
-        const thresholdDisplayEl = svg.append('text').attr('class', 'thresholdDisplay')
+        thresholdDisplayEl = svg.append('text').attr('class', 'thresholdDisplay')
             .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 25 + ')');
 
-        const thresholdClusterDisplayEl = svg.append('text').attr('class', 'thresholdClusterDisplay')
+        thresholdClusterDisplayEl = svg.append('text').attr('class', 'thresholdClusterDisplay')
             .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 40 + ')');
-
-        const onThresholdChange = function (threshold) {
-            var numberOfRootCluster = 0;
-            clusterMarkerEl.each(function (n) {
-                const isRoot = n.data.distance <= threshold && (!n.parent || n.parent && n.parent.data.distance >= threshold);
-                if (isRoot) {
-                    numberOfRootCluster++;
-                }
-
-                // mark nodes out of threshold and after-threshold root nodes
-                d3.select(this)
-                    .classed('outOfThreshold', n.data.distance >= threshold)
-                    .classed('root', isRoot);
-            });
-
-            // count all leaves which represent a single cluster
-            leaves.forEach(function (leaf) {
-                if (leaf.parent.data.distance >= threshold) {
-                    numberOfRootCluster++;
-                }
-            });
-
-            // update threshold display
-            const thresholdFormatted = thresholdFormat(threshold);
-            thresholdDisplayEl.text('Threshold: ' + thresholdFormatted);
-            thresholdClusterDisplayEl.text('Cluster: ' + numberOfRootCluster);
-            // mark links
-            linkEl.each(function (n) {
-                d3.select(this).classed('outOfThreshold', n.source.data.distance >= threshold);
-            });
-        };
 
         // set initial threshold
         onThresholdChange(_value.threshold);
+    };
+
+    const onThresholdChange = function (threshold) {
+        var numberOfRootCluster = 0;
+        clusterMarkerEl.each(function (n) {
+            const isRoot = n.data.distance <= threshold && (!n.parent || n.parent && n.parent.data.distance >= threshold);
+            if (isRoot) {
+                numberOfRootCluster++;
+            }
+
+            // mark nodes out of threshold and after-threshold root nodes
+            d3.select(this)
+                .classed('outOfThreshold', n.data.distance >= threshold)
+                .classed('root', isRoot);
+        });
+
+        // count all leaves which represent a single cluster
+        leaves.forEach(function (leaf) {
+            if (leaf.parent.data.distance >= threshold) {
+                numberOfRootCluster++;
+            }
+        });
+
+        // update threshold display
+        const thresholdFormatted = thresholdFormat(threshold);
+        thresholdDisplayEl.text('Threshold: ' + thresholdFormatted);
+        thresholdClusterDisplayEl.text('Cluster: ' + numberOfRootCluster);
+        // mark links
+        linkEl.each(function (n) {
+            d3.select(this).classed('outOfThreshold', n.source.data.distance >= threshold);
+        });
     };
 
     const resizeDiagram = function () {
@@ -453,6 +495,56 @@ window.dendrogram_namespace = (function () {
         knimeService.subscribeToSelection(_representation.dataTableID, onSelectionChange);
     };
 
+    const updateFilterInView = function () {
+        const isFiltering = !!filteredRows.length;
+
+        // add filter flag for leaves
+        leaves.forEach(function (n) {
+            n.outOfFilter = isFiltering && filteredRows.indexOf(n.data.rowKey) === -1;
+        });
+
+        // also mark cluster if both children are filtered out
+        nodes.eachAfter(function (n) {
+            if (n.children) {
+                n.outOfFilter = n.children[0].outOfFilter || n.children[1].outOfFilter;
+            }
+        });
+
+        // set/remove styles for filtered rows and cluster and links
+        clusterMarkerEl.classed('outOfFilter', function (d) {
+            return d.outOfFilter;
+        });
+        leafEl.classed('outOfFilter', function (d) {
+            return d.outOfFilter;
+        });
+        linkEl.classed('outOfFilter', function (d) {
+            return d.source.outOfFilter || d.target.outOfFilter;
+        });
+        xAxisEl.selectAll('.tick').classed('outOfFilter', function (rowKey) {
+            return isFiltering && !(filteredRows.indexOf(rowKey) !== -1);
+        });
+
+        // also update threshold
+        onThresholdChange(_value.threshold);
+    };
+
+    const onFilterChange = function (data) {
+        // TODO support multiple filters?!
+        filteredRows = leaves.map(function (leaf) {
+            return leaf.data.rowKey;
+        }).filter(function (rowKey) {
+            return table.isRowIncludedInFilter(rowKey, data);
+        });
+
+        updateFilterInView();
+    };
+
+    const initFiltering = function () {
+        table.getFilterIds().forEach(function (filterId) {
+            knimeService.subscribeToFilter(table.getTableId(), onFilterChange, filterId);
+        });
+    };
+
 
     dendrogram.validate = function () {
         return true;
@@ -463,9 +555,8 @@ window.dendrogram_namespace = (function () {
     };
 
     dendrogram.getSVG = function () {
-        var svg = d3.select('svg');
         if (!svg.empty()) {
-            var svgElement = d3.select('svg')[0][0];
+            var svgElement = svg.node();
             knimeService.inlineSvgStyles(svgElement);
             // Return the SVG as a string.
             return (new XMLSerializer()).serializeToString(svgElement);

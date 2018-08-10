@@ -322,7 +322,10 @@
                type="CSS">
          </importResource>
          <webDependency
-               webResourceBundleID="D3_4.2.6_Debug">
+               webResourceBundleID="D3_4.2.6">
+         </webDependency>
+         <webDependency
+               webResourceBundleID="KnimeTable_1.0.0">
          </webDependency>
       </webResourceBundle>
    </extension>

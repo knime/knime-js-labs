@@ -12,12 +12,28 @@
     stroke: #d3cece;
 }
 
+.link.outOfFilter {
+    stroke: #d3cece;
+}
+
+.link.outOfThreshold.outOfFilter {
+    stroke: #e9e9e9;
+}
+
 .link.selected {
     stroke: #ffa600;
 }
 
+.link.selected.outOfFilter {
+    stroke: #ffd78c;
+}
+
 .leaf {
     shape-rendering: crispEdges;
+}
+
+.leaf.outOfFilter {
+    fill: #d3cece;
 }
 
 .cluster {
@@ -33,9 +49,21 @@
     fill: #d3cece;
 }
 
+.cluster.outOfFilter {
+    fill: #d3cece;
+}
+
+.cluster.outOfThreshold.outOfFilter {
+    fill: #e9e9e9;
+}
+
 .cluster.selected,
 .cluster:hover {
     fill: #ffa600;
+}
+
+.cluster.selected.outOfFilter {
+    fill: #ffd78c;
 }
 
 .threshold {
@@ -59,4 +87,22 @@
 
 .knime-axis .knime-tick-line {
     stroke: #000000;
+}
+
+.knime-axis .tick.selected .knime-tick-line {
+    stroke: #ffa600;
+}
+
+.knime-axis.knime-x .tick.outOfFilter .knime-tick-label {
+    fill: #d3cece;
+}
+.knime-axis.knime-x .tick.outOfFilter .knime-tick-line {
+    stroke: #d3cece;
+}
+
+.knime-axis.knime-x .tick.selected.outOfFilter .knime-tick-label {
+    fill: #ffd78c;
+}
+.knime-axis.knime-x .tick.selected.outOfFilter .knime-tick-line {
+    stroke: #ffd78c;
 }
