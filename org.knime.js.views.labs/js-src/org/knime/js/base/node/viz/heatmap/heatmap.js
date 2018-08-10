@@ -105,10 +105,14 @@ heatmap_namespace = (function() {
     }
 
     function getSelectionData(data) {
+        var selectedData;
         if (_value.showOnlySelectedRows) {
-            data = data.filter(function(row) {
+            selectedData = data.filter(function(row) {
                 return _value.selectedRowsBuffer.indexOf(row.rowKey) > -1;
             });
+        }
+        if (selectedData && selectedData.length) {
+            return selectedData;
         }
         return data;
     }
