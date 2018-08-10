@@ -180,10 +180,6 @@ public final class HeatMapViewConfig {
     final static String DEFAULT_SELECTION_COLUMN_NAME = "Selected (Heatmap)";
     private String m_selectionColumnName = DEFAULT_SELECTION_COLUMN_NAME;
 
-    final static String CFG_SELECTION = "selection";
-    final static String[] DEFAULT_SELECTION = new String[0];
-    private String[] m_selection = DEFAULT_SELECTION;
-
     // Paging
     final static String CFG_ENABLE_PAGING = "enablePaging";
     final static boolean DEFAULT_ENABLE_PAGING = true;
@@ -226,22 +222,6 @@ public final class HeatMapViewConfig {
     final static String CFG_SHOW_ZOOM_RESET_BUTTON = "showZoomResetButton";
     final static boolean DEFAULT_SHOW_ZOOM_RESET_BUTTON = false;
     private boolean m_showZoomResetButton = DEFAULT_SHOW_ZOOM_RESET_BUTTON;
-
-    final static String CFG_X_MIN = "xMin";
-    final static String DEFAULT_X_MIN = null;
-    private String m_xMin = DEFAULT_X_MIN;
-
-    final static String CFG_X_MAX = "xMax";
-    final static String DEFAULT_X_MAX = null;
-    private String m_xMax = DEFAULT_X_MAX;
-
-    final static String CFG_Y_MIN = "yMin";
-    final static String DEFAULT_Y_MIN = null;
-    private String m_yMin = DEFAULT_Y_MIN;
-
-    final static String CFG_Y_MAX = "yMax";
-    final static String DEFAULT_Y_MAX = null;
-    private String m_yMax = DEFAULT_Y_MAX;
 
     // -- General getters & setters --
 
@@ -619,20 +599,6 @@ public final class HeatMapViewConfig {
         m_selectionColumnName = selectionColumnName;
     }
 
-    /**
-     * @return the selection
-     */
-    public String[] getSelection() {
-        return m_selection;
-    }
-
-    /**
-     * @param selection the selection to set
-     */
-    public void setSelection(final String[] selection) {
-        m_selection = selection;
-    }
-
     // -- Paging getters & setters --
 
     /**
@@ -779,62 +745,6 @@ public final class HeatMapViewConfig {
         m_showZoomResetButton = showZoomResetButton;
     }
 
-    /**
-     * @return the xMin
-     */
-    public String getXMin() {
-        return m_xMin;
-    }
-
-    /**
-     * @param xMin the xMin to set
-     */
-    public void setXMin(final String xMin) {
-        m_xMin = xMin;
-    }
-
-    /**
-     * @return the xMax
-     */
-    public String getXMax() {
-        return m_xMax;
-    }
-
-    /**
-     * @param xMax the xMax to set
-     */
-    public void setXMax(final String xMax) {
-        m_xMax = xMax;
-    }
-
-    /**
-     * @return the yMin
-     */
-    public String getYMin() {
-        return m_yMin;
-    }
-
-    /**
-     * @param yMin the yMin to set
-     */
-    public void setYMin(final String yMin) {
-        m_yMin = yMin;
-    }
-
-    /**
-     * @return the yMax
-     */
-    public String getYMax() {
-        return m_yMax;
-    }
-
-    /**
-     * @param yMax the yMax to set
-     */
-    public void setYMax(final String yMax) {
-        m_yMax = yMax;
-    }
-
     // -- Save & Load Settings --
 
     /** Saves current parameters to settings object.
@@ -872,7 +782,6 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_PUBLISH_SELECTION, m_publishSelection);
         settings.addBoolean(CFG_SUBSCRIBE_SELECTION, m_subscribeSelection);
         settings.addString(CFG_SELECTION_COLUMN_NAME, m_selectionColumnName);
-        settings.addStringArray(CFG_SELECTION, m_selection);
 
         settings.addBoolean(CFG_ENABLE_PAGING, m_enablePaging);
         settings.addInt(CFG_INITIAL_PAGE_SIZE, m_initialPageSize);
@@ -886,10 +795,6 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_ENABLE_ZOOM, m_enableZoom);
         settings.addBoolean(CFG_ENABLE_PANNING, m_enablePanning);
         settings.addBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, m_showZoomResetButton);
-        settings.addString(CFG_X_MIN, m_xMin);
-        settings.addString(CFG_X_MAX, m_xMax);
-        settings.addString(CFG_Y_MIN, m_yMin);
-        settings.addString(CFG_Y_MAX, m_yMax);
     }
 
     /** Loads parameters in NodeModel.
@@ -928,7 +833,6 @@ public final class HeatMapViewConfig {
         m_publishSelection = settings.getBoolean(CFG_PUBLISH_SELECTION);
         m_subscribeSelection = settings.getBoolean(CFG_SUBSCRIBE_SELECTION);
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME);
-        m_selection = settings.getStringArray(CFG_SELECTION);
 
         m_enablePaging = settings.getBoolean(CFG_ENABLE_PAGING);
         m_initialPageSize = settings.getInt(CFG_INITIAL_PAGE_SIZE);
@@ -942,10 +846,6 @@ public final class HeatMapViewConfig {
         m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM);
         m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING);
         m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON);
-        m_xMin = settings.getString(CFG_X_MIN);
-        m_xMax = settings.getString(CFG_X_MAX);
-        m_yMin = settings.getString(CFG_Y_MIN);
-        m_yMax = settings.getString(CFG_Y_MAX);
     }
 
     /** Loads parameters in Dialog.
@@ -984,7 +884,6 @@ public final class HeatMapViewConfig {
         m_publishSelection = settings.getBoolean(CFG_PUBLISH_SELECTION, DEFAULT_PUBLISH_SELECTION);
         m_subscribeSelection = settings.getBoolean(CFG_SUBSCRIBE_SELECTION, DEFAULT_SUBSCRIBE_SELECTION);
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME, DEFAULT_SELECTION_COLUMN_NAME);
-        m_selection = settings.getStringArray(CFG_SELECTION, DEFAULT_SELECTION);
 
         m_enablePaging = settings.getBoolean(CFG_ENABLE_PAGING, DEFAULT_ENABLE_PAGING);
         m_initialPageSize = settings.getInt(CFG_INITIAL_PAGE_SIZE, DEFAULT_INITIAL_PAGE_SIZE);
@@ -998,10 +897,6 @@ public final class HeatMapViewConfig {
         m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM, DEFAULT_ENABLE_ZOOM);
         m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING, DEFAULT_ENABLE_PANNING);
         m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, DEFAULT_SHOW_ZOOM_RESET_BUTTON);
-        m_xMin = settings.getString(CFG_X_MIN, DEFAULT_X_MIN);
-        m_xMax = settings.getString(CFG_X_MAX, DEFAULT_X_MAX);
-        m_yMin = settings.getString(CFG_Y_MIN, DEFAULT_Y_MIN);
-        m_yMax = settings.getString(CFG_Y_MAX, DEFAULT_Y_MAX);
     }
 
 }

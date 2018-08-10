@@ -72,13 +72,18 @@ public class HeatMapViewValue extends JSONViewContent {
 
     private boolean m_continuousGradient;
 
+    private final static String CFG_SELECTION = "selection";
     private String[] m_selection;
 
     private int m_initialPageSize;
 
+    private final static String CFG_X_MIN = "xMin";
     private String m_xMin;
+    private final static String CFG_X_MAX = "xMax";
     private String m_xMax;
+    private final static String CFG_Y_MIN = "yMin";
     private String m_yMin;
+    private final static String CFG_Y_MAX = "yMax";
     private String m_yMax;
 
     // -- General getters & setters --
@@ -229,14 +234,14 @@ public class HeatMapViewValue extends JSONViewContent {
 
         settings.addBoolean(HeatMapViewConfig.CFG_CONTINUOUS_GRADIENT, m_continuousGradient);
 
-        settings.addStringArray(HeatMapViewConfig.CFG_SELECTION, m_selection);
+        settings.addStringArray(CFG_SELECTION, m_selection);
 
         settings.addInt(HeatMapViewConfig.CFG_INITIAL_PAGE_SIZE, m_initialPageSize);
 
-        settings.addString(HeatMapViewConfig.CFG_X_MIN, m_xMin);
-        settings.addString(HeatMapViewConfig.CFG_X_MAX, m_xMax);
-        settings.addString(HeatMapViewConfig.CFG_Y_MIN, m_yMin);
-        settings.addString(HeatMapViewConfig.CFG_Y_MAX, m_yMax);
+        settings.addString(CFG_X_MIN, m_xMin);
+        settings.addString(CFG_X_MAX, m_xMax);
+        settings.addString(CFG_Y_MIN, m_yMin);
+        settings.addString(CFG_Y_MAX, m_yMax);
     }
 
     /**
@@ -249,14 +254,14 @@ public class HeatMapViewValue extends JSONViewContent {
 
         m_continuousGradient = settings.getBoolean(HeatMapViewConfig.CFG_CONTINUOUS_GRADIENT);
 
-        m_selection = settings.getStringArray(HeatMapViewConfig.CFG_SELECTION);
+        m_selection = settings.getStringArray(CFG_SELECTION);
 
         m_initialPageSize = settings.getInt(HeatMapViewConfig.CFG_INITIAL_PAGE_SIZE);
 
-        m_xMin = settings.getString(HeatMapViewConfig.CFG_X_MIN);
-        m_xMax = settings.getString(HeatMapViewConfig.CFG_X_MAX);
-        m_yMin = settings.getString(HeatMapViewConfig.CFG_Y_MIN);
-        m_yMax = settings.getString(HeatMapViewConfig.CFG_Y_MAX);
+        m_xMin = settings.getString(CFG_X_MIN);
+        m_xMax = settings.getString(CFG_X_MAX);
+        m_yMin = settings.getString(CFG_Y_MIN);
+        m_yMax = settings.getString(CFG_Y_MAX);
     }
 
     /**

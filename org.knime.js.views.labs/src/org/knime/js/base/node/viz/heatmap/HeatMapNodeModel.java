@@ -291,12 +291,12 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
                 value.setChartTitle(m_config.getChartTitle());
                 value.setChartSubtitle(m_config.getChartSubtitle());
                 value.setContinuousGradient(m_config.getContinuousGradient());
-                value.setSelection(m_config.getSelection());
+                value.setSelection(new String[0]);
                 value.setInitialPageSize(m_config.getInitialPageSize());
-                value.setXMin(m_config.getXMin());
-                value.setXMax(m_config.getXMax());
-                value.setYMin(m_config.getYMin());
-                value.setYMax(m_config.getYMax());
+                value.setXMin(null);
+                value.setXMax(null);
+                value.setYMin(null);
+                value.setYMax(null);
             }
         }
     }
@@ -310,7 +310,7 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
         BufferedDataTable out = m_table;
         synchronized (getLock()) {
             if (m_config.getEnableSelection()) {
-                final List<String> selection = Arrays.asList(m_config.getSelection());
+                final List<String> selection = getViewValue().getSelection() == null ? null : Arrays.asList(getViewValue().getSelection());
                 final ColumnRearranger createColumnRearranger =
                     createColumnAppender(m_table.getDataTableSpec(), selection);
                 out = exec.createColumnRearrangeTable(m_table, createColumnRearranger, exec);
@@ -417,12 +417,7 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
         m_config.setChartTitle(viewValue.getChartTitle());
         m_config.setChartSubtitle(viewValue.getChartSubtitle());
         m_config.setContinuousGradient(viewValue.getContinuousGradient());
-        m_config.setSelection(viewValue.getSelection());
         m_config.setInitialPageSize(viewValue.getInitialPageSize());
-        m_config.setXMin(viewValue.getXMin());
-        m_config.setXMax(viewValue.getXMax());
-        m_config.setYMin(viewValue.getYMin());
-        m_config.setYMax(viewValue.getYMax());
     }
 
     private JSONDataTable createJSONTableFromBufferedDataTable(final ExecutionContext exec) throws CanceledExecutionException {
