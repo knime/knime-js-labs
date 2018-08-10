@@ -79,6 +79,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     private boolean m_enableViewConfiguration;
     private boolean m_enableTitleChange;
     private boolean m_enableColorModeEdit;
+    private boolean m_enableShowToolTips;
 
     private String[] m_threeColorGradient;
     private String[] m_discreteGradientColors;
@@ -101,9 +102,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     private boolean m_enablePageSizeChange;
     private int[] m_allowedPageSizes;
     private boolean m_pageSizeShowAll;
-
-    private boolean m_displayDataCellToolTip;
-    private boolean m_displayRowToolTip;
 
     private boolean m_enableZoom;
     private boolean m_enablePanning;
@@ -231,6 +229,20 @@ public class HeatMapViewRepresentation extends JSONViewContent {
      */
     public void setEnableColorModeEdit(final boolean enableColorModeEdit) {
         m_enableColorModeEdit = enableColorModeEdit;
+    }
+
+    /**
+     * @return the enableShowToolTips
+     */
+    public boolean getEnableShowToolTips() {
+        return m_enableShowToolTips;
+    }
+
+    /**
+     * @param enableShowToolTips the enableShowToolTips to set
+     */
+    public void setEnableShowToolTips(final boolean enableShowToolTips) {
+        m_enableShowToolTips = enableShowToolTips;
     }
 
     // -- Gradient getters & setters --
@@ -467,36 +479,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_pageSizeShowAll = enableShowAll;
     }
 
-    // -- Tool tip getters & setters --
-
-    /**
-     * @return the displayDataCellToolTip
-     */
-    public boolean getDisplayDataCellToolTip() {
-        return m_displayDataCellToolTip;
-    }
-
-    /**
-     * @param displayDataCellToolTip the displayDataCellToolTip to set
-     */
-    public void setDisplayDataCellToolTip(final boolean displayDataCellToolTip) {
-        m_displayDataCellToolTip = displayDataCellToolTip;
-    }
-
-    /**
-     * @return the displayRowToolTip
-     */
-    public boolean getDisplayRowToolTip() {
-        return m_displayRowToolTip;
-    }
-
-    /**
-     * @param displayRowToolTip the displayRowToolTip to set
-     */
-    public void setDisplayRowToolTip(final boolean displayRowToolTip) {
-        m_displayRowToolTip = displayRowToolTip;
-    }
-
     // -- Zoom & Panning getters & setters --
 
     /**
@@ -621,6 +603,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_CONFIG, m_enableViewConfiguration);
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_TTILE_CHANGE, m_enableTitleChange);
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_COLOR_MODE_EDIT, m_enableColorModeEdit);
+        settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_SHOW_TOOLTIPS, m_enableShowToolTips);
 
         settings.addStringArray(HeatMapViewConfig.CFG_THREE_COLOR_GRADIENT, m_threeColorGradient);
         settings.addStringArray(HeatMapViewConfig.CFG_DISCRETE_GRADIENT_COLORS, m_discreteGradientColors);
@@ -642,9 +625,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_PAGE_SIZE_CHANGE, m_enablePageSizeChange);
         settings.addIntArray(HeatMapViewConfig.CFG_PAGE_SIZES, m_allowedPageSizes);
         settings.addBoolean(HeatMapViewConfig.CFG_PAGE_SIZE_SHOW_ALL, m_pageSizeShowAll);
-
-        settings.addBoolean(HeatMapViewConfig.CFG_DISPLAY_DATA_CELL_TOOL_TIP, m_displayDataCellToolTip);
-        settings.addBoolean(HeatMapViewConfig.CFG_DISPLAY_ROW_TOOL_TIP, m_displayRowToolTip);
 
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_ZOOM, m_enableZoom);
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_PANNING, m_enablePanning);
@@ -669,6 +649,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_enableViewConfiguration = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_TTILE_CHANGE);
         m_enableColorModeEdit = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_COLOR_MODE_EDIT);
+        m_enableShowToolTips = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_SHOW_TOOLTIPS);
 
         m_threeColorGradient = settings.getStringArray(HeatMapViewConfig.CFG_THREE_COLOR_GRADIENT);
         m_discreteGradientColors = settings.getStringArray(HeatMapViewConfig.CFG_DISCRETE_GRADIENT_COLORS);
@@ -690,9 +671,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_enablePageSizeChange = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_PAGE_SIZE_CHANGE);
         m_allowedPageSizes = settings.getIntArray(HeatMapViewConfig.CFG_PAGE_SIZES);
         m_pageSizeShowAll = settings.getBoolean(HeatMapViewConfig.CFG_PAGE_SIZE_SHOW_ALL);
-
-        m_displayDataCellToolTip = settings.getBoolean(HeatMapViewConfig.CFG_DISPLAY_DATA_CELL_TOOL_TIP);
-        m_displayRowToolTip = settings.getBoolean(HeatMapViewConfig.CFG_DISPLAY_ROW_TOOL_TIP);
 
         m_enableZoom = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_ZOOM);
         m_enablePanning = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_PANNING);
@@ -727,6 +705,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enableViewConfiguration, other.getEnableViewConfiguration())
                 .append(m_enableTitleChange, other.getEnableTitleChange())
                 .append(m_enableColorModeEdit, other.getEnableColorModeEdit())
+                .append(m_enableShowToolTips, other.getEnableShowToolTips())
                 .append(m_threeColorGradient, other.getThreeColorGradient())
                 .append(m_discreteGradientColors, other.getDiscreteGradientColors())
                 .append(m_numDiscreteColors, other.getNumDiscreteColors())
@@ -743,8 +722,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enablePageSizeChange, other.getEnablePageSizeChange())
                 .append(m_allowedPageSizes, other.getAllowedPageSizes())
                 .append(m_pageSizeShowAll, other.getEnableShowAll())
-                .append(m_displayDataCellToolTip, other.getDisplayDataCellToolTip())
-                .append(m_displayRowToolTip, other.getDisplayRowToolTip())
                 .append(m_enableZoom, other.getEnableZoom())
                 .append(m_enablePanning, other.getEnablePanning())
                 .append(m_showZoomResetButton, other.getShowZoomResetButton())
@@ -769,6 +746,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enableViewConfiguration)
                 .append(m_enableTitleChange)
                 .append(m_enableColorModeEdit)
+                .append(m_enableShowToolTips)
                 .append(m_threeColorGradient)
                 .append(m_discreteGradientColors)
                 .append(m_numDiscreteColors)
@@ -785,8 +763,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_enablePageSizeChange)
                 .append(m_allowedPageSizes)
                 .append(m_pageSizeShowAll)
-                .append(m_displayDataCellToolTip)
-                .append(m_displayRowToolTip)
                 .append(m_enableZoom)
                 .append(m_enablePanning)
                 .append(m_showZoomResetButton)

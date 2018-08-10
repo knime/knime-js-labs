@@ -258,6 +258,7 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
             representation.setEnableViewConfiguration(m_config.getEnableViewConfiguration());
             representation.setEnableTitleChange(m_config.getEnableTitleChange());
             representation.setEnableColorModeEdit(m_config.getEnableColorModeEdit());
+            representation.setEnableShowToolTips(m_config.getEnableShowToolTips());
             representation.setThreeColorGradient(m_config.getThreeColorGradient());
             representation.setDiscreteGradientColors(m_config.getDiscreteGradientColors());
             representation.setNumDiscreteColors(m_config.getNumDiscreteColors());
@@ -274,8 +275,6 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
             representation.setEnablePageSizeChange(m_config.getEnablePageSizeChange());
             representation.setAllowedPageSizes(m_config.getAllowedPageSizes());
             representation.setEnableShowAll(m_config.getEnableShowAll());
-            representation.setDisplayDataCellToolTip(m_config.getDisplayDataCellToolTip());
-            representation.setDisplayRowToolTip(m_config.getDisplayRowToolTip());
             representation.setEnableZoom(m_config.getEnableZoom());
             representation.setEnablePanning(m_config.getEnablePanning());
             representation.setShowZoomResetButton(m_config.getShowZoomResetButton());
@@ -424,7 +423,7 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
         final boolean keepFilterCols = m_config.getSubscribeFilter();
         final FilterResult filter = m_config.getColumns().applyTo(m_table.getDataTableSpec());
         final List<String> include = new ArrayList<>(Arrays.asList(filter.getIncludes()));
-        if (m_config.getDisplayRowToolTip() && m_config.getSvgLabelColumn() != null && !m_config.getSvgLabelColumn().isEmpty()) {
+        if (m_config.getEnableShowToolTips() && m_config.getSvgLabelColumn() != null && !m_config.getSvgLabelColumn().isEmpty()) {
             include.add(m_config.getSvgLabelColumn());
         }
         if (m_config.getLabelColumn() != null && !m_config.getLabelColumn().isEmpty() && !include.contains(m_config.getLabelColumn())) {

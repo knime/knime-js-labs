@@ -108,12 +108,11 @@ public class HeatMapNodeDialog extends NodeDialogPane {
     private final JCheckBox m_displayFullscreenButtonCheckBox;
     private final JTextField m_chartTitleTextField;
     private final JTextField m_chartSubtitleTextField;
-    private final JCheckBox m_displayDataCellToolTipCheckBox;
-    private final JCheckBox m_displayRowToolTipCheckBox;
 
     private final JCheckBox m_enableViewConfigurationCheckBox;
     private final JCheckBox m_enableTitleChangeCheckBox;
     private final JCheckBox m_enableColorModeEditCheckBox;
+    private final JCheckBox m_enableShowToolTipsCheckBox;
     private final JCheckBox m_subscribeFilterCheckBox;
     private final JCheckBox m_enableSelectionCheckBox;
     private final JCheckBox m_publishSelectionCheckBox;
@@ -176,13 +175,12 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_displayFullscreenButtonCheckBox = new JCheckBox("Display fullscreen button");
         m_chartTitleTextField = new JTextField(TEXT_FIELD_SIZE);
         m_chartSubtitleTextField = new JTextField(TEXT_FIELD_SIZE);
-        m_displayDataCellToolTipCheckBox = new JCheckBox("Display tool tip for data cells");
-        m_displayRowToolTipCheckBox = new JCheckBox("Display tool tip for row labels");
 
         m_enableViewConfigurationCheckBox = new JCheckBox("Enable view edit controls");
         m_enableViewConfigurationCheckBox.addChangeListener(e -> enableViewEdit());
         m_enableTitleChangeCheckBox = new JCheckBox("Enable title/subtitle edit controls");
         m_enableColorModeEditCheckBox = new JCheckBox("Enable color mode edit");
+        m_enableShowToolTipsCheckBox = new JCheckBox("Enable tool tip edit controls");
         m_subscribeFilterCheckBox = new JCheckBox("Subscribe to filter events");
         m_enableSelectionCheckBox = new JCheckBox("Enable selection");
         m_enableSelectionCheckBox.addChangeListener(e -> enableSelection());
@@ -231,12 +229,11 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
         config.setChartTitle(m_chartTitleTextField.getText());
         config.setChartSubtitle(m_chartSubtitleTextField.getText());
-        config.setDisplayDataCellToolTip(m_displayDataCellToolTipCheckBox.isSelected());
-        config.setDisplayRowToolTip(m_displayRowToolTipCheckBox.isSelected());
 
         config.setEnableViewConfiguration(m_enableViewConfigurationCheckBox.isSelected());
         config.setEnableTitleChange(m_enableTitleChangeCheckBox.isSelected());
         config.setEnableColorModeEdit(m_enableColorModeEditCheckBox.isSelected());
+        config.setEnableShowToolTips(m_enableShowToolTipsCheckBox.isSelected());
         config.setSubscribeFilter(m_subscribeFilterCheckBox.isSelected());
         config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
         config.setPublishSelection(m_publishSelectionCheckBox.isSelected());
@@ -286,12 +283,11 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_displayFullscreenButtonCheckBox.setSelected(config.getDisplayFullscreenButton());
         m_chartTitleTextField.setText(config.getChartTitle());
         m_chartSubtitleTextField.setText(config.getChartSubtitle());
-        m_displayDataCellToolTipCheckBox.setSelected(config.getDisplayDataCellToolTip());
-        m_displayRowToolTipCheckBox.setSelected(config.getDisplayRowToolTip());
 
         m_enableViewConfigurationCheckBox.setSelected(config.getEnableViewConfiguration());
         m_enableTitleChangeCheckBox.setSelected(config.getEnableTitleChange());
         m_enableColorModeEditCheckBox.setSelected(config.getEnableColorModeEdit());
+        m_enableShowToolTipsCheckBox.setSelected(config.getEnableShowToolTips());
         m_subscribeFilterCheckBox.setSelected(config.getSubscribeFilter());
         m_enableSelectionCheckBox.setSelected(config.getEnableSelection());
         m_publishSelectionCheckBox.setSelected(config.getPublishSelection());
@@ -399,11 +395,6 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         displayPanel.add(m_chartSubtitleTextField, displayPanelConstraints);
         displayPanelConstraints.gridx = 0;
         displayPanelConstraints.gridy++;
-        displayPanel.add(m_displayDataCellToolTipCheckBox, displayPanelConstraints);
-        displayPanelConstraints.gridx++;
-        displayPanel.add(m_displayRowToolTipCheckBox, displayPanelConstraints);
-        displayPanelConstraints.gridx = 0;
-        displayPanelConstraints.gridy++;
 
         c.gridx = 0;
         c.gridy++;
@@ -478,6 +469,8 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         viewEditPanelConstraints.gridx = 0;
         viewEditPanelConstraints.gridy++;
         viewEditPanel.add(m_enableColorModeEditCheckBox, viewEditPanelConstraints);
+        viewEditPanelConstraints.gridx++;
+        viewEditPanel.add(m_enableShowToolTipsCheckBox, viewEditPanelConstraints);
         viewEditPanelConstraints.gridx = 0;
         viewEditPanelConstraints.gridy++;
 
@@ -589,6 +582,7 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         final boolean enabled = m_enableViewConfigurationCheckBox.isSelected();
         m_enableTitleChangeCheckBox.setEnabled(enabled);
         m_enableColorModeEditCheckBox.setEnabled(enabled);
+        m_enableShowToolTipsCheckBox.setEnabled(enabled);
     }
 
     private void enablePaging() {

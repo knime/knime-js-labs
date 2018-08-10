@@ -74,16 +74,6 @@
 				graph shown above the generated image. If left blank, no subtitle
 				will be shown.
 			</option>
-			<option name="Display tool tip for data cells">
-				If checked, a tool tip containing information
-				about the data cell (value, and position) will be displayed when
-				hovering over data cells in the heatmap.
-			</option>
-			<option name="Display tool tip for row labels">
-				If checked, a tool tip containing information
-				about the given row will be displayed when hovering over a row
-				label.
-			</option>
 			<option name="Use discrete gradient">
 				If checked, a discrete gradient will be used to
 				color the heatmap. If not, a continuous gradient is used.
@@ -115,6 +105,10 @@
 			<option name="Enable color mode edit">
 				If checked, the color gradient can be toggled
 				between continuous and discrete from within the view.
+			</option>
+			<option name="Enable tool tip edit controls">
+				If enabled, tool tips for the heatmap data cells
+				and row labels can be toggled on/off from within the view.
 			</option>
 			<option name="Subscribe to filter events">
 				If checked, the view reacts when applied filters

@@ -118,6 +118,10 @@ public final class HeatMapViewConfig {
     final static boolean DEFAULT_ENABLE_COLOR_MODE_EDIT = true;
     private boolean m_enableColorModeEdit = DEFAULT_ENABLE_COLOR_MODE_EDIT;
 
+    final static String CFG_ENABLE_SHOW_TOOLTIPS = "enableShowToolTips";
+    final static boolean DEFAULT_ENABLE_SHOW_TOOLTIPS = true;
+    private boolean m_enableShowToolTips = DEFAULT_ENABLE_SHOW_TOOLTIPS;
+
     // Gradient
     final static String CFG_THREE_COLOR_GRADIENT = "threeColorGradient";
     final static String[] DEFAULT_THREE_COLOR_GRADIENT = new String[] {"#5e3c99", "#f7f7f7", "#e66101"};
@@ -200,15 +204,6 @@ public final class HeatMapViewConfig {
     final static String CFG_PAGE_SIZE_SHOW_ALL = "enableShowAll";
     final static boolean DEFAULT_PAGE_SIZE_SHOW_ALL = false;
     private boolean m_pageSizeShowAll = DEFAULT_PAGE_SIZE_SHOW_ALL;
-
-    // Tool tip
-    final static String CFG_DISPLAY_DATA_CELL_TOOL_TIP = "displayDataCellToolTip";
-    final static boolean DEFAULT_DISPLAY_DATA_CELL_TOOL_TIP = true;
-    private boolean m_displayDataCellToolTip = DEFAULT_DISPLAY_DATA_CELL_TOOL_TIP;
-
-    final static String CFG_DISPLAY_ROW_TOOL_TIP = "displayRowToolTip";
-    final static boolean DEFAULT_DISPLAY_ROW_TOOL_TIP = true;
-    private boolean m_displayRowToolTip = DEFAULT_DISPLAY_ROW_TOOL_TIP;
 
     // Zooming & Panning
     final static String CFG_ENABLE_ZOOM = "enableZoom";
@@ -407,6 +402,20 @@ public final class HeatMapViewConfig {
      */
     public void setEnableColorModeEdit(final boolean enableColorModeEdit) {
         m_enableColorModeEdit = enableColorModeEdit;
+    }
+
+    /**
+     * @return the enableShowToolTips
+     */
+    public boolean getEnableShowToolTips() {
+        return m_enableShowToolTips;
+    }
+
+    /**
+     * @param enableShowToolTips the enableShowToolTips to set
+     */
+    public void setEnableShowToolTips(final boolean enableShowToolTips) {
+        m_enableShowToolTips = enableShowToolTips;
     }
 
     // -- Gradient getters & setters --
@@ -671,36 +680,6 @@ public final class HeatMapViewConfig {
         m_pageSizeShowAll = enableShowAll;
     }
 
-    // -- Tool tip getters & setters --
-
-    /**
-     * @return the displayDataCellToolTip
-     */
-    public boolean getDisplayDataCellToolTip() {
-        return m_displayDataCellToolTip;
-    }
-
-    /**
-     * @param displayDataCellToolTip the displayDataCellToolTip to set
-     */
-    public void setDisplayDataCellToolTip(final boolean displayDataCellToolTip) {
-        m_displayDataCellToolTip = displayDataCellToolTip;
-    }
-
-    /**
-     * @return the displayRowToolTip
-     */
-    public boolean getDisplayRowToolTip() {
-        return m_displayRowToolTip;
-    }
-
-    /**
-     * @param displayRowToolTip the displayRowToolTip to set
-     */
-    public void setDisplayRowToolTip(final boolean displayRowToolTip) {
-        m_displayRowToolTip = displayRowToolTip;
-    }
-
     // -- Zoom & Panning getters & setters
 
     /**
@@ -765,6 +744,7 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_ENABLE_CONFIG, m_enableViewConfiguration);
         settings.addBoolean(CFG_ENABLE_TTILE_CHANGE, m_enableTitleChange);
         settings.addBoolean(CFG_ENABLE_COLOR_MODE_EDIT, m_enableColorModeEdit);
+        settings.addBoolean(CFG_ENABLE_SHOW_TOOLTIPS, m_enableShowToolTips);
 
         settings.addStringArray(CFG_THREE_COLOR_GRADIENT, m_threeColorGradient);
         settings.addStringArray(CFG_DISCRETE_GRADIENT_COLORS, m_discreteGradientColors);
@@ -788,9 +768,6 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_ENABLE_PAGE_SIZE_CHANGE, m_enablePageSizeChange);
         settings.addIntArray(CFG_PAGE_SIZES, m_allowedPageSizes);
         settings.addBoolean(CFG_PAGE_SIZE_SHOW_ALL, m_pageSizeShowAll);
-
-        settings.addBoolean(CFG_DISPLAY_DATA_CELL_TOOL_TIP, m_displayDataCellToolTip);
-        settings.addBoolean(CFG_DISPLAY_ROW_TOOL_TIP, m_displayRowToolTip);
 
         settings.addBoolean(CFG_ENABLE_ZOOM, m_enableZoom);
         settings.addBoolean(CFG_ENABLE_PANNING, m_enablePanning);
@@ -816,6 +793,7 @@ public final class HeatMapViewConfig {
         m_enableViewConfiguration = settings.getBoolean(CFG_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(CFG_ENABLE_TTILE_CHANGE);
         m_enableColorModeEdit = settings.getBoolean(CFG_ENABLE_COLOR_MODE_EDIT);
+        m_enableShowToolTips = settings.getBoolean(CFG_ENABLE_SHOW_TOOLTIPS);
 
         m_threeColorGradient = settings.getStringArray(CFG_THREE_COLOR_GRADIENT);
         m_discreteGradientColors = settings.getStringArray(CFG_DISCRETE_GRADIENT_COLORS);
@@ -839,9 +817,6 @@ public final class HeatMapViewConfig {
         m_enablePageSizeChange = settings.getBoolean(CFG_ENABLE_PAGE_SIZE_CHANGE);
         m_allowedPageSizes = settings.getIntArray(CFG_PAGE_SIZES);
         m_pageSizeShowAll = settings.getBoolean(CFG_PAGE_SIZE_SHOW_ALL);
-
-        m_displayDataCellToolTip = settings.getBoolean(CFG_DISPLAY_DATA_CELL_TOOL_TIP);
-        m_displayRowToolTip = settings.getBoolean(CFG_DISPLAY_ROW_TOOL_TIP);
 
         m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM);
         m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING);
@@ -867,6 +842,7 @@ public final class HeatMapViewConfig {
         m_enableViewConfiguration = settings.getBoolean(CFG_ENABLE_CONFIG, DEFAULT_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(CFG_ENABLE_TTILE_CHANGE, DEFAULT_ENABLE_TTILE_CHANGE);
         m_enableColorModeEdit = settings.getBoolean(CFG_ENABLE_COLOR_MODE_EDIT, DEFAULT_ENABLE_COLOR_MODE_EDIT);
+        m_enableShowToolTips = settings.getBoolean(CFG_ENABLE_SHOW_TOOLTIPS, DEFAULT_ENABLE_SHOW_TOOLTIPS);
 
         m_threeColorGradient = settings.getStringArray(CFG_THREE_COLOR_GRADIENT, DEFAULT_THREE_COLOR_GRADIENT);
         m_discreteGradientColors = settings.getStringArray(CFG_DISCRETE_GRADIENT_COLORS, DEFAULT_THREE_COLOR_GRADIENT);
@@ -890,9 +866,6 @@ public final class HeatMapViewConfig {
         m_enablePageSizeChange = settings.getBoolean(CFG_ENABLE_PAGE_SIZE_CHANGE, DEFAULT_ENABLE_PAGE_SIZE_CHANGE);
         m_allowedPageSizes = settings.getIntArray(CFG_PAGE_SIZES, DEFAULT_PAGE_SIZES);
         m_pageSizeShowAll = settings.getBoolean(CFG_PAGE_SIZE_SHOW_ALL, DEFAULT_PAGE_SIZE_SHOW_ALL);
-
-        m_displayDataCellToolTip = settings.getBoolean(CFG_DISPLAY_DATA_CELL_TOOL_TIP, DEFAULT_DISPLAY_DATA_CELL_TOOL_TIP);
-        m_displayRowToolTip = settings.getBoolean(CFG_DISPLAY_ROW_TOOL_TIP, DEFAULT_DISPLAY_ROW_TOOL_TIP);
 
         m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM, DEFAULT_ENABLE_ZOOM);
         m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING, DEFAULT_ENABLE_PANNING);
