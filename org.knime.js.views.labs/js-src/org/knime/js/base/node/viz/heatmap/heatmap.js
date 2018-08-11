@@ -11,11 +11,12 @@ heatmap_namespace = (function() {
         _scales,
         _drawCellQueue,
         _tooltip,
-        _colorRange;
+        _colorRange,
+        _filteredData;
 
     // Hardcoded Default Settings
     var _cellSize = 15;
-    var _margin = { top: 130, left: 50 };
+    var _margin = { top: 130, left: 50, right: 30 };
 
     // State managment objects
     var defaultViewValues = {
@@ -29,7 +30,8 @@ heatmap_namespace = (function() {
             x: 0,
             y: 0,
             k: 1
-        }
+        },
+        minZoom: false
     };
 
     heatmap.init = function(representation, value) {
@@ -78,55 +80,54 @@ heatmap_namespace = (function() {
     };
 
     function onFilterChange(data) {
-        // Filter
-        var filteredData = _table.getRows().filter(function(row) {
+        _filteredData = _table.getRows().filter(function(row) {
             return _table.isRowIncludedInFilter(row.rowKey, data);
         });
-        drawChart(filteredData);
+        drawChart();
     }
 
     function onSelectionChange(data) {
-        var removed = data.changedSet.removed;
-        var added = data.changedSet.added;
-
+        var removed = data.changeSet.removed;
+        var added = data.changeSet.added;
         if (added) {
-            _value.selectedRowsBuffer.concat(data.changeSet.added);
+            _value.selectedRowsBuffer = _value.selectedRowsBuffer.concat(added);
         }
         if (removed) {
-            _value.selectedRowsBuffer.filter(function(rowId) {
+            _value.selectedRowsBuffer = _value.selectedRowsBuffer.filter(function(rowId) {
                 if (removed.indexOf(rowId) > -1) {
                     return false;
                 }
                 return true;
             });
         }
+        drawChart();
     }
 
     function getSelectionData(data) {
-        var selectedData;
         if (_value.showOnlySelectedRows) {
-            selectedData = data.filter(function(row) {
+            return data.filter(function(row) {
                 return _value.selectedRowsBuffer.indexOf(row.rowKey) > -1;
             });
         }
-        if (selectedData && selectedData.length) {
-            return selectedData;
-        }
+
         return data;
     }
 
     /**
      * Draw and re-draw the whole chart
      */
-    function drawChart(filteredData) {
+    function drawChart() {
         var container = document.querySelector('.knime-layout-container');
         container.innerHTML = '';
 
-        var svgWrapper = '<div class="knime-svg-container"></div>';
+        var svgWrapper =
+            '<div class="knime-svg-container"><span class="gradient" style="width:' +
+            _margin.right +
+            'px"></span></div>';
         var toolTipWrapper = '<div class="knime-tooltip"></div>';
         var infoWrapperEl = '<div class="info-wrapper"></div>';
 
-        var data = filteredData ? getSelectionData(filteredData) : getSelectionData(_table.getRows());
+        var data = _filteredData ? getSelectionData(_filteredData) : getSelectionData(_table.getRows());
 
         container.insertAdjacentHTML('beforeend', svgWrapper + infoWrapperEl + toolTipWrapper);
 
@@ -145,7 +146,7 @@ heatmap_namespace = (function() {
         var paginationHtml = _representation.enablePaging ? getPaginationHtml(paginationData) : '';
         var displayedRows =
             '<p>Showing ' +
-            (paginationData.pageRowStartIndex + 1) +
+            (paginationData.totalRowCount > 1 ? paginationData.pageRowStartIndex + 1 : paginationData.totalRowCount) +
             ' to ' +
             paginationData.pageRowEndIndex +
             ' of ' +
@@ -158,7 +159,7 @@ heatmap_namespace = (function() {
         var chartTitleEl = document.querySelector('.knime-title');
         chartTitleEl.textContent = _value.chartTitle;
         var subTitleEl = document.querySelector('.knime-subtitle');
-        subTitleEl.textContent = _value.subtitle;
+        subTitleEl.textContent = _value.chartSubtitle;
     }
 
     function drawControls() {
@@ -179,10 +180,10 @@ heatmap_namespace = (function() {
             knimeService.addMenuItem('Chart Title:', 'header', chartTitleText);
             var chartSubtitleText = knimeService.createMenuTextField(
                 'chartSubtitleText',
-                _value.subtitle,
+                _value.chartSubtitle,
                 function() {
-                    if (_value.subtitle != this.value) {
-                        _value.subtitle = this.value;
+                    if (_value.chartSubtitle != this.value) {
+                        _value.chartSubtitle = this.value;
                         updateTitles();
                     }
                 },
@@ -268,7 +269,7 @@ heatmap_namespace = (function() {
     function getPaginationHtml(pagination) {
         var paginationRange = createPaginationRange(pagination);
 
-        if (paginationRange.length === 0 || !_value.paginationEnabled) {
+        if (paginationRange.pages.length <= 1 || !_value.paginationEnabled) {
             return '';
         }
         var html = '<ul class="pagination">';
@@ -354,7 +355,7 @@ heatmap_namespace = (function() {
      * @param {Array} data
      */
     function createPagination(data) {
-        if (!_value.paginationEnabled) {
+        if (!_value.paginationEnabled || !data) {
             return { rows: data };
         }
         var pageCount = Math.ceil(data.length / _value.initialPageSize);
@@ -499,6 +500,11 @@ heatmap_namespace = (function() {
         var xAxisD3El = svgD3.select('.knime-axis.knime-x');
         var yAxisD3El = svgD3.select('.knime-axis.knime-y');
 
+        var xAxisEl = xAxisD3El.node();
+        var yAxisEl = yAxisD3El.node();
+        var wrapperLength = xAxisEl ? xAxisEl.getBoundingClientRect().width : 0;
+        var wrapperHeight = yAxisEl ? yAxisEl.getBoundingClientRect().height : 0;
+
         // Zoom and pan
         var zoom = d3
             .zoom()
@@ -506,7 +512,23 @@ heatmap_namespace = (function() {
             .on('zoom', function() {
                 var t = d3.event.transform;
 
-                // Limit zoom
+                // Limit drag to the right and bottom
+                var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
+                var dragRangeX = -wrapperLength - _margin.left - _margin.right;
+                var dragRangeY = -wrapperHeight - _margin.top - infoWrapperHeight;
+                var limitX = window.innerWidth + dragRangeX + wrapperLength * (1 - t.k);
+                var limitY = window.innerHeight + dragRangeY + wrapperHeight * (1 - t.k);
+                t.x = limitX > 0 || t.x > limitX ? t.x : limitX;
+                t.y = limitY > 0 || t.y > limitY ? t.y : limitY;
+
+                // Limit zoom to a minimum
+                // TODO: Less jankiness
+                if ((limitX > 0 || limitY > 0) && !_value.minZoom) {
+                    _value.minZoom = t.k;
+                }
+                t.k = t.k > _value.minZoom ? t.k : _value.minZoom;
+
+                // Limit drag to the left
                 t.x = d3.min([t.x, (1 - t.k) * _margin.left]);
                 t.y = d3.min([t.y, (1 - t.k) * _margin.top]);
 
@@ -515,7 +537,6 @@ heatmap_namespace = (function() {
 
                 xAxisD3El.attr('transform', 'translate(' + t.x + ', ' + _margin.top + ') scale(' + t.k + ')');
                 yAxisD3El.attr('transform', 'translate(' + _margin.left + ', ' + t.y + ') scale(' + t.k + ')');
-
                 _wrapper.attr('transform', t);
             });
 
@@ -597,6 +618,12 @@ heatmap_namespace = (function() {
     function buildSvg(rows) {
         if (_drawCellQueue) {
             _drawCellQueue.invalidate();
+        }
+
+        if (!rows || rows.length === 0) {
+            d3.select('.heatmap .wrapper').remove();
+            d3.select('.heatmap .axis-wrapper').remove();
+            return;
         }
 
         var formattedDataset = formatPageData(rows);
@@ -703,7 +730,7 @@ heatmap_namespace = (function() {
 
         var axisWrapper = svg
             .append('g')
-            .attr('class', 'axisWrapper')
+            .attr('class', 'axis-wrapper')
             .attr('mask', 'url(#maskAxis)');
         axisWrapper
             .append('g')
@@ -772,12 +799,12 @@ heatmap_namespace = (function() {
             .attr('class', 'knime-subtitle')
             .attr('x', _margin.left)
             .attr('y', 50)
-            .text(_value.subtitle);
+            .text(_value.chartSubtitle);
 
         // Legend
-        var legendWidth = 100;
+        var legendWidth = 140;
         var legendHeight = 50;
-        var legendColorRangeHeight = 25;
+        var legendColorRangeHeight = 20;
         var legendMargin = 5;
 
         var legend = d3
