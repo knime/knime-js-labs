@@ -75,6 +75,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     private int m_imageHeight;
     private boolean m_resizeToWindow;
     private boolean m_displayFullscreenButton;
+    private double m_minValue;
+    private double m_maxValue;
 
     private boolean m_enableViewConfiguration;
     private boolean m_enableTitleChange;
@@ -185,6 +187,34 @@ public class HeatMapViewRepresentation extends JSONViewContent {
      */
     public void setDisplayFullscreenButton(final boolean displayFullscreenButton) {
         m_displayFullscreenButton = displayFullscreenButton;
+    }
+
+    /**
+     * @return the minValue
+     */
+    public double getMinValue() {
+        return m_minValue;
+    }
+
+    /**
+     * @param minValue the minValue to set
+     */
+    public void setMinValue(final double minValue) {
+        m_minValue = minValue;
+    }
+
+    /**
+     * @return the maxValue
+     */
+    public double getMaxValue() {
+        return m_maxValue;
+    }
+
+    /**
+     * @param maxValue the maxValue to set
+     */
+    public void setMaxValue(final double maxValue) {
+        m_maxValue = maxValue;
     }
 
     // -- View edit controls getters & setters --
@@ -599,6 +629,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         settings.addInt(HeatMapViewConfig.CFG_IMAGE_HEIGHT, m_imageHeight);
         settings.addBoolean(HeatMapViewConfig.CFG_RESIZE_TO_WINDOW, m_resizeToWindow);
         settings.addBoolean(HeatMapViewConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, m_displayFullscreenButton);
+        settings.addDouble(HeatMapViewConfig.CFG_MIN_VALUE, m_minValue);
+        settings.addDouble(HeatMapViewConfig.CFG_MAX_VALUE, m_maxValue);
 
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_CONFIG, m_enableViewConfiguration);
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_TTILE_CHANGE, m_enableTitleChange);
@@ -645,6 +677,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_imageHeight = settings.getInt(HeatMapViewConfig.CFG_IMAGE_HEIGHT);
         m_resizeToWindow = settings.getBoolean(HeatMapViewConfig.CFG_RESIZE_TO_WINDOW);
         m_displayFullscreenButton = settings.getBoolean(HeatMapViewConfig.CFG_DISPLAY_FULLSCREEN_BUTTON);
+        m_minValue = settings.getDouble(HeatMapViewConfig.CFG_MIN_VALUE);
+        m_maxValue = settings.getDouble(HeatMapViewConfig.CFG_MAX_VALUE);
 
         m_enableViewConfiguration = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_TTILE_CHANGE);
@@ -702,6 +736,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_imageHeight, other.getImageHeight())
                 .append(m_resizeToWindow, other.getResizeToWindow())
                 .append(m_displayFullscreenButton, other.getDisplayFullscreenButton())
+                .append(m_minValue, other.getMinValue())
+                .append(m_maxValue, other.getMaxValue())
                 .append(m_enableViewConfiguration, other.getEnableViewConfiguration())
                 .append(m_enableTitleChange, other.getEnableTitleChange())
                 .append(m_enableColorModeEdit, other.getEnableColorModeEdit())
@@ -743,6 +779,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_imageHeight)
                 .append(m_resizeToWindow)
                 .append(m_displayFullscreenButton)
+                .append(m_minValue)
+                .append(m_maxValue)
                 .append(m_enableViewConfiguration)
                 .append(m_enableTitleChange)
                 .append(m_enableColorModeEdit)

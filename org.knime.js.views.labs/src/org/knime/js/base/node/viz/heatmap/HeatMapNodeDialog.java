@@ -64,6 +64,7 @@ import javax.swing.SpinnerNumberModel;
 
 import org.knime.base.data.xml.SvgValue;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DoubleValue;
 import org.knime.core.data.NominalValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
@@ -75,6 +76,7 @@ import org.knime.core.node.defaultnodesettings.SettingsModelColor;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.util.ColumnSelectionPanel;
 import org.knime.core.node.util.DataValueColumnFilter;
+import org.knime.core.node.util.filter.column.DataColumnSpecFilterConfiguration;
 import org.knime.core.node.util.filter.column.DataColumnSpecFilterPanel;
 import org.knime.js.core.CSSUtils;
 import org.knime.js.core.settings.DialogUtil;
@@ -87,10 +89,16 @@ import org.knime.js.core.settings.DialogUtil;
 public class HeatMapNodeDialog extends NodeDialogPane {
 
     private static final int TEXT_FIELD_SIZE = 20;
+    private DataColumnSpecFilterConfiguration m_columnSpecFilter = null;
+    private DataTableSpec m_spec;
 
     private final DataColumnSpecFilterPanel m_columnsFilterPanel;
     private final ColumnSelectionPanel m_labelColumnColumnSelectionPanel;
     private final ColumnSelectionPanel m_svgLabelColumnColumnSelectionPanel;
+    private final JCheckBox m_customMinValueCheckBox;
+    private final JCheckBox m_customMaxValueCheckBox;
+    private final JSpinner m_minValueSpinner;
+    private final JSpinner m_maxValueSpinner;
 
     private final DialogComponentColorChooser m_firstColorColorChooser;
     private final DialogComponentColorChooser m_secondColorColorChooser;
@@ -138,6 +146,17 @@ public class HeatMapNodeDialog extends NodeDialogPane {
             new ColumnSelectionPanel(BorderFactory.createTitledBorder("Choose an image column: "),
                 new DataValueColumnFilter(SvgValue.class), true, false);
         m_svgLabelColumnColumnSelectionPanel.setRequired(false);
+        m_customMinValueCheckBox = new JCheckBox("Custom:", false);
+        m_customMaxValueCheckBox = new JCheckBox("Custom:", false);
+        m_minValueSpinner = new JSpinner(new SpinnerNumberModel(0.01, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0.01));
+        m_minValueSpinner.setPreferredSize(new Dimension(260, 20));
+        m_maxValueSpinner = new JSpinner(new SpinnerNumberModel(0.01, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 0.01));
+        m_maxValueSpinner.setPreferredSize(new Dimension(260, 20));
+        m_columnsFilterPanel.addChangeListener(e -> updateMinMax());
+        m_customMinValueCheckBox.addChangeListener(e -> enableCustomMin());
+        m_customMaxValueCheckBox.addChangeListener(e -> enableCustomMax());
+        m_minValueSpinner.addChangeListener(e -> minGreaterThanMax());
+        m_maxValueSpinner.addChangeListener(e -> maxLessThanMin());
 
         m_gradientColors = new ThreeColorGradientComponent(Color.BLACK, Color.BLACK, Color.BLACK);
         m_firstColorColorChooser = new DialogComponentColorChooser(new SettingsModelColor("firstGradientColor", Color.BLACK), null, true) {
@@ -214,6 +233,10 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         config.setLabelColumn(m_labelColumnColumnSelectionPanel.getSelectedColumn());
         config.setSvgLabelColumn(m_svgLabelColumnColumnSelectionPanel.isEnabled()
             ? m_svgLabelColumnColumnSelectionPanel.getSelectedColumn() : null);
+        config.setMinValue((double) m_minValueSpinner.getValue());
+        config.setMaxValue((double) m_maxValueSpinner.getValue());
+        config.setUseCustomMin(m_customMinValueCheckBox.isSelected());
+        config.setUseCustomMax(m_customMaxValueCheckBox.isSelected());
 
         config.setThreeColorGradient(m_gradientColors.getColorsAsHex());
         config.setDiscreteGradientColors(m_gradientColors.getAllColorsHex());
@@ -262,9 +285,15 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         final HeatMapViewConfig config = new HeatMapViewConfig();
         config.loadSettingsForDialog(settings, spec);
 
+        m_columnSpecFilter = config.getColumns();
+        m_spec = (DataTableSpec) specs[0];
         m_columnsFilterPanel.loadConfiguration(config.getColumns(), spec);
         m_labelColumnColumnSelectionPanel.update((DataTableSpec) specs[0], config.getLabelColumn(), true);
         loadSvgColumn(spec, config);
+        m_customMinValueCheckBox.setSelected(config.getUseCustomMin());
+        m_customMaxValueCheckBox.setSelected(config.getUseCustomMax());
+        m_minValueSpinner.setValue(config.getMinValue());
+        m_maxValueSpinner.setValue(config.getMaxValue());
 
         final String[] colors = config.getThreeColorGradient();
         m_gradientColors.setColors(colors[0], colors[1], colors[2]);
@@ -307,6 +336,9 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         enableViewEdit();
         enablePaging();
         enableSelection();
+        enableCustomMin();
+        enableCustomMax();
+        updateMinMax();
     }
 
     // -- Helper methods --
@@ -317,23 +349,65 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         c.insets = new Insets(5, 5, 5, 5);
         c.gridx = 0;
         c.gridy = 0;
-        c.gridwidth = 1;
         c.anchor = GridBagConstraints.NORTHWEST;
         c.fill = GridBagConstraints.HORIZONTAL;
 
         c.weightx = 1;
-        m_labelColumnColumnSelectionPanel.setPreferredSize(new Dimension(260, 50));
+        m_labelColumnColumnSelectionPanel.setPreferredSize(new Dimension(200, 50));
         panel.add(m_labelColumnColumnSelectionPanel, c);
-        c.gridx++;
-        m_svgLabelColumnColumnSelectionPanel.setPreferredSize(new Dimension(260, 50));
+        c.gridx = 2;
+        m_svgLabelColumnColumnSelectionPanel.setPreferredSize(new Dimension(200, 50));
         panel.add(m_svgLabelColumnColumnSelectionPanel, c);
 
         c.gridx = 0;
         c.gridy++;
-        c.gridwidth = 2;
-
         c.weightx = 0;
+        c.gridwidth = 3;
+
         panel.add(m_columnsFilterPanel, c);
+
+        c.gridx = 0;
+        c.gridy++;
+
+        JPanel panel2 = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JPanel minPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc2 = new GridBagConstraints();
+        gbc2.insets = new Insets(0, 0, 0, 0);
+        gbc2.anchor = GridBagConstraints.NORTHWEST;
+        gbc2.fill = GridBagConstraints.BOTH;
+        gbc2.weightx = 0;
+        gbc2.weighty = 0;
+        gbc2.gridx = 0;
+        gbc2.gridy = 0;
+        minPanel.add(m_customMinValueCheckBox, gbc2);
+        gbc2.weightx = 1;
+        gbc2.gridx++;
+        gbc2.insets = new Insets(0, 5, 0, 0);
+        minPanel.add(m_minValueSpinner, gbc2);
+        DialogUtil.addPairToPanel("Minimum value:", minPanel, panel2, gbc);
+
+        JPanel maxPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc3 = new GridBagConstraints();
+        gbc3.insets = new Insets(0, 0, 0, 0);
+        gbc3.anchor = GridBagConstraints.NORTHWEST;
+        gbc3.fill = GridBagConstraints.BOTH;
+        gbc3.weightx = 0;
+        gbc3.weighty = 0;
+        gbc3.gridx = 0;
+        gbc3.gridy = 0;
+        maxPanel.add(m_customMaxValueCheckBox, gbc3);
+        gbc3.weightx = 1;
+        gbc3.gridx++;
+        gbc3.insets = new Insets(0, 5, 0, 0);
+        maxPanel.add(m_maxValueSpinner, gbc3);
+        DialogUtil.addPairToPanel("Maximum value:", maxPanel, panel2, gbc);
+
+        panel.add(panel2, c);
 
         c.gridx = 0;
         c.gridy++;
@@ -655,5 +729,62 @@ public class HeatMapNodeDialog extends NodeDialogPane {
             throw new InvalidSettingsException(e.getMessage(), e);
         }
         return allowedPageSizes;
+    }
+
+    private double[] getMinMax() {
+        m_columnsFilterPanel.saveConfiguration(m_columnSpecFilter);
+        final String[] included = m_columnSpecFilter.applyTo(m_spec).getIncludes();
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < included.length; i++) {
+            final double tmin = ((DoubleValue) m_spec.getColumnSpec(included[i]).getDomain().getLowerBound()).getDoubleValue();
+            final double tmax = ((DoubleValue) m_spec.getColumnSpec(included[i]).getDomain().getUpperBound()).getDoubleValue();
+            if (tmin < min) {
+                min = tmin;
+            }
+            if (tmax > max) {
+                max = tmax;
+            }
+        }
+        return new double[] {min, max};
+    }
+
+    private void updateMinMax() {
+        if (m_customMinValueCheckBox.isSelected() && m_customMaxValueCheckBox.isSelected()) {
+            return;
+        }
+        final double[] minMax = getMinMax();
+        if (!m_customMinValueCheckBox.isSelected()) {
+            m_minValueSpinner.setValue(minMax[0]);
+        }
+        if (!m_customMaxValueCheckBox.isSelected()) {
+            m_maxValueSpinner.setValue(minMax[1]);
+        }
+    }
+
+    private void enableCustomMin() {
+        m_minValueSpinner.setEnabled(m_customMinValueCheckBox.isSelected());
+        updateMinMax();
+    }
+
+    private void enableCustomMax() {
+        m_maxValueSpinner.setEnabled(m_customMaxValueCheckBox.isSelected());
+        updateMinMax();
+    }
+
+    private void minGreaterThanMax() {
+        final double minValue = (double) m_minValueSpinner.getValue();
+        final double maxValue = (double) m_maxValueSpinner.getValue();
+        if (minValue > maxValue) {
+            m_minValueSpinner.setValue(maxValue);
+        }
+    }
+
+    private void maxLessThanMin() {
+        final double minValue = (double) m_minValueSpinner.getValue();
+        final double maxValue = (double) m_maxValueSpinner.getValue();
+        if (minValue > maxValue) {
+            m_maxValueSpinner.setValue(minValue);
+        }
     }
 }

@@ -36,6 +36,12 @@
 			<option name="Columns to display">
 				Select the columns to display in the heatmap.
 			</option>
+			<option name="Minimum value">
+				The minimum value for the color gradient to map to. If <i>Custom</i> is selected, a custom value may be entered.
+			</option>
+			<option name="Maximum value">
+				The maximum value for the color gradient to map to. If <i>Custom</i> is selected, a custom value may be entered.
+			</option>
 		</tab>
 		<tab name="View Configuration">
 			<option name="Image width in pixels">

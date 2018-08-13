@@ -105,6 +105,22 @@ public final class HeatMapViewConfig {
     final static String DEFAULT_CHART_SUBTITLE = "";
     private String m_chartSubtitle = DEFAULT_CHART_SUBTITLE;
 
+    final static String CFG_MIN_VALUE = "minValue";
+    final static double DEFAULT_MIN_VALUE = 0.0;
+    private double m_minValue = DEFAULT_MIN_VALUE;
+
+    final static String CFG_MAX_VALUE = "maxValue";
+    final static double DEFAULT_MAX_VALUE = 0.0;
+    private double m_maxValue = DEFAULT_MAX_VALUE;
+
+    final static String CFG_USE_CUSTOM_MIN = "useCustomMin";
+    final static boolean DEFAULT_USE_CUSTOM_MIN = false;
+    private boolean m_useCustomMin = DEFAULT_USE_CUSTOM_MIN;
+
+    final static String CFG_USE_CUSTOM_MAX = "useCustomMax";
+    final static boolean DEFAULT_USE_CUSTOM_MAX = false;
+    private boolean m_useCustomMax = DEFAULT_USE_CUSTOM_MAX;
+
     // View edit controls
     final static String CFG_ENABLE_CONFIG = "enableViewConfiguration";
     final static boolean DEFAULT_ENABLE_CONFIG = true;
@@ -358,6 +374,62 @@ public final class HeatMapViewConfig {
      */
     public void setChartSubtitle(final String chartSubtitle) {
         m_chartSubtitle = chartSubtitle;
+    }
+
+    /**
+     * @return the minValue
+     */
+    public double getMinValue() {
+        return m_minValue;
+    }
+
+    /**
+     * @param minValue the minValue to set
+     */
+    public void setMinValue(final double minValue) {
+        m_minValue = minValue;
+    }
+
+    /**
+     * @return the maxValue
+     */
+    public double getMaxValue() {
+        return m_maxValue;
+    }
+
+    /**
+     * @param maxValue the maxValue to set
+     */
+    public void setMaxValue(final double maxValue) {
+        m_maxValue = maxValue;
+    }
+
+    /**
+     * @return the useCustomMin
+     */
+    public boolean getUseCustomMin() {
+        return m_useCustomMin;
+    }
+
+    /**
+     * @param useCustomMin the useCustomMin to set
+     */
+    public void setUseCustomMin(final boolean useCustomMin) {
+        m_useCustomMin = useCustomMin;
+    }
+
+    /**
+     * @return the useCustomMax
+     */
+    public boolean getUseCustomMax() {
+        return m_useCustomMax;
+    }
+
+    /**
+     * @param useCustomMax the useCustomMax to set
+     */
+    public void setUseCustomMax(final boolean useCustomMax) {
+        m_useCustomMax = useCustomMax;
     }
 
     // -- View edit controls getters & setters --
@@ -740,6 +812,10 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, m_displayFullscreenButton);
         settings.addString(CFG_CHART_TITLE, m_chartTitle);
         settings.addString(CFG_CHART_SUBTITLE, m_chartSubtitle);
+        settings.addDouble(CFG_MIN_VALUE, m_minValue);
+        settings.addDouble(CFG_MAX_VALUE, m_maxValue);
+        settings.addBoolean(CFG_USE_CUSTOM_MIN, m_useCustomMin);
+        settings.addBoolean(CFG_USE_CUSTOM_MAX, m_useCustomMax);
 
         settings.addBoolean(CFG_ENABLE_CONFIG, m_enableViewConfiguration);
         settings.addBoolean(CFG_ENABLE_TTILE_CHANGE, m_enableTitleChange);
@@ -789,6 +865,10 @@ public final class HeatMapViewConfig {
         m_displayFullscreenButton = settings.getBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON);
         m_chartTitle = settings.getString(CFG_CHART_TITLE);
         m_chartSubtitle = settings.getString(CFG_CHART_SUBTITLE);
+        m_minValue = settings.getDouble(CFG_MIN_VALUE);
+        m_maxValue = settings.getDouble(CFG_MAX_VALUE);
+        m_useCustomMin = settings.getBoolean(CFG_USE_CUSTOM_MIN);
+        m_useCustomMax = settings.getBoolean(CFG_USE_CUSTOM_MAX);
 
         m_enableViewConfiguration = settings.getBoolean(CFG_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(CFG_ENABLE_TTILE_CHANGE);
@@ -838,6 +918,10 @@ public final class HeatMapViewConfig {
         m_displayFullscreenButton = settings.getBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
         m_chartTitle = settings.getString(CFG_CHART_TITLE, DEFAULT_CHART_TITLE);
         m_chartSubtitle = settings.getString(CFG_CHART_SUBTITLE, DEFAULT_CHART_SUBTITLE);
+        m_minValue = settings.getDouble(CFG_MIN_VALUE, DEFAULT_MIN_VALUE);
+        m_maxValue = settings.getDouble(CFG_MAX_VALUE, DEFAULT_MAX_VALUE);
+        m_useCustomMin = settings.getBoolean(CFG_USE_CUSTOM_MIN, DEFAULT_USE_CUSTOM_MIN);
+        m_useCustomMax = settings.getBoolean(CFG_USE_CUSTOM_MAX, DEFAULT_USE_CUSTOM_MAX);
 
         m_enableViewConfiguration = settings.getBoolean(CFG_ENABLE_CONFIG, DEFAULT_ENABLE_CONFIG);
         m_enableTitleChange = settings.getBoolean(CFG_ENABLE_TTILE_CHANGE, DEFAULT_ENABLE_TTILE_CHANGE);

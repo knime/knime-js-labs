@@ -255,6 +255,8 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
             representation.setImageHeight(m_config.getImageHeight());
             representation.setResizeToWindow(m_config.getResizeToWindow());
             representation.setDisplayFullscreenButton(m_config.getDisplayFullscreenButton());
+            representation.setMinValue(m_config.getMinValue());
+            representation.setMaxValue(m_config.getMaxValue());
             representation.setEnableViewConfiguration(m_config.getEnableViewConfiguration());
             representation.setEnableTitleChange(m_config.getEnableTitleChange());
             representation.setEnableColorModeEdit(m_config.getEnableColorModeEdit());
