@@ -110,7 +110,7 @@ public final class HeatMapViewConfig {
     private double m_minValue = DEFAULT_MIN_VALUE;
 
     final static String CFG_MAX_VALUE = "maxValue";
-    final static double DEFAULT_MAX_VALUE = 0.0;
+    final static double DEFAULT_MAX_VALUE = 100.0;
     private double m_maxValue = DEFAULT_MAX_VALUE;
 
     final static String CFG_USE_CUSTOM_MIN = "useCustomMin";
@@ -865,8 +865,14 @@ public final class HeatMapViewConfig {
         m_displayFullscreenButton = settings.getBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON);
         m_chartTitle = settings.getString(CFG_CHART_TITLE);
         m_chartSubtitle = settings.getString(CFG_CHART_SUBTITLE);
-        m_minValue = settings.getDouble(CFG_MIN_VALUE);
-        m_maxValue = settings.getDouble(CFG_MAX_VALUE);
+
+        final double min = settings.getDouble(CFG_MIN_VALUE);
+        final double max = settings.getDouble(CFG_MAX_VALUE);
+        if (min > max) {
+            throw new InvalidSettingsException("min (" + min + ") cannot be greater than max (" + max + ")");
+        }
+        m_minValue = min;
+        m_maxValue = max;
         m_useCustomMin = settings.getBoolean(CFG_USE_CUSTOM_MIN);
         m_useCustomMax = settings.getBoolean(CFG_USE_CUSTOM_MAX);
 
