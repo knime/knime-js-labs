@@ -63,6 +63,7 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 import org.knime.base.data.xml.SvgValue;
+import org.knime.core.data.DataCell;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.NominalValue;
@@ -741,16 +742,22 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < included.length; i++) {
-            final double tmin = ((DoubleValue) m_spec.getColumnSpec(included[i]).getDomain().getLowerBound()).getDoubleValue();
-            final double tmax = ((DoubleValue) m_spec.getColumnSpec(included[i]).getDomain().getUpperBound()).getDoubleValue();
-            if (tmin < min) {
-                min = tmin;
+            final DataCell lowerBound = m_spec.getColumnSpec(included[i]).getDomain().getLowerBound();
+            final DataCell upperBound = m_spec.getColumnSpec(included[i]).getDomain().getUpperBound();
+            if (lowerBound != null && ((DoubleValue)lowerBound).getDoubleValue() < min) {
+                min = ((DoubleValue)lowerBound).getDoubleValue();
             }
-            if (tmax > max) {
-                max = tmax;
+            if (upperBound != null && ((DoubleValue)upperBound).getDoubleValue() > max) {
+                max = ((DoubleValue)upperBound).getDoubleValue();
             }
         }
-        return new double[] {min, max};
+        if (min == Double.POSITIVE_INFINITY) {
+            min = (double)m_minValueSpinner.getValue();
+        }
+        if (max == Double.NEGATIVE_INFINITY) {
+            max = (double)m_maxValueSpinner.getValue();
+        }
+        return new double[]{min, max};
     }
 
     private void updateMinMax() {

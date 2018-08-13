@@ -37,10 +37,16 @@
 				Select the columns to display in the heatmap.
 			</option>
 			<option name="Minimum value">
-				The minimum value for the color gradient to map to. If <i>Custom</i> is selected, a custom value may be entered.
+				The minimum value for the color gradient to map to. If
+				<i>Custom</i>
+				is selected, a custom value may be entered. Columns without defined
+				minimum values will not be used when computing the minimum.
 			</option>
 			<option name="Maximum value">
-				The maximum value for the color gradient to map to. If <i>Custom</i> is selected, a custom value may be entered.
+				The maximum value for the color gradient to map to. If
+				<i>Custom</i>
+				is selected, a custom value may be entered. Columns without defined
+				maximum values will not be used when computing the maximum.
 			</option>
 		</tab>
 		<tab name="View Configuration">
