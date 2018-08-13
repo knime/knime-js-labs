@@ -230,6 +230,10 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         final HeatMapViewConfig config = new HeatMapViewConfig();
 
         m_columnsFilterPanel.saveConfiguration(config.getColumns());
+        final String[] includedCols = config.getColumns().applyTo(m_spec).getIncludes();
+        if (includedCols == null || includedCols.length < 1) {
+            throw new InvalidSettingsException("At least one numeric column must be included");
+        }
         config.setLabelColumn(m_labelColumnColumnSelectionPanel.getSelectedColumn());
         config.setSvgLabelColumn(m_svgLabelColumnColumnSelectionPanel.isEnabled()
             ? m_svgLabelColumnColumnSelectionPanel.getSelectedColumn() : null);

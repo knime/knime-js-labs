@@ -114,9 +114,13 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
      */
     @Override
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        PortObjectSpec tableSpec = inSpecs[0];
+        DataTableSpec tableSpec = (DataTableSpec) inSpecs[0];
+        final String[] includedCols = m_config.getColumns().applyTo(tableSpec).getIncludes();
+        if (includedCols == null || includedCols.length < 1) {
+            throw new InvalidSettingsException("Given data table contains no numeric columns");
+        }
         if (m_config.getEnableSelection()) {
-            final ColumnRearranger createColumnRearranger = createColumnAppender((DataTableSpec)inSpecs[0], null);
+            final ColumnRearranger createColumnRearranger = createColumnAppender(tableSpec, null);
             tableSpec = createColumnRearranger.createSpec();
         }
 
