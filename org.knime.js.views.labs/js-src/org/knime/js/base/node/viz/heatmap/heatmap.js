@@ -11,23 +11,21 @@ heatmap_namespace = (function() {
         _colorRange,
         _filteredData,
         _zoomDimensions,
-        _context,
         _cellSize,
         _wrapper,
         _transformer,
         _cellHighlighter,
-        _maxExtension;
+        _maxExtensionY,
+        _maxExtensionX;
 
     // Hardcoded Default Settings
     var _minCellSize = 10;
     var _devicePixelRatio = window.devicePixelRatio;
-    var _maxCanvasHeight = 16000; // canvas has native size limits
-    var _margin = { top: 80, left: 50, right: 10 };
-    var _defaultZoomLevel = {
-        x: 0,
-        y: 0,
-        k: 1
-    };
+    var _maxCanvasHeight = 8000; // canvas has native size limits
+    var _margin = { top: 80, left: 50, right: 10, bottom: 10 };
+    var _defaultZoomX = 0;
+    var _defaultZoomY = 0;
+    var _defaultZoomK = 1;
     var _legendWidth = 140;
     var _legendHeight = 50;
     var _legendColorRangeHeight = 20;
@@ -35,9 +33,11 @@ heatmap_namespace = (function() {
 
     // State managment objects
     var defaultViewValues = {
-        selectedRowsBuffer: [],
+        selection: [],
         currentPage: 1,
-        currentZoomLevel: _defaultZoomLevel,
+        zoomX: _defaultZoomX,
+        zoomY: _defaultZoomY,
+        zoomK: _defaultZoomK,
         titlesHeight: 50
     };
 
@@ -65,10 +65,10 @@ heatmap_namespace = (function() {
             _colNames[repColNames.indexOf(hmColName)] = hmColName;
         });
 
-        if (_representation.subscribeSelection) {
+        if (_value.subscribeSelection) {
             knimeService.subscribeToSelection(_table.getTableId(), onSelectionChange);
         }
-        if (_representation.subscribeFilter) {
+        if (_value.subscribeFilter) {
             var filterIds = _table.getFilterIds();
             for (var i = 0; i < filterIds.length; i++) {
                 knimeService.subscribeToFilter(_table.getTableId(), onFilterChange, filterIds[i]);
@@ -91,8 +91,8 @@ heatmap_namespace = (function() {
 
     heatmap.getSVG = function() {
         var svgElement = d3.select('.heatmap').node();
-        var xmlSerializer = new XMLSerializer();
-        return xmlSerializer.serializeToString(svgElement);
+        knimeService.inlineSvgStyles(svgElement);
+        return new XMLSerializer().serializeToString(svgElement);
     };
 
     function onFilterChange(data) {
@@ -107,23 +107,23 @@ heatmap_namespace = (function() {
         var added = data.changeSet.added;
         if (added) {
             added.map(function(rowId) {
-                var index = _value.selectedRowsBuffer.indexOf(rowId);
+                var index = _value.selection.indexOf(rowId);
                 if (index === -1) {
-                    _value.selectedRowsBuffer.push(rowId);
+                    _value.selection.push(rowId);
                 }
             });
-            styleSelectedRows(true);
+            styleSelectedRows();
         }
         if (removed) {
             removed.map(function(rowId) {
-                var index = _value.selectedRowsBuffer.indexOf(rowId);
+                var index = _value.selection.indexOf(rowId);
                 if (index > -1) {
-                    _value.selectedRowsBuffer.splice(index, 1);
+                    _value.selection.splice(index, 1);
                 }
             });
-            styleSelectedRows(false);
+            styleSelectedRows();
         }
-        if (_value.showOnlySelectedRows) {
+        if (_value.showSelectedRowsOnly) {
             drawChart();
             resetZoom(true);
         }
@@ -134,9 +134,9 @@ heatmap_namespace = (function() {
      * @param {Array} data
      */
     function getSelectionData(data) {
-        if (_value.showOnlySelectedRows) {
+        if (_value.showSelectedRowsOnly) {
             return data.filter(function(row) {
-                return _value.selectedRowsBuffer.indexOf(row.rowKey) > -1;
+                return _value.selection.indexOf(row.rowKey) > -1;
             });
         }
 
@@ -151,9 +151,11 @@ heatmap_namespace = (function() {
         container.innerHTML = '';
 
         var svgWrapper =
-            '<div class="knime-svg-container" data-iframe-height><span class="gradient" style="width:' +
+            '<div class="knime-svg-container" data-iframe-height><span class="gradient-y" style="width:' +
             _margin.right +
-            'px"></span></div>';
+            'px"></span><span class="gradient-x" style="height:' +
+            _margin.bottom +
+            'px"></div>';
         var toolTipWrapper = '<div class="knime-tooltip"></div>';
         var infoWrapperEl = '<div class="info-wrapper"></div>';
         var progressBar = '<div class="progress-bar">Rendering ...<span class="progress"></span></div>';
@@ -168,9 +170,6 @@ heatmap_namespace = (function() {
 
         // Build svg based on the paginated data
         drawContents(paginationData.rows);
-
-        // Events
-        registerDomEvents();
     }
 
     function getProgressBar(totalRowsCount) {
@@ -185,7 +184,7 @@ heatmap_namespace = (function() {
                 interval.clear();
             }
             var percentageComplete = 100 - (_drawCellQueue.remaining() / totalRowsCount) * 100;
-            if (percentageComplete < 30) {
+            if (percentageComplete < 60) {
                 // only display progress bar if initial rendered percentage is low
                 progressBar.style.opacity = 1;
             }
@@ -256,21 +255,6 @@ heatmap_namespace = (function() {
             knimeService.addNavSpacer();
         }
 
-        if (_representation.enableZoom) {
-            var zoomButtonClicked = function(evt, initialize) {
-                _value.enableZoom = !_value.enableZoom;
-                var button = document.getElementById('heatmap-mouse-mode-zoom');
-                button.classList.toggle('active');
-                if (!initialize) {
-                    setZoomEvents();
-                }
-            };
-            knimeService.addButton('heatmap-mouse-mode-zoom', 'search', 'Mouse Mode "Zoom"', zoomButtonClicked);
-            if (_representation.enableZoom && !_representation.enableSelection && !_representation.enablePanning) {
-                zoomButtonClicked(false, true);
-            }
-        }
-
         if (_representation.enableSelection) {
             var selectionButtonClicked = function() {
                 _value.enableSelection = !_value.enableSelection;
@@ -285,6 +269,31 @@ heatmap_namespace = (function() {
             );
             if (_representation.enableSelection && !_representation.enablePanning) {
                 selectionButtonClicked();
+            }
+
+            knimeService.addButton('heatmap-clear-selection-button', 'minus-square-o', 'Clear selection', function() {
+                var tableId = _table.getTableId();
+                _value.selection = [];
+                if (_value.publishSelection) {
+                    knimeService.setSelectedRows(tableId, _value.selection);
+                }
+                styleSelectedRows();
+            });
+            knimeService.addNavSpacer();
+        }
+
+        if (_representation.enableZoom) {
+            var zoomButtonClicked = function(evt, initialize) {
+                _value.enableZoom = !_value.enableZoom;
+                var button = document.getElementById('heatmap-mouse-mode-zoom');
+                button.classList.toggle('active');
+                if (!initialize) {
+                    setZoomEvents();
+                }
+            };
+            knimeService.addButton('heatmap-mouse-mode-zoom', 'search', 'Mouse Mode "Zoom"', zoomButtonClicked);
+            if (_representation.enableZoom && !_representation.enableSelection && !_representation.enablePanning) {
+                zoomButtonClicked(false, true);
             }
         }
 
@@ -338,26 +347,24 @@ heatmap_namespace = (function() {
         }
 
         if (_representation.enableShowToolTips) {
-            var displayDataCellToolTip = knimeService.createMenuCheckbox(
-                'displayDataCellToolTip',
-                _value.displayDataCellToolTip,
-                function() {
-                    _value.displayDataCellToolTip = this.checked;
-                }
-            );
-            knimeService.addMenuItem('Show Tooltips', 'info', displayDataCellToolTip);
+            var showToolTips = knimeService.createMenuCheckbox('showToolTips', _value.showToolTips, function() {
+                _value.showToolTips = this.checked;
+            });
+            knimeService.addMenuItem('Show Tooltips', 'info', showToolTips);
         }
 
-        var showOnlySelectedRows = knimeService.createMenuCheckbox(
-            'showOnlySelectedRows',
-            _value.showOnlySelectedRows,
-            function() {
-                _value.showOnlySelectedRows = this.checked;
-                drawChart();
-                resetZoom(true);
-            }
-        );
-        knimeService.addMenuItem('Show Selected Rows Only', 'filter', showOnlySelectedRows);
+        if (_representation.enableShowSelectedRowsOnly) {
+            var showSelectedRowsOnly = knimeService.createMenuCheckbox(
+                'showSelectedRowsOnly',
+                _value.showSelectedRowsOnly,
+                function() {
+                    _value.showSelectedRowsOnly = this.checked;
+                    drawChart();
+                    resetZoom(true);
+                }
+            );
+            knimeService.addMenuItem('Show Selected Rows Only', 'filter', showSelectedRowsOnly);
+        }
 
         knimeService.addMenuDivider();
         if (_representation.enableColorModeEdit) {
@@ -382,17 +389,21 @@ heatmap_namespace = (function() {
         }
 
         if (_representation.enablePageSizeChange) {
-            var initialPageSize = knimeService.createMenuSelect(
-                'initialPageSize',
-                _value.initialPageSize,
-                _representation.allowedPageSizes,
-                function() {
-                    _value.initialPageSize = this.value;
-                    drawChart();
+            var options = _representation.allowedPageSizes;
+            if (_representation.enableShowAll) {
+                options.push('all');
+            }
+            var pageSize = knimeService.createMenuSelect('pageSize', _value.initialPageSize, options, function() {
+                var isNewSizeSmaller = this.value < _value.initialPageSize;
+                _value.initialPageSize = this.value;
+                drawChart();
+                if (isNewSizeSmaller) {
+                    // prevent not showing any rows
+                    resetZoom(true);
                 }
-            );
+            });
 
-            knimeService.addMenuItem('Rows per Page', 'table', initialPageSize);
+            knimeService.addMenuItem('Rows per Page', 'table', pageSize);
         }
     }
 
@@ -434,7 +445,7 @@ heatmap_namespace = (function() {
         return html;
     }
 
-    function registerDomEvents() {
+    function registerEvents() {
         var pagination = document.body.querySelector('.pagination');
         if (pagination) {
             document.body.querySelector('.pagination').addEventListener('click', function(e) {
@@ -447,6 +458,54 @@ heatmap_namespace = (function() {
         }
 
         window.addEventListener('resize', drawChart);
+
+        // Events for the svg are native js event listeners not
+        // d3 event listeners for better performance
+        var domWrapper = document.querySelector('.knime-svg-container svg .transformer');
+        // Highlight mouseover cell and show tooltip
+        domWrapper.addEventListener('mouseover', function(e) {
+            domWrapper.addEventListener('mousemove', onMousemove);
+        });
+
+        var onMousemove = function(e) {
+            var data = lookupCell(e);
+
+            if (!data) {
+                return;
+            }
+            var toolTipInnerHTML =
+                '<span class="knime-tooltip-caption">x:' +
+                data.x +
+                ' y:' +
+                data.y +
+                '</span><span class="knime-tooltip-value">' +
+                (data.value === null
+                    ? '<span class="missing-value">?</span>'
+                    : '<span class="knime-double">' + data.value + '</span>') +
+                '</span>';
+
+            showTooltip(e, toolTipInnerHTML);
+        };
+
+        domWrapper.addEventListener('mouseout', function(e) {
+            hideTooltip();
+            domWrapper.removeEventListener('mouseover', onMousemove);
+        });
+
+        // Row selection
+        domWrapper.addEventListener('mousedown', function(e) {
+            var data = lookupCell(e);
+            if (!data) {
+                return;
+            }
+            if (e.shiftKey) {
+                return selectDeltaRow(data.y);
+            }
+            if (e.ctrlKey || e.metaKey) {
+                return selectSingleRow(data.y, true);
+            }
+            return selectSingleRow(data.y);
+        });
     }
 
     /**
@@ -456,22 +515,20 @@ heatmap_namespace = (function() {
     function createPaginationIntervals(pagination) {
         var delta = 2; // number of pages displayed left and right to "center"
         var left = _value.currentPage - delta;
-        var right = _value.currentPage + delta + 1;
+        var right = _value.currentPage + delta;
         var range = [];
         var paginationRange = [];
         var curPage;
 
         for (var i = 1; i <= pagination.pageCount; i++) {
-            if (i === 1 || i === pagination.pageCount || (i >= left && i < right)) {
+            if (i === 1 || i === pagination.pageCount || (i >= left && i <= right)) {
                 range.push(i);
             }
         }
 
         range.map(function(page) {
             if (curPage) {
-                if (page - curPage === delta) {
-                    paginationRange.push(page + 1);
-                } else if (page - curPage !== 1) {
+                if (page - curPage !== 1) {
                     paginationRange.push('...');
                 }
             }
@@ -494,13 +551,15 @@ heatmap_namespace = (function() {
         if (!_representation.enablePaging || !data) {
             return { rows: data };
         }
-        var pageCount = Math.ceil(data.length / _value.initialPageSize);
+        var pageSize = _value.initialPageSize === 'all' ? data.length : _value.initialPageSize;
+
+        var pageCount = Math.ceil(data.length / pageSize);
 
         // jump to page 1 if total number of pages exceeds current page
         _value.currentPage = _value.currentPage <= pageCount ? _value.currentPage : 1;
 
-        var pageRowEndIndex = _value.initialPageSize * _value.currentPage;
-        var pageRowStartIndex = _value.initialPageSize * (_value.currentPage - 1);
+        var pageRowEndIndex = pageSize * _value.currentPage;
+        var pageRowStartIndex = pageSize * (_value.currentPage - 1);
         var rows = data.slice(pageRowStartIndex, pageRowEndIndex);
 
         return {
@@ -515,14 +574,14 @@ heatmap_namespace = (function() {
     }
 
     /**
-     * Format the data on a per-cell level and
+     * Format the data on a per-row level and
      * - get current row names
-     * - get images
+     * - get row label images
      * - get labels
      * @param {Array} rows
      */
     function formatPageData(rows) {
-        var images = [];
+        var rowLabelImages = [];
         var rowNames = [];
         var rowLables = [];
 
@@ -536,43 +595,36 @@ heatmap_namespace = (function() {
 
             // Storing images in an separate array is enough
             if (_representation.svgLabelColumn) {
-                images[row.rowKey] = _table.getCell(row.rowKey, _representation.svgLabelColumn);
+                rowLabelImages[row.rowKey] = _table.getCell(row.rowKey, _representation.svgLabelColumn);
             }
 
-            // Set values for each cell
-            var vals = row.data.reduce(function(rowAcc, value, currentIndex) {
-                if (_colNames[currentIndex] === undefined) {
-                    return rowAcc;
-                }
-                var newItem = {};
-                newItem.y = row.rowKey;
-                newItem.x = _colNames[currentIndex];
-                newItem.value = value;
-
-                rowAcc.push(newItem);
-                return rowAcc;
-            }, []);
-            return accumulator.concat(vals);
+            return accumulator.concat(row);
         }, []);
 
         return {
-            images: images,
+            rowLabelImages: rowLabelImages,
             data: allValues,
             rowNames: rowNames,
             rowLables: rowLables
         };
     }
 
-    function lookupCell(rows, e) {
-        if (!_value.displayDataCellToolTip && !_value.enableSelection) {
+    /**
+     * Search for a data cell based on the mouse position
+     * This needs some offsetting as the position calculated via d3 doesn't match the mouseposition
+     * due to relative positioning of the canvas
+     *
+     * @param {MouseEvent} the current mouse event
+     */
+    function lookupCell(e) {
+        if (!_value.showToolTips && !_value.enableSelection) {
             return;
         }
-        var rect = e.target.getBoundingClientRect();
+        var left = document.querySelectorAll('canvas')[0].getBoundingClientRect().left;
         var top = document.querySelectorAll('canvas')[0].getBoundingClientRect().top;
-        var left = rect.left + _margin.left;
 
-        var offsetX = (e.clientX - left) / _value.currentZoomLevel.k;
-        var offsetY = (e.clientY - top) / _value.currentZoomLevel.k;
+        var offsetX = (e.clientX - left) / _value.zoomK;
+        var offsetY = (e.clientY - top) / _value.zoomK;
 
         // Todo: extract onetime operations
         var xEachBand = _scales.x.step();
@@ -585,17 +637,24 @@ heatmap_namespace = (function() {
         var yVal = _scales.y.domain()[yIndex];
         var yPos = _scales.y(yVal);
 
-        var found = rows.find(function(element) {
-            return element.x === xVal && element.y === yVal;
-        });
+        var value;
+        var cell = {};
+        if (xVal && yVal) {
+            value = _table.getCell(yVal, xVal);
 
-        if (found) {
-            _cellHighlighter.style.left = xPos - 1 + 'px';
-            _cellHighlighter.style.top = yPos - 1 + 'px';
-            _cellHighlighter.style.width = _cellSize + 1 + 'px';
-            _cellHighlighter.style.height = _cellSize + 1 + 'px';
+            cell = {
+                x: xVal,
+                y: yVal,
+                value: value
+            };
         }
-        return found;
+
+        _cellHighlighter.style.left = xPos - 1 + 'px';
+        _cellHighlighter.style.top = yPos - 1 + 'px';
+        _cellHighlighter.style.width = _cellSize + 1 + 'px';
+        _cellHighlighter.style.height = _cellSize + 1 + 'px';
+
+        return cell;
     }
 
     /**
@@ -650,6 +709,9 @@ heatmap_namespace = (function() {
         return 'data:image/svg+xml;base64,' + window.btoa(string);
     }
 
+    /**
+     * One time initialization of the zoom
+     */
     function initializeZoom() {
         var svgD3 = d3.select('.knime-svg-container svg');
 
@@ -657,13 +719,14 @@ heatmap_namespace = (function() {
         var yAxisD3El = svgD3.select('.knime-axis.knime-y');
         var xAxisEl = xAxisD3El.node();
         var yAxisEl = yAxisD3El.node();
-        var xAxisWidth = xAxisEl.getBoundingClientRect().width;
-        var yAxisHeight = yAxisEl.getBoundingClientRect().height;
+        var xAxisWidth = xAxisEl ? xAxisEl.getBoundingClientRect().width : 0;
+        var yAxisHeight = yAxisEl ? yAxisEl.getBoundingClientRect().height : 0;
 
         // Set transform origins
         xAxisD3El.attr('transform-origin', _margin.left + 'px 0');
         yAxisD3El.attr('transform-origin', '0 ' + _margin.top + 'px');
-        _wrapper.node().style.transformOrigin = _margin.left + 'px ' + _margin.top + 'px';
+
+        _transformer.node().style.transformOrigin = _margin.left + 'px ' + _margin.top + 'px';
         var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
 
         _zoomDimensions = {
@@ -671,24 +734,44 @@ heatmap_namespace = (function() {
             yAxisHeight: yAxisHeight,
             minimalZoomLevel: Math.min(
                 (window.innerWidth - _margin.left - _margin.right) / xAxisWidth,
-                (window.innerHeight - _margin.top - infoWrapperHeight) / yAxisHeight
+                (window.innerHeight - _margin.top - infoWrapperHeight - _margin.bottom) / yAxisHeight
             )
         };
         return setZoomEvents();
     }
 
+    /**
+     * Repeatedly called method to change zoom properties
+     * or disable/enable the zoom
+     */
     function setZoomEvents() {
         var svgD3 = d3.select('.knime-svg-container svg');
         var xAxisD3El = svgD3.select('.knime-axis.knime-x');
         var yAxisD3El = svgD3.select('.knime-axis.knime-y');
+        var transformerNode = _transformer.node();
 
         var zoom = d3
             .zoom()
             .translateExtent([
                 [0, 0],
-                [_zoomDimensions.xAxisWidth + (_margin.left + _margin.right), _zoomDimensions.yAxisHeight + _margin.top]
+                [_zoomDimensions.xAxisWidth + _margin.left + _margin.right, _zoomDimensions.yAxisHeight]
             ])
             .scaleExtent([_zoomDimensions.minimalZoomLevel, 1])
+            .constrain(function(transform, extent, translateExtent) {
+                // see https://github.com/d3/d3-zoom/blob/master/README.md#zoom_constrain
+                // the translate extent needs to dynamically append to the zoom level, therefore we need to overwrite it
+                var theight = translateExtent[1][1] + (_margin.top + _margin.bottom) / transform.k;
+
+                var dx0 = transform.invertX(extent[0][0]) - translateExtent[0][0];
+                var dx1 = transform.invertX(extent[1][0]) - translateExtent[1][0];
+                var dy0 = transform.invertY(extent[0][1]) - translateExtent[0][1];
+                var dy1 = transform.invertY(extent[1][1]) - theight;
+
+                return transform.translate(
+                    dx1 > dx0 ? (dx0 + dx1) / 2 : Math.min(0, dx0) || Math.max(0, dx1),
+                    dy1 > dy0 ? (dy0 + dy1) / 2 : Math.min(0, dy0) || Math.max(0, dy1)
+                );
+            })
             .on('zoom', function() {
                 var t = d3.event.transform;
 
@@ -698,10 +781,20 @@ heatmap_namespace = (function() {
 
                 xAxisD3El.attr('transform', 'translate(' + t.x + ', ' + _margin.top + ') scale(' + t.k + ')');
                 yAxisD3El.attr('transform', 'translate(' + _margin.left + ', ' + t.y + ') scale(' + t.k + ')');
-                _transformer.node().style.transform = 'translate(' + t.x + 'px, ' + t.y + 'px) scale(' + t.k + ')';
+                transformerNode.style.transform = 'translate(' + t.x + 'px, ' + t.y + 'px) scale(' + t.k + ')';
 
-                _value.currentZoomLevel = t;
+                _value.zoomX = t.x;
+                _value.zoomY = t.y;
+                _value.zoomK = t.k;
 
+                // hack: force canvas refresh as sometimes canvas gets not fully painted
+                _transformer.node().style.opacity = 0.999;
+                setTimeout(function() {
+                    _transformer.node().style.opacity = 1;
+                }, 0);
+            })
+            .on('end', function() {
+                // style borders
                 var borderWidth = getCurrentBorderWidth();
                 _cellHighlighter.style.borderWidth = borderWidth;
                 var rowHighlighters = svgD3.node().querySelectorAll('.row-highlighter');
@@ -710,12 +803,6 @@ heatmap_namespace = (function() {
                         rowHighlighter.style.borderWidth = borderWidth;
                     });
                 }
-
-                // hack: force canvas refresh as sometimes canvas gets not fully painted
-                _transformer.node().style.opacity = 0.999;
-                setTimeout(function() {
-                    _transformer.node().style.opacity = 1;
-                }, 0);
             });
 
         // reset
@@ -744,15 +831,14 @@ heatmap_namespace = (function() {
 
     function getCurrentBorderWidth() {
         var borderZoomFactor = 5;
-        return Math.max(2, 1 + borderZoomFactor * (1 - _value.currentZoomLevel.k)) + 'px';
+        return Math.max(2, 1 + borderZoomFactor * (1 - _value.zoomK)) + 'px';
     }
 
     function showTooltip(e, innerHtml) {
-        if (!_value.displayDataCellToolTip && innerHtml) {
+        if (!_value.showToolTips && innerHtml) {
             return;
         }
         _tooltip.classList.add('active');
-        e.target.classList.add('active');
         _tooltip.innerHTML = innerHtml;
         var tooltipWidth = _tooltip.getBoundingClientRect().width;
         var tooltipHeight = _tooltip.getBoundingClientRect().height;
@@ -771,104 +857,128 @@ heatmap_namespace = (function() {
         _tooltip.classList.remove('active');
     }
 
-    function appendCanvasQuadrant(yExtension) {
-        var canvasWidth = _margin.left + _colNames.length * _cellSize;
-        var maxRows = Math.floor(_maxCanvasHeight / _devicePixelRatio / _cellSize);
-        var canvasHeight = maxRows * _cellSize;
+    /**
+     * Because the browser has canvas size limits, we insert a new canvas "quadrant"
+     * before the maxium height is reached.
+     *
+     * @param {Number} yExtension the y position the row is at
+     * @param {Number} xExtension the x position the column is at
+     */
+    function appendCanvasQuadrant(xExtension, yExtension, canvasHeight, canvasWidth) {
         var canvas = _transformer
             .append('canvas')
             .attr(
                 'style',
                 'position: absolute;top:' +
-                    (0 || yExtension) +
-                    'px;left:0;width:' +
+                    yExtension +
+                    'px;left:  ' +
+                    xExtension +
+                    'px;width:' +
                     canvasWidth +
                     'px;height:' +
                     canvasHeight +
                     'px'
             )
+            .attr('id', 'c' + Math.round(_maxExtensionX) + '-' + Math.round(_maxExtensionY))
             .attr('width', _devicePixelRatio * canvasWidth + 'px')
             .attr('height', _devicePixelRatio * canvasHeight + 'px');
-        var context = canvas.node().getContext('2d');
-        context.scale(_devicePixelRatio, _devicePixelRatio);
-        context.translate(0, -yExtension);
-        _maxExtension = yExtension + canvasHeight;
+
+        return canvas.node().getContext('2d');
+    }
+
+    /**
+     * Get the current canvas context to draw on
+     * @param {Number} y position of the current row/cell
+     */
+    function getContext(x, y) {
+        var yExtension = _scales.y(y);
+        var xExtension = _scales.x(x);
+        var maxRows = Math.ceil(_maxCanvasHeight / _devicePixelRatio / _cellSize);
+        var maxCols = maxRows;
+        _maxExtensionX = _maxExtensionX || 0;
+        _maxExtensionY = _maxExtensionY || 0;
+
+        var canvasHeight = Math.min(_scales.y.domain().length * _cellSize, maxRows * _cellSize);
+        var canvasWidth = Math.min(_scales.x.domain().length * _cellSize, maxCols * _cellSize);
+        var context;
+        var rowEls = _scales.x.domain();
+
+        if (rowEls.indexOf(x) === 0) {
+            // at the start of the row, reset max extension for x
+            _maxExtensionX = xExtension + canvasWidth;
+        }
+
+        // Extend the limits of the canvas
+        if (xExtension + _cellSize > _maxExtensionX) {
+            _maxExtensionX = xExtension + canvasWidth;
+        }
+        if (yExtension + _cellSize > _maxExtensionY) {
+            _maxExtensionY = yExtension + canvasHeight;
+        }
+
+        // Check if canvas already exists
+        var currentCanvas = document.querySelector(
+            '#c' + Math.round(_maxExtensionX) + '-' + Math.round(_maxExtensionY)
+        );
+        if (currentCanvas) {
+            return currentCanvas.getContext('2d');
+        } else {
+            // else create a new quadrant
+            context = appendCanvasQuadrant(xExtension, yExtension, canvasHeight, canvasWidth);
+            context.scale(_devicePixelRatio, _devicePixelRatio);
+            context.translate(-xExtension, -yExtension);
+        }
 
         return context;
     }
 
-    function getContext(cell) {
-        var yExtension = _scales.y(cell.y);
-        if (!document.querySelector('canvas')) {
-            _context = appendCanvasQuadrant(yExtension);
-        }
-
-        if (yExtension + _cellSize > _maxExtension) {
-            _context = appendCanvasQuadrant(yExtension);
-        }
-        return _context;
-    }
-
-    function drawCanvasCell(cell) {
-        var context = getContext(cell);
-        var color = cell.value === null ? _representation.missingValueColor : _scales.colorScale(cell.value);
-        context.fillStyle = color;
-        context.fillRect(_scales.x(cell.x), _scales.y(cell.y), _cellSize, _cellSize);
-    }
-
-    function drawSvgCell(cell) {
-        _transformer
-            .data([cell])
-            .append('g')
-            .append('rect')
-            .attr('class', 'cell')
-            .attr('width', _cellSize)
-            .attr('height', _cellSize)
-            .attr('y', function(d) {
-                return _scales.y(d.y);
-            })
-            .attr('x', function(d) {
-                return _scales.x(d.x);
-            })
-            .attr('fill', function(d) {
-                if (d.value === null) {
-                    return _representation.missingValueColor;
-                }
-                return _scales.colorScale(d.value);
-            });
-    }
-
-    /**
-     * Sort cells
-     * - in viewport
-     * - not in viewport
-     * @param {Number} viewportSize
-     * @param {Array} cell data
-     */
-    function prioritizeCells(viewportSize, data) {
-        var inViewportCells = [];
-        var notInViewportCells = [];
-        var rowItemsWidth = 0;
-        var currentRowKey = data[0].y;
-
-        data.forEach(function(cell) {
-            rowItemsWidth = rowItemsWidth + _cellSize * _value.currentZoomLevel.k;
-            if (cell.y === currentRowKey) {
-                if (rowItemsWidth < viewportSize.width - _value.currentZoomLevel.x) {
-                    inViewportCells.push(cell);
-                } else {
-                    notInViewportCells.push(cell);
-                }
-            } else {
-                rowItemsWidth = 0;
-                currentRowKey = cell.y;
-                inViewportCells.push(cell);
+    function drawCanvasRow(row) {
+        var y = row.rowKey;
+        row.data.map(function(value, currentIndex) {
+            if (_colNames[currentIndex] === undefined) {
+                return;
             }
+            var x = _colNames[currentIndex];
+
+            var context = getContext(x, y);
+            var color = value === null ? _representation.missingValueColor : _scales.colorScale(value);
+            context.fillStyle = color;
+            context.fillRect(_scales.x(x), _scales.y(y), _cellSize, _cellSize);
+        }, []);
+    }
+
+    function drawSvgRow(row) {
+        var y = row.rowKey;
+        row.data.map(function(value, currentIndex) {
+            if (_colNames[currentIndex] === undefined) {
+                return;
+            }
+            var cell = {
+                x: _colNames[currentIndex],
+                y: y,
+                value: value
+            };
+
+            _transformer
+                .data([cell])
+                .append('g')
+                .append('rect')
+                .attr('class', 'cell')
+                .attr('width', _cellSize)
+                .attr('height', _cellSize)
+                .attr('y', function(d) {
+                    return _scales.y(d.y);
+                })
+                .attr('x', function(d) {
+                    return _scales.x(d.x);
+                })
+                .attr('fill', function(d) {
+                    if (d.value === null) {
+                        return _representation.missingValueColor;
+                    }
+                    return _scales.colorScale(d.value);
+                });
         });
-        return {
-            inViewportCells: inViewportCells,
-            notInViewportCells: notInViewportCells
-        };
     }
 
     function drawContents(rows) {
@@ -888,10 +998,7 @@ heatmap_namespace = (function() {
             : _representation.discreteGradientColors;
 
         _cellSize = Math.max(_minCellSize, (window.innerWidth - _margin.left - _margin.right) / _colNames.length);
-
         _tooltip = document.querySelector('.knime-tooltip');
-        _scales = createScales(formattedDataset);
-        _axis = createAxis(formattedDataset);
 
         var svg = d3
             .select('.knime-svg-container')
@@ -909,22 +1016,20 @@ heatmap_namespace = (function() {
             .attr('x', _margin.left)
             .attr('y', 50)
             .text(_value.chartSubtitle);
+
         updateTitles();
 
+        _scales = createScales(formattedDataset);
+        _axis = createAxis(formattedDataset);
+
         var defs = svg.append('defs');
-        var clipPath = defs
-            .append('clipPath')
+        defs.append('clipPath')
             .attr('id', 'clip')
             .append('rect')
             .attr('y', _margin.top + 1)
             .attr('x', _margin.left + 1)
             .attr('width', '100%')
             .attr('height', '100%');
-
-        var viewport = svg
-            .append('g')
-            .attr('class', 'viewport')
-            .attr('clip-path', 'url(#clip)');
 
         if (_representation.runningInView) {
             _wrapper = svg
@@ -933,9 +1038,7 @@ heatmap_namespace = (function() {
                 .attr('height', '100%')
                 .append('xhtml:div')
                 .attr('class', 'wrapper')
-                .attr('style', 'clip-path:url(#clip)')
-                .attr('width', '100%')
-                .attr('height', '100%');
+                .attr('style', 'clip-path:url(#clip)');
             _transformer = _wrapper.append('div').attr('class', 'transformer');
 
             var canvasWidth = _margin.left + _colNames.length * _cellSize;
@@ -976,11 +1079,10 @@ heatmap_namespace = (function() {
             _context.scale(_devicePixelRatio, _devicePixelRatio);
 
             // Improve performance: render cells progressivley
-            var _cellViewPort = clipPath.node().getBoundingClientRect();
-            sortedData = prioritizeCells(_cellViewPort, formattedDataset.data);
-            _drawCellQueue = renderQueue(drawCanvasCell).rate(5000);
-            _drawCellQueue(sortedData.inViewportCells);
-            _drawCellQueue.add(sortedData.notInViewportCells);
+            _maxExtensionY = 0;
+            _maxExtensionX = 0;
+            _drawCellQueue = renderQueue(drawCanvasRow).rate(1000);
+            _drawCellQueue(formattedDataset.data);
         } else {
             _wrapper = svg
                 .append('g')
@@ -988,8 +1090,8 @@ heatmap_namespace = (function() {
                 .append('g')
                 .attr('class', 'wrapper');
             // Render cells at once for image rendering
-            formattedDataset.data.map(function(cell) {
-                drawSvgCell(cell);
+            formattedDataset.data.map(function(row) {
+                drawSvgRow(row);
             });
         }
 
@@ -999,56 +1101,51 @@ heatmap_namespace = (function() {
             .querySelector('.knime-svg-container .transformer')
             .insertAdjacentElement('beforeend', _cellHighlighter);
 
-        // Events for the svg are native js event listeners not
-        // d3 event listeners for better performance
-        var domWrapper = document.querySelector('.knime-svg-container svg .transformer');
-        // Highlight mouseover cell and show tooltip
-        domWrapper.addEventListener('mouseover', function(e) {
-            domWrapper.addEventListener('mousemove', onMousemove);
+        registerEvents();
+
+        getProgressBar(formattedDataset.data.length);
+
+        drawAxis(svg, formattedDataset.rowLabelImages);
+
+        drawLegend(svg);
+
+        // Initialize and reset zoom
+        resetZoom();
+
+        styleSelectedRows();
+
+        // Set a bottom padding to prevent footer overlapping the chart
+        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
+        document.querySelector('.knime-svg-container').style.paddingBottom = infoWrapperHeight + 'px';
+        document.querySelector('.gradient-x').style.bottom = infoWrapperHeight + 'px';
+    }
+
+    function resetZoom(setToDefault) {
+        var zoom = initializeZoom();
+        var svg = d3.select('.knime-svg-container svg');
+        var resetLevel = setToDefault
+            ? {
+                  x: _defaultZoomX,
+                  y: _defaultZoomY,
+                  k: _defaultZoomK
+              }
+            : {
+                  x: _value.zoomX,
+                  y: _value.zoomY,
+                  k: _value.zoomK
+              };
+        zoom.transform(svg, function() {
+            return d3.zoomIdentity.translate(resetLevel.x, resetLevel.y).scale(resetLevel.k);
         });
+        return zoom;
+    }
 
-        var onMousemove = function(e) {
-            var data = lookupCell(formattedDataset.data, e);
-            if (!data) {
-                return;
-            }
-            var toolTipInnerHTML =
-                '<span class="knime-tooltip-caption">x:' +
-                data.x +
-                ' y:' +
-                data.y +
-                '</span><span class="knime-tooltip-value">' +
-                (data.value === null
-                    ? '<span class="missing-value">?</span>'
-                    : '<span class="knime-double">' + data.value + '</span>') +
-                '</span>';
-
-            showTooltip(e, toolTipInnerHTML);
-        };
-
-        // Deactivation relies on gaps in the wrapper between the cells
-        domWrapper.addEventListener('mouseout', function(e) {
-            hideTooltip();
-            domWrapper.removeEventListener('mouseover', onMousemove);
-        });
-
-        // Row selection
-        domWrapper.addEventListener('mousedown', function(e) {
-            var data = lookupCell(formattedDataset.data, e);
-            if (!data) {
-                return;
-            }
-            if (e.shiftKey) {
-                return selectDeltaRow(data.y);
-            }
-            if (e.ctrlKey || e.metaKey) {
-                return selectSingleRow(data.y, true);
-            }
-            return selectSingleRow(data.y);
-        });
-
+    function drawAxis(svg, rowLabelImages) {
         // Append axis
-        var maskAxis = defs.append('mask').attr('id', 'maskAxis');
+        var maskAxis = svg
+            .select('defs')
+            .append('mask')
+            .attr('id', 'maskAxis');
         maskAxis
             .append('rect')
             .attr('y', 0)
@@ -1075,11 +1172,11 @@ heatmap_namespace = (function() {
             .selectAll('text')
             .attr('font-weight', 'normal')
             .on('mouseover', function(d) {
-                if (!formattedDataset.images[d]) {
+                if (!rowLabelImages[d]) {
                     return;
                 }
                 d3.event.target.classList.add('active');
-                var tooltipInnerHTML = '<img src="' + formatImage(formattedDataset.images[d]) + '" alt/>';
+                var tooltipInnerHTML = '<img src="' + formatImage(rowLabelImages[d]) + '" alt/>';
                 showTooltip(d3.event, tooltipInnerHTML);
             })
             .on('mouseleave', function() {
@@ -1104,7 +1201,7 @@ heatmap_namespace = (function() {
         axisWrapper
             .selectAll('.knime-axis.knime-y .knime-tick')
             .attr('class', function(d) {
-                if (_value.selectedRowsBuffer.indexOf(d) > -1) {
+                if (_value.selection.indexOf(d) > -1) {
                     return 'knime-tick active';
                 } else {
                     return 'knime-tick';
@@ -1116,7 +1213,9 @@ heatmap_namespace = (function() {
             .on('click', function(d) {
                 selectSingleRow(d);
             });
+    }
 
+    function drawLegend(svg) {
         var legend;
 
         if (_representation.runningInView) {
@@ -1127,29 +1226,43 @@ heatmap_namespace = (function() {
                 .attr('class', 'knime-legend')
                 .attr('width', _legendWidth + 2 * _legendMargin)
                 .attr('height', _legendHeight);
+
+            if (!_representation.resizeToWindow) {
+                var container = document.querySelector('.knime-layout-container');
+
+                // Resize the whole view
+                if (_representation.imageHeight) {
+                    container.style.height = _representation.imageHeight + 'px';
+                }
+                if (_representation.imageWidth) {
+                    container.style.width = _representation.imageWidth + 'px';
+                }
+            }
         } else {
             // append in existing svg
             var extraImageMargin = 50;
-            var imageModeMarginTop = formattedDataset.rowNames.length * _cellSize + _margin.top + 15;
+            var imageModeMarginTop = _scales.y.domain().length * _cellSize + _margin.top + 15;
             var transform = 'translate(0 ' + imageModeMarginTop + ')';
+            var imageHeight = imageModeMarginTop + _legendHeight + extraImageMargin;
+            var imageWidth = _colNames.length * _cellSize + _margin.left + _margin.right + extraImageMargin;
+
+            // Resize svg
+            if (!_representation.resizeToWindow) {
+                svg.attr('viewBox', '0 0 ' + imageWidth + ' ' + imageHeight);
+                if (_representation.imageHeight) {
+                    svg.attr('height', _representation.imageHeight + 'px');
+                }
+                if (_representation.imageWidth) {
+                    svg.attr('width', _representation.imageWidth + 'px');
+                }
+            }
+
             legend = svg
                 .append('g')
                 .attr('class', 'knime-legend')
                 .attr('width', _legendWidth + 2 * _legendMargin)
                 .attr('height', _legendHeight)
                 .attr('transform', transform);
-
-            // Adjust viewbox of svg
-            var imageHeight = imageModeMarginTop + _legendHeight + extraImageMargin;
-            var imageWidth = _colNames.length * _cellSize + _margin.left + _margin.right + extraImageMargin;
-            svg.attr('viewBox', '0 0 ' + imageWidth + ' ' + imageHeight);
-
-            if (_representation.imageHeight) {
-                svg.attr('height', _representation.imageHeight + 'px');
-            }
-            if (_representation.imageWidth) {
-                svg.attr('width', _representation.imageWidth + 'px');
-            }
         }
 
         var legendDefs = legend.append('defs');
@@ -1200,8 +1313,6 @@ heatmap_namespace = (function() {
             }
         }
 
-        getProgressBar(formattedDataset.data.length);
-
         var legendScale = d3
             .scaleLinear()
             .domain([_representation.minValue, _representation.maxValue])
@@ -1221,31 +1332,6 @@ heatmap_namespace = (function() {
             .call(legendAxis)
             .selectAll('text')
             .attr('font-weight', 'normal');
-
-        // Initialize and reset zoom
-        resetZoom();
-
-        // Set a max height to cope with iframe resizing in meta nodes
-        // var maxHeight = _margin.top + formattedDataset.rowNames.length * _cellSize;
-        // if (maxHeight > viewportSize.width) {
-        //     document.querySelector('.knime-layout-container').setAttribute('style', 'max-height: ' + maxHeight + 'px');
-        // }
-
-        styleSelectedRows(true);
-
-        // Set a bottom padding to prevent footer overlapping the chart
-        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
-        document.querySelector('.knime-svg-container').style.paddingBottom = infoWrapperHeight + 'px';
-    }
-
-    function resetZoom(setToDefault) {
-        var zoom = initializeZoom();
-        var svg = d3.select('.knime-svg-container svg');
-        var resetLevel = setToDefault ? _defaultZoomLevel : _value.currentZoomLevel;
-        zoom.transform(svg, function() {
-            return d3.zoomIdentity.translate(resetLevel.x, resetLevel.y).scale(resetLevel.k);
-        });
-        return zoom;
     }
 
     /**
@@ -1257,7 +1343,7 @@ heatmap_namespace = (function() {
         // Get closest selected row to newly selected row
         var rowNames = _scales.y.domain();
         var currentIndex = rowNames.indexOf(selectedRowId);
-        var closestRow = _value.selectedRowsBuffer.reduce(
+        var closestRow = _value.selection.reduce(
             function(closestRow, rowId) {
                 var rowIdIndex = rowNames.indexOf(rowId);
                 var indexDistance = Math.abs(currentIndex - rowIdIndex);
@@ -1280,14 +1366,14 @@ heatmap_namespace = (function() {
         var rowKey;
         for (var i = startIndex; i <= endIndex; i++) {
             rowKey = rowNames[i];
-            if (!_value.selectedRowsBuffer.indexOf(rowKey) > -1) {
-                _value.selectedRowsBuffer.push(rowKey);
+            if (!_value.selection.indexOf(rowKey) > -1) {
+                _value.selection.push(rowKey);
             }
         }
 
         var tableId = _table.getTableId();
-        styleSelectedRows(true);
-        knimeService.setSelectedRows(tableId, _value.selectedRowsBuffer);
+        styleSelectedRows();
+        knimeService.setSelectedRows(tableId, _value.selection);
     }
 
     function selectSingleRow(selectedRowId, keepCurrentSelections) {
@@ -1302,39 +1388,39 @@ heatmap_namespace = (function() {
 
         if (!keepCurrentSelections) {
             // Remove all selections
-            _value.selectedRowsBuffer = [];
-            if (_representation.publishSelection) {
+            _value.selection = [];
+            if (_value.publishSelection) {
                 knimeService.setSelectedRows(tableId, []);
             }
             styleSelectedRows();
         }
 
-        if (_value.selectedRowsBuffer.indexOf(selectedRowId) > -1) {
-            _value.selectedRowsBuffer = _value.selectedRowsBuffer.filter(function(rowId) {
+        if (_value.selection.indexOf(selectedRowId) > -1) {
+            _value.selection = _value.selection.filter(function(rowId) {
                 return rowId !== selectedRowId;
             });
-            styleSelectedRows(false);
-            if (_representation.publishSelection) {
+            styleSelectedRows();
+            if (_value.publishSelection) {
                 knimeService.removeRowsFromSelection(tableId, [selectedRowId]);
             }
         } else {
-            _value.selectedRowsBuffer.push(selectedRowId);
-            styleSelectedRows(true);
-            if (_representation.publishSelection) {
+            _value.selection.push(selectedRowId);
+            styleSelectedRows();
+            if (_value.publishSelection) {
                 knimeService.addRowsToSelection(tableId, [selectedRowId]);
             }
         }
 
-        if (_value.showOnlySelectedRows) {
+        if (_value.showSelectedRowsOnly) {
             drawChart();
         }
     }
 
-    function styleSelectedRows(select) {
+    function styleSelectedRows() {
         d3.selectAll('.knime-axis.knime-y .knime-tick').attr('class', 'knime-tick');
 
         // Style row labels
-        _value.selectedRowsBuffer.map(function(selectedRowId) {
+        _value.selection.map(function(selectedRowId) {
             d3.select('.knime-axis.knime-y [data-id="' + selectedRowId + '"]').attr('class', 'knime-tick active');
         });
 
@@ -1347,12 +1433,12 @@ heatmap_namespace = (function() {
             });
         }
 
-        _value.selectedRowsBuffer = sortByDatasetRows(getUniques(_value.selectedRowsBuffer));
+        _value.selection = sortByDatasetRows(getUniques(_value.selection));
         var startRowId = false;
         var selectionEnded = true;
         var yDomain = _scales.y.domain();
         yDomain.map(function(rowId, rowIndex) {
-            if (_value.selectedRowsBuffer.indexOf(rowId) > -1) {
+            if (_value.selection.indexOf(rowId) > -1) {
                 if (!startRowId && selectionEnded) {
                     selectionEnded = false;
                     startRowId = rowId;
@@ -1373,10 +1459,10 @@ heatmap_namespace = (function() {
         var highlighter = document.createElement('SPAN');
         highlighter.classList.add('row-highlighter');
 
-        highlighter.style.top = Math.floor(startPosition) - 1 + 'px';
+        highlighter.style.top = Math.floor(startPosition) + 'px';
 
         highlighter.style.left = _margin.left + 1 + 'px';
-        highlighter.style.height = endPosition - startPosition + 1 + 'px';
+        highlighter.style.height = endPosition - startPosition + 'px';
         highlighter.style.width = _colNames.length * _cellSize + 'px';
         highlighter.style.borderWidth = getCurrentBorderWidth();
         _transformer.node().insertAdjacentElement('beforeend', highlighter);

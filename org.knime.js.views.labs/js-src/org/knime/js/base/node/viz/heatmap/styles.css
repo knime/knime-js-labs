@@ -6,12 +6,16 @@ body {
     overflow: hidden;
 }
 
+.knime-layout-container {
+    position: relative;
+}
+
 .knime-svg-container {
     width: 100%;
     height: 100%;
 }
 
-.knime-svg-container > .gradient {
+.knime-svg-container .gradient-y {
     display: block;
     height: 100%;
     position: absolute;
@@ -20,6 +24,21 @@ body {
     z-index: 1;
     background: linear-gradient(
         to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 1) 10px,
+        rgba(255, 255, 255, 1) 100%
+    );
+}
+
+.knime-svg-container .gradient-x {
+    display: block;
+    width: 100%;
+    position: absolute;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    background: linear-gradient(
+        to bottom,
         rgba(255, 255, 255, 0) 0%,
         rgba(255, 255, 255, 1) 10px,
         rgba(255, 255, 255, 1) 100%
@@ -47,27 +66,12 @@ body {
 }
 
 .knime-svg-container .knime-tick text {
-    font-size: 0.8rem;
+    font-size: 10px;
 }
 
 .knime-svg-container text.active {
     fill: #003389;
     cursor: default;
-}
-
-.cell {
-    stroke-width: 0.05rem;
-    stroke: #fff;
-    transition: stroke-width 0.1s ease-in;
-}
-
-.cell[selection='active'] {
-    stroke-width: 0.1rem;
-    stroke: #bbb;
-}
-
-.cell.active {
-    stroke-width: 0.3rem;
 }
 
 .knime-tooltip {
@@ -105,7 +109,7 @@ form {
 }
 
 .info-wrapper {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     display: flex;
@@ -115,12 +119,7 @@ form {
     margin: 0;
     padding-top: 10px;
     text-align: center;
-    background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 1) 10px,
-        rgba(255, 255, 255, 1) 100%
-    );
+    background-color: #fff;
 }
 
 .info-wrapper > * {
