@@ -82,11 +82,11 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     private boolean m_enableTitleEdit;
     private boolean m_displayFullscreenButton;
     private boolean m_enableNumClusterEdit;
-    private boolean m_enableThresholdValue;
 
     private boolean m_enableSelection;
     private boolean m_publishSelectionEvents;
     private boolean m_subscribeSelectionEvents;
+    private boolean m_showClearSelectionButton;
 
     private boolean m_showWarningsInView;
 
@@ -100,6 +100,9 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     private String[] m_colorPalette;
 
     private boolean m_subscribeFilterEvents;
+
+    private boolean m_showThresholdBar;
+    private boolean m_enableThresholdModification;
 
     private final static String CFG_DATA_TABLE_ID = "dataTableID";
     private String m_dataTableID;
@@ -252,20 +255,6 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     }
 
     /**
-     * @return the enableThresholdValue
-     */
-    public boolean getEnableThresholdValue() {
-        return m_enableThresholdValue;
-    }
-
-    /**
-     * @param enableThresholdValue the enableThresholdValue to set
-     */
-    public void setEnableThresholdValue(final boolean enableThresholdValue) {
-        m_enableThresholdValue = enableThresholdValue;
-    }
-
-    /**
      * @return the enableSelection
      */
     public boolean getEnableSelection() {
@@ -305,6 +294,20 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
      */
     public void setSubscribeSelectionEvents(final boolean subscribeSelectionEvents) {
         m_subscribeSelectionEvents = subscribeSelectionEvents;
+    }
+
+    /**
+     * @return the showClearSelectionButton
+     */
+    public boolean getShowClearSelectionButton() {
+        return m_showClearSelectionButton;
+    }
+
+    /**
+     * @param showClearSelectionButton the showClearSelectionButton to set
+     */
+    public void setShowClearSelectionButton(final boolean showClearSelectionButton) {
+        m_showClearSelectionButton = showClearSelectionButton;
     }
 
     /**
@@ -420,6 +423,34 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the showThresholdBar
+     */
+    public boolean getShowThresholdBar() {
+        return m_showThresholdBar;
+    }
+
+    /**
+     * @param showThresholdBar the showThresholdBar to set
+     */
+    public void setShowThresholdBar(final boolean showThresholdBar) {
+        m_showThresholdBar = showThresholdBar;
+    }
+
+    /**
+     * @return the enableThresholdModification
+     */
+    public boolean getEnableThresholdModification() {
+        return m_enableThresholdModification;
+    }
+
+    /**
+     * @param enableThresholdModification the enableThresholdModification to set
+     */
+    public void setEnableThresholdModification(final boolean enableThresholdModification) {
+        m_enableThresholdModification = enableThresholdModification;
+    }
+
+    /**
      * @return the dataTableID
      */
     @JsonIgnore
@@ -511,11 +542,11 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_TITLE_EDIT, getEnableTitleEdit());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, getDisplayFullscreenButton());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_NUM_CLUSTER_EDIT, getEnableNumClusterEdit());
-        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_THRESHOLD_VALUE, getEnableThresholdValue());
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_SELECTION, getEnableSelection());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_PUBLISH_SELECTION_EVENTS, getPublishSelectionEvents());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_SELECTION_EVENTS, getSubscribeSelectionEvents());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_CLEAR_SELECTION_BUTTON, getShowClearSelectionButton());
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW, getShowWarningsInView());
 
@@ -529,6 +560,9 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
         settings.addStringArray(HierarchicalClusterAssignerConfig.CFG_COLOR_PALETTE, getColorPalette());
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS, getSubscribeFilterEvents());
+
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_THRESHOLD_BAR, m_showThresholdBar);
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_THRESHOLD_MODIFICATION, m_enableThresholdModification);
 
         settings.addString(CFG_DATA_TABLE_ID, getDataTableID());
         settings.addStringArray(CFG_FILTER_IDS, m_filterIds);
@@ -553,11 +587,11 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
         setEnableTitleEdit(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_TITLE_EDIT));
         setDisplayFullscreenButton(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON));
         setEnableNumClusterEdit(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_NUM_CLUSTER_EDIT));
-        setEnableThresholdValue(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_THRESHOLD_VALUE));
 
         setEnableSelection(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_SELECTION));
         setPublishSelectionEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_PUBLISH_SELECTION_EVENTS));
         setSubscribeSelectionEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_SELECTION_EVENTS));
+        setShowClearSelectionButton(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_CLEAR_SELECTION_BUTTON));
 
         setShowWarningsInView(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW));
 
@@ -571,6 +605,9 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
         setColorPalette(settings.getStringArray(HierarchicalClusterAssignerConfig.CFG_COLOR_PALETTE));
 
         setSubscribeFilterEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS));
+
+        setShowThresholdBar(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_THRESHOLD_BAR));
+        setEnableThresholdModification(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_THRESHOLD_MODIFICATION));
 
         setDataTableID(settings.getString(CFG_DATA_TABLE_ID));
         setFilterIds(settings.getStringArray(CFG_FILTER_IDS));
@@ -602,10 +639,10 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_enableTitleEdit, other.getEnableTitleEdit())
                 .append(m_displayFullscreenButton, other.getDisplayFullscreenButton())
                 .append(m_enableNumClusterEdit, other.getEnableNumClusterEdit())
-                .append(m_enableThresholdValue, other.getEnableThresholdValue())
                 .append(m_enableSelection, other.getEnableSelection())
                 .append(m_publishSelectionEvents, other.getPublishSelectionEvents())
                 .append(m_subscribeSelectionEvents, other.getSubscribeSelectionEvents())
+                .append(m_showClearSelectionButton, other.getShowClearSelectionButton())
                 .append(m_showWarningsInView, other.getShowWarningsInView())
                 .append(m_enableZoom, other.getEnableZoom())
                 .append(m_showZoomResetButton, other.getShowZoomResetButton())
@@ -613,6 +650,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_enableLocalScaleToggle, other.getEnableLogScaleToggle())
                 .append(m_enableChangeOrientation, other.getEnableChangeOrientation())
                 .append(m_subscribeFilterEvents, other.getSubscribeFilterEvents())
+                .append(m_showThresholdBar, other.getShowThresholdBar())
+                .append(m_enableThresholdModification, other.getEnableThresholdModification())
                 .append(m_dataTableID, other.getDataTableID())
                 .append(m_filterIds, other.getFilterIds())
                 .append(m_runningInView, other.getRunningInView())
@@ -637,10 +676,10 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_enableTitleEdit)
                 .append(m_displayFullscreenButton)
                 .append(m_enableNumClusterEdit)
-                .append(m_enableThresholdValue)
                 .append(m_enableSelection)
                 .append(m_publishSelectionEvents)
                 .append(m_subscribeSelectionEvents)
+                .append(m_showClearSelectionButton)
                 .append(m_showWarningsInView)
                 .append(m_enableZoom)
                 .append(m_showZoomResetButton)
@@ -649,6 +688,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_enableChangeOrientation)
                 .append(m_colorPalette)
                 .append(m_subscribeFilterEvents)
+                .append(m_showThresholdBar)
+                .append(m_enableThresholdModification)
                 .append(m_dataTableID)
                 .append(m_filterIds)
                 .append(m_runningInView)

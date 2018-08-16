@@ -101,13 +101,13 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private final JCheckBox m_enableTitleEditCheckBox;
     private final JCheckBox m_displayFullscreenButtonCheckBox;
     private final JCheckBox m_enableNumClusterEditCheckBox;
-    private final JCheckBox m_enableThresholdValueCheckBox;
     private final JCheckBox m_enableLogScaleToggleCheckBox;
     private final JCheckBox m_enableChangeOrientationCheckBox;
 
     private final JCheckBox m_enableSelectionCheckBox;
     private final JCheckBox m_publishSelectionEventsCheckBox;
     private final JCheckBox m_subscribeSelectionEventsCheckBox;
+    private final JCheckBox m_showClearSelectionButtonCheckBox;
     private final JTextField m_selectionColumnNameTextField;
 
     private final JSpinner m_numClustersSpinner;
@@ -129,6 +129,9 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private final JRadioButton m_useColorPaletteSet3RadioButton;
 
     private final JCheckBox m_subscribeFilterEventsCheckBox;
+
+    private JCheckBox m_showThresholdBarCheckBox;
+    private JCheckBox m_enableThresholdModificationCheckBox;
 
     HierarchicalClusterAssignerDialog() {
         m_numClustersSpinner = new JSpinner(
@@ -170,11 +173,11 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_enableViewEditCheckBox = new JCheckBox("Enable view edit controls");
         m_enableTitleEditCheckBox = new JCheckBox("Enable title and subtitle editing");
         m_enableNumClusterEditCheckBox = new JCheckBox("Enable number of clusters specification");
-        m_enableThresholdValueCheckBox = new JCheckBox("Enable numeric specification of threshold");
         m_enableClusterLabelsCheckBox = new JCheckBox("Enable cluster labels");
         m_enableSelectionCheckBox = new JCheckBox("Enable selection");
         m_publishSelectionEventsCheckBox = new JCheckBox("Publish selection events");
         m_subscribeSelectionEventsCheckBox = new JCheckBox("Subscribe to selection events");
+        m_showClearSelectionButtonCheckBox = new JCheckBox("Show clear selection button");
         m_selectionColumnNameTextField = new JTextField(TEXT_FIELD_SIZE);
         m_enableZoomCheckBox = new JCheckBox("Enable zooming");
         m_showZoomResetButtonCheckBox = new JCheckBox("Show zoom reset button");
@@ -215,6 +218,11 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
             }
         });
 
+        m_showThresholdBarCheckBox = new JCheckBox("Show threshold bar");
+        m_enableThresholdModificationCheckBox = new JCheckBox("Enable threshold modification");
+        m_showThresholdBarCheckBox.addChangeListener(
+            e -> m_enableThresholdModificationCheckBox.setEnabled(m_showThresholdBarCheckBox.isSelected()));
+
         addTab("Options", optionsPanel());
         addTab("View Configuration", viewConfigPanel());
         addTab("Interactivity", interactivityPanel());
@@ -243,13 +251,13 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         config.setEnableTitleEdit(m_enableTitleEditCheckBox.isSelected());
         config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
         config.setEnableNumClusterEdit(m_enableNumClusterEditCheckBox.isSelected());
-        config.setEnableThresholdValue(m_enableThresholdValueCheckBox.isSelected());
         config.setEnableLogScaleToggle(m_enableLogScaleToggleCheckBox.isSelected());
         config.setEnableChangeOrientation(m_enableChangeOrientationCheckBox.isSelected());
 
         config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
         config.setPublishSelectionEvents(m_publishSelectionEventsCheckBox.isSelected());
         config.setSubscribeSelectionEvents(m_subscribeSelectionEventsCheckBox.isSelected());
+        config.setShowClearSelectionButton(m_showClearSelectionButtonCheckBox.isSelected());
         config.setSelectionColumnName(m_selectionColumnNameTextField.getText());
 
         config.setSubscribeFilterEvents(m_subscribeFilterEventsCheckBox.isSelected());
@@ -272,6 +280,9 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
 
         config.setEnableClusterColor(m_enableClusterColorRadioButton.isSelected());
         config.setColorPalette(getColorPalette());
+
+        config.setShowThresholdBar(m_showThresholdBarCheckBox.isSelected());
+        config.setEnableThresholdModification(m_enableThresholdModificationCheckBox.isSelected());
 
         config.saveSettings(settings);
     }
@@ -301,13 +312,13 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_enableTitleEditCheckBox.setSelected(config.getEnableTitleEdit());
         m_displayFullscreenButtonCheckBox.setSelected(config.getDisplayFullscreenButton());
         m_enableNumClusterEditCheckBox.setSelected(config.getEnableNumClusterEdit());
-        m_enableThresholdValueCheckBox.setSelected(config.getEnableThresholdValue());
         m_enableLogScaleToggleCheckBox.setSelected(config.getEnableLogScaleToggle());
         m_enableChangeOrientationCheckBox.setSelected(config.getEnableChangeOrientation());
 
         m_enableSelectionCheckBox.setSelected(config.getEnableSelection());
         m_publishSelectionEventsCheckBox.setSelected(config.getPublishSelectionEvents());
         m_subscribeSelectionEventsCheckBox.setSelected(config.getSubscribeSelectionEvents());
+        m_showClearSelectionButtonCheckBox.setSelected(config.getShowClearSelectionButton());
         m_selectionColumnNameTextField.setText(config.getSelectionColumnName());
 
         m_subscribeFilterEventsCheckBox.setSelected(config.getSubscribeFilterEvents());
@@ -334,6 +345,11 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_enableClusterColorRadioButton.setSelected(config.getEnableClusterColor());
         m_enableTableColorRadioButton.setSelected(!config.getEnableClusterColor());
         setColorPaletteRadioButtons(config.getColorPalette());
+
+        final boolean showThresholdBar = config.getShowThresholdBar();
+        m_showThresholdBarCheckBox.setSelected(showThresholdBar);
+        m_enableThresholdModificationCheckBox.setSelected(config.getEnableThresholdModification());
+        m_enableThresholdModificationCheckBox.setEnabled(showThresholdBar);
 
         setNumberOfFilters((DataTableSpec) specs[1]);
         enableEditView();
@@ -363,7 +379,6 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         final boolean enabled = m_enableViewEditCheckBox.isSelected();
         m_enableTitleEditCheckBox.setEnabled(enabled);
         m_enableNumClusterEditCheckBox.setEnabled(enabled);
-        m_enableThresholdValueCheckBox.setEnabled(enabled);
         m_displayFullscreenButtonCheckBox.setEnabled(enabled);
         m_enableLogScaleToggleCheckBox.setEnabled(enabled);
         m_enableChangeOrientationCheckBox.setEnabled(enabled);
@@ -373,6 +388,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         final boolean enabled = m_enableSelectionCheckBox.isSelected();
         m_publishSelectionEventsCheckBox.setEnabled(enabled);
         m_subscribeSelectionEventsCheckBox.setEnabled(enabled);
+        m_showClearSelectionButtonCheckBox.setEnabled(enabled);
         m_selectionColumnNameTextField.setEnabled(enabled);
     }
 
@@ -484,6 +500,11 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         generalPanel.add(new JLabel("Height (px): "), generalConstraints);
         generalConstraints.gridx++;
         generalPanel.add(m_imageHeightSpinner, generalConstraints);
+        generalConstraints.gridx = 0;
+        generalConstraints.gridy++;
+        generalPanel.add(m_showThresholdBarCheckBox, generalConstraints);
+        generalConstraints.gridx++;
+        generalPanel.add(m_enableThresholdModificationCheckBox, generalConstraints);
         generalConstraints.gridx = 0;
         generalConstraints.gridy++;
 
@@ -605,7 +626,6 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         viewControlsConstraints.gridy++;
         viewControlsPanel.add(m_enableNumClusterEditCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx += 2;
-        viewControlsPanel.add(m_enableThresholdValueCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
         viewControlsPanel.add(m_enableLogScaleToggleCheckBox, viewControlsConstraints);
@@ -638,6 +658,9 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         selectionPanel.add(m_publishSelectionEventsCheckBox, selectionConstraints);
         selectionConstraints.gridx++;
         selectionPanel.add(m_subscribeSelectionEventsCheckBox, selectionConstraints);
+        selectionConstraints.gridx = 0;
+        selectionConstraints.gridy++;
+        selectionPanel.add(m_showClearSelectionButtonCheckBox, selectionConstraints);
 
         gbc.gridx = 0;
         gbc.gridy++;

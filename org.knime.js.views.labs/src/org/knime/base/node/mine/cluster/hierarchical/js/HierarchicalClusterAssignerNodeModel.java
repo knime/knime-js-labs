@@ -520,12 +520,12 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
         representation.setEnableViewEdit(m_config.getEnableViewEdit());
         representation.setEnableTitleEdit(m_config.getEnableTitleEdit());
         representation.setEnableNumClusterEdit(m_config.getEnableNumClusterEdit());
-        representation.setEnableThresholdValue(m_config.getEnableThresholdValue());
         representation.setEnableClusterLabels(m_config.getEnableClusterLabels());
         representation.setEnableClusterColor(m_config.getEnableClusterColor());
         representation.setEnableSelection(m_config.getEnableSelection());
         representation.setPublishSelectionEvents(m_config.getPublishSelectionEvents());
         representation.setSubscribeSelectionEvents(m_config.getSubscribeSelectionEvents());
+        representation.setShowClearSelectionButton(m_config.getShowClearSelectionButton());
         representation.setShowWarningsInView(m_config.getShowWarningsInView());
         representation.setEnableZoom(m_config.getEnableZoom());
         representation.setShowZoomResetButton(m_config.getShowZoomResetButton());
@@ -534,6 +534,8 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
         representation.setEnableChangeOrientation(m_config.getEnableChangeOrientation());
         representation.setColorPalette(m_config.getColorPalette());
         representation.setSubscribeFilterEvents(m_config.getSubscribeFilterEvents());
+        representation.setShowClearSelectionButton(m_config.getShowClearSelectionButton());
+        representation.setEnableThresholdModification(m_config.getEnableThresholdModification());
         representation.setTree(new JSClusterModelTree(m_tree, m_nodeToId));
         representation.setDataTableID(getTableId(1));
         representation.setTable(createJSONDataTable(exc));

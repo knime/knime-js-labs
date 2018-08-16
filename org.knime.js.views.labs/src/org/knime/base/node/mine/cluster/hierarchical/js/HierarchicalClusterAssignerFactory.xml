@@ -71,6 +71,14 @@
 				image. This is also the height of the view if "Resize view to fill
 				window" is not selected.
 			</option>
+			<option name="Show threshold bar">
+				If checked, a horizontal line will be displayed
+				at the height of the threshold on the dendrogram.
+			</option>
+			<option name="Enable threshold modification">
+				If checked, the threshold bar can be moved
+				up/down to manually set the threshold.
+			</option>
 			<option name="Chart title" optional="true">
 				The title shown above the
 				image. If left blank, no title will be shown.
@@ -136,12 +144,6 @@
 				Allows for cluster assignment via number of
 				clusters from the view.
 			</option>
-			<option name="Enable numeric specification of threshold">
-				Allows the threshold to be set to a specified
-				numeric value from within the view. Regardless if this is
-				enabled/disabled, the threshold can always manually be set with the
-				horizontal bar in the view.
-			</option>
 			<option name="Enable switching y-axis scale">
 				Enables switching between log and linear scaling
 				of the y-axis from within the view.
@@ -169,6 +171,10 @@
 			<option name="Subscribe to selection events">
 				Checking this option ensures that this view is
 				notified whenever other views publish new selections.
+			</option>
+			<option name="Show clear selection button">
+				If enabled, a "clear selection" button will be
+				displayed.
 			</option>
 			<option name="Subscribe to filter events">
 				If checked, the view reacts when applied filters

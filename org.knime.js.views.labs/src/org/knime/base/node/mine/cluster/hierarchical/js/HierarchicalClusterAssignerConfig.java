@@ -123,6 +123,10 @@ public class HierarchicalClusterAssignerConfig {
     final static boolean DEFAULT_SUBSCRIBE_SELECTION_EVENTS = true;
     private boolean m_subscribeSelectionEvents = DEFAULT_SUBSCRIBE_SELECTION_EVENTS;
 
+    final static String CFG_SHOW_CLEAR_SELECTION_BUTTON = "showClearSelectionButton";
+    final static boolean DEFAULT_SHOW_CLEAR_SELECTION_BUTTON = true;
+    private boolean m_showClearSelectionButton = DEFAULT_SHOW_CLEAR_SELECTION_BUTTON;
+
     final static String CFG_NUM_CLUSTERS = "numClusters";
     final static int DEFAULT_NUM_CLUSTERS = 1;
     private int m_numClusters = DEFAULT_NUM_CLUSTERS;
@@ -146,10 +150,6 @@ public class HierarchicalClusterAssignerConfig {
     final static String CFG_ENABLE_CLUSTER_COLOR = "enableClusterColor";
     final static boolean DEFAULT_ENABLE_CLUSTER_COLOR = true;
     private boolean m_enableClusterColor = DEFAULT_ENABLE_CLUSTER_COLOR;
-
-    final static String CFG_ENABLE_THRESHOLD_VALUE = "enableThresholdValue";
-    final static boolean DEFAULT_ENABLE_THRESHOLD_VALUE = true;
-    private boolean m_enableThresholdValue = DEFAULT_ENABLE_THRESHOLD_VALUE;
 
     final static String CFG_SELECTION_COLUMN_NAME = "selectionColumnName";
     final static String DEFAULT_SELECTION_COLUMN_NAME = "Selected (Hierarchical Cluster Assigner)";
@@ -199,6 +199,14 @@ public class HierarchicalClusterAssignerConfig {
     final static String CFG_SUBSCRIBE_FILTER_EVENTS = "subscribeFilterEvents";
     final static boolean DEFAULT_SUBSCRIBE_FILTER_EVENTS = true;
     private boolean m_subscribeFilterEvents = DEFAULT_SUBSCRIBE_FILTER_EVENTS;
+
+    final static String CFG_SHOW_THRESHOLD_BAR = "showThresholdBar";
+    final static boolean DEFAULT_SHOW_THRESHOLD_BAR = true;
+    private boolean m_showThresholdBar = DEFAULT_SHOW_THRESHOLD_BAR;
+
+    final static String CFG_ENABLE_THRESHOLD_MODIFICATION = "enableThresholdModification";
+    final static boolean DEFAULT_ENABLE_THRESHOLD_MODIFICATION = true;
+    private boolean m_enableThresholdModification = DEFAULT_ENABLE_THRESHOLD_MODIFICATION;
 
     /**
      * @return the hideInWizard
@@ -425,6 +433,20 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
+     * @return the showClearSelectionButton
+     */
+    public boolean getShowClearSelectionButton() {
+        return m_showClearSelectionButton;
+    }
+
+    /**
+     * @param showClearSelectionButton the showClearSelectionButton to set
+     */
+    public void setShowClearSelectionButton(final boolean showClearSelectionButton) {
+        m_showClearSelectionButton = showClearSelectionButton;
+    }
+
+    /**
      * @return the numClusters
      */
     public int getNumClusters() {
@@ -514,20 +536,6 @@ public class HierarchicalClusterAssignerConfig {
      */
     public void setEnableClusterColor(final boolean enableClusterColor) {
         m_enableClusterColor = enableClusterColor;
-    }
-
-    /**
-     * @return the enableThresholdValue
-     */
-    public boolean getEnableThresholdValue() {
-        return m_enableThresholdValue;
-    }
-
-    /**
-     * @param enableThresholdValue the enableThresholdValue to set
-     */
-    public void setEnableThresholdValue(final boolean enableThresholdValue) {
-        m_enableThresholdValue = enableThresholdValue;
     }
 
     /**
@@ -699,6 +707,34 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
+     * @return the showThresholdBar
+     */
+    public boolean getShowThresholdBar() {
+        return m_showThresholdBar;
+    }
+
+    /**
+     * @param showThresholdBar the showThresholdBar to set
+     */
+    public void setShowThresholdBar(final boolean showThresholdBar) {
+        m_showThresholdBar = showThresholdBar;
+    }
+
+    /**
+     * @return the enableThresholdModification
+     */
+    public boolean getEnableThresholdModification() {
+        return m_enableThresholdModification;
+    }
+
+    /**
+     * @param enableThresholdModification the enableThresholdModification to set
+     */
+    public void setEnableThresholdModification(final boolean enableThresholdModification) {
+        m_enableThresholdModification = enableThresholdModification;
+    }
+
+    /**
      * Saves current parameters to settings object.
      *
      * @param settings To save to.
@@ -720,13 +756,13 @@ public class HierarchicalClusterAssignerConfig {
         settings.addBoolean(CFG_ENABLE_SELECTION, m_enableSelection);
         settings.addBoolean(CFG_PUBLISH_SELECTION_EVENTS, m_publishSelectionEvents);
         settings.addBoolean(CFG_SUBSCRIBE_SELECTION_EVENTS, m_subscribeSelectionEvents);
+        settings.addBoolean(CFG_SHOW_CLEAR_SELECTION_BUTTON, m_showClearSelectionButton);
         settings.addInt(CFG_NUM_CLUSTERS, m_numClusters);
         settings.addDouble(CFG_THRESHOLD, m_threshold);
         settings.addBoolean(CFG_NUM_CLUSTERS_MODE, m_numClustersMode);
         settings.addBoolean(CFG_USE_NORMALIZED_DISTANCES, m_useNormalizedDistances);
         settings.addDouble(CFG_NORMALIZED_THRESHOLD, m_normalizedThreshold);
         settings.addBoolean(CFG_ENABLE_CLUSTER_COLOR, m_enableClusterColor);
-        settings.addBoolean(CFG_ENABLE_THRESHOLD_VALUE, m_enableThresholdValue);
         settings.addString(CFG_SELECTION_COLUMN_NAME, m_selectionColumnName);
         settings.addString(CFG_CLUSTER_COLUMN_NAME, m_clusterColumnName);
         settings.addBoolean(CFG_SHOW_WARNINGS_IN_VIEW, m_showWarningsInView);
@@ -739,6 +775,8 @@ public class HierarchicalClusterAssignerConfig {
         settings.addString(CFG_ORIENTATION, m_orientation.toValue());
         settings.addStringArray(CFG_COLOR_PALETTE, m_colorPalette);
         settings.addBoolean(CFG_SUBSCRIBE_FILTER_EVENTS, m_subscribeFilterEvents);
+        settings.addBoolean(CFG_SHOW_THRESHOLD_BAR, m_showThresholdBar);
+        settings.addBoolean(CFG_ENABLE_THRESHOLD_MODIFICATION, m_enableThresholdModification);
     }
 
     /**
@@ -764,8 +802,8 @@ public class HierarchicalClusterAssignerConfig {
         m_enableSelection = settings.getBoolean(CFG_ENABLE_SELECTION);
         m_publishSelectionEvents = settings.getBoolean(CFG_PUBLISH_SELECTION_EVENTS);
         m_subscribeSelectionEvents = settings.getBoolean(CFG_SUBSCRIBE_SELECTION_EVENTS);
+        m_showClearSelectionButton = settings.getBoolean(CFG_SHOW_CLEAR_SELECTION_BUTTON);
         m_enableClusterColor = settings.getBoolean(CFG_ENABLE_CLUSTER_COLOR);
-        m_enableThresholdValue = settings.getBoolean(CFG_ENABLE_THRESHOLD_VALUE);
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME);
         m_clusterColumnName = settings.getString(CFG_CLUSTER_COLUMN_NAME);
         m_showWarningsInView = settings.getBoolean(CFG_SHOW_WARNINGS_IN_VIEW);
@@ -778,6 +816,8 @@ public class HierarchicalClusterAssignerConfig {
         m_orientation = HierarchicalClusterAssignerOrientation.forValue(settings.getString(CFG_ORIENTATION));
         m_colorPalette = settings.getStringArray(CFG_COLOR_PALETTE);
         m_subscribeFilterEvents = settings.getBoolean(CFG_SUBSCRIBE_FILTER_EVENTS);
+        m_showThresholdBar = settings.getBoolean(CFG_SHOW_THRESHOLD_BAR);
+        m_enableThresholdModification = settings.getBoolean(CFG_ENABLE_THRESHOLD_MODIFICATION);
 
         m_numClusters = settings.getInt(CFG_NUM_CLUSTERS);
         if (m_numClusters < 1) {
@@ -821,8 +861,8 @@ public class HierarchicalClusterAssignerConfig {
         m_enableSelection = settings.getBoolean(CFG_ENABLE_SELECTION, DEFAULT_ENABLE_SELECTION);
         m_publishSelectionEvents = settings.getBoolean(CFG_PUBLISH_SELECTION_EVENTS, DEFAULT_PUBLISH_SELECTION_EVENTS);
         m_subscribeSelectionEvents = settings.getBoolean(CFG_SUBSCRIBE_SELECTION_EVENTS, DEFAULT_SUBSCRIBE_SELECTION_EVENTS);
+        m_showClearSelectionButton = settings.getBoolean(CFG_SHOW_CLEAR_SELECTION_BUTTON, DEFAULT_SHOW_CLEAR_SELECTION_BUTTON);
         m_enableClusterColor = settings.getBoolean(CFG_ENABLE_CLUSTER_COLOR, DEFAULT_ENABLE_CLUSTER_COLOR);
-        m_enableThresholdValue = settings.getBoolean(CFG_ENABLE_THRESHOLD_VALUE, DEFAULT_ENABLE_THRESHOLD_VALUE);
         m_numClusters = settings.getInt(CFG_NUM_CLUSTERS, DEFAULT_NUM_CLUSTERS);
         m_threshold = settings.getDouble(CFG_THRESHOLD, DEFAULT_THRESHOLD);
         m_numClustersMode = settings.getBoolean(CFG_NUM_CLUSTERS_MODE, DEFAULT_NUM_CLUSTERS_MODE);
@@ -841,5 +881,7 @@ public class HierarchicalClusterAssignerConfig {
             .forValue(settings.getString(CFG_ORIENTATION, DEFAULT_ORIENTATION.toValue()));
         m_colorPalette = settings.getStringArray(CFG_COLOR_PALETTE, DEFAULT_COLOR_PALETTE);
         m_subscribeFilterEvents = settings.getBoolean(CFG_SUBSCRIBE_FILTER_EVENTS, DEFAULT_SUBSCRIBE_FILTER_EVENTS);
+        m_showThresholdBar = settings.getBoolean(CFG_SHOW_THRESHOLD_BAR, DEFAULT_SHOW_THRESHOLD_BAR);
+        m_enableThresholdModification = settings.getBoolean(CFG_ENABLE_THRESHOLD_MODIFICATION, DEFAULT_ENABLE_THRESHOLD_MODIFICATION);
     }
 }
