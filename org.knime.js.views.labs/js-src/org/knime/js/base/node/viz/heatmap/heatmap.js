@@ -5,14 +5,14 @@ heatmap_namespace = (function() {
         _table,
         _imageColumnName,
         _colNames,
-        _extent,
         _wrapper,
         _axis,
         _scales,
         _drawCellQueue,
         _tooltip,
         _colorRange,
-        _filteredData;
+        _filteredData,
+        _rowLables;
 
     // Hardcoded Default Settings
     var _cellSize = 15;
@@ -60,10 +60,6 @@ heatmap_namespace = (function() {
             _colNames[repColNames.indexOf(hmColName)] = hmColName;
         });
 
-        // Get min max of all rows
-        // TODO: implement a better way to do this
-        _extent = getMinMaxFromAllRows(_table.getRows());
-
         if (_representation.subscribeSelection) {
             knimeService.subscribeToSelection(_table.getTableId(), onSelectionChange);
         }
@@ -83,6 +79,16 @@ heatmap_namespace = (function() {
 
     heatmap.getComponentValue = function() {
         return _value;
+    };
+
+    heatmap.validate = function() {
+        return true;
+    };
+
+    heatmap.getSVG = function() {
+        var svgElement = d3.select('.heatmap').node();
+        var xmlSerializer = new XMLSerializer();
+        return xmlSerializer.serializeToString(svgElement);
     };
 
     function onFilterChange(data) {
@@ -218,19 +224,19 @@ heatmap_namespace = (function() {
         }
 
         if (_representation.enableZoom) {
-            var zoomButtonClicked = function() {
+            var zoomButtonClicked = function(evt, initialize) {
                 _value.enableZoom = !_value.enableZoom;
-                initializeZoom();
                 var button = document.getElementById('heatmap-mouse-mode-zoom');
                 button.classList.toggle('active');
+                if (!initialize) {
+                    initializeZoom();
+                }
             };
             knimeService.addButton('heatmap-mouse-mode-zoom', 'search', 'Mouse Mode "Zoom"', zoomButtonClicked);
             if (_representation.enableZoom && !_representation.enableSelection && !_representation.enablePanning) {
-                zoomButtonClicked();
+                zoomButtonClicked(true);
             }
         }
-
-        knimeService.addMenuDivider();
 
         if (_representation.enableSelection) {
             var selectionButtonClicked = function() {
@@ -250,14 +256,17 @@ heatmap_namespace = (function() {
         }
 
         if (_representation.enablePanning) {
-            var panButtonClicked = function() {
+            var panButtonClicked = function(evt, initialize) {
                 _value.enablePanning = !_value.enablePanning;
                 var button = document.getElementById('heatmap-mouse-mode-pan');
                 button.classList.toggle('active');
+                if (!initialize) {
+                    initializeZoom();
+                }
             };
             knimeService.addButton('heatmap-mouse-mode-pan', 'arrows', 'Mouse Mode "Pan"', panButtonClicked);
             if (_representation.enablePanning) {
-                panButtonClicked();
+                panButtonClicked(false, true);
             }
         }
 
@@ -265,7 +274,6 @@ heatmap_namespace = (function() {
             knimeService.addButton('scatter-zoom-reset-button', 'search-minus', 'Reset Zoom', function() {
                 resetZoom(true);
             });
-            knimeService.addMenuDivider();
         }
         // Create menu items
         if (_representation.enableTitleChange) {
@@ -293,6 +301,7 @@ heatmap_namespace = (function() {
                 true
             );
             knimeService.addMenuItem('Chart Subtitle:', 'header', chartSubtitleText, null, knimeService.SMALL_ICON);
+            knimeService.addMenuDivider();
         }
 
         var displayDataCellToolTip = knimeService.createMenuCheckbox(
@@ -463,45 +472,19 @@ heatmap_namespace = (function() {
         };
     }
 
-    function getMinMaxFromAllRows(allRows) {
-        return allRows.reduce(
-            function(accumulator, row) {
-                var rowMaxMin = row.data.reduce(
-                    function(rowAcc, currentValue, currentIndex) {
-                        if (_colNames[currentIndex] === undefined) {
-                            return rowAcc;
-                        }
-                        if (currentValue === null) {
-                            return rowAcc;
-                        }
-                        rowAcc.minimum = Math.min(rowAcc.minimum, currentValue);
-                        rowAcc.maximum = Math.max(rowAcc.maximum, currentValue);
-                        return rowAcc;
-                    },
-                    {
-                        minimum: accumulator.minimum,
-                        maximum: accumulator.maximum
-                    }
-                );
-
-                accumulator.minimum = Math.min(accumulator.minimum, rowMaxMin.minimum);
-                accumulator.maximum = Math.max(accumulator.maximum, rowMaxMin.maximum);
-                return accumulator;
-            },
-            {
-                minimum: Number.POSITIVE_INFINITY,
-                maximum: Number.NEGATIVE_INFINITY
-            }
-        );
-    }
-
     function formatPageData(rows) {
         var images = [];
         var rowNames = [];
+        var rowLables = [];
 
         var allValues = rows.reduce(function(accumulator, row) {
             rowNames.push(row.rowKey);
             var rowIsSelected = _value.selectedRowsBuffer.indexOf(row.rowKey) > -1;
+
+            var label = _representation.labelColumn
+                ? _table.getCell(row.rowKey, _representation.labelColumn)
+                : row.rowKey;
+            rowLables[row.rowKey] = label;
 
             // Storing images in an separate array is enough
             if (_imageColumnName) {
@@ -528,7 +511,8 @@ heatmap_namespace = (function() {
         return {
             images: images,
             data: allValues,
-            rowNames: rowNames
+            rowNames: rowNames,
+            rowLables: rowLables
         };
     }
 
@@ -554,23 +538,23 @@ heatmap_namespace = (function() {
             colorScale: _value.continuousGradient
                 ? d3
                       .scaleLinear()
-                      .domain(getLinearColorDomain(_extent.minimum, _extent.maximum))
+                      .domain(getLinearColorDomain(_representation.minValue, _representation.maxValue))
                       .range(_colorRange)
                 : d3
                       .scaleQuantize()
-                      .domain([_extent.minimum, _extent.maximum])
+                      .domain([_representation.minValue, _representation.maxValue])
                       .range(_colorRange)
         };
     }
 
-    function createAxis() {
+    function createAxis(formattedDataset) {
         return {
             x: d3.axisTop(_scales.x).tickFormat(function(d) {
                 return d;
             }),
 
             y: d3.axisLeft(_scales.y).tickFormat(function(d) {
-                return d;
+                return formattedDataset.rowLables[d];
             })
         };
     }
@@ -714,7 +698,7 @@ heatmap_namespace = (function() {
 
         _tooltip = document.querySelector('.knime-tooltip');
         _scales = createScales(formattedDataset);
-        _axis = createAxis();
+        _axis = createAxis(formattedDataset);
 
         var svg = d3
             .select('.knime-svg-container')
@@ -921,7 +905,7 @@ heatmap_namespace = (function() {
         var legendDefs = legend.append('defs');
         var legendGradient = legendDefs.append('linearGradient').attr('id', 'legendGradient');
 
-        var colorDomain = getLinearColorDomain(_extent.minimum, _extent.maximum);
+        var colorDomain = getLinearColorDomain(_representation.minValue, _representation.maxValue);
 
         // append a single rect to display a gradient
         legend
@@ -945,9 +929,9 @@ heatmap_namespace = (function() {
         } else if (!_value.continuousGradient) {
             var legendCellPercentage = 100 / colorDomain.length;
             var previousPercentage = 0;
-            var interpolator = d3.interpolateNumber(_extent.minimum, _extent.maximum);
+            var interpolator = d3.interpolateNumber(_representation.minValue, _representation.maxValue);
             var tickValues = [];
-            tickValues.push(_extent.minimum, _extent.maximum);
+            tickValues.push(_representation.minValue, _representation.maxValue);
 
             for (var i = 0; i < colorDomain.length; i++) {
                 var currentPercentage = legendCellPercentage * (i + 1);
@@ -968,7 +952,7 @@ heatmap_namespace = (function() {
 
         var legendScale = d3
             .scaleLinear()
-            .domain([_extent.minimum, _extent.maximum])
+            .domain([_representation.minValue, _representation.maxValue])
             .range([0, _legendWidth]);
 
         var legendAxis = d3
@@ -1111,12 +1095,6 @@ heatmap_namespace = (function() {
             return d3.select(this).attr('selection');
         });
     }
-
-    heatmap.getSVG = function() {
-        var svgElement = d3.select('.heatmap').node();
-        var xmlSerializer = new XMLSerializer();
-        return xmlSerializer.serializeToString(svgElement);
-    };
 
     return heatmap;
 })();
