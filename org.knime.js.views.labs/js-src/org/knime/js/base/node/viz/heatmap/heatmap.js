@@ -3,7 +3,6 @@ heatmap_namespace = (function() {
     var _representation,
         _value,
         _table,
-        _imageColumnName,
         _colNames,
         _wrapper,
         _axis,
@@ -12,7 +11,7 @@ heatmap_namespace = (function() {
         _tooltip,
         _colorRange,
         _filteredData,
-        _rowLables;
+        _zoomDimensions;
 
     // Hardcoded Default Settings
     var _cellSize = 15;
@@ -51,7 +50,6 @@ heatmap_namespace = (function() {
         _value = Object.assign(defaultViewValues, value);
         _table = new kt();
         _table.setDataTable(representation.table);
-        _imageColumnName = representation.svgLabelColumn;
 
         // Get valid indexes for heatmap columns by comparing them to input colNames
         _colNames = [];
@@ -124,6 +122,10 @@ heatmap_namespace = (function() {
         }
     }
 
+    /**
+     * Filter the available data to only the selected rows
+     * @param {Array} data
+     */
     function getSelectionData(data) {
         if (_value.showOnlySelectedRows) {
             return data.filter(function(row) {
@@ -147,17 +149,16 @@ heatmap_namespace = (function() {
             'px"></span></div>';
         var toolTipWrapper = '<div class="knime-tooltip"></div>';
         var infoWrapperEl = '<div class="info-wrapper"></div>';
+        container.innerHTML = svgWrapper + infoWrapperEl + toolTipWrapper;
 
         var data = _filteredData ? getSelectionData(_filteredData) : getSelectionData(_table.getRows());
-
-        container.insertAdjacentHTML('beforeend', svgWrapper + infoWrapperEl + toolTipWrapper);
 
         // Meta info
         var paginationData = createPagination(data);
         drawMetaInfo(paginationData);
 
-        // Build svg based on the current data
-        buildSvg(paginationData.rows);
+        // Build svg based on the paginated data
+        drawSvg(paginationData.rows);
 
         // Events
         registerDomEvents();
@@ -177,10 +178,8 @@ heatmap_namespace = (function() {
     }
 
     function updateTitles() {
-        var chartTitleEl = document.querySelector('.knime-title');
-        chartTitleEl.textContent = _value.chartTitle;
-        var subTitleEl = document.querySelector('.knime-subtitle');
-        subTitleEl.textContent = _value.chartSubtitle;
+        document.querySelector('.knime-title').textContent = _value.chartTitle;
+        document.querySelector('.knime-subtitle').textContent = _value.chartSubtitle;
 
         if (_value.titlesExist === undefined) {
             // on first draw check if titles exist
@@ -229,12 +228,12 @@ heatmap_namespace = (function() {
                 var button = document.getElementById('heatmap-mouse-mode-zoom');
                 button.classList.toggle('active');
                 if (!initialize) {
-                    initializeZoom();
+                    setZoomEvents();
                 }
             };
             knimeService.addButton('heatmap-mouse-mode-zoom', 'search', 'Mouse Mode "Zoom"', zoomButtonClicked);
             if (_representation.enableZoom && !_representation.enableSelection && !_representation.enablePanning) {
-                zoomButtonClicked(true);
+                zoomButtonClicked(false, true);
             }
         }
 
@@ -261,7 +260,7 @@ heatmap_namespace = (function() {
                 var button = document.getElementById('heatmap-mouse-mode-pan');
                 button.classList.toggle('active');
                 if (!initialize) {
-                    initializeZoom();
+                    setZoomEvents();
                 }
             };
             knimeService.addButton('heatmap-mouse-mode-pan', 'arrows', 'Mouse Mode "Pan"', panButtonClicked);
@@ -304,14 +303,16 @@ heatmap_namespace = (function() {
             knimeService.addMenuDivider();
         }
 
-        var displayDataCellToolTip = knimeService.createMenuCheckbox(
-            'displayDataCellToolTip',
-            _value.displayDataCellToolTip,
-            function() {
-                _value.displayDataCellToolTip = this.checked;
-            }
-        );
-        knimeService.addMenuItem('Show Tooltips', 'info', displayDataCellToolTip);
+        if (_representation.enableShowToolTips) {
+            var displayDataCellToolTip = knimeService.createMenuCheckbox(
+                'displayDataCellToolTip',
+                _value.displayDataCellToolTip,
+                function() {
+                    _value.displayDataCellToolTip = this.checked;
+                }
+            );
+            knimeService.addMenuItem('Show Tooltips', 'info', displayDataCellToolTip);
+        }
 
         var showOnlySelectedRows = knimeService.createMenuCheckbox(
             'showOnlySelectedRows',
@@ -324,25 +325,26 @@ heatmap_namespace = (function() {
         knimeService.addMenuItem('Show Selected Rows Only', 'filter', showOnlySelectedRows);
 
         knimeService.addMenuDivider();
+        if (_representation.enableColorModeEdit) {
+            var updateScaleType = function() {
+                _value.continuousGradient = this.value === 'linear';
+                drawChart();
+            };
+            var linearRadio = knimeService.createMenuRadioButton('linearRadio', 'scaleType', 'linear', updateScaleType);
+            linearRadio.checked = _value.continuousGradient;
+            knimeService.addMenuItem('Continuous gradient', 'align-left fa-rotate-270', linearRadio);
 
-        var updateScaleType = function() {
-            _value.continuousGradient = this.value === 'linear';
-            drawChart();
-        };
-        var linearRadio = knimeService.createMenuRadioButton('linearRadio', 'scaleType', 'linear', updateScaleType);
-        linearRadio.checked = _value.continuousGradient;
-        knimeService.addMenuItem('Continuous gradient', 'align-left fa-rotate-270', linearRadio);
+            var quantizeRadio = knimeService.createMenuRadioButton(
+                'quantizeRadio',
+                'scaleType',
+                'quantize',
+                updateScaleType
+            );
+            quantizeRadio.checked = !_value.continuousGradient;
+            knimeService.addMenuItem('Discrete colors', 'tasks fa-rotate-270', quantizeRadio);
 
-        var quantizeRadio = knimeService.createMenuRadioButton(
-            'quantizeRadio',
-            'scaleType',
-            'quantize',
-            updateScaleType
-        );
-        quantizeRadio.checked = !_value.continuousGradient;
-        knimeService.addMenuItem('Discrete colors', 'tasks fa-rotate-270', quantizeRadio);
-
-        knimeService.addMenuDivider();
+            knimeService.addMenuDivider();
+        }
 
         if (_representation.enablePageSizeChange) {
             var initialPageSize = knimeService.createMenuSelect(
@@ -359,7 +361,7 @@ heatmap_namespace = (function() {
     }
 
     function getPaginationHtml(pagination) {
-        var paginationRange = createPaginationRange(pagination);
+        var paginationRange = createPaginationIntervals(pagination);
 
         if (paginationRange.pages.length <= 1 || !_representation.enablePaging) {
             return '';
@@ -411,7 +413,11 @@ heatmap_namespace = (function() {
         window.addEventListener('resize', drawChart);
     }
 
-    function createPaginationRange(pagination) {
+    /**
+     * Create intervals from the pagination data to limit the amount of links shown
+     * @param {object} pagination data
+     */
+    function createPaginationIntervals(pagination) {
         var delta = 2; // number of pages displayed left and right to "center"
         var left = _value.currentPage - delta;
         var right = _value.currentPage + delta + 1;
@@ -472,6 +478,13 @@ heatmap_namespace = (function() {
         };
     }
 
+    /**
+     * Format the data on a per-cell level and
+     * - get current row names
+     * - get images
+     * - get labels
+     * @param {Array} rows
+     */
     function formatPageData(rows) {
         var images = [];
         var rowNames = [];
@@ -487,8 +500,8 @@ heatmap_namespace = (function() {
             rowLables[row.rowKey] = label;
 
             // Storing images in an separate array is enough
-            if (_imageColumnName) {
-                images[row.rowKey] = _table.getCell(row.rowKey, _imageColumnName);
+            if (_representation.svgLabelColumn) {
+                images[row.rowKey] = _table.getCell(row.rowKey, _representation.svgLabelColumn);
             }
 
             // Set values for each cell
@@ -516,6 +529,11 @@ heatmap_namespace = (function() {
         };
     }
 
+    /**
+     * Interpolate values to create a value range of all the colors
+     * @param {Number} minimum
+     * @param {Number} maximum
+     */
     function getLinearColorDomain(minimum, maximum) {
         var domain = [];
         var interpolator = d3.interpolateNumber(minimum, maximum);
@@ -564,51 +582,82 @@ heatmap_namespace = (function() {
     }
 
     function initializeZoom() {
-        var svgD3 = d3.select('.knime-svg-container  svg');
+        var svgD3 = d3.select('.knime-svg-container svg');
 
         var xAxisD3El = svgD3.select('.knime-axis.knime-x');
         var yAxisD3El = svgD3.select('.knime-axis.knime-y');
-
         var xAxisEl = xAxisD3El.node();
         var yAxisEl = yAxisD3El.node();
         var xAxisWidth = xAxisEl.getBoundingClientRect().width;
         var yAxisHeight = yAxisEl.getBoundingClientRect().height;
-        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
 
         // Set transform origins
-        d3.select('.knime-svg-container .wrapper').attr('transform-origin', _margin.left + 'px ' + _margin.top + 'px ');
+        document
+            .querySelector('.knime-svg-container .wrapper')
+            .setAttribute('transform-origin', _margin.left + 'px ' + _margin.top + 'px ');
         xAxisD3El.attr('transform-origin', _margin.left + 'px 0');
         yAxisD3El.attr('transform-origin', '0 ' + _margin.top + 'px');
 
-        // Minimal zoomed out level
-        var minimalZoomLevel = Math.max(
-            window.innerWidth / (xAxisWidth + _margin.left),
-            window.innerHeight / (yAxisHeight + _margin.top)
-        );
+        _zoomDimensions = {
+            xAxisWidth: xAxisWidth,
+            yAxisHeight: yAxisHeight,
+            minimalZoomLevel: Math.max(window.innerWidth / xAxisWidth, window.innerHeight / yAxisHeight)
+        };
+        return setZoomEvents();
+    }
 
-        // Zoom and pan
+    function setZoomEvents() {
+        var svgD3 = d3.select('.knime-svg-container svg');
+        var xAxisD3El = svgD3.select('.knime-axis.knime-x');
+        var yAxisD3El = svgD3.select('.knime-axis.knime-y');
+        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
+        var maxZoomLevel = 1;
+
         var zoom = d3
             .zoom()
             .translateExtent([
                 [0, 0],
-                [xAxisWidth + _margin.left + _margin.right, yAxisHeight + _margin.top + infoWrapperHeight]
+                [
+                    _zoomDimensions.xAxisWidth + (_margin.left + _margin.right) * 2,
+                    _zoomDimensions.yAxisHeight + (_margin.top + infoWrapperHeight) * 2
+                ]
             ])
-            .scaleExtent([minimalZoomLevel, 1])
+            .scaleExtent([_zoomDimensions.minimalZoomLevel, maxZoomLevel])
             .on('zoom', function() {
                 var t = d3.event.transform;
+
+                // prevent jumpy layout
+                t.x = t.x > 0 ? 0 : t.x;
+                t.y = t.y > 0 ? 0 : t.y;
+                t.k = t.k > maxZoomLevel ? maxZoomLevel : t.k;
+
                 xAxisD3El.attr('transform', 'translate(' + t.x + ', ' + _margin.top + ') scale(' + t.k + ')');
                 yAxisD3El.attr('transform', 'translate(' + _margin.left + ', ' + t.y + ') scale(' + t.k + ')');
                 _wrapper.attr('transform', t);
+
                 _value.currentZoomLevel = t;
             });
 
-        if (!_value.enableZoom && _value.enablePanning) {
-            svgD3.call(zoom).on('wheel.zoom', null);
-        } else if (_value.enableZoom || _value.enablePanning) {
+        // reset
+        svgD3.on('.zoom', null);
+
+        // init
+        if (_value.enableZoom || _value.enablePanning) {
             svgD3.call(zoom);
         }
-        if (!_value.enableZoom && !_value.enablePanning) {
-            svgD3.on('.zoom', null);
+
+        // disable zoom events
+        if (!_value.enableZoom) {
+            svgD3.on('wheel.zoom', null).on('dblclick.zoom', null);
+        }
+
+        // disable panning events
+        if (!_value.enablePanning) {
+            svgD3
+                .on('mousedown.zoom', null)
+                .on('touchstart.zoom', null)
+                .on('touchmove.zoom', null)
+                .on('touchend.zoom', null);
         }
         return zoom;
     }
@@ -620,8 +669,16 @@ heatmap_namespace = (function() {
         _tooltip.classList.add('active');
         e.target.classList.add('active');
         _tooltip.innerHTML = innerHtml;
-        _tooltip.style.left = event.clientX + _cellSize + 'px';
-        _tooltip.style.top = event.clientY - _cellSize + 'px';
+        var tooltipWidth = _tooltip.getBoundingClientRect().width;
+        var leftPos = event.clientX + _cellSize;
+        var topPos = event.clientY - _cellSize;
+
+        // make sure tooltip is visible on the right
+        if (leftPos + tooltipWidth >= (window.innerWidth || document.documentElement.clientWidth)) {
+            leftPos = leftPos - tooltipWidth - _cellSize * 2;
+        }
+        _tooltip.style.left = leftPos + 'px';
+        _tooltip.style.top = topPos + 'px';
     }
 
     function hideTooltip() {
@@ -654,9 +711,16 @@ heatmap_namespace = (function() {
             });
     }
 
+    /**
+     * Sort cells
+     * - in viewport
+     * - not in viewport
+     * @param {Number} viewportSize
+     * @param {Array} cell data
+     */
     function prioritizeCells(viewportSize, data) {
-        var priorityCells = [];
-        var delayedCells = [];
+        var inViewportCells = [];
+        var notInViewportCells = [];
         var rowItemsWidth = 0;
         var currentRowKey = data[0].y;
 
@@ -664,23 +728,23 @@ heatmap_namespace = (function() {
             rowItemsWidth = rowItemsWidth + _cellSize * _value.currentZoomLevel.k;
             if (cell.y == currentRowKey) {
                 if (rowItemsWidth < viewportSize.width - _value.currentZoomLevel.x) {
-                    priorityCells.push(cell);
+                    inViewportCells.push(cell);
                 } else {
-                    delayedCells.push(cell);
+                    notInViewportCells.push(cell);
                 }
             } else {
                 rowItemsWidth = 0;
                 currentRowKey = cell.y;
-                priorityCells.push(cell);
+                inViewportCells.push(cell);
             }
         });
         return {
-            priorityCells: priorityCells,
-            delayedCells: delayedCells
+            inViewportCells: inViewportCells,
+            notInViewportCells: notInViewportCells
         };
     }
 
-    function buildSvg(rows) {
+    function drawSvg(rows) {
         if (_drawCellQueue) {
             _drawCellQueue.invalidate();
         }
@@ -741,8 +805,8 @@ heatmap_namespace = (function() {
             var viewportSize = clipPath.node().getBoundingClientRect();
             sortedData = prioritizeCells(viewportSize, formattedDataset.data);
             _drawCellQueue = renderQueue(drawCell).rate(250);
-            _drawCellQueue(sortedData.priorityCells);
-            _drawCellQueue.add(sortedData.delayedCells);
+            _drawCellQueue(sortedData.inViewportCells);
+            _drawCellQueue.add(sortedData.notInViewportCells);
         } else {
             // Render cells at once for image rendering
             formattedDataset.data.map(function(cell) {
@@ -825,7 +889,7 @@ heatmap_namespace = (function() {
             .selectAll('text')
             .attr('font-weight', 'normal')
             .on('mouseover', function(d) {
-                if (!formattedDataset.images[d] || !_representation.displayRowToolTip) {
+                if (!formattedDataset.images[d]) {
                     return;
                 }
                 d3.event.target.classList.add('active');
@@ -987,6 +1051,12 @@ heatmap_namespace = (function() {
         return zoom;
     }
 
+    /**
+     * Select multiple rows via shiftkey
+     *
+     * @param {String} selectedRowId
+     * @param {Object} formattedDataset
+     */
     function selectDeltaRow(selectedRowId, formattedDataset) {
         // Get closest selected row to newly selected row
         var currentIndex = formattedDataset.rowNames.indexOf(selectedRowId);
@@ -1013,14 +1083,13 @@ heatmap_namespace = (function() {
         var rowKey;
         for (var i = startIndex; i <= endIndex; i++) {
             rowKey = formattedDataset.rowNames[i];
-            styleSelectedRows([rowKey], true);
             if (!_value.selectedRowsBuffer.indexOf(rowKey) > -1) {
                 _value.selectedRowsBuffer.push(rowKey);
             }
         }
 
         var tableId = _table.getTableId();
-
+        styleSelectedRows(_value.selectedRowsBuffer, true);
         knimeService.setSelectedRows(tableId, _value.selectedRowsBuffer);
     }
 
