@@ -85,6 +85,15 @@
     transform: rotate(-90deg);
 }
 
+.knime-axis.knime-x .knime-tick.ellipsis .knime-tick-label {
+    transform: rotate(-90deg) translate(0px, -3px);
+    pointer-events: none;
+}
+
+.knime-axis.knime-x .knime-tick.ellipsis .knime-tick-line {
+    display: none;
+}
+
 .selectionEnabled .knime-axis.knime-x .tick:not(.outOfFilter) .knime-tick-label {
     cursor: pointer;
 }

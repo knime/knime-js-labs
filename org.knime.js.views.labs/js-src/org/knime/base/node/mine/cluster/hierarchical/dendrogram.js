@@ -43,6 +43,8 @@ window.dendrogram_namespace = (function () {
         xAxis,
         xAxisEl,
         xScale,
+        xShowNthTicks,
+        xEllipsisNthTick,
         yAxis,
         yAxisEl,
         yScale,
@@ -171,6 +173,12 @@ window.dendrogram_namespace = (function () {
         xScale = d3.scaleBand()
             .domain(labels);
         xAxis = d3.axisBottom(xScale);
+        xAxis.tickFormat(function (d, i) {
+            // show ellipsis if not all labels are shown
+            const showEllipsis = !!(i % xEllipsisNthTick);
+            d3.select(this.parentNode).classed('ellipsis', showEllipsis);
+            return showEllipsis ? '…' : d;
+        });
         xAxisEl = svg.append('g')
             .attr('class', 'knime-axis knime-x')
             .on('click', function () { // register event listener on container to also catch dynamically added labels
@@ -179,6 +187,29 @@ window.dendrogram_namespace = (function () {
                     toggleSelectRow(rowKey);
                 }
             });
+    };
+
+    const updateXAxis = function (transformEvent) {
+        // prevent overlapping labels by removing some if there is not enough space to show all
+        const scale = transformEvent ? transformEvent.k : 1;
+        xShowNthTicks = Math.round(xScale.domain().length / (viewportWidth * scale / (xAxisLabelWidth + 2)));
+        xEllipsisNthTick = xShowNthTicks <= 1 ? 0 : 2;
+        xAxis.tickValues(xScale.domain().filter(function (d, i) { return !(i % xShowNthTicks); }));
+        xScale.range([0, viewportWidth].map(function (d) { return transformEvent ? d3.event.transform.applyX(d) : d; }));
+        xAxisEl.call(xAxis);
+
+        // apply knime classes
+        const isFiltering = !!filteredRows.length;
+        const xTickEls = xAxisEl.selectAll('.tick').classed('knime-tick', true)
+            .classed('selected', function (rowKey) {
+                return selectedRows.indexOf(rowKey) !== -1;
+            }).classed('outOfFilter', function (rowKey) {
+                return isFiltering && !(filteredRows.indexOf(rowKey) !== -1);
+            });
+        xTickEls.selectAll('line').classed('knime-tick-line', true);
+        xTickEls.selectAll('text').classed('knime-tick-label', true)
+            .attr('dx', labelMargin * -1 + 'px')
+            .attr('dy', '-5px');
     };
 
     const drawYAxis = function () {
@@ -190,12 +221,25 @@ window.dendrogram_namespace = (function () {
             .ticks(5);
         yAxisEl = svg.append('g')
             .attr('class', 'knime-axis knime-y')
-            .attr('transform', 'translate(' + yAxisWidth + ',' + viewportMarginTop + ')')
+            .attr('transform', 'translate(' + yAxisWidth + ',' + viewportMarginTop + ')');
 
         // apply the distance of each node
         nodes.each(function (n) {
             n.y = yScale(n.data.distance);
         });
+    };
+
+    const updateYAxis = function (transformEvent) {
+        yScale.range([viewportHeight, 0]);
+        if (transformEvent) {
+            yAxis.scale(transformEvent.rescaleY(yScale));
+        }
+        yAxisEl.call(yAxis);
+
+        // apply knime classes
+        const yTickEls = yAxisEl.selectAll('.tick').classed('knime-tick', true);
+        yTickEls.selectAll('line').classed('knime-tick-line', true);
+        yTickEls.selectAll('text').classed('knime-tick-label', true);
     };
 
     const drawDendrogram = function () {
@@ -307,25 +351,10 @@ window.dendrogram_namespace = (function () {
         cluster.size([viewportWidth, viewportHeight - viewportMarginTop]);
         cluster(nodes);
 
-        // update x axis
-        xScale.range([0, svgSize.width - yAxisWidth]);
-        const xShowNthTicks = Math.round(xScale.domain().length / (viewportWidth / xAxisLabelWidth));
-        xAxis.tickValues(xScale.domain().filter(function (d, i) { return !(i % xShowNthTicks); }));
+        // update axis
         xAxisEl.attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')');
-        xAxisEl.call(xAxis);
-        const xTickEls = xAxisEl.selectAll('.tick').classed('knime-tick', true);
-        xTickEls.selectAll('line').classed('knime-tick-line', true);
-        xTickEls.selectAll('text').classed('knime-tick-label', true)
-            .attr('dx', labelMargin * -1 + 'px')
-            .attr('dy', '-5px');
-
-        // update y axis
-        yScale.range([viewportHeight, 0]);
-        yAxisEl.call(yAxis);
-        const yTickEls = xAxisEl.selectAll('.tick')
-            .classed('knime-tick', true);
-        yTickEls.selectAll('line').classed('knime-tick-line', true);
-        yTickEls.selectAll('text').classed('knime-tick-label', true);
+        updateXAxis();
+        updateYAxis();
 
         // apply the distance of each node
         nodes.each(function (n) {
@@ -379,24 +408,8 @@ window.dendrogram_namespace = (function () {
             .on('zoom', function () {
                 dendrogramEl.attr('transform', d3.event.transform);
 
-                // TODO refactor this
-                const isFiltering = !!filteredRows.length;
-                const xShowNthTicks = Math.round(xScale.domain().length / (viewportWidth * d3.event.transform.k / 15));
-                xAxis.tickValues(xScale.domain().filter(function (d, i) { return !(i % xShowNthTicks); }));
-                xScale.range([0, viewportWidth].map(function (d) { return d3.event.transform.applyX(d); }));
-                const xTickEls = xAxisEl.selectAll('.tick')
-                    .classed('knime-tick', true).classed('selected', function (rowKey) {
-                        return selectedRows.indexOf(rowKey) !== -1;
-                    }).classed('outOfFilter', function (rowKey) {
-                        return isFiltering && !(filteredRows.indexOf(rowKey) !== -1);
-                    });
-                xTickEls.selectAll('line').classed('knime-tick-line', true);
-                xTickEls.selectAll('text').classed('knime-tick-label', true)
-                    .attr('dx', labelMargin * -1 + 'px')
-                    .attr('dy', '-5px');
-
-                xAxisEl.call(xAxis);
-                yAxisEl.call(yAxis.scale(d3.event.transform.rescaleY(yScale)));
+                updateXAxis(d3.event.transform);
+                updateYAxis(d3.event.transform);
 
                 // rescale line widths and markers
                 linkEl.attr('stroke-width', linkStrokeWidth / d3.event.transform.k);
