@@ -9,7 +9,7 @@ window.dendrogram_namespace = (function () {
 
     // view related settings
     const xAxisHeight = 100,
-        yAxisWidth = 30,
+        yAxisWidth = 40,
         labelMargin = 10,
         xAxisLabelWidth = 15,
         linkStrokeWidth = 1,
@@ -33,6 +33,8 @@ window.dendrogram_namespace = (function () {
         viewportHeight,
         viewportClipEl,
         xAxisClipEl,
+        titleEl,
+        subtitleEl,
         dendrogramEl,
         clusterMarkerEl,
         leafEl,
@@ -55,7 +57,9 @@ window.dendrogram_namespace = (function () {
         _value = value;
 
         if (!_representation.tree || !_representation.tree.root) {
-            d3.select('body').append('p').text('Error: No data available');
+            if (_representation.showWarningsInView) {
+                d3.select('body').append('p').text('Error: No data available');
+            }
             return;
         }
 
@@ -65,6 +69,7 @@ window.dendrogram_namespace = (function () {
         drawControls();
 
         drawSVG();
+        drawTitle();
         createHierarchyFromTree();
         drawXAxis();
         drawYAxis();
@@ -75,8 +80,13 @@ window.dendrogram_namespace = (function () {
 
         resizeDiagram();
 
-        initSelection();
-        initFiltering();
+        if (_representation.enableSelection) {
+            initSelection();
+        }
+
+        if (_representation.subscribeFilterEvents) {
+            initFiltering();
+        }
 
         if (_representation.resizeToWindow) {
             initWindowResize();
@@ -88,25 +98,38 @@ window.dendrogram_namespace = (function () {
             knimeService.allowFullscreen();
         }
 
-        // var chartTitleText = knimeService.createMenuTextField('chartTitleText', 'foobar', function() {}, true);
-        // knimeService.addMenuItem('Chart Title:', 'header', chartTitleText);
+        if (_representation.enableTitleEdit) {
+            knimeService.addMenuItem('Chart Title:', 'header', knimeService.createMenuTextField(
+                'chartTitleText', _value.title, function () {
+                    if (_value.title != this.value) {
+                        _value.title = this.value;
+                        updateTitle();
+                    }
+                }, true));
 
-        knimeService.addButton('heatmap-mouse-mode-pan', 'arrows', 'Mouse Mode "Pan"', function () {
-            // _value.zoomEnabled = !_value.zoomEnabled;
-            // initializeZoom();
-            // var button = document.getElementById('heatmap-mouse-mode-pan');
-            // button.classList.toggle('active');
-            // if (_value.zoomEnabled === true) {
-            //     selectionButtonClicked();
-            // }
-        });
+            knimeService.addMenuItem('Chart Subtitle:', 'header', knimeService.createMenuTextField(
+                'chartSubtitleText', _value.subtitle, function () {
+                    if (_value.subtitle != this.value) {
+                        _value.subtitle = this.value;
+                        updateTitle();
+                    }
+                }, true));
+        }
 
+        if (_representation.enableZoom && _representation.showZoomResetButton) {
+            knimeService.addButton('zoom-reset-button', 'search-minus', 'Reset Zoom', function () {
+                resetZoom();
+            });
+        }
+
+        if (_representation.enableSelection) {
+            knimeService.addButton('selection-reset-button', 'minus-square-o', 'Reset Selection', function () {
+                clearSelection();
+            });
+        }
+
+        /*
         knimeService.addMenuDivider();
-
-
-        knimeService.addMenuItem('Show Tooltips', 'info', knimeService.createMenuCheckbox('tooltipsEnabled', _value.tooltipsEnabled, function () {
-            _value.tooltipsEnabled = this.checked;
-        }));
 
         knimeService.addMenuItem('Show Filtered Rows Only', 'filter', knimeService.createMenuCheckbox(
             'showOnlySelectedRows',
@@ -115,6 +138,7 @@ window.dendrogram_namespace = (function () {
                 _value.showOnlySelectedRows = this.checked;
             }
         ));
+        */
     };
 
     const calcSVGSize = function () {
@@ -272,6 +296,27 @@ window.dendrogram_namespace = (function () {
         });
     };
 
+    const drawTitle = function () {
+        titleEl = svg.append('text')
+            .attr('id', 'title')
+            .attr('class', 'knime-title')
+            .attr('x', 180)
+            .attr('y', 30)
+            .text(_value.title);
+
+        subtitleEl = svg.append('text')
+            .attr('id', 'subtitle')
+            .attr('class', 'knime-subtitle')
+            .attr('x', 180)
+            .attr('y', 46)
+            .text(_value.subtitle);
+    };
+
+    const updateTitle = function () {
+        titleEl.text(_value.title);
+        subtitleEl.text(_value.subtitle);
+    };
+
     const drawThresholdHandle = function () {
         const maxDistance = yScale.domain()[1];
 
@@ -376,13 +421,12 @@ window.dendrogram_namespace = (function () {
 
         thresholdEl.attr('transform', 'translate(0,' + yScale(_value.threshold) + ')');
 
-        // zoom out? TODO maybe there is a smarter behaviour here
         zoom.translateExtent([[0, 0], [viewportWidth, viewportHeight]]);
         zoom.extent([[0, 0], [viewportWidth, viewportHeight]]);
         svg.call(zoom).on('dblclick.zoom', null); // prevent zoom on double click
-        svg.transition()
-            .duration(750)
-            .call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
+
+        // zoom out? TODO maybe there is a smarter behaviour here
+        resetZoom();
     };
 
     const initWindowResize = function () {
@@ -402,7 +446,6 @@ window.dendrogram_namespace = (function () {
 
     const initZoomingAndPanning = function () {
         zoom = d3.zoom()
-            .scaleExtent([1, 20])
             .translateExtent([[0, 0], [viewportWidth, viewportHeight]])
             .extent([[0, 0], [viewportWidth, viewportHeight]])
             .on('zoom', function () {
@@ -419,10 +462,35 @@ window.dendrogram_namespace = (function () {
                     .attr('x', -(leafWidth / d3.event.transform.k) / 2)
                     .attr('y', -(leafHeight / d3.event.transform.k));
                 thresholdEl.attr('height', thresholdHandleHeight / d3.event.transform.k);
+
+                // save zoom and pan
+                _value.zoomx = d3.event.transform.x;
+                _value.zoomy = d3.event.transform.y;
+                _value.zoomk = d3.event.transform.k;
             });
+
+        const zoomX = _value.zoomx !== undefined ? _value.zoomx : 0;
+        const zoomY = _value.zoomy !== undefined ? _value.zoomy : 0;
+        const zoomK = _value.zoomk !== undefined ? _value.zoomk : 1;
+        if (_representation.enableZoom) {
+            zoom.scaleExtent([1, Infinity]);
+        } else {
+            zoom.scaleExtent([zoomK, zoomK]);
+        }
 
         svg.call(zoom)
             .on('dblclick.zoom', null); // prevent zoom on double click
+
+        // set initial zoom and pan
+        setTimeout(function () {
+            svg.call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
+        }, 0);
+    };
+
+    const resetZoom = function () {
+        svg.transition()
+            .duration(750)
+            .call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
     };
 
     const updateSelectionInView = function () {
@@ -494,7 +562,9 @@ window.dendrogram_namespace = (function () {
         }
 
         updateSelectionInView();
-        knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
+        if (_representation.publishSelectionEvents) {
+            knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
+        }
     };
 
     const toggleSelectCluster = function (clusterNode) {
@@ -530,11 +600,24 @@ window.dendrogram_namespace = (function () {
         }
 
         updateSelectionInView();
-        knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
+        if (_representation.publishSelectionEvents) {
+            knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
+        }
+    };
+
+    const clearSelection = function () {
+        selectedRows = [];
+        updateSelectionInView();
+
+        if (_representation.publishSelectionEvents) {
+            knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
+        }
     };
 
     const initSelection = function () {
-        knimeService.subscribeToSelection(table.getTableId(), onSelectionChange);
+        if (_representation.subscribeSelectionEvents) {
+            knimeService.subscribeToSelection(table.getTableId(), onSelectionChange);
+        }
 
         if (_representation.runningInView) {
             svg.classed('selectionEnabled', true);
@@ -590,7 +673,6 @@ window.dendrogram_namespace = (function () {
             knimeService.subscribeToFilter(table.getTableId(), onFilterChange, filterId);
         });
     };
-
 
     dendrogram.validate = function () {
         return true;
