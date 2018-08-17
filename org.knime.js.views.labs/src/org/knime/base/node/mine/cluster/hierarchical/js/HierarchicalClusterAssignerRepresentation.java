@@ -90,9 +90,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
     private boolean m_showWarningsInView;
 
-    private boolean m_enableZoom;
+    private boolean m_enableZoomAndPanning;
     private boolean m_showZoomResetButton;
-    private boolean m_enablePanning;
     private boolean m_enableLocalScaleToggle;
 
     private boolean m_enableChangeOrientation;
@@ -325,17 +324,17 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     }
 
     /**
-     * @return the enableZoom
+     * @return the enableZoomAndPanning
      */
-    public boolean getEnableZoom() {
-        return m_enableZoom;
+    public boolean getEnableZoomAndPanning() {
+        return m_enableZoomAndPanning;
     }
 
     /**
-     * @param enableZoom the enableZoomMouse to set
+     * @param enableZoomAndPanning the enableZoomAndPanning to set
      */
-    public void setEnableZoom(final boolean enableZoom) {
-        m_enableZoom = enableZoom;
+    public void setEnableZoom(final boolean enableZoomAndPanning) {
+        m_enableZoomAndPanning = enableZoomAndPanning;
     }
 
     /**
@@ -350,20 +349,6 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
      */
     public void setShowZoomResetButton(final boolean showZoomResetButton) {
         m_showZoomResetButton = showZoomResetButton;
-    }
-
-    /**
-     * @return the enablePanning
-     */
-    public boolean getEnablePanning() {
-        return m_enablePanning;
-    }
-
-    /**
-     * @param enablePanning the enablePanning to set
-     */
-    public void setEnablePanning(final boolean enablePanning) {
-        m_enablePanning = enablePanning;
     }
 
     /**
@@ -550,9 +535,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW, getShowWarningsInView());
 
-        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM, getEnableZoom());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_AND_PANNING, getEnableZoomAndPanning());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_ZOOM_RESET_BUTTON, getShowZoomResetButton());
-        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_PANNING, getEnablePanning());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_LOG_SCALE_TOGGLE, getEnableLogScaleToggle());
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_CHANGE_ORIENTATION, getEnableChangeOrientation());
@@ -595,9 +579,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
         setShowWarningsInView(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW));
 
-        setEnableZoom(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM));
+        setEnableZoom(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_ZOOM_AND_PANNING));
         setShowZoomResetButton(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_ZOOM_RESET_BUTTON));
-        setEnablePanning(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_PANNING));
         setEnableLogScaleToggle(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_LOG_SCALE_TOGGLE));
 
         setEnableChangeOrientation(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_CHANGE_ORIENTATION));
@@ -644,9 +627,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_subscribeSelectionEvents, other.getSubscribeSelectionEvents())
                 .append(m_showClearSelectionButton, other.getShowClearSelectionButton())
                 .append(m_showWarningsInView, other.getShowWarningsInView())
-                .append(m_enableZoom, other.getEnableZoom())
+                .append(m_enableZoomAndPanning, other.getEnableZoomAndPanning())
                 .append(m_showZoomResetButton, other.getShowZoomResetButton())
-                .append(m_enablePanning, other.getEnablePanning())
                 .append(m_enableLocalScaleToggle, other.getEnableLogScaleToggle())
                 .append(m_enableChangeOrientation, other.getEnableChangeOrientation())
                 .append(m_subscribeFilterEvents, other.getSubscribeFilterEvents())
@@ -681,9 +663,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_subscribeSelectionEvents)
                 .append(m_showClearSelectionButton)
                 .append(m_showWarningsInView)
-                .append(m_enableZoom)
+                .append(m_enableZoomAndPanning)
                 .append(m_showZoomResetButton)
-                .append(m_enablePanning)
                 .append(m_enableLocalScaleToggle)
                 .append(m_enableChangeOrientation)
                 .append(m_colorPalette)

@@ -163,17 +163,13 @@ public class HierarchicalClusterAssignerConfig {
     final static boolean DEFAULT_SHOW_WARNINGS_IN_VIEW = true;
     private boolean m_showWarningsInView = DEFAULT_SHOW_WARNINGS_IN_VIEW;
 
-    final static String CFG_ENABLE_ZOOM = "enableZoom";
-    final static boolean DEFAULT_ENABLE_ZOOM = true;
-    private boolean m_enableZoom = DEFAULT_ENABLE_ZOOM;
+    final static String CFG_ENABLE_ZOOM_AND_PANNING = "enableZoomAndPanning";
+    final static boolean DEFAULT_ENABLE_ZOOM_AND_PANNING = true;
+    private boolean m_enableZoomAndPanning = DEFAULT_ENABLE_ZOOM_AND_PANNING;
 
     final static String CFG_SHOW_ZOOM_RESET_BUTTON = "showZoomResetButton";
     final static boolean DEFAULT_SHOW_ZOOM_RESET_BUTTON = false;
     private boolean m_showZoomResetButton = DEFAULT_SHOW_ZOOM_RESET_BUTTON;
-
-    final static String CFG_ENABLE_PANNING = "enablePanning";
-    final static boolean DEFAULT_ENABLE_PANNING = true;
-    private boolean m_enablePanning = DEFAULT_ENABLE_PANNING;
 
     final static String CFG_ENABLE_LOG_SCALE_TOGGLE = "enableLogScaleToggle";
     final static boolean DEFAULT_ENABLE_LOG_SCALE_TOGGLE = true;
@@ -581,17 +577,17 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
-     * @return the enableZoom
+     * @return the enableZoomAndPanning
      */
-    public boolean getEnableZoom() {
-        return m_enableZoom;
+    public boolean getEnableZoomAndPanning() {
+        return m_enableZoomAndPanning;
     }
 
     /**
-     * @param enableZoom the enableZoomMouse to set
+     * @param enableZoomAndPanning the enableZoomAndPanning to set
      */
-    public void setEnableZoom(final boolean enableZoom) {
-        m_enableZoom = enableZoom;
+    public void setEnableZoomAndPanning(final boolean enableZoomAndPanning) {
+        m_enableZoomAndPanning = enableZoomAndPanning;
     }
 
     /**
@@ -606,20 +602,6 @@ public class HierarchicalClusterAssignerConfig {
      */
     public void setShowZoomResetButton(final boolean showZoomResetButton) {
         m_showZoomResetButton = showZoomResetButton;
-    }
-
-    /**
-     * @return the enablePanning
-     */
-    public boolean getEnablePanning() {
-        return m_enablePanning;
-    }
-
-    /**
-     * @param enablePanning the enablePanning to set
-     */
-    public void setEnablePanning(final boolean enablePanning) {
-        m_enablePanning = enablePanning;
     }
 
     /**
@@ -766,9 +748,8 @@ public class HierarchicalClusterAssignerConfig {
         settings.addString(CFG_SELECTION_COLUMN_NAME, m_selectionColumnName);
         settings.addString(CFG_CLUSTER_COLUMN_NAME, m_clusterColumnName);
         settings.addBoolean(CFG_SHOW_WARNINGS_IN_VIEW, m_showWarningsInView);
-        settings.addBoolean(CFG_ENABLE_ZOOM, m_enableZoom);
+        settings.addBoolean(CFG_ENABLE_ZOOM_AND_PANNING, m_enableZoomAndPanning);
         settings.addBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, m_showZoomResetButton);
-        settings.addBoolean(CFG_ENABLE_PANNING, m_enablePanning);
         settings.addBoolean(CFG_ENABLE_LOG_SCALE_TOGGLE, m_enableLogScaleToggle);
         settings.addBoolean(CFG_USE_LOG_SCALE, m_useLogScale);
         settings.addBoolean(CFG_ENABLE_CHANGE_ORIENTATION, m_enableChangeOrientation);
@@ -807,9 +788,8 @@ public class HierarchicalClusterAssignerConfig {
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME);
         m_clusterColumnName = settings.getString(CFG_CLUSTER_COLUMN_NAME);
         m_showWarningsInView = settings.getBoolean(CFG_SHOW_WARNINGS_IN_VIEW);
-        m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM);
+        m_enableZoomAndPanning = settings.getBoolean(CFG_ENABLE_ZOOM_AND_PANNING);
         m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON);
-        m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING);
         m_enableLogScaleToggle = settings.getBoolean(CFG_ENABLE_LOG_SCALE_TOGGLE);
         m_useLogScale = settings.getBoolean(CFG_USE_LOG_SCALE);
         m_enableChangeOrientation = settings.getBoolean(CFG_ENABLE_CHANGE_ORIENTATION);
@@ -871,9 +851,8 @@ public class HierarchicalClusterAssignerConfig {
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME, DEFAULT_SELECTION_COLUMN_NAME);
         m_clusterColumnName = settings.getString(CFG_CLUSTER_COLUMN_NAME, DEFAULT_CLUSTER_COLUMN_NAME);
         m_showWarningsInView = settings.getBoolean(CFG_SHOW_WARNINGS_IN_VIEW, DEFAULT_SHOW_WARNINGS_IN_VIEW);
-        m_enableZoom = settings.getBoolean(CFG_ENABLE_ZOOM, DEFAULT_ENABLE_ZOOM);
+        m_enableZoomAndPanning = settings.getBoolean(CFG_ENABLE_ZOOM_AND_PANNING, DEFAULT_ENABLE_ZOOM_AND_PANNING);
         m_showZoomResetButton = settings.getBoolean(CFG_SHOW_ZOOM_RESET_BUTTON, DEFAULT_SHOW_ZOOM_RESET_BUTTON);
-        m_enablePanning = settings.getBoolean(CFG_ENABLE_PANNING, DEFAULT_ENABLE_PANNING);
         m_enableLogScaleToggle = settings.getBoolean(CFG_ENABLE_LOG_SCALE_TOGGLE, DEFAULT_ENABLE_LOG_SCALE_TOGGLE);
         m_useLogScale = settings.getBoolean(CFG_USE_LOG_SCALE, DEFAULT_USE_LOG_SCALE);
         m_enableChangeOrientation = settings.getBoolean(CFG_ENABLE_CHANGE_ORIENTATION, DEFAULT_ENABLE_CHANGE_ORIENTATION);

@@ -117,9 +117,8 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private final JTextField m_clusterColumnNameTextField;
     private final JCheckBox m_useNormalizedDistancesCheckBox;
 
-    private final JCheckBox m_enablePanningCheckBox;
 
-    private final JCheckBox m_enableZoomCheckBox;
+    private final JCheckBox m_enableZoomAndPanningCheckBox;
     private final JCheckBox m_showZoomResetButtonCheckBox;
 
     private final JRadioButton m_enableClusterColorRadioButton;
@@ -179,13 +178,14 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_subscribeSelectionEventsCheckBox = new JCheckBox("Subscribe to selection events");
         m_showClearSelectionButtonCheckBox = new JCheckBox("Show clear selection button");
         m_selectionColumnNameTextField = new JTextField(TEXT_FIELD_SIZE);
-        m_enableZoomCheckBox = new JCheckBox("Enable zooming");
+        m_enableZoomAndPanningCheckBox = new JCheckBox("Enable zooming and panning");
         m_showZoomResetButtonCheckBox = new JCheckBox("Show zoom reset button");
-        m_enablePanningCheckBox = new JCheckBox("Enable panning");
         m_enableLogScaleToggleCheckBox= new JCheckBox("Enable switching y-axis scale");
         m_useLogScaleCheckBox = new JCheckBox("Use log scale for y-axis");
         m_enableChangeOrientationCheckBox = new JCheckBox("Enable changing chart orientation");
         m_orientationComboBox = new JComboBox<>();
+        m_enableZoomAndPanningCheckBox.addChangeListener(
+            e -> m_showZoomResetButtonCheckBox.setEnabled(m_enableZoomAndPanningCheckBox.isSelected()));
         for (final HierarchicalClusterAssignerOrientation type : HierarchicalClusterAssignerOrientation.values()) {
             m_orientationComboBox.addItem(type);
         }
@@ -273,9 +273,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
             config.setThreshold((double) m_distanceThresholdSpinner.getValue());
         }
 
-        config.setEnablePanning(m_enablePanningCheckBox.isSelected());
-
-        config.setEnableZoom(m_enableZoomCheckBox.isSelected());
+        config.setEnableZoomAndPanning(m_enableZoomAndPanningCheckBox.isSelected());
         config.setShowZoomResetButton(m_showZoomResetButtonCheckBox.isSelected());
 
         config.setEnableClusterColor(m_enableClusterColorRadioButton.isSelected());
@@ -337,10 +335,10 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
             m_distanceThresholdSpinner.setValue(config.getThreshold());
         }
 
-        m_enablePanningCheckBox.setSelected(config.getEnablePanning());
-
-        m_enableZoomCheckBox.setSelected(config.getEnableZoom());
+        final boolean zoomAndPanningEnabled = config.getEnableZoomAndPanning();
+        m_enableZoomAndPanningCheckBox.setSelected(zoomAndPanningEnabled);
         m_showZoomResetButtonCheckBox.setSelected(config.getShowZoomResetButton());
+        m_showZoomResetButtonCheckBox.setEnabled(zoomAndPanningEnabled);
 
         m_enableClusterColorRadioButton.setSelected(config.getEnableClusterColor());
         m_enableTableColorRadioButton.setSelected(!config.getEnableClusterColor());
@@ -617,20 +615,20 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         viewControlsConstraints.gridy = 0;
         viewControlsConstraints.weightx = 1;
         viewControlsPanel.add(m_enableViewEditCheckBox, viewControlsConstraints);
-        viewControlsConstraints.gridx = 0;
-        viewControlsConstraints.gridy++;
+        viewControlsConstraints.gridx++;
         viewControlsPanel.add(m_enableTitleEditCheckBox, viewControlsConstraints);
-        viewControlsConstraints.gridx += 2;
-        viewControlsPanel.add(m_displayFullscreenButtonCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
+        viewControlsPanel.add(m_displayFullscreenButtonCheckBox, viewControlsConstraints);
+        viewControlsConstraints.gridx++;
         viewControlsPanel.add(m_enableNumClusterEditCheckBox, viewControlsConstraints);
-        viewControlsConstraints.gridx += 2;
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
         viewControlsPanel.add(m_enableLogScaleToggleCheckBox, viewControlsConstraints);
-        viewControlsConstraints.gridx += 2;
+        viewControlsConstraints.gridx++;
         viewControlsPanel.add(m_enableChangeOrientationCheckBox, viewControlsConstraints);
+        viewControlsConstraints.gridx = 0;
+        viewControlsConstraints.gridy++;
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -675,11 +673,8 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         zoomConstraints.gridx = 0;
         zoomConstraints.gridy = 0;
         zoomConstraints.weightx = 1;
-        zoomPanel.add(m_enableZoomCheckBox, zoomConstraints);
+        zoomPanel.add(m_enableZoomAndPanningCheckBox, zoomConstraints);
         zoomConstraints.gridx++;
-        zoomPanel.add(m_enablePanningCheckBox, zoomConstraints);
-        zoomConstraints.gridx = 0;
-        zoomConstraints.gridy++;
         zoomPanel.add(m_showZoomResetButtonCheckBox, zoomConstraints);
 
         gbc.gridx = 0;

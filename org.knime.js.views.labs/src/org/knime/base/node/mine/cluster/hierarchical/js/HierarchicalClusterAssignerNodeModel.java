@@ -527,14 +527,13 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
         representation.setSubscribeSelectionEvents(m_config.getSubscribeSelectionEvents());
         representation.setShowClearSelectionButton(m_config.getShowClearSelectionButton());
         representation.setShowWarningsInView(m_config.getShowWarningsInView());
-        representation.setEnableZoom(m_config.getEnableZoom());
+        representation.setEnableZoom(m_config.getEnableZoomAndPanning());
         representation.setShowZoomResetButton(m_config.getShowZoomResetButton());
-        representation.setEnablePanning(m_config.getEnablePanning());
         representation.setEnableLogScaleToggle(m_config.getEnableLogScaleToggle());
         representation.setEnableChangeOrientation(m_config.getEnableChangeOrientation());
         representation.setColorPalette(m_config.getColorPalette());
         representation.setSubscribeFilterEvents(m_config.getSubscribeFilterEvents());
-        representation.setShowClearSelectionButton(m_config.getShowClearSelectionButton());
+        representation.setShowThresholdBar(m_config.getShowThresholdBar());
         representation.setEnableThresholdModification(m_config.getEnableThresholdModification());
         representation.setTree(new JSClusterModelTree(m_tree, m_nodeToId));
         representation.setDataTableID(getTableId(1));
@@ -569,12 +568,6 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
             value.setThreshold(t);
             value.setTitle(m_config.getTitle());
             value.setSubtitle(m_config.getSubtitle());
-            value.setXMin(getMinRowKey().toString());
-            value.setXMax(getMaxRowKey().toString());
-            value.setYMin(0);
-            if (m_tree != null) {
-                value.setYMax(m_tree.getClusterDistances()[m_tree.getClusterDistances().length - 1]);
-            }
             value.setUseLogScale(m_config.getUseLogScale());
             value.setOrientation(m_config.getOrientation());
             value.setClusterLabels(defaultLabels);
@@ -683,28 +676,6 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
             return ((ClusterViewNode) leaf).getLeafRowKey();
         }
         return leaf.getLeafDataPoint().getKey();
-    }
-
-    private RowKey getMinRowKey() {
-        if (m_tree == null) {
-            return null;
-        }
-        DendrogramNode node = m_tree.getRoot();
-        while (!node.isLeaf()) {
-            node = node.getFirstSubnode();
-        }
-        return getLeafRowKey(node);
-    }
-
-    private RowKey getMaxRowKey() {
-        if (m_tree == null) {
-            return null;
-        }
-        DendrogramNode node = m_tree.getRoot();
-        while (!node.isLeaf()) {
-            node = node.getSecondSubnode();
-        }
-        return getLeafRowKey(node);
     }
 
     private JSONDataTable createJSONDataTable(final ExecutionContext exec)

@@ -68,14 +68,12 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
 
     final static String CFG_CLUSTER_LABELS = "clusterLabels";
     private String[] m_clusterLabels;
-    final static String CFG_X_MIN = "xMin";
-    private String m_xMin;
-    final static String CFG_X_MAX = "xMax";
-    private String m_xMax;
-    final static String CFG_Y_MIN = "yMin";
-    private double m_yMin;
-    final static String CFG_Y_MAX = "yMax";
-    private double m_yMax;
+    final static String CFG_ZOOM_X = "xMin";
+    private double m_zoomX = 0;
+    final static String CFG_ZOOM_Y = "xMax";
+    private double m_zoomY = 0;
+    final static String CFG_ZOOM_K = "yMin";
+    private double m_zoomK = 1;
     final static String CFG_SELECTION = "selection";
     private String[] m_selection;
 
@@ -171,59 +169,45 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
     }
 
     /**
-     * @return the xMin
+     * @return the zoomX
      */
-    public String getXMin() {
-        return m_xMin;
+    public double getZoomX() {
+        return m_zoomX;
     }
 
     /**
-     * @param xMin the xMin to set
+     * @param zoomX the zoomX to set
      */
-    public void setXMin(final String xMin) {
-        m_xMin = xMin;
+    public void setZoomX(final double zoomX) {
+        m_zoomX = zoomX;
     }
 
     /**
-     * @return the xMax
+     * @return the zoomY
      */
-    public String getXMax() {
-        return m_xMax;
+    public double getZoomY() {
+        return m_zoomY;
     }
 
     /**
-     * @param xMax the xMax to set
+     * @param zoomY the zoomY to set
      */
-    public void setXMax(final String xMax) {
-        m_xMax = xMax;
+    public void setZoomY(final double zoomY) {
+        m_zoomY = zoomY;
     }
 
     /**
-     * @return the yMin
+     * @return the zoomK
      */
-    public double getYMin() {
-        return m_yMin;
+    public double getZoomK() {
+        return m_zoomK;
     }
 
     /**
-     * @param yMin the yMin to set
+     * @param zoomK the zoomK to set
      */
-    public void setYMin(final double yMin) {
-        m_yMin = yMin;
-    }
-
-    /**
-     * @return the yMax
-     */
-    public double getYMax() {
-        return m_yMax;
-    }
-
-    /**
-     * @param yMax the yMax to set
-     */
-    public void setYMax(final double yMax) {
-        m_yMax = yMax;
+    public void setZoomK(final double zoomK) {
+        m_zoomK = zoomK;
     }
 
     /**
@@ -265,10 +249,9 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         settings.addDouble(HierarchicalClusterAssignerConfig.CFG_THRESHOLD, getThreshold());
         settings.addStringArray(CFG_SELECTION, getSelection());
         settings.addStringArray(CFG_CLUSTER_LABELS, getClusterLabels());
-        settings.addString(CFG_X_MIN, getXMin());
-        settings.addString(CFG_X_MAX, getXMax());
-        settings.addDouble(CFG_Y_MIN, getYMin());
-        settings.addDouble(CFG_Y_MAX, getYMax());
+        settings.addDouble(CFG_ZOOM_X, getZoomX());
+        settings.addDouble(CFG_ZOOM_Y, getZoomY());
+        settings.addDouble(CFG_ZOOM_K, getZoomK());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_USE_LOG_SCALE, getUseLogScale());
         settings.addString(HierarchicalClusterAssignerConfig.CFG_ORIENTATION, getOrientation().toValue());
     }
@@ -284,10 +267,9 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         m_threshold = settings.getDouble(HierarchicalClusterAssignerConfig.CFG_THRESHOLD);
         m_selection = settings.getStringArray(CFG_SELECTION);
         m_clusterLabels = settings.getStringArray(CFG_CLUSTER_LABELS);
-        m_xMin = settings.getString(CFG_X_MIN);
-        m_xMax = settings.getString(CFG_X_MAX);
-        m_yMin = settings.getDouble(CFG_Y_MIN);
-        m_yMax = settings.getDouble(CFG_Y_MAX);
+        m_zoomX = settings.getDouble(CFG_ZOOM_X);
+        m_zoomY = settings.getDouble(CFG_ZOOM_Y);
+        m_zoomK = settings.getDouble(CFG_ZOOM_K);
         m_useLogScale = settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_USE_LOG_SCALE);
         m_orientation = HierarchicalClusterAssignerOrientation
             .forValue(settings.getString(HierarchicalClusterAssignerConfig.CFG_ORIENTATION));
@@ -312,10 +294,9 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_threshold, other.getThreshold())
                 .append(m_selection, other.getSelection())
                 .append(m_clusterLabels, other.getClusterLabels())
-                .append(m_xMin, other.getXMin())
-                .append(m_xMax, other.getXMax())
-                .append(m_yMin, other.getYMin())
-                .append(m_yMax, other.getYMax())
+                .append(m_zoomX, other.getZoomX())
+                .append(m_zoomY, other.getZoomY())
+                .append(m_zoomK, other.getZoomK())
                 .append(m_useLogScale, other.getUseLogScale())
                 .append(m_orientation, other.getOrientation())
                 .isEquals();
@@ -333,10 +314,9 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_threshold)
                 .append(m_selection)
                 .append(m_clusterLabels)
-                .append(m_xMin)
-                .append(m_xMax)
-                .append(m_yMin)
-                .append(m_yMax)
+                .append(m_zoomX)
+                .append(m_zoomY)
+                .append(m_zoomK)
                 .append(m_useLogScale)
                 .append(m_orientation)
                 .toHashCode();
