@@ -87,6 +87,8 @@ final class OPTICSAssignerNodeDialog extends NodeDialogPane {
 
     private static final int TEXT_FIELD_SIZE = 20;
 
+    private final OPTICSAssignerViewConfig m_config;
+
     private final JSpinner m_eps_pr;
 
     private final JCheckBox m_generateImageCheckBox;
@@ -137,6 +139,8 @@ final class OPTICSAssignerNodeDialog extends NodeDialogPane {
      * New pane for configuring OPTICS node dialog.
      */
     OPTICSAssignerNodeDialog() {
+        m_config = new OPTICSAssignerViewConfig();
+
         m_eps_pr = new JSpinner(new SpinnerNumberModel(0.5, 0.0001, 10000000, 0.01));
         m_eps_pr.setEnabled(false);
         m_calcEpsPrimeMean = new JRadioButtonMenuItem("Calculate mean on reachability distance", true);
@@ -361,64 +365,62 @@ final class OPTICSAssignerNodeDialog extends NodeDialogPane {
 
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        final OPTICSAssignerViewConfig config = new OPTICSAssignerViewConfig();
-        config.setCalcEpsPrimeMean(m_calcEpsPrimeMean.isSelected());
-        config.setCalcEpsPrimeMedian(m_calcEpsPrimeMedian.isSelected());
-        config.setManualEpsPrime(m_manualEpsPrime.isSelected());
-        config.setEpsPrime((Double)m_eps_pr.getValue());
-        config.setGenerateImage(m_generateImageCheckBox.isSelected());
-        config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
-        config.setResizeToWindow(m_resizeViewToWindow.isSelected());
-        config.setEnableViewConfiguration(m_enableViewConfigCheckBox.isSelected());
-        config.setEnableTitleChange(m_enableTitleChangeCheckBox.isSelected());
-        config.setEnableEpsilonPrimeChange(m_enableEpsilonPrimeChangeCheckBox.isSelected());
-        config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
-        config.setEnableRectangleSelection(m_allowRectangleSelectionCheckBox.isSelected());
-        config.setPublishSelection(m_publishSelectionCheckBox.isSelected());
-        config.setSubscribeSelection(m_subscribeSelectionCheckBox.isSelected());
-        config.setEnableShowSelectedOnly(m_enableShowSelectedOnlyCheckBox.isSelected());
-        config.setChartTitle(m_chartTitleTextField.getText());
-        config.setChartSubtitle(m_chartSubTitleTextField.getText());
-        config.setMaxRows((Integer)m_maxRowsSpinner.getValue());
-        config.setImageWidth((Integer)m_imageWidthSpinner.getValue());
-        config.setImageHeight((Integer)m_imageHeightSpinner.getValue());
-        config.setShowWarningInView(m_showWarningInViewCheckBox.isSelected());
-        config.setEpsCalcMethod(getEpsCalcMethod());
-        config.saveConfiguration(settings);
+        m_config.setCalcEpsPrimeMean(m_calcEpsPrimeMean.isSelected());
+        m_config.setCalcEpsPrimeMedian(m_calcEpsPrimeMedian.isSelected());
+        m_config.setManualEpsPrime(m_manualEpsPrime.isSelected());
+        m_config.setEpsPrime((Double)m_eps_pr.getValue());
+        m_config.setGenerateImage(m_generateImageCheckBox.isSelected());
+        m_config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
+        m_config.setResizeToWindow(m_resizeViewToWindow.isSelected());
+        m_config.setEnableViewConfiguration(m_enableViewConfigCheckBox.isSelected());
+        m_config.setEnableTitleChange(m_enableTitleChangeCheckBox.isSelected());
+        m_config.setEnableEpsilonPrimeChange(m_enableEpsilonPrimeChangeCheckBox.isSelected());
+        m_config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
+        m_config.setEnableRectangleSelection(m_allowRectangleSelectionCheckBox.isSelected());
+        m_config.setPublishSelection(m_publishSelectionCheckBox.isSelected());
+        m_config.setSubscribeSelection(m_subscribeSelectionCheckBox.isSelected());
+        m_config.setEnableShowSelectedOnly(m_enableShowSelectedOnlyCheckBox.isSelected());
+        m_config.setChartTitle(m_chartTitleTextField.getText());
+        m_config.setChartSubtitle(m_chartSubTitleTextField.getText());
+        m_config.setMaxRows((Integer)m_maxRowsSpinner.getValue());
+        m_config.setImageWidth((Integer)m_imageWidthSpinner.getValue());
+        m_config.setImageHeight((Integer)m_imageHeightSpinner.getValue());
+        m_config.setShowWarningInView(m_showWarningInViewCheckBox.isSelected());
+        m_config.setEpsCalcMethod(getEpsCalcMethod());
+        m_config.saveConfiguration(settings);
     }
 
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
         throws NotConfigurableException {
         DataTableSpec spec = (DataTableSpec)specs[0];
-        final OPTICSAssignerViewConfig config = new OPTICSAssignerViewConfig();
         try {
-            config.loadConfigurationInDialog(settings, spec);
+            m_config.loadConfigurationInDialog(settings, spec);
         } catch (InvalidSettingsException e) {
             e.printStackTrace();
         }
-        m_eps_pr.setValue(config.getEpsPrime());
-        m_calcEpsPrimeMean.setSelected(config.getCalcEpsPrimeMean());
-        m_calcEpsPrimeMedian.setSelected(config.getCalcEpsPrimeMedian());
-        m_manualEpsPrime.setSelected(config.getManualEpsPrime());
-        m_generateImageCheckBox.setSelected(config.getGenerateImage());
-        m_displayFullscreenButtonCheckBox.setSelected(config.getDisplayFullscreenButton());
-        m_resizeViewToWindow.setSelected(config.getResizeToWindow());
-        m_enableViewConfigCheckBox.setSelected(config.getEnableViewConfiguration());
-        m_enableTitleChangeCheckBox.setSelected(config.getEnableTitleChange());
-        m_enableEpsilonPrimeChangeCheckBox.setSelected(config.getEnableEpsilonPrimeChange());
-        m_enableSelectionCheckBox.setSelected(config.getEnableSelection());
-        m_allowRectangleSelectionCheckBox.setSelected(config.getEnableRectangleSelection());
-        m_publishSelectionCheckBox.setSelected(config.getPublishSelection());
-        m_subscribeSelectionCheckBox.setSelected(config.getSubscribeSelection());
-        m_enableShowSelectedOnlyCheckBox.setSelected(config.getEnableShowSelectedOnly());
-        m_chartTitleTextField.setText(config.getChartTitle());
-        m_chartSubTitleTextField.setText(config.getChartSubtitle());
-        m_maxRowsSpinner.setValue(config.getMaxRows());
-        m_imageWidthSpinner.setValue(config.getImageWidth());
-        m_imageHeightSpinner.setValue(config.getImageHeight());
-        m_showWarningInViewCheckBox.setSelected(config.getShowWarningInView());
-        setEpsCalcMethod(config.getEpsCalcMethod());
+        m_eps_pr.setValue(m_config.getEpsPrime());
+        m_calcEpsPrimeMean.setSelected(m_config.getCalcEpsPrimeMean());
+        m_calcEpsPrimeMedian.setSelected(m_config.getCalcEpsPrimeMedian());
+        m_manualEpsPrime.setSelected(m_config.getManualEpsPrime());
+        m_generateImageCheckBox.setSelected(m_config.getGenerateImage());
+        m_displayFullscreenButtonCheckBox.setSelected(m_config.getDisplayFullscreenButton());
+        m_resizeViewToWindow.setSelected(m_config.getResizeToWindow());
+        m_enableViewConfigCheckBox.setSelected(m_config.getEnableViewConfiguration());
+        m_enableTitleChangeCheckBox.setSelected(m_config.getEnableTitleChange());
+        m_enableEpsilonPrimeChangeCheckBox.setSelected(m_config.getEnableEpsilonPrimeChange());
+        m_enableSelectionCheckBox.setSelected(m_config.getEnableSelection());
+        m_allowRectangleSelectionCheckBox.setSelected(m_config.getEnableRectangleSelection());
+        m_publishSelectionCheckBox.setSelected(m_config.getPublishSelection());
+        m_subscribeSelectionCheckBox.setSelected(m_config.getSubscribeSelection());
+        m_enableShowSelectedOnlyCheckBox.setSelected(m_config.getEnableShowSelectedOnly());
+        m_chartTitleTextField.setText(m_config.getChartTitle());
+        m_chartSubTitleTextField.setText(m_config.getChartSubtitle());
+        m_maxRowsSpinner.setValue(m_config.getMaxRows());
+        m_imageWidthSpinner.setValue(m_config.getImageWidth());
+        m_imageHeightSpinner.setValue(m_config.getImageHeight());
+        m_showWarningInViewCheckBox.setSelected(m_config.getShowWarningInView());
+        setEpsCalcMethod(m_config.getEpsCalcMethod());
         enableViewControls();
         enableSelectionControls();
         getPanel().repaint();

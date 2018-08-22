@@ -78,6 +78,8 @@ import org.knime.js.core.settings.DialogUtil;
  */
 public class ScorerNodeDialog extends NodeDialogPane {
 
+    private final ScorerConfig m_config;
+
     private final JCheckBox m_showWarningsCheckBox;
     private final ColumnSelectionPanel m_firstColumnSelection;
     private final ColumnSelectionPanel m_secondColumnSelection;
@@ -127,6 +129,8 @@ public class ScorerNodeDialog extends NodeDialogPane {
      *
      */
     public ScorerNodeDialog() {
+        m_config = new ScorerConfig();
+
         m_showWarningsCheckBox = new JCheckBox("Show warnings in view");
         m_firstColumnSelection = new ColumnSelectionPanel("Actual column");
         m_secondColumnSelection= new ColumnSelectionPanel("Predicted column");
@@ -355,50 +359,49 @@ public class ScorerNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        ScorerConfig config = new ScorerConfig();
-        config.setShowWarningsInView(m_showWarningsCheckBox.isSelected());
-        config.setFirstColumn(m_firstColumnSelection.getSelectedColumn());
-        config.setSecondColumn(m_secondColumnSelection.getSelectedColumn());
-        config.setSortingStragegy((SortingStrategy)m_sortingStrategyComboBox.getSelectedItem());
-        config.setReverseOrder(m_reverseSortingCheckBox.isSelected());
-        config.setIgnoreMissingValues(m_ignoreMissingValuesCheckBox.isSelected());
-        config.setTitle(m_titleTextField.getText());
-        config.setSubtitle(m_subtitleTextField.getText());
-        config.setDisplayTotalRows(m_displayTotalRowsCheckBox.isSelected());
-        config.setDisplayConfusionMatrixRates(m_displayConfusionMatrixRatesCheckBox.isSelected());
-        config.setHeaderColor(m_headerColorChooser.getColor());
-        config.setDiagonalColor(m_diagonalColorChooser.getColor());
-        config.setDisplayFloatAsPercent(m_displayFloatAsPercentCheckBox.isSelected());
-        config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
-        config.setDisplayClassStatsTable(m_displayClassStatsTableCheckBox.isSelected());
-        config.setClassTruePositives(m_classTruePositivesCheckBox.isSelected());
-        config.setClassFalsePositives(m_classFalsePositivesCheckBox.isSelected());
-        config.setClassTrueNegatives(m_classTrueNegativesCheckBox.isSelected());
-        config.setClassFalseNegatives(m_classFalseNegativesCheckBox.isSelected());
-        /*config.setClassAccuracy(m_classAccuracyCheckBox.isSelected());
-        config.setClassBalancedAccuracy(m_classBalancedAccuracyCheckBox.isSelected());
-        config.setClassErrorRate(m_classErrorRateCheckBox.isSelected());
-        config.setClassFalseNegativeRate(m_classFalseNegativeRateCheckBox.isSelected());*/
-        config.setClassRecall(m_classRecallCheckBox.isSelected());
-        config.setClassPrecision(m_classPrecisionCheckBox.isSelected());
-        config.setClassSensitivity(m_classSensitivityCheckBox.isSelected());
-        config.setClassSpecificity(m_classSpecificityCheckBox.isSelected());
-        config.setClassFMeasure(m_classFMeasureCheckBox.isSelected());
-        config.setDisplayOverallStats(m_displayOverallStatsTableCheckBox.isSelected());
-        config.setOverallAccuracy(m_overallAccuracyCheckBox.isSelected());
-        config.setOverallError(m_overallErrorCheckBox.isSelected());
-        config.setOverallCohensKappa(m_overallCohensKappaCheckBox.isSelected());
-        config.setOverallCorrectClassified(m_overallCorrectClassifiedCheckBox.isSelected());
-        config.setOverallWrongClassified(m_overallWrongClassifiedCheckBox.isSelected());
-        config.setEnableViewControls(m_enableViewControlsCheckBox.isSelected());
-        config.setEnableTitleEditing(m_enableTitleEditingCheckBox.isSelected());
-        config.setEnableSubtitleEditing(m_enableSubtitleEditingCheckBox.isSelected());
-        config.setEnableRowsNumberConfig(m_enableRowsNumberConfigCheckBox.isSelected());
-        config.setEnableConfusionMatrixRatesConfig(m_enableConfusionMatrixRatesCheckBox.isSelected());
-        config.setEnableClassStatisticsConfig(m_enableClassStatisticsConfigCheckBox.isSelected());
-        config.setEnableOverallStatisticsConfig(m_enableOverallStatisticsConfigCheckBox.isSelected());
+        m_config.setShowWarningsInView(m_showWarningsCheckBox.isSelected());
+        m_config.setFirstColumn(m_firstColumnSelection.getSelectedColumn());
+        m_config.setSecondColumn(m_secondColumnSelection.getSelectedColumn());
+        m_config.setSortingStragegy((SortingStrategy)m_sortingStrategyComboBox.getSelectedItem());
+        m_config.setReverseOrder(m_reverseSortingCheckBox.isSelected());
+        m_config.setIgnoreMissingValues(m_ignoreMissingValuesCheckBox.isSelected());
+        m_config.setTitle(m_titleTextField.getText());
+        m_config.setSubtitle(m_subtitleTextField.getText());
+        m_config.setDisplayTotalRows(m_displayTotalRowsCheckBox.isSelected());
+        m_config.setDisplayConfusionMatrixRates(m_displayConfusionMatrixRatesCheckBox.isSelected());
+        m_config.setHeaderColor(m_headerColorChooser.getColor());
+        m_config.setDiagonalColor(m_diagonalColorChooser.getColor());
+        m_config.setDisplayFloatAsPercent(m_displayFloatAsPercentCheckBox.isSelected());
+        m_config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
+        m_config.setDisplayClassStatsTable(m_displayClassStatsTableCheckBox.isSelected());
+        m_config.setClassTruePositives(m_classTruePositivesCheckBox.isSelected());
+        m_config.setClassFalsePositives(m_classFalsePositivesCheckBox.isSelected());
+        m_config.setClassTrueNegatives(m_classTrueNegativesCheckBox.isSelected());
+        m_config.setClassFalseNegatives(m_classFalseNegativesCheckBox.isSelected());
+        /*m_config.setClassAccuracy(m_classAccuracyCheckBox.isSelected());
+        m_config.setClassBalancedAccuracy(m_classBalancedAccuracyCheckBox.isSelected());
+        m_config.setClassErrorRate(m_classErrorRateCheckBox.isSelected());
+        m_config.setClassFalseNegativeRate(m_classFalseNegativeRateCheckBox.isSelected());*/
+        m_config.setClassRecall(m_classRecallCheckBox.isSelected());
+        m_config.setClassPrecision(m_classPrecisionCheckBox.isSelected());
+        m_config.setClassSensitivity(m_classSensitivityCheckBox.isSelected());
+        m_config.setClassSpecificity(m_classSpecificityCheckBox.isSelected());
+        m_config.setClassFMeasure(m_classFMeasureCheckBox.isSelected());
+        m_config.setDisplayOverallStats(m_displayOverallStatsTableCheckBox.isSelected());
+        m_config.setOverallAccuracy(m_overallAccuracyCheckBox.isSelected());
+        m_config.setOverallError(m_overallErrorCheckBox.isSelected());
+        m_config.setOverallCohensKappa(m_overallCohensKappaCheckBox.isSelected());
+        m_config.setOverallCorrectClassified(m_overallCorrectClassifiedCheckBox.isSelected());
+        m_config.setOverallWrongClassified(m_overallWrongClassifiedCheckBox.isSelected());
+        m_config.setEnableViewControls(m_enableViewControlsCheckBox.isSelected());
+        m_config.setEnableTitleEditing(m_enableTitleEditingCheckBox.isSelected());
+        m_config.setEnableSubtitleEditing(m_enableSubtitleEditingCheckBox.isSelected());
+        m_config.setEnableRowsNumberConfig(m_enableRowsNumberConfigCheckBox.isSelected());
+        m_config.setEnableConfusionMatrixRatesConfig(m_enableConfusionMatrixRatesCheckBox.isSelected());
+        m_config.setEnableClassStatisticsConfig(m_enableClassStatisticsConfigCheckBox.isSelected());
+        m_config.setEnableOverallStatisticsConfig(m_enableOverallStatisticsConfigCheckBox.isSelected());
 
-        config.saveSettings(settings);
+        m_config.saveSettings(settings);
     }
 
     /**
@@ -410,11 +413,10 @@ public class ScorerNodeDialog extends NodeDialogPane {
         if (spec.getNumColumns() < 2) {
             throw new NotConfigurableException("The input needs to contain at least two columns for comparison");
         }
-        ScorerConfig config = new ScorerConfig();
-        config.loadSettingsForDialog(settings, specs[0]);
-        m_showWarningsCheckBox.setSelected(config.getShowWarningsInView());
-        String firstColName = config.getFirstColumn();
-        String secondColName = config.getSecondColumn();
+        m_config.loadSettingsForDialog(settings, specs[0]);
+        m_showWarningsCheckBox.setSelected(m_config.getShowWarningsInView());
+        String firstColName = m_config.getFirstColumn();
+        String secondColName = m_config.getSecondColumn();
         if (StringUtils.isEmpty(firstColName) && StringUtils.isEmpty(secondColName)) {
             String[] colNames = guessColumnNames(spec);
             firstColName = colNames[0];
@@ -422,44 +424,44 @@ public class ScorerNodeDialog extends NodeDialogPane {
         }
         m_firstColumnSelection.update(spec, firstColName, false, true);
         m_secondColumnSelection.update(spec, secondColName, false, true);
-        m_sortingStrategyComboBox.setSelectedItem(config.getSortingStragegy());
-        m_reverseSortingCheckBox.setSelected(config.isReverseOrder());
-        m_ignoreMissingValuesCheckBox.setSelected(config.isIgnoreMissingValues());
-        m_titleTextField.setText(config.getTitle());
-        m_subtitleTextField.setText(config.getSubtitle());
-        m_displayTotalRowsCheckBox.setSelected(config.isDisplayTotalRows());
-        m_displayConfusionMatrixRatesCheckBox.setSelected(config.isDisplayConfusionMatrixRates());
-        m_headerColorChooser.setColor(config.getHeaderColor());
-        m_diagonalColorChooser.setColor(config.getDiagonalColor());
-        m_displayFloatAsPercentCheckBox.setSelected(config.isDisplayFloatAsPercent());
-        m_displayFullscreenButtonCheckBox.setSelected(config.isDisplayFullscreenButton());
-        m_displayClassStatsTableCheckBox.setSelected(config.isDisplayClassStatsTable());
-        m_classTruePositivesCheckBox.setSelected(config.isClassTruePositives());
-        m_classFalsePositivesCheckBox.setSelected(config.isClassFalsePositives());
-        m_classTrueNegativesCheckBox.setSelected(config.isClassTrueNegatives());
-        m_classFalseNegativesCheckBox.setSelected(config.isClassFalseNegatives());
-        /*m_classAccuracyCheckBox.setSelected(config.isClassAccuracy());
-        m_classBalancedAccuracyCheckBox.setSelected(config.isClassBalancedAccuracy());
-        m_classErrorRateCheckBox.setSelected(config.isClassErrorRate());
-        m_classFalseNegativeRateCheckBox.setSelected(config.isClassFalseNegativeRate());*/
-        m_classRecallCheckBox.setSelected(config.isClassRecall());
-        m_classPrecisionCheckBox.setSelected(config.isClassPrecision());
-        m_classSensitivityCheckBox.setSelected(config.isClassSensitivity());
-        m_classSpecificityCheckBox.setSelected(config.isClassSpecificity());
-        m_classFMeasureCheckBox.setSelected(config.isClassFMeasure());
-        m_displayOverallStatsTableCheckBox.setSelected(config.isDisplayOverallStats());
-        m_overallAccuracyCheckBox.setSelected(config.isOverallAccuracy());
-        m_overallErrorCheckBox.setSelected(config.isOverallError());
-        m_overallCohensKappaCheckBox.setSelected(config.isOverallCohensKappa());
-        m_overallCorrectClassifiedCheckBox.setSelected(config.isOverallCorrectClassified());
-        m_overallWrongClassifiedCheckBox.setSelected(config.isOverallWrongClassified());
-        m_enableViewControlsCheckBox.setSelected(config.isEnableViewControls());
-        m_enableTitleEditingCheckBox.setSelected(config.isEnableTitleEditing());
-        m_enableSubtitleEditingCheckBox.setSelected(config.isEnableSubtitleEditing());
-        m_enableRowsNumberConfigCheckBox.setSelected(config.isEnableRowsNumberConfig());
-        m_enableConfusionMatrixRatesCheckBox.setSelected(config.isEnableConfusionMatrixRatesConfig());
-        m_enableClassStatisticsConfigCheckBox.setSelected(config.isEnableClassStatisticsConfig());
-        m_enableOverallStatisticsConfigCheckBox.setSelected(config.isEnableOverallStatisticsConfig());
+        m_sortingStrategyComboBox.setSelectedItem(m_config.getSortingStragegy());
+        m_reverseSortingCheckBox.setSelected(m_config.isReverseOrder());
+        m_ignoreMissingValuesCheckBox.setSelected(m_config.isIgnoreMissingValues());
+        m_titleTextField.setText(m_config.getTitle());
+        m_subtitleTextField.setText(m_config.getSubtitle());
+        m_displayTotalRowsCheckBox.setSelected(m_config.isDisplayTotalRows());
+        m_displayConfusionMatrixRatesCheckBox.setSelected(m_config.isDisplayConfusionMatrixRates());
+        m_headerColorChooser.setColor(m_config.getHeaderColor());
+        m_diagonalColorChooser.setColor(m_config.getDiagonalColor());
+        m_displayFloatAsPercentCheckBox.setSelected(m_config.isDisplayFloatAsPercent());
+        m_displayFullscreenButtonCheckBox.setSelected(m_config.isDisplayFullscreenButton());
+        m_displayClassStatsTableCheckBox.setSelected(m_config.isDisplayClassStatsTable());
+        m_classTruePositivesCheckBox.setSelected(m_config.isClassTruePositives());
+        m_classFalsePositivesCheckBox.setSelected(m_config.isClassFalsePositives());
+        m_classTrueNegativesCheckBox.setSelected(m_config.isClassTrueNegatives());
+        m_classFalseNegativesCheckBox.setSelected(m_config.isClassFalseNegatives());
+        /*m_classAccuracyCheckBox.setSelected(m_config.isClassAccuracy());
+        m_classBalancedAccuracyCheckBox.setSelected(m_config.isClassBalancedAccuracy());
+        m_classErrorRateCheckBox.setSelected(m_config.isClassErrorRate());
+        m_classFalseNegativeRateCheckBox.setSelected(m_config.isClassFalseNegativeRate());*/
+        m_classRecallCheckBox.setSelected(m_config.isClassRecall());
+        m_classPrecisionCheckBox.setSelected(m_config.isClassPrecision());
+        m_classSensitivityCheckBox.setSelected(m_config.isClassSensitivity());
+        m_classSpecificityCheckBox.setSelected(m_config.isClassSpecificity());
+        m_classFMeasureCheckBox.setSelected(m_config.isClassFMeasure());
+        m_displayOverallStatsTableCheckBox.setSelected(m_config.isDisplayOverallStats());
+        m_overallAccuracyCheckBox.setSelected(m_config.isOverallAccuracy());
+        m_overallErrorCheckBox.setSelected(m_config.isOverallError());
+        m_overallCohensKappaCheckBox.setSelected(m_config.isOverallCohensKappa());
+        m_overallCorrectClassifiedCheckBox.setSelected(m_config.isOverallCorrectClassified());
+        m_overallWrongClassifiedCheckBox.setSelected(m_config.isOverallWrongClassified());
+        m_enableViewControlsCheckBox.setSelected(m_config.isEnableViewControls());
+        m_enableTitleEditingCheckBox.setSelected(m_config.isEnableTitleEditing());
+        m_enableSubtitleEditingCheckBox.setSelected(m_config.isEnableSubtitleEditing());
+        m_enableRowsNumberConfigCheckBox.setSelected(m_config.isEnableRowsNumberConfig());
+        m_enableConfusionMatrixRatesCheckBox.setSelected(m_config.isEnableConfusionMatrixRatesConfig());
+        m_enableClassStatisticsConfigCheckBox.setSelected(m_config.isEnableClassStatisticsConfig());
+        m_enableOverallStatisticsConfigCheckBox.setSelected(m_config.isEnableOverallStatisticsConfig());
 
         enableControlOptions();
     }

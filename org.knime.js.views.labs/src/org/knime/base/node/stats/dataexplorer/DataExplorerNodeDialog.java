@@ -79,6 +79,8 @@ import org.knime.core.node.port.PortObjectSpec;
 public class DataExplorerNodeDialog extends NodeDialogPane {
     private static final int TEXT_FIELD_SIZE = 20;
 
+    private final DataExplorerConfig m_config;
+
     private final JCheckBox m_showMedianCheckBox;
     private final JCheckBox m_enablePagingCheckBox;
     private final JSpinner m_initialPageSizeSpinner;
@@ -106,6 +108,8 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
 
     /** Creates a new dialog instance */
     public DataExplorerNodeDialog() {
+        m_config = new DataExplorerConfig();
+
         m_showMedianCheckBox = new JCheckBox("Show median (computationally expensive)");
         m_enablePagingCheckBox = new JCheckBox("Enable pagination");
         m_enablePagingCheckBox.addChangeListener(new ChangeListener() {
@@ -419,32 +423,31 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        DataExplorerConfig config = new DataExplorerConfig();
-        config.setShowMedian(m_showMedianCheckBox.isSelected());
-        config.setEnablePaging(m_enablePagingCheckBox.isSelected());
-        config.setInitialPageSize((Integer)m_initialPageSizeSpinner.getValue());
-        config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
-        config.setAllowedPageSizes(getAllowedPageSizes());
-        config.setPageSizeShowAll(m_enableShowAllCheckBox.isSelected());
-        config.setEnableJumpToPage(m_enableJumpToPageCheckBox.isSelected());
-        config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
-        config.setTitle(m_titleField.getText());
-        config.setSubtitle(m_subtitleField.getText());
-        config.setEnableSelection(m_enableSelectionCheckbox.isSelected());
-        config.setEnableSorting(m_enableSortingCheckBox.isSelected());
-        config.setEnableClearSortButton(m_enableClearSortButtonCheckBox.isSelected());
-        config.setEnableSearching(m_enableSearchCheckbox.isSelected());
-        config.setEnableGlobalNumberFormat(m_enableGlobalNumberFormatCheckbox.isSelected());
-        config.setGlobalNumberFormatDecimals((Integer)m_globalNumberFormatDecimalSpinner.getValue());
-        config.setDisplayRowNumber((Integer)m_displayPreviewRowsSpinner.getValue());
-        config.setMaxNominalValues((Integer)m_maxNominalValuesSpinner.getValue());
-        config.setEnableFreqValDisplay(m_enableFreqValDisplayCheckbox.isSelected());
-        config.setFreqValuesNumber((Integer)m_freqValuesSpinner.getValue());
-        config.setMissingValuesInHist(m_missingValuesInHist.isSelected());
-        config.setNumberOfHistogramBars((Integer)m_numberOfHistogramBars.getValue());
-        config.setAdaptNumberOfHistogramBars(m_adaptNumberOfHistogramBars.isSelected());
-        config.setDisplayRowIds(m_displayRowIds.isSelected());
-        config.saveSettingsTo(settings);
+        m_config.setShowMedian(m_showMedianCheckBox.isSelected());
+        m_config.setEnablePaging(m_enablePagingCheckBox.isSelected());
+        m_config.setInitialPageSize((Integer)m_initialPageSizeSpinner.getValue());
+        m_config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
+        m_config.setAllowedPageSizes(getAllowedPageSizes());
+        m_config.setPageSizeShowAll(m_enableShowAllCheckBox.isSelected());
+        m_config.setEnableJumpToPage(m_enableJumpToPageCheckBox.isSelected());
+        m_config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
+        m_config.setTitle(m_titleField.getText());
+        m_config.setSubtitle(m_subtitleField.getText());
+        m_config.setEnableSelection(m_enableSelectionCheckbox.isSelected());
+        m_config.setEnableSorting(m_enableSortingCheckBox.isSelected());
+        m_config.setEnableClearSortButton(m_enableClearSortButtonCheckBox.isSelected());
+        m_config.setEnableSearching(m_enableSearchCheckbox.isSelected());
+        m_config.setEnableGlobalNumberFormat(m_enableGlobalNumberFormatCheckbox.isSelected());
+        m_config.setGlobalNumberFormatDecimals((Integer)m_globalNumberFormatDecimalSpinner.getValue());
+        m_config.setDisplayRowNumber((Integer)m_displayPreviewRowsSpinner.getValue());
+        m_config.setMaxNominalValues((Integer)m_maxNominalValuesSpinner.getValue());
+        m_config.setEnableFreqValDisplay(m_enableFreqValDisplayCheckbox.isSelected());
+        m_config.setFreqValuesNumber((Integer)m_freqValuesSpinner.getValue());
+        m_config.setMissingValuesInHist(m_missingValuesInHist.isSelected());
+        m_config.setNumberOfHistogramBars((Integer)m_numberOfHistogramBars.getValue());
+        m_config.setAdaptNumberOfHistogramBars(m_adaptNumberOfHistogramBars.isSelected());
+        m_config.setDisplayRowIds(m_displayRowIds.isSelected());
+        m_config.saveSettingsTo(settings);
     }
 
     /**
@@ -452,33 +455,32 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
-        DataExplorerConfig config = new DataExplorerConfig();
         DataTableSpec inSpec = (DataTableSpec)specs[0];
-        config.loadSettingsForDialog(settings, inSpec);
-        m_showMedianCheckBox.setSelected(config.getShowMedian());
-        m_enablePagingCheckBox.setSelected(config.getEnablePaging());
-        m_initialPageSizeSpinner.setValue(config.getInitialPageSize());
-        m_enablePageSizeChangeCheckBox.setSelected(config.getEnablePageSizeChange());
-        m_allowedPageSizesField.setText(getAllowedPageSizesString(config.getAllowedPageSizes()));
-        m_enableShowAllCheckBox.setSelected(config.getPageSizeShowAll());
-        m_enableJumpToPageCheckBox.setSelected(config.getEnableJumpToPage());
-        m_displayFullscreenButtonCheckBox.setSelected(config.getDisplayFullscreenButton());
-        m_titleField.setText(config.getTitle());
-        m_subtitleField.setText(config.getSubtitle());
-        m_enableSelectionCheckbox.setSelected(config.getEnableSelection());
-        m_enableSearchCheckbox.setSelected(config.getEnableSearching());
-        m_enableSortingCheckBox.setSelected(config.getEnableSorting());
-        m_enableClearSortButtonCheckBox.setSelected(config.getEnableClearSortButton());
-        m_enableGlobalNumberFormatCheckbox.setSelected(config.getEnableGlobalNumberFormat());
-        m_globalNumberFormatDecimalSpinner.setValue(config.getGlobalNumberFormatDecimals());
-        m_displayPreviewRowsSpinner.setValue(config.getDisplayRowNumber());
-        m_maxNominalValuesSpinner.setValue(config.getMaxNominalValues());
-        m_enableFreqValDisplayCheckbox.setSelected(config.getEnableFreqValDisplay());
-        m_freqValuesSpinner.setValue(config.getFreqValuesNumber());
-        m_missingValuesInHist.setSelected(config.getMissingValuesInHist());
-        m_numberOfHistogramBars.setValue(config.getNumberOfHistogramBars());
-        m_adaptNumberOfHistogramBars.setSelected(config.getAdaptNumberOfHistogramBars());
-        m_displayRowIds.setSelected(config.getDisplayRowIds());
+        m_config.loadSettingsForDialog(settings, inSpec);
+        m_showMedianCheckBox.setSelected(m_config.getShowMedian());
+        m_enablePagingCheckBox.setSelected(m_config.getEnablePaging());
+        m_initialPageSizeSpinner.setValue(m_config.getInitialPageSize());
+        m_enablePageSizeChangeCheckBox.setSelected(m_config.getEnablePageSizeChange());
+        m_allowedPageSizesField.setText(getAllowedPageSizesString(m_config.getAllowedPageSizes()));
+        m_enableShowAllCheckBox.setSelected(m_config.getPageSizeShowAll());
+        m_enableJumpToPageCheckBox.setSelected(m_config.getEnableJumpToPage());
+        m_displayFullscreenButtonCheckBox.setSelected(m_config.getDisplayFullscreenButton());
+        m_titleField.setText(m_config.getTitle());
+        m_subtitleField.setText(m_config.getSubtitle());
+        m_enableSelectionCheckbox.setSelected(m_config.getEnableSelection());
+        m_enableSearchCheckbox.setSelected(m_config.getEnableSearching());
+        m_enableSortingCheckBox.setSelected(m_config.getEnableSorting());
+        m_enableClearSortButtonCheckBox.setSelected(m_config.getEnableClearSortButton());
+        m_enableGlobalNumberFormatCheckbox.setSelected(m_config.getEnableGlobalNumberFormat());
+        m_globalNumberFormatDecimalSpinner.setValue(m_config.getGlobalNumberFormatDecimals());
+        m_displayPreviewRowsSpinner.setValue(m_config.getDisplayRowNumber());
+        m_maxNominalValuesSpinner.setValue(m_config.getMaxNominalValues());
+        m_enableFreqValDisplayCheckbox.setSelected(m_config.getEnableFreqValDisplay());
+        m_freqValuesSpinner.setValue(m_config.getFreqValuesNumber());
+        m_missingValuesInHist.setSelected(m_config.getMissingValuesInHist());
+        m_numberOfHistogramBars.setValue(m_config.getNumberOfHistogramBars());
+        m_adaptNumberOfHistogramBars.setSelected(m_config.getAdaptNumberOfHistogramBars());
+        m_displayRowIds.setSelected(m_config.getDisplayRowIds());
         enablePagingFields();
         enableSearchFields();
         enableFormatterFields();
