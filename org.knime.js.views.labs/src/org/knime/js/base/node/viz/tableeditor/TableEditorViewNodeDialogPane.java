@@ -87,6 +87,8 @@ import org.knime.js.core.components.datetime.SettingsModelDateTimeOptions;
 public class TableEditorViewNodeDialogPane extends NodeDialogPane {
     private static final int TEXT_FIELD_SIZE = 20;
 
+    private final TableEditorViewConfig m_config;
+
     private final JSpinner m_maxRowsSpinner;
     private final JCheckBox m_enablePagingCheckBox;
     private final JSpinner m_initialPageSizeSpinner;
@@ -129,6 +131,8 @@ public class TableEditorViewNodeDialogPane extends NodeDialogPane {
     private String m_tableHash;
 
     TableEditorViewNodeDialogPane() {
+        m_config = new TableEditorViewConfig();
+
         m_maxRowsSpinner = new JSpinner(new SpinnerNumberModel(0, 0, null, 1));
         m_enablePagingCheckBox = new JCheckBox("Enable pagination");
         m_enablePagingCheckBox.addChangeListener(new ChangeListener() {
@@ -472,44 +476,43 @@ public class TableEditorViewNodeDialogPane extends NodeDialogPane {
      */
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
-        TableEditorViewConfig config = new TableEditorViewConfig();
         DataTableSpec inSpec = (DataTableSpec)specs[0];
-        config.loadSettingsForDialog(settings, inSpec);
-        m_maxRowsSpinner.setValue(config.getMaxRows());
-        m_enablePagingCheckBox.setSelected(config.getEnablePaging());
-        m_initialPageSizeSpinner.setValue(config.getIntialPageSize());
-        m_enablePageSizeChangeCheckBox.setSelected(config.getEnablePageSizeChange());
-        m_allowedPageSizesField.setText(getAllowedPageSizesString(config.getAllowedPageSizes()));
-        m_enableShowAllCheckBox.setSelected(config.getPageSizeShowAll());
-        m_enableJumpToPageCheckBox.setSelected(config.getEnableJumpToPage());
-        m_displayRowColorsCheckBox.setSelected(config.getDisplayRowColors());
-        m_displayRowIdsCheckBox.setSelected(config.getDisplayRowIds());
-        m_displayColumnHeadersCheckBox.setSelected(config.getDisplayColumnHeaders());
-        m_displayRowIndexCheckBox.setSelected(config.getDisplayRowIndex());
-        m_displayFullscreenButtonCheckBox.setSelected(config.getDisplayFullscreenButton());
-        m_titleField.setText(config.getTitle());
-        m_subtitleField.setText(config.getSubtitle());
-        m_columnFilterPanel.loadConfiguration(config.getColumnFilterConfig(), inSpec);
-        m_enableSelectionCheckbox.setSelected(config.getEnableSelection());
-        m_enableClearSelectionButtonCheckbox.setSelected(config.getEnableClearSelectionButton());
-        boolean single = config.getSingleSelection();
+        m_config.loadSettingsForDialog(settings, inSpec);
+        m_maxRowsSpinner.setValue(m_config.getMaxRows());
+        m_enablePagingCheckBox.setSelected(m_config.getEnablePaging());
+        m_initialPageSizeSpinner.setValue(m_config.getIntialPageSize());
+        m_enablePageSizeChangeCheckBox.setSelected(m_config.getEnablePageSizeChange());
+        m_allowedPageSizesField.setText(getAllowedPageSizesString(m_config.getAllowedPageSizes()));
+        m_enableShowAllCheckBox.setSelected(m_config.getPageSizeShowAll());
+        m_enableJumpToPageCheckBox.setSelected(m_config.getEnableJumpToPage());
+        m_displayRowColorsCheckBox.setSelected(m_config.getDisplayRowColors());
+        m_displayRowIdsCheckBox.setSelected(m_config.getDisplayRowIds());
+        m_displayColumnHeadersCheckBox.setSelected(m_config.getDisplayColumnHeaders());
+        m_displayRowIndexCheckBox.setSelected(m_config.getDisplayRowIndex());
+        m_displayFullscreenButtonCheckBox.setSelected(m_config.getDisplayFullscreenButton());
+        m_titleField.setText(m_config.getTitle());
+        m_subtitleField.setText(m_config.getSubtitle());
+        m_columnFilterPanel.loadConfiguration(m_config.getColumnFilterConfig(), inSpec);
+        m_enableSelectionCheckbox.setSelected(m_config.getEnableSelection());
+        m_enableClearSelectionButtonCheckbox.setSelected(m_config.getEnableClearSelectionButton());
+        boolean single = m_config.getSingleSelection();
         m_singleSelectionRadioButton.setSelected(single);
         m_multipleSelectionRadioButton.setSelected(!single);
-        m_selectionColumnNameField.setText(config.getSelectionColumnName());
-        m_hideUnselectedCheckbox.setSelected(config.getHideUnselected());
-        m_enableHideUnselectedCheckbox.setSelected(config.getEnableHideUnselected());
-        m_publishSelectionCheckBox.setSelected(config.getPublishSelection());
-        m_subscribeSelectionCheckBox.setSelected(config.getSubscribeSelection());
-        m_enableSearchCheckbox.setSelected(config.getEnableSearching());
-        m_enableColumnSearchCheckbox.setSelected(config.getEnableColumnSearching());
-        m_publishFilterCheckBox.setSelected(config.getPublishFilter());
-        m_subscribeFilterCheckBox.setSelected(config.getSubscribeFilter());
-        m_enableSortingCheckBox.setSelected(config.getEnableSorting());
-        m_enableClearSortButtonCheckBox.setSelected(config.getEnableClearSortButton());
-        m_dateTimeFormats.loadSettingsFromModel(config.getDateTimeFormats());
-        m_enableGlobalNumberFormatCheckbox.setSelected(config.getEnableGlobalNumberFormat());
-        m_globalNumberFormatDecimalSpinner.setValue(config.getGlobalNumberFormatDecimals());
-        m_displayMissingValueAsQuestionMark.setSelected(config.getDisplayMissingValueAsQuestionMark());
+        m_selectionColumnNameField.setText(m_config.getSelectionColumnName());
+        m_hideUnselectedCheckbox.setSelected(m_config.getHideUnselected());
+        m_enableHideUnselectedCheckbox.setSelected(m_config.getEnableHideUnselected());
+        m_publishSelectionCheckBox.setSelected(m_config.getPublishSelection());
+        m_subscribeSelectionCheckBox.setSelected(m_config.getSubscribeSelection());
+        m_enableSearchCheckbox.setSelected(m_config.getEnableSearching());
+        m_enableColumnSearchCheckbox.setSelected(m_config.getEnableColumnSearching());
+        m_publishFilterCheckBox.setSelected(m_config.getPublishFilter());
+        m_subscribeFilterCheckBox.setSelected(m_config.getSubscribeFilter());
+        m_enableSortingCheckBox.setSelected(m_config.getEnableSorting());
+        m_enableClearSortButtonCheckBox.setSelected(m_config.getEnableClearSortButton());
+        m_dateTimeFormats.loadSettingsFromModel(m_config.getDateTimeFormats());
+        m_enableGlobalNumberFormatCheckbox.setSelected(m_config.getEnableGlobalNumberFormat());
+        m_globalNumberFormatDecimalSpinner.setValue(m_config.getGlobalNumberFormatDecimals());
+        m_displayMissingValueAsQuestionMark.setSelected(m_config.getDisplayMissingValueAsQuestionMark());
         enablePagingFields();
         enableSelectionFields();
         enableSearchFields();
@@ -517,9 +520,9 @@ public class TableEditorViewNodeDialogPane extends NodeDialogPane {
         enableSortingFields();
         setNumberOfFilters(inSpec);
         // editor
-        m_editableColumnsFilterPanel.loadConfiguration(config.getEditableColumnFilterConfig(), inSpec);
-        m_editorChanges = config.getEditorChanges();
-        m_tableHash = config.getTableHash();
+        m_editableColumnsFilterPanel.loadConfiguration(m_config.getEditableColumnFilterConfig(), inSpec);
+        m_editorChanges = m_config.getEditorChanges();
+        m_tableHash = m_config.getTableHash();
         m_resetEditorChangesButton.setEnabled(m_editorChanges.getChanges().size() > 0);
     }
 
@@ -530,51 +533,50 @@ public class TableEditorViewNodeDialogPane extends NodeDialogPane {
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         m_dateTimeFormats.validateSettings();
 
-        TableEditorViewConfig config = new TableEditorViewConfig();
-        config.setMaxRows((Integer)m_maxRowsSpinner.getValue());
-        config.setEnablePaging(m_enablePagingCheckBox.isSelected());
-        config.setIntialPageSize((Integer)m_initialPageSizeSpinner.getValue());
-        config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
-        config.setAllowedPageSizes(getAllowedPageSizes());
-        config.setPageSizeShowAll(m_enableShowAllCheckBox.isSelected());
-        config.setEnableJumpToPage(m_enableJumpToPageCheckBox.isSelected());
-        config.setDisplayRowColors(m_displayRowColorsCheckBox.isSelected());
-        config.setDisplayRowIds(m_displayRowIdsCheckBox.isSelected());
-        config.setDisplayColumnHeaders(m_displayColumnHeadersCheckBox.isSelected());
-        config.setDisplayRowIndex(m_displayRowIndexCheckBox.isSelected());
-        config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
-        config.setTitle(m_titleField.getText());
-        config.setSubtitle(m_subtitleField.getText());
+        m_config.setMaxRows((Integer)m_maxRowsSpinner.getValue());
+        m_config.setEnablePaging(m_enablePagingCheckBox.isSelected());
+        m_config.setIntialPageSize((Integer)m_initialPageSizeSpinner.getValue());
+        m_config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
+        m_config.setAllowedPageSizes(getAllowedPageSizes());
+        m_config.setPageSizeShowAll(m_enableShowAllCheckBox.isSelected());
+        m_config.setEnableJumpToPage(m_enableJumpToPageCheckBox.isSelected());
+        m_config.setDisplayRowColors(m_displayRowColorsCheckBox.isSelected());
+        m_config.setDisplayRowIds(m_displayRowIdsCheckBox.isSelected());
+        m_config.setDisplayColumnHeaders(m_displayColumnHeadersCheckBox.isSelected());
+        m_config.setDisplayRowIndex(m_displayRowIndexCheckBox.isSelected());
+        m_config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
+        m_config.setTitle(m_titleField.getText());
+        m_config.setSubtitle(m_subtitleField.getText());
         DataColumnSpecFilterConfiguration filterConfig = new DataColumnSpecFilterConfiguration(TableEditorViewConfig.CFG_COLUMN_FILTER);
         m_columnFilterPanel.saveConfiguration(filterConfig);
-        config.setColumnFilterConfig(filterConfig);
-        config.setEnableSelection(m_enableSelectionCheckbox.isSelected());
-        config.setEnableClearSelectionButton(m_enableClearSelectionButtonCheckbox.isSelected());
-        config.setSingleSelection(m_singleSelectionRadioButton.isSelected());
-        config.setSelectionColumnName(m_selectionColumnNameField.getText());
-        config.setHideUnselected(m_hideUnselectedCheckbox.isSelected());
-        config.setEnableHideUnselected(m_enableHideUnselectedCheckbox.isSelected());
-        config.setPublishSelection(m_publishSelectionCheckBox.isSelected());
-        config.setSubscribeSelection(m_subscribeSelectionCheckBox.isSelected());
-        config.setEnableSorting(m_enableSortingCheckBox.isSelected());
-        config.setEnableClearSortButton(m_enableClearSortButtonCheckBox.isSelected());
-        config.setEnableSearching(m_enableSearchCheckbox.isSelected());
-        config.setEnableColumnSearching(m_enableColumnSearchCheckbox.isSelected());
-        config.setPublishFilter(m_publishFilterCheckBox.isSelected());
-        config.setSubscribeFilter(m_subscribeFilterCheckBox.isSelected());
-        config.setDateTimeFormats((SettingsModelDateTimeOptions)m_dateTimeFormats.getModel());
-        config.setEnableGlobalNumberFormat(m_enableGlobalNumberFormatCheckbox.isSelected());
-        config.setGlobalNumberFormatDecimals((Integer)m_globalNumberFormatDecimalSpinner.getValue());
-        config.setDisplayMissingValueAsQuestionMark(m_displayMissingValueAsQuestionMark.isSelected());
+        m_config.setColumnFilterConfig(filterConfig);
+        m_config.setEnableSelection(m_enableSelectionCheckbox.isSelected());
+        m_config.setEnableClearSelectionButton(m_enableClearSelectionButtonCheckbox.isSelected());
+        m_config.setSingleSelection(m_singleSelectionRadioButton.isSelected());
+        m_config.setSelectionColumnName(m_selectionColumnNameField.getText());
+        m_config.setHideUnselected(m_hideUnselectedCheckbox.isSelected());
+        m_config.setEnableHideUnselected(m_enableHideUnselectedCheckbox.isSelected());
+        m_config.setPublishSelection(m_publishSelectionCheckBox.isSelected());
+        m_config.setSubscribeSelection(m_subscribeSelectionCheckBox.isSelected());
+        m_config.setEnableSorting(m_enableSortingCheckBox.isSelected());
+        m_config.setEnableClearSortButton(m_enableClearSortButtonCheckBox.isSelected());
+        m_config.setEnableSearching(m_enableSearchCheckbox.isSelected());
+        m_config.setEnableColumnSearching(m_enableColumnSearchCheckbox.isSelected());
+        m_config.setPublishFilter(m_publishFilterCheckBox.isSelected());
+        m_config.setSubscribeFilter(m_subscribeFilterCheckBox.isSelected());
+        m_config.setDateTimeFormats((SettingsModelDateTimeOptions)m_dateTimeFormats.getModel());
+        m_config.setEnableGlobalNumberFormat(m_enableGlobalNumberFormatCheckbox.isSelected());
+        m_config.setGlobalNumberFormatDecimals((Integer)m_globalNumberFormatDecimalSpinner.getValue());
+        m_config.setDisplayMissingValueAsQuestionMark(m_displayMissingValueAsQuestionMark.isSelected());
 
         // editor
         DataColumnSpecFilterConfiguration editableColumnsFilterConfig = new DataColumnSpecFilterConfiguration(TableEditorViewConfig.CFG_EDITABLE_COLUMNS_FILTER);
         m_editableColumnsFilterPanel.saveConfiguration(editableColumnsFilterConfig);
-        config.setEditableColumnFilterConfig(editableColumnsFilterConfig);
-        config.setEditorChanges(m_editorChanges);
-        config.setTableHash(m_tableHash);
+        m_config.setEditableColumnFilterConfig(editableColumnsFilterConfig);
+        m_config.setEditorChanges(m_editorChanges);
+        m_config.setTableHash(m_tableHash);
 
-        config.saveSettings(settings);
+        m_config.saveSettings(settings);
     }
 
     private String getAllowedPageSizesString(final int[] sizes) {
