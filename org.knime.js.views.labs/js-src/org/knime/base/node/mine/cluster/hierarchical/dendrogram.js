@@ -74,7 +74,10 @@ window.dendrogram_namespace = (function () {
         drawXAxis();
         drawYAxis();
         drawDendrogram();
-        drawThresholdHandle();
+
+        if (_representation.showThresholdBar) {
+            drawThresholdHandle();
+        }
 
         initZoomingAndPanning();
 
@@ -116,13 +119,13 @@ window.dendrogram_namespace = (function () {
                 }, true));
         }
 
-        if (_representation.enableZoom && _representation.showZoomResetButton) {
+        if (_representation.enableZoomAndPanning && _representation.showZoomResetButton) {
             knimeService.addButton('zoom-reset-button', 'search-minus', 'Reset Zoom', function () {
                 resetZoom();
             });
         }
 
-        if (_representation.enableSelection) {
+        if (_representation.enableSelection && _representation.showClearSelectionButton) {
             knimeService.addButton('selection-reset-button', 'minus-square-o', 'Reset Selection', function () {
                 clearSelection();
             });
@@ -318,11 +321,13 @@ window.dendrogram_namespace = (function () {
     };
 
     const drawThresholdHandle = function () {
-        const maxDistance = yScale.domain()[1];
-
         thresholdEl = dendrogramEl.append('rect').attr('class', 'threshold')
-            .attr('width', '100%').attr('height', thresholdHandleHeight)
-            .call(d3.drag()
+            .attr('width', '100%').attr('height', thresholdHandleHeight);
+
+        if (_representation.enableThresholdModification) {
+            const maxDistance = yScale.domain()[1];
+
+            thresholdEl.call(d3.drag()
                 .on('drag', function () {
                     // abort if dragged outside min or max distance
                     var newThreshold = yScale.invert(d3.event.y);
@@ -339,6 +344,10 @@ window.dendrogram_namespace = (function () {
                     _value.threshold = newThreshold;
                 }));
 
+            if (_representation.runningInView) {
+                svg.classed('thresholdEnabled', true);
+            }
+        }
         thresholdDisplayEl = svg.append('text').attr('class', 'thresholdDisplay')
             .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 25 + ')');
 
@@ -347,10 +356,6 @@ window.dendrogram_namespace = (function () {
 
         // set initial threshold
         onThresholdChange(_value.threshold);
-
-        if (_representation.runningInView) {
-            svg.classed('thresholdEnabled', true);
-        }
     };
 
     const onThresholdChange = function (threshold) {
@@ -419,7 +424,9 @@ window.dendrogram_namespace = (function () {
             return 'translate(' + d.x + ',' + d.y + ')';
         });
 
-        thresholdEl.attr('transform', 'translate(0,' + yScale(_value.threshold) + ')');
+        if (thresholdEl) {
+            thresholdEl.attr('transform', 'translate(0,' + yScale(_value.threshold) + ')');
+        }
 
         zoom.translateExtent([[0, 0], [viewportWidth, viewportHeight]]);
         zoom.extent([[0, 0], [viewportWidth, viewportHeight]]);
@@ -461,18 +468,21 @@ window.dendrogram_namespace = (function () {
                     .attr('height', leafHeight / d3.event.transform.k)
                     .attr('x', -(leafWidth / d3.event.transform.k) / 2)
                     .attr('y', -(leafHeight / d3.event.transform.k));
-                thresholdEl.attr('height', thresholdHandleHeight / d3.event.transform.k);
+
+                if (thresholdEl) {
+                    thresholdEl.attr('height', thresholdHandleHeight / d3.event.transform.k);
+                }
 
                 // save zoom and pan
-                _value.zoomx = d3.event.transform.x;
-                _value.zoomy = d3.event.transform.y;
-                _value.zoomk = d3.event.transform.k;
+                _value.zoomX = d3.event.transform.x;
+                _value.zoomY = d3.event.transform.y;
+                _value.zoomK = d3.event.transform.k;
             });
 
-        const zoomX = _value.zoomx !== undefined ? _value.zoomx : 0;
-        const zoomY = _value.zoomy !== undefined ? _value.zoomy : 0;
-        const zoomK = _value.zoomk !== undefined ? _value.zoomk : 1;
-        if (_representation.enableZoom) {
+        const zoomX = _value.zoomX !== undefined ? _value.zoomX : 0;
+        const zoomY = _value.zoomY !== undefined ? _value.zoomY : 0;
+        const zoomK = _value.zoomK !== undefined ? _value.zoomK : 1;
+        if (_representation.enableZoomAndPanning) {
             zoom.scaleExtent([1, Infinity]);
         } else {
             zoom.scaleExtent([zoomK, zoomK]);
