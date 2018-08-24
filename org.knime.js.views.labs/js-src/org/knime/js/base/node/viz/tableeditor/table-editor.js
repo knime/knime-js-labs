@@ -151,7 +151,7 @@ table_editor = function() {
 	
 	table_viewer.init = function(representation, value) {
 		if (!representation || !representation.table) {
-			$('body').append("Error: No data available");
+			$('body').append("p").append("Error: No data available");
 			return;
 		}
 		_representation = representation;

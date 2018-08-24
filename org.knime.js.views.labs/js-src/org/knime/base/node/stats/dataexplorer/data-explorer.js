@@ -55,7 +55,7 @@ dataExplorerNamespace = function() {
 	
 	view.init = function(representation, value) {
 		if (!representation || !representation.statistics) {
-			$('body').append("Error: No data available");
+			$('body').append("p").append("Error: No data available");
 			return;
 		}
 		_representation = representation;
