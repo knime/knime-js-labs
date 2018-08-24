@@ -14,7 +14,7 @@ knime_tag_cloud = function() {
 		_value = value;
 		
 		if (!_representation.data) {
-			d3.select("body").text("Error: No data available");
+			d3.select("body").append("p").text("Error: No data available");
 			return;
 		}
 		
