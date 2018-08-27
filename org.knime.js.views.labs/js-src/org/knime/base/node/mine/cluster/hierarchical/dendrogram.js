@@ -81,7 +81,7 @@ window.dendrogram_namespace = (function () {
 
         initZoomingAndPanning();
 
-        resizeDiagram();
+        resizeDiagram(true);
 
         if (_representation.enableSelection) {
             initSelection();
@@ -206,14 +206,7 @@ window.dendrogram_namespace = (function () {
             d3.select(this.parentNode).classed('ellipsis', showEllipsis);
             return showEllipsis ? '…' : d;
         });
-        xAxisEl = svg.append('g')
-            .attr('class', 'knime-axis knime-x')
-            .on('click', function () { // register event listener on container to also catch dynamically added labels
-                if (d3.event.target.nodeName === 'text') {
-                    var rowKey = d3.event.target.__data__;
-                    toggleSelectRow(rowKey);
-                }
-            });
+        xAxisEl = svg.append('g').attr('class', 'knime-axis knime-x');
     };
 
     const updateXAxis = function (transformEvent) {
@@ -289,13 +282,6 @@ window.dendrogram_namespace = (function () {
         })).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius);
         clusterMarkerEl.append('title').text(function (d) {
             return 'Cluster ' + d.data.id + '; Distance: ' + d.data.distance;
-        });
-        dendrogramEl.on('click', function () { // make use of event bubbling and only register one listener
-            if (d3.event.target.nodeName === 'circle') {
-                toggleSelectCluster(d3.event.target.__data__);
-            } else if (d3.event.target.nodeName === 'rect') {
-                toggleSelectRow(d3.event.target.__data__.data.rowKey);
-            }
         });
     };
 
@@ -389,7 +375,7 @@ window.dendrogram_namespace = (function () {
         });
     };
 
-    const resizeDiagram = function () {
+    const resizeDiagram = function (isInitial) {
         calcSVGSize();
 
         viewportClipEl.attr('width', viewportWidth)
@@ -432,8 +418,10 @@ window.dendrogram_namespace = (function () {
         zoom.extent([[0, 0], [viewportWidth, viewportHeight]]);
         svg.call(zoom).on('dblclick.zoom', null); // prevent zoom on double click
 
-        // zoom out? TODO maybe there is a smarter behaviour here
-        resetZoom();
+        if (!isInitial) {
+            // zoom out? TODO maybe there is a smarter behaviour here
+            resetZoom();
+        }
     };
 
     const initWindowResize = function () {
@@ -472,7 +460,8 @@ window.dendrogram_namespace = (function () {
                 if (thresholdEl) {
                     thresholdEl.attr('height', thresholdHandleHeight / d3.event.transform.k);
                 }
-
+            })
+            .on('end', function () {
                 // save zoom and pan
                 _value.zoomX = d3.event.transform.x;
                 _value.zoomY = d3.event.transform.y;
@@ -492,9 +481,9 @@ window.dendrogram_namespace = (function () {
             .on('dblclick.zoom', null); // prevent zoom on double click
 
         // set initial zoom and pan
-        setTimeout(function () {
-            svg.call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
-        }, 0);
+        svg.transition()
+            .duration(750)
+            .call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
     };
 
     const resetZoom = function () {
@@ -632,6 +621,21 @@ window.dendrogram_namespace = (function () {
         if (_representation.runningInView) {
             svg.classed('selectionEnabled', true);
         }
+
+        dendrogramEl.on('click', function () { // make use of event bubbling and only register one listener
+            if (d3.event.target.nodeName === 'circle') {
+                toggleSelectCluster(d3.event.target.__data__);
+            } else if (d3.event.target.nodeName === 'rect') {
+                toggleSelectRow(d3.event.target.__data__.data.rowKey);
+            }
+        });
+
+        xAxisEl.on('click', function () { // register event listener on container to also catch dynamically added labels
+            if (d3.event.target.nodeName === 'text') {
+                const rowKey = d3.event.target.__data__;
+                toggleSelectRow(rowKey);
+            }
+        });
     };
 
     const updateFilterInView = function () {
