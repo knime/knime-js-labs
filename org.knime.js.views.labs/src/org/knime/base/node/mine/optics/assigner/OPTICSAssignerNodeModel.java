@@ -445,6 +445,20 @@ public class OPTICSAssignerNodeModel extends AbstractSVGWizardNodeModel<OPTICSAs
         return new OPTICSAssignerViewRepresentation();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public OPTICSAssignerViewRepresentation getViewRepresentation() {
+        OPTICSAssignerViewRepresentation representation = super.getViewRepresentation();
+        synchronized (getLock()) {
+            if (representation != null && representation.getKeyedDataset() != null) {
+                representation.getKeyedDataset().setId(getTableId(0));
+            }
+        }
+        return representation;
+    }
+
     @Override
     public OPTICSAssignerViewValue createEmptyViewValue() {
         return new OPTICSAssignerViewValue();
