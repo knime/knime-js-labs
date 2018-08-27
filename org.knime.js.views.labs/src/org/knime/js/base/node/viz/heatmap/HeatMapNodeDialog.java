@@ -90,6 +90,9 @@ import org.knime.js.core.settings.DialogUtil;
 public class HeatMapNodeDialog extends NodeDialogPane {
 
     private static final int TEXT_FIELD_SIZE = 20;
+
+    private final HeatMapViewConfig m_config;
+
     private DataColumnSpecFilterConfiguration m_columnSpecFilter = null;
     private DataTableSpec m_spec;
 
@@ -138,6 +141,8 @@ public class HeatMapNodeDialog extends NodeDialogPane {
 
     @SuppressWarnings("unchecked")
     HeatMapNodeDialog() {
+        m_config = new HeatMapViewConfig();
+
         m_columnsFilterPanel = new DataColumnSpecFilterPanel();
         m_columnsFilterPanel.setBorder(BorderFactory.createTitledBorder("Columns to display"));
         m_labelColumnColumnSelectionPanel =
@@ -228,56 +233,54 @@ public class HeatMapNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        final HeatMapViewConfig config = new HeatMapViewConfig();
-
-        m_columnsFilterPanel.saveConfiguration(config.getColumns());
-        final String[] includedCols = config.getColumns().applyTo(m_spec).getIncludes();
+        m_columnsFilterPanel.saveConfiguration(m_config.getColumns());
+        final String[] includedCols = m_config.getColumns().applyTo(m_spec).getIncludes();
         if (includedCols == null || includedCols.length < 1) {
             throw new InvalidSettingsException("At least one numeric column must be included");
         }
-        config.setLabelColumn(m_labelColumnColumnSelectionPanel.getSelectedColumn());
-        config.setSvgLabelColumn(m_svgLabelColumnColumnSelectionPanel.isEnabled()
+        m_config.setLabelColumn(m_labelColumnColumnSelectionPanel.getSelectedColumn());
+        m_config.setSvgLabelColumn(m_svgLabelColumnColumnSelectionPanel.isEnabled()
             ? m_svgLabelColumnColumnSelectionPanel.getSelectedColumn() : null);
-        config.setMinValue((double) m_minValueSpinner.getValue());
-        config.setMaxValue((double) m_maxValueSpinner.getValue());
-        config.setUseCustomMin(m_customMinValueCheckBox.isSelected());
-        config.setUseCustomMax(m_customMaxValueCheckBox.isSelected());
+        m_config.setMinValue((double) m_minValueSpinner.getValue());
+        m_config.setMaxValue((double) m_maxValueSpinner.getValue());
+        m_config.setUseCustomMin(m_customMinValueCheckBox.isSelected());
+        m_config.setUseCustomMax(m_customMaxValueCheckBox.isSelected());
 
-        config.setThreeColorGradient(m_gradientColors.getColorsAsHex());
-        config.setDiscreteGradientColors(m_gradientColors.getAllColorsHex());
-        config.setContinuousGradient(!m_useBinsCheckBox.isSelected());
-        config.setNumDiscreteColors((int) m_numberOfBinsSpinner.getValue());
-        config.setMissingValueColor(CSSUtils.cssHexStringFromColor(m_missingValueColorColorChooser.getColor()));
+        m_config.setThreeColorGradient(m_gradientColors.getColorsAsHex());
+        m_config.setDiscreteGradientColors(m_gradientColors.getAllColorsHex());
+        m_config.setContinuousGradient(!m_useBinsCheckBox.isSelected());
+        m_config.setNumDiscreteColors((int) m_numberOfBinsSpinner.getValue());
+        m_config.setMissingValueColor(CSSUtils.cssHexStringFromColor(m_missingValueColorColorChooser.getColor()));
 
-        config.setShowWarningInView(m_showWarningInViewCheckBox.isSelected());
-        config.setGenerateImage(m_generateImageCheckBox.isSelected());
-        config.setImageWidth((int) m_imageWidthSpinner.getValue());
-        config.setImageHeight((int) m_imageHeightSpinner.getValue());
-        config.setResizeToWindow(m_resizeToWindowCheckBox.isSelected());
-        config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
-        config.setChartTitle(m_chartTitleTextField.getText());
-        config.setChartSubtitle(m_chartSubtitleTextField.getText());
+        m_config.setShowWarningInView(m_showWarningInViewCheckBox.isSelected());
+        m_config.setGenerateImage(m_generateImageCheckBox.isSelected());
+        m_config.setImageWidth((int) m_imageWidthSpinner.getValue());
+        m_config.setImageHeight((int) m_imageHeightSpinner.getValue());
+        m_config.setResizeToWindow(m_resizeToWindowCheckBox.isSelected());
+        m_config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
+        m_config.setChartTitle(m_chartTitleTextField.getText());
+        m_config.setChartSubtitle(m_chartSubtitleTextField.getText());
 
-        config.setEnableViewConfiguration(m_enableViewConfigurationCheckBox.isSelected());
-        config.setEnableTitleChange(m_enableTitleChangeCheckBox.isSelected());
-        config.setEnableColorModeEdit(m_enableColorModeEditCheckBox.isSelected());
-        config.setEnableShowToolTips(m_enableShowToolTipsCheckBox.isSelected());
-        config.setSubscribeFilter(m_subscribeFilterCheckBox.isSelected());
-        config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
-        config.setPublishSelection(m_publishSelectionCheckBox.isSelected());
-        config.setSubscribeSelection(m_subscribeSelectionCheckBox.isSelected());
-        config.setSelectionColumnName(m_selectionColumnNameTextField.getText());
-        config.setEnablePaging(m_enablePagingCheckBox.isSelected());
-        config.setInitialPageSize((int) m_initialPageSizeSpinner.getValue());
-        config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
-        config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
-        config.setAllowedPageSizes(getAllowedPageSizes());
-        config.setEnableShowAll(m_pageSizeShowAllCheckBox.isSelected());
-        config.setEnableZoom(m_enableZoomCheckBox.isSelected());
-        config.setEnablePanning(m_enablePanningCheckBox.isSelected());
-        config.setShowZoomResetButton(m_showZoomResetButtonCheckBox.isSelected());
+        m_config.setEnableViewConfiguration(m_enableViewConfigurationCheckBox.isSelected());
+        m_config.setEnableTitleChange(m_enableTitleChangeCheckBox.isSelected());
+        m_config.setEnableColorModeEdit(m_enableColorModeEditCheckBox.isSelected());
+        m_config.setEnableShowToolTips(m_enableShowToolTipsCheckBox.isSelected());
+        m_config.setSubscribeFilter(m_subscribeFilterCheckBox.isSelected());
+        m_config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
+        m_config.setPublishSelection(m_publishSelectionCheckBox.isSelected());
+        m_config.setSubscribeSelection(m_subscribeSelectionCheckBox.isSelected());
+        m_config.setSelectionColumnName(m_selectionColumnNameTextField.getText());
+        m_config.setEnablePaging(m_enablePagingCheckBox.isSelected());
+        m_config.setInitialPageSize((int) m_initialPageSizeSpinner.getValue());
+        m_config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
+        m_config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
+        m_config.setAllowedPageSizes(getAllowedPageSizes());
+        m_config.setEnableShowAll(m_pageSizeShowAllCheckBox.isSelected());
+        m_config.setEnableZoom(m_enableZoomCheckBox.isSelected());
+        m_config.setEnablePanning(m_enablePanningCheckBox.isSelected());
+        m_config.setShowZoomResetButton(m_showZoomResetButtonCheckBox.isSelected());
 
-        config.saveSettings(settings);
+        m_config.saveSettings(settings);
     }
 
     /**
@@ -287,54 +290,53 @@ public class HeatMapNodeDialog extends NodeDialogPane {
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
             throws NotConfigurableException {
         final DataTableSpec spec = (DataTableSpec) specs[0];
-        final HeatMapViewConfig config = new HeatMapViewConfig();
-        config.loadSettingsForDialog(settings, spec);
+        m_config.loadSettingsForDialog(settings, spec);
 
-        m_columnSpecFilter = config.getColumns();
+        m_columnSpecFilter = m_config.getColumns();
         m_spec = (DataTableSpec) specs[0];
-        m_columnsFilterPanel.loadConfiguration(config.getColumns(), spec);
-        m_labelColumnColumnSelectionPanel.update((DataTableSpec) specs[0], config.getLabelColumn(), true);
-        loadSvgColumn(spec, config);
-        m_customMinValueCheckBox.setSelected(config.getUseCustomMin());
-        m_customMaxValueCheckBox.setSelected(config.getUseCustomMax());
-        m_minValueSpinner.setValue(config.getMinValue());
-        m_maxValueSpinner.setValue(config.getMaxValue());
+        m_columnsFilterPanel.loadConfiguration(m_config.getColumns(), spec);
+        m_labelColumnColumnSelectionPanel.update((DataTableSpec) specs[0], m_config.getLabelColumn(), true);
+        loadSvgColumn(spec, m_config);
+        m_customMinValueCheckBox.setSelected(m_config.getUseCustomMin());
+        m_customMaxValueCheckBox.setSelected(m_config.getUseCustomMax());
+        m_minValueSpinner.setValue(m_config.getMinValue());
+        m_maxValueSpinner.setValue(m_config.getMaxValue());
 
-        final String[] colors = config.getThreeColorGradient();
+        final String[] colors = m_config.getThreeColorGradient();
         m_gradientColors.setColors(colors[0], colors[1], colors[2]);
-        m_useBinsCheckBox.setSelected(!config.getContinuousGradient());
-        m_numberOfBinsSpinner.setValue(config.getNumDiscreteColors());
+        m_useBinsCheckBox.setSelected(!m_config.getContinuousGradient());
+        m_numberOfBinsSpinner.setValue(m_config.getNumDiscreteColors());
         m_firstColorColorChooser.setColor(CSSUtils.colorFromCssHexString(colors[0]));
         m_secondColorColorChooser.setColor(CSSUtils.colorFromCssHexString(colors[1]));
         m_thirdColorColorChooser.setColor(CSSUtils.colorFromCssHexString(colors[2]));
-        m_missingValueColorColorChooser.setColor(CSSUtils.colorFromCssHexString(config.getMissingValueColor()));
+        m_missingValueColorColorChooser.setColor(CSSUtils.colorFromCssHexString(m_config.getMissingValueColor()));
 
-        m_showWarningInViewCheckBox.setSelected(config.getShowWarningInView());
-        m_generateImageCheckBox.setSelected(config.getGenerateImage());
-        m_imageWidthSpinner.setValue(config.getImageWidth());
-        m_imageHeightSpinner.setValue(config.getImageHeight());
-        m_resizeToWindowCheckBox.setSelected(config.getResizeToWindow());
-        m_displayFullscreenButtonCheckBox.setSelected(config.getDisplayFullscreenButton());
-        m_chartTitleTextField.setText(config.getChartTitle());
-        m_chartSubtitleTextField.setText(config.getChartSubtitle());
+        m_showWarningInViewCheckBox.setSelected(m_config.getShowWarningInView());
+        m_generateImageCheckBox.setSelected(m_config.getGenerateImage());
+        m_imageWidthSpinner.setValue(m_config.getImageWidth());
+        m_imageHeightSpinner.setValue(m_config.getImageHeight());
+        m_resizeToWindowCheckBox.setSelected(m_config.getResizeToWindow());
+        m_displayFullscreenButtonCheckBox.setSelected(m_config.getDisplayFullscreenButton());
+        m_chartTitleTextField.setText(m_config.getChartTitle());
+        m_chartSubtitleTextField.setText(m_config.getChartSubtitle());
 
-        m_enableViewConfigurationCheckBox.setSelected(config.getEnableViewConfiguration());
-        m_enableTitleChangeCheckBox.setSelected(config.getEnableTitleChange());
-        m_enableColorModeEditCheckBox.setSelected(config.getEnableColorModeEdit());
-        m_enableShowToolTipsCheckBox.setSelected(config.getEnableShowToolTips());
-        m_subscribeFilterCheckBox.setSelected(config.getSubscribeFilter());
-        m_enableSelectionCheckBox.setSelected(config.getEnableSelection());
-        m_publishSelectionCheckBox.setSelected(config.getPublishSelection());
-        m_subscribeSelectionCheckBox.setSelected(config.getSubscribeSelection());
-        m_selectionColumnNameTextField.setText(config.getSelectionColumnName());
-        m_enablePagingCheckBox.setSelected(config.getEnablePaging());
-        m_initialPageSizeSpinner.setValue(config.getInitialPageSize());
-        m_enablePageSizeChangeCheckBox.setSelected(config.getEnablePageSizeChange());
-        m_allowedPageSizesTextField.setText(getAllowedPageSizesString(config.getAllowedPageSizes()));
-        m_pageSizeShowAllCheckBox.setSelected(config.getEnableShowAll());
-        m_enableZoomCheckBox.setSelected(config.getEnableZoom());
-        m_enablePanningCheckBox.setSelected(config.getEnablePanning());
-        m_showZoomResetButtonCheckBox.setSelected(config.getShowZoomResetButton());
+        m_enableViewConfigurationCheckBox.setSelected(m_config.getEnableViewConfiguration());
+        m_enableTitleChangeCheckBox.setSelected(m_config.getEnableTitleChange());
+        m_enableColorModeEditCheckBox.setSelected(m_config.getEnableColorModeEdit());
+        m_enableShowToolTipsCheckBox.setSelected(m_config.getEnableShowToolTips());
+        m_subscribeFilterCheckBox.setSelected(m_config.getSubscribeFilter());
+        m_enableSelectionCheckBox.setSelected(m_config.getEnableSelection());
+        m_publishSelectionCheckBox.setSelected(m_config.getPublishSelection());
+        m_subscribeSelectionCheckBox.setSelected(m_config.getSubscribeSelection());
+        m_selectionColumnNameTextField.setText(m_config.getSelectionColumnName());
+        m_enablePagingCheckBox.setSelected(m_config.getEnablePaging());
+        m_initialPageSizeSpinner.setValue(m_config.getInitialPageSize());
+        m_enablePageSizeChangeCheckBox.setSelected(m_config.getEnablePageSizeChange());
+        m_allowedPageSizesTextField.setText(getAllowedPageSizesString(m_config.getAllowedPageSizes()));
+        m_pageSizeShowAllCheckBox.setSelected(m_config.getEnableShowAll());
+        m_enableZoomCheckBox.setSelected(m_config.getEnableZoom());
+        m_enablePanningCheckBox.setSelected(m_config.getEnablePanning());
+        m_showZoomResetButtonCheckBox.setSelected(m_config.getShowZoomResetButton());
 
         setNumberOfFilters((DataTableSpec) specs[0]);
         enableSpinner();
