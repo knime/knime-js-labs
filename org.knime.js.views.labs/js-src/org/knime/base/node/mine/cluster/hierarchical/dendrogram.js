@@ -30,6 +30,7 @@ window.dendrogram_namespace = (function () {
         svgSize,
         viewportWidth,
         viewportHeight,
+        wrapperEl,
         viewportClipEl,
         xAxisClipEl,
         titleEl,
@@ -104,16 +105,24 @@ window.dendrogram_namespace = (function () {
             knimeService.addMenuItem('Chart Title:', 'header', knimeService.createMenuTextField(
                 'chartTitleText', _value.title, function () {
                     if (_value.title != this.value) {
+                        const resize = !!_value.title.length != !!this.value.length;
                         _value.title = this.value;
-                        updateTitle();
+                        drawTitle();
+                        if (resize) {
+                            resizeDiagram();
+                        }
                     }
                 }, true));
 
             knimeService.addMenuItem('Chart Subtitle:', 'header', knimeService.createMenuTextField(
                 'chartSubtitleText', _value.subtitle, function () {
                     if (_value.subtitle != this.value) {
+                        const resize = !!_value.subtitle.length != !!this.value.length;
                         _value.subtitle = this.value;
-                        updateTitle();
+                        drawTitle();
+                        if (resize) {
+                            resizeDiagram();
+                        }
                     }
                 }, true));
         }
@@ -146,7 +155,7 @@ window.dendrogram_namespace = (function () {
     const calcSVGSize = function () {
         svgSize = d3.select('svg').node().getClientRects()[0];
         viewportWidth = svgSize.width - yAxisWidth;
-        viewportHeight = svgSize.height - xAxisHeight;
+        viewportHeight = svgSize.height - xAxisHeight - getTitleHeight();
     };
 
     const drawSVG = function () {
@@ -178,7 +187,9 @@ window.dendrogram_namespace = (function () {
             .append('rect')
             .attr('height', xAxisHeight);
 
-        dendrogramEl = svg.append('g').attr('class', 'viewport').attr('transform', 'translate(' + yAxisWidth + ',0)')
+        wrapperEl = svg.append('g').attr('class', 'wrapper');
+
+        dendrogramEl = wrapperEl.append('g').attr('class', 'viewport').attr('transform', 'translate(' + yAxisWidth + ',0)')
             .append('g').attr('transform', 'translate(0,' + viewportMarginTop + ')')
             .append('g');
 
@@ -217,7 +228,7 @@ window.dendrogram_namespace = (function () {
 
             return showEllipsis ? '…' : d;
         });
-        xAxisEl = svg.append('g').attr('class', 'knime-axis knime-x');
+        xAxisEl = wrapperEl.append('g').attr('class', 'knime-axis knime-x');
     };
 
     const updateXAxis = function (transformEvent) {
@@ -237,7 +248,7 @@ window.dendrogram_namespace = (function () {
             .nice();
         yAxis = d3.axisLeft(yScale)
             .ticks(5);
-        yAxisEl = svg.append('g')
+        yAxisEl = wrapperEl.append('g')
             .attr('class', 'knime-axis knime-y')
             .attr('transform', 'translate(' + yAxisWidth + ',' + viewportMarginTop + ')');
 
@@ -284,25 +295,50 @@ window.dendrogram_namespace = (function () {
         });
     };
 
-    const drawTitle = function () {
-        titleEl = svg.append('text')
-            .attr('id', 'title')
-            .attr('class', 'knime-title')
-            .attr('x', 180)
-            .attr('y', 30)
-            .text(_value.title);
+    const getTitleHeight = function () {
+        var height = 0;
 
-        subtitleEl = svg.append('text')
-            .attr('id', 'subtitle')
-            .attr('class', 'knime-subtitle')
-            .attr('x', 180)
-            .attr('y', 46)
-            .text(_value.subtitle);
+        if (_value.subtitle.length) {
+            height = 50;
+        } else if (_value.title.length) {
+            height = 30;
+        }
+
+        return height;
     };
 
-    const updateTitle = function () {
-        titleEl.text(_value.title);
-        subtitleEl.text(_value.subtitle);
+    const drawTitle = function () {
+        if (_value.title.length) {
+            if (!titleEl) {
+                titleEl = svg.append('text')
+                    .attr('id', 'title')
+                    .attr('class', 'knime-title')
+                    .attr('x', 2)
+                    .attr('y', 25);
+            }
+            titleEl.text(_value.title);
+        } else {
+            if (titleEl) {
+                titleEl.remove();
+                titleEl = null;
+            }
+        }
+
+        if (_value.subtitle.length) {
+            if (!subtitleEl) {
+                subtitleEl = svg.append('text')
+                    .attr('id', 'subtitle')
+                    .attr('class', 'knime-subtitle')
+                    .attr('x', 2)
+                    .attr('y', 45);
+            }
+            subtitleEl.text(_value.subtitle);
+        } else {
+            if (subtitleEl) {
+                subtitleEl.remove();
+                subtitleEl = null;
+            }
+        }
     };
 
     const drawThresholdHandle = function () {
@@ -333,10 +369,10 @@ window.dendrogram_namespace = (function () {
                 svg.classed('thresholdEnabled', true);
             }
         }
-        thresholdDisplayEl = svg.append('text').attr('class', 'thresholdDisplay')
+        thresholdDisplayEl = wrapperEl.append('text').attr('class', 'thresholdDisplay')
             .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 25 + ')');
 
-        thresholdClusterDisplayEl = svg.append('text').attr('class', 'thresholdClusterDisplay')
+        thresholdClusterDisplayEl = wrapperEl.append('text').attr('class', 'thresholdClusterDisplay')
             .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 40 + ')');
 
         // set initial threshold
@@ -385,6 +421,9 @@ window.dendrogram_namespace = (function () {
         // recalculate cluster
         cluster.size([viewportWidth, viewportHeight - viewportMarginTop]);
         cluster(nodes);
+
+        // re-position wrapper
+        wrapperEl.attr('transform', 'translate(0,' + getTitleHeight() + ')');
 
         // update axis
         xAxisEl.attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')');
