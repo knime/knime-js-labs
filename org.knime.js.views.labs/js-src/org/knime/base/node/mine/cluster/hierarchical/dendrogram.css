@@ -86,7 +86,7 @@
 }
 
 .knime-axis.knime-x .knime-tick.ellipsis .knime-tick-label {
-    transform: translate(-9px, -16px) rotate(-90deg);
+    transform: translate(-16px, 9px) rotate(-90deg);
     pointer-events: none;
 }
 
