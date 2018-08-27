@@ -82,11 +82,11 @@
 
 .knime-axis.knime-x .knime-tick-label {
     text-anchor: end;
-    transform: rotate(-90deg);
+    transform: translate(-13px, 10px) rotate(-90deg);
 }
 
 .knime-axis.knime-x .knime-tick.ellipsis .knime-tick-label {
-    transform: rotate(-90deg) translate(0px, -3px);
+    transform: translate(-9px, -16px) rotate(-90deg);
     pointer-events: none;
 }
 

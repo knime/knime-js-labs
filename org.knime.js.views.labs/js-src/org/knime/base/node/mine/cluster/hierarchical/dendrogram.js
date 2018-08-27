@@ -10,7 +10,6 @@ window.dendrogram_namespace = (function () {
     // view related settings
     const xAxisHeight = 100,
         yAxisWidth = 40,
-        labelMargin = 10,
         xAxisLabelWidth = 15,
         linkStrokeWidth = 1,
         clusterMarkerRadius = 4,
@@ -203,7 +202,19 @@ window.dendrogram_namespace = (function () {
         xAxis.tickFormat(function (d, i) {
             // show ellipsis if not all labels are shown
             const showEllipsis = !!(i % xEllipsisNthTick);
-            d3.select(this.parentNode).classed('ellipsis', showEllipsis);
+
+            // add knime, selected, filtered and ellipsis classes
+            // TODO is there any way to only add these classes when the d3 tick element is created? tickFormat() is called quite often...
+            const tickEl = d3.select(this.parentNode)
+                .classed('knime-tick', true)
+                .classed('selected', function (rowKey) {
+                    return selectedRows.indexOf(rowKey) !== -1;
+                }).classed('outOfFilter', function (rowKey) {
+                    return !!filteredRows.length && !(filteredRows.indexOf(rowKey) !== -1);
+                }).classed('ellipsis', showEllipsis);
+            tickEl.select('line').classed('knime-tick-line', true);
+            d3.select(this).classed('knime-tick-label', true);
+
             return showEllipsis ? '…' : d;
         });
         xAxisEl = svg.append('g').attr('class', 'knime-axis knime-x');
@@ -217,19 +228,6 @@ window.dendrogram_namespace = (function () {
         xAxis.tickValues(xScale.domain().filter(function (d, i) { return !(i % xShowNthTicks); }));
         xScale.range([0, viewportWidth].map(function (d) { return transformEvent ? d3.event.transform.applyX(d) : d; }));
         xAxisEl.call(xAxis);
-
-        // apply knime classes
-        const isFiltering = !!filteredRows.length;
-        const xTickEls = xAxisEl.selectAll('.tick').classed('knime-tick', true)
-            .classed('selected', function (rowKey) {
-                return selectedRows.indexOf(rowKey) !== -1;
-            }).classed('outOfFilter', function (rowKey) {
-                return isFiltering && !(filteredRows.indexOf(rowKey) !== -1);
-            });
-        xTickEls.selectAll('line').classed('knime-tick-line', true);
-        xTickEls.selectAll('text').classed('knime-tick-label', true)
-            .attr('dx', labelMargin * -1 + 'px')
-            .attr('dy', '-5px');
     };
 
     const drawYAxis = function () {
@@ -257,6 +255,7 @@ window.dendrogram_namespace = (function () {
         yAxisEl.call(yAxis);
 
         // apply knime classes
+        // TODO is there any way to only add these classes when the d3 tick element is created? updateYAxis() is called quite often...
         const yTickEls = yAxisEl.selectAll('.tick').classed('knime-tick', true);
         yTickEls.selectAll('line').classed('knime-tick-line', true);
         yTickEls.selectAll('text').classed('knime-tick-label', true);
@@ -481,9 +480,11 @@ window.dendrogram_namespace = (function () {
             .on('dblclick.zoom', null); // prevent zoom on double click
 
         // set initial zoom and pan
-        svg.transition()
-            .duration(750)
-            .call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
+        if (zoomK != 1 || zoomX != 0 || zoomY != 0) {
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
+        }
     };
 
     const resetZoom = function () {
