@@ -66,7 +66,9 @@ window.dendrogram_namespace = (function () {
         table = new kt();
         table.setDataTable(_representation.table);
 
-        drawControls();
+        if (_representation.enableViewEdit) {
+            drawControls();
+        }
 
         drawSVG();
         drawTitle();
@@ -124,7 +126,7 @@ window.dendrogram_namespace = (function () {
                             resizeDiagram();
                         }
                     }
-                }, true));
+                }, true), null, knimeService.SMALL_ICON);
         }
 
         if (_representation.enableZoomAndPanning && _representation.showZoomResetButton) {
@@ -139,17 +141,15 @@ window.dendrogram_namespace = (function () {
             });
         }
 
-        /*
-        knimeService.addMenuDivider();
+        // show selection only
+        if (_representation.enableSelection /*&& _representation.showSelectedOnlyToggle*/) {
+            knimeService.addMenuDivider();
+            knimeService.addMenuItem('Show selected rows only', 'filter', knimeService.createMenuCheckbox('showSelectedOnlyCheckbox', _value.showSelectedOnly, function () {
+                _value.showSelectedOnly = this.checked;
 
-        knimeService.addMenuItem('Show Filtered Rows Only', 'filter', knimeService.createMenuCheckbox(
-            'showOnlySelectedRows',
-            _value.showOnlySelectedRows,
-            function () {
-                _value.showOnlySelectedRows = this.checked;
-            }
-        ));
-        */
+                svg.classed('showSelectedOnly', _value.showSelectedOnly);
+            }));
+        }
     };
 
     const calcSVGSize = function () {
@@ -546,6 +546,9 @@ window.dendrogram_namespace = (function () {
         });
 
         // set/remove styles for selected rows and cluster and links
+        leafEl.classed('selected', function (d) {
+            return d.selected;
+        });
         clusterMarkerEl.classed('selected', function (d) {
             return d.selected;
         });

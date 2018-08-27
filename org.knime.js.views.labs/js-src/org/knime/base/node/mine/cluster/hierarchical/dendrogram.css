@@ -8,11 +8,9 @@
     shape-rendering: crispEdges;
 }
 
-.link.outOfThreshold {
-    stroke: #e9e9e9;
-}
-
-.link.outOfFilter {
+.link.outOfThreshold,
+.link.outOfFilter,
+.showSelectedOnly .link {
     stroke: #e9e9e9;
 }
 
@@ -21,14 +19,15 @@
 }
 
 .link.selected.outOfFilter {
-    stroke: #ffd78c;
+    stroke: #e2d0af;
 }
 
 .leaf {
     shape-rendering: crispEdges;
 }
 
-.leaf.outOfFilter {
+.leaf.outOfFilter,
+.showSelectedOnly .leaf:not(.selected) {
     fill: #e9e9e9;
 }
 
@@ -48,24 +47,19 @@
     fill: #000000;
 }
 
-.cluster.outOfThreshold {
+.cluster.outOfThreshold,
+.cluster.outOfFilter,
+.showSelectedOnly .cluster {
     fill: #e9e9e9;
 }
 
-.cluster.outOfFilter {
-    fill: #e9e9e9;
-}
-
-.cluster.selected {
-    fill: #ffa600;
-}
-
+.cluster.selected,
 .selectionEnabled .cluster:not(.outOfFilter):hover {
     fill: #ffa600;
 }
 
 .cluster.selected.outOfFilter {
-    fill: #ffd78c;
+    fill: #e2d0af;
 }
 
 .threshold {
@@ -98,29 +92,33 @@
     cursor: pointer;
 }
 
+
+
+.knime-axis .knime-tick-line {
+    stroke: #000000;
+}
+
+.knime-axis.knime-x .tick.outOfFilter .knime-tick-label,
+.showSelectedOnly .knime-axis.knime-x .tick .knime-tick-label {
+    fill: #d3cece;
+}
+
 .knime-axis.knime-x .tick.selected .knime-tick-label {
     fill: #ffa600;
 }
 
-.knime-axis .knime-tick-line {
-    stroke: #000000;
+.knime-axis.knime-x .tick.outOfFilter .knime-tick-line,
+.showSelectedOnly .knime-axis.knime-x .tick .knime-tick-line {
+    stroke: #d3cece;
 }
 
 .knime-axis .tick.selected .knime-tick-line {
     stroke: #ffa600;
 }
 
-.knime-axis.knime-x .tick.outOfFilter .knime-tick-label {
-    fill: #d3cece;
-}
-
-.knime-axis.knime-x .tick.outOfFilter .knime-tick-line {
-    stroke: #d3cece;
-}
-
 .knime-axis.knime-x .tick.selected.outOfFilter .knime-tick-label {
-    fill: #ffd78c;
+    fill: #e2d0af;
 }
 .knime-axis.knime-x .tick.selected.outOfFilter .knime-tick-line {
-    stroke: #ffd78c;
+    stroke: #dac59e;
 }
