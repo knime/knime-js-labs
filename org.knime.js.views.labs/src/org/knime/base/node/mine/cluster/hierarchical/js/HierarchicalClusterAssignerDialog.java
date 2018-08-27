@@ -85,6 +85,8 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
 
     private static final int TEXT_FIELD_SIZE = 20;
 
+    private final HierarchicalClusterAssignerConfig m_config;
+
     private final JCheckBox m_showWarningsInViewCheckBox;
     private final JCheckBox m_generateImageCheckBox;
     private final JSpinner m_imageWidthSpinner;
@@ -133,6 +135,8 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private JCheckBox m_enableThresholdModificationCheckBox;
 
     HierarchicalClusterAssignerDialog() {
+        m_config = new HierarchicalClusterAssignerConfig();
+
         m_numClustersSpinner = new JSpinner(
             new SpinnerNumberModel(HierarchicalClusterAssignerConfig.DEFAULT_NUM_CLUSTERS, 1, Integer.MAX_VALUE, 1));
         // maximum is 1, because use normalized distances is enabled by default
@@ -233,56 +237,54 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        final HierarchicalClusterAssignerConfig config = new HierarchicalClusterAssignerConfig();
+        m_config.setShowWarningsInView(m_showWarningsInViewCheckBox.isSelected());
+        m_config.setGenerateImage(m_generateImageCheckBox.isSelected());
+        m_config.setImageWidth((int) m_imageWidthSpinner.getValue());
+        m_config.setImageHeight((int) m_imageHeightSpinner.getValue());
 
-        config.setShowWarningsInView(m_showWarningsInViewCheckBox.isSelected());
-        config.setGenerateImage(m_generateImageCheckBox.isSelected());
-        config.setImageWidth((int) m_imageWidthSpinner.getValue());
-        config.setImageHeight((int) m_imageHeightSpinner.getValue());
+        m_config.setResizeToWindow(m_resizeToWindowCheckBox.isSelected());
+        m_config.setTitle(m_titleTextField.getText());
+        m_config.setSubtitle(m_subtitleTextField.getText());
+        m_config.setEnableClusterLabels(m_enableClusterLabelsCheckBox.isSelected());
+        m_config.setUseLogScale(m_useLogScaleCheckBox.isSelected());
+        m_config.setOrientation((HierarchicalClusterAssignerOrientation) m_orientationComboBox.getSelectedItem());
 
-        config.setResizeToWindow(m_resizeToWindowCheckBox.isSelected());
-        config.setTitle(m_titleTextField.getText());
-        config.setSubtitle(m_subtitleTextField.getText());
-        config.setEnableClusterLabels(m_enableClusterLabelsCheckBox.isSelected());
-        config.setUseLogScale(m_useLogScaleCheckBox.isSelected());
-        config.setOrientation((HierarchicalClusterAssignerOrientation) m_orientationComboBox.getSelectedItem());
+        m_config.setEnableViewEdit(m_enableViewEditCheckBox.isSelected());
+        m_config.setEnableTitleEdit(m_enableTitleEditCheckBox.isSelected());
+        m_config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
+        m_config.setEnableNumClusterEdit(m_enableNumClusterEditCheckBox.isSelected());
+        m_config.setEnableLogScaleToggle(m_enableLogScaleToggleCheckBox.isSelected());
+        m_config.setEnableChangeOrientation(m_enableChangeOrientationCheckBox.isSelected());
 
-        config.setEnableViewEdit(m_enableViewEditCheckBox.isSelected());
-        config.setEnableTitleEdit(m_enableTitleEditCheckBox.isSelected());
-        config.setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
-        config.setEnableNumClusterEdit(m_enableNumClusterEditCheckBox.isSelected());
-        config.setEnableLogScaleToggle(m_enableLogScaleToggleCheckBox.isSelected());
-        config.setEnableChangeOrientation(m_enableChangeOrientationCheckBox.isSelected());
+        m_config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
+        m_config.setPublishSelectionEvents(m_publishSelectionEventsCheckBox.isSelected());
+        m_config.setSubscribeSelectionEvents(m_subscribeSelectionEventsCheckBox.isSelected());
+        m_config.setShowClearSelectionButton(m_showClearSelectionButtonCheckBox.isSelected());
+        m_config.setSelectionColumnName(m_selectionColumnNameTextField.getText());
 
-        config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
-        config.setPublishSelectionEvents(m_publishSelectionEventsCheckBox.isSelected());
-        config.setSubscribeSelectionEvents(m_subscribeSelectionEventsCheckBox.isSelected());
-        config.setShowClearSelectionButton(m_showClearSelectionButtonCheckBox.isSelected());
-        config.setSelectionColumnName(m_selectionColumnNameTextField.getText());
+        m_config.setSubscribeFilterEvents(m_subscribeFilterEventsCheckBox.isSelected());
 
-        config.setSubscribeFilterEvents(m_subscribeFilterEventsCheckBox.isSelected());
-
-        config.setNumClusters((int) m_numClustersSpinner.getValue());
-        config.setNumClustersMode(m_clusterCountModeRadioButton.isSelected());
-        config.setClusterColumnName(m_clusterColumnNameTextField.getText());
-        config.setUseNormalizedDistances(m_useNormalizedDistancesCheckBox.isSelected());
+        m_config.setNumClusters((int) m_numClustersSpinner.getValue());
+        m_config.setNumClustersMode(m_clusterCountModeRadioButton.isSelected());
+        m_config.setClusterColumnName(m_clusterColumnNameTextField.getText());
+        m_config.setUseNormalizedDistances(m_useNormalizedDistancesCheckBox.isSelected());
         if (m_useNormalizedDistancesCheckBox.isSelected()) {
-            config.setNormalizedThreshold((double) m_distanceThresholdSpinner.getValue());
+            m_config.setNormalizedThreshold((double) m_distanceThresholdSpinner.getValue());
         }
         else {
-            config.setThreshold((double) m_distanceThresholdSpinner.getValue());
+            m_config.setThreshold((double) m_distanceThresholdSpinner.getValue());
         }
 
-        config.setEnableZoomAndPanning(m_enableZoomAndPanningCheckBox.isSelected());
-        config.setShowZoomResetButton(m_showZoomResetButtonCheckBox.isSelected());
+        m_config.setEnableZoomAndPanning(m_enableZoomAndPanningCheckBox.isSelected());
+        m_config.setShowZoomResetButton(m_showZoomResetButtonCheckBox.isSelected());
 
-        config.setEnableClusterColor(m_enableClusterColorRadioButton.isSelected());
-        config.setColorPalette(getColorPalette());
+        m_config.setEnableClusterColor(m_enableClusterColorRadioButton.isSelected());
+        m_config.setColorPalette(getColorPalette());
 
-        config.setShowThresholdBar(m_showThresholdBarCheckBox.isSelected());
-        config.setEnableThresholdModification(m_enableThresholdModificationCheckBox.isSelected());
+        m_config.setShowThresholdBar(m_showThresholdBarCheckBox.isSelected());
+        m_config.setEnableThresholdModification(m_enableThresholdModificationCheckBox.isSelected());
 
-        config.saveSettings(settings);
+        m_config.saveSettings(settings);
     }
 
     /**
@@ -291,62 +293,61 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
         final DataTableSpec spec = (DataTableSpec)specs[0];
-        final HierarchicalClusterAssignerConfig config = new HierarchicalClusterAssignerConfig();
-        config.loadSettingsForDialog(settings, spec);
+        m_config.loadSettingsForDialog(settings, spec);
 
-        m_showWarningsInViewCheckBox.setSelected(config.getShowWarningsInView());
-        m_generateImageCheckBox.setSelected(config.getGenerateImage());
-        m_imageWidthSpinner.setValue(config.getImageWidth());
-        m_imageHeightSpinner.setValue(config.getImageHeight());
+        m_showWarningsInViewCheckBox.setSelected(m_config.getShowWarningsInView());
+        m_generateImageCheckBox.setSelected(m_config.getGenerateImage());
+        m_imageWidthSpinner.setValue(m_config.getImageWidth());
+        m_imageHeightSpinner.setValue(m_config.getImageHeight());
 
-        m_resizeToWindowCheckBox.setSelected(config.getResizeToWindow());
-        m_titleTextField.setText(config.getTitle());
-        m_subtitleTextField.setText(config.getSubtitle());
-        m_enableClusterLabelsCheckBox.setSelected(config.getEnableClusterLabels());
-        m_useLogScaleCheckBox.setSelected(config.getUseLogScale());
-        m_orientationComboBox.setSelectedItem(config.getOrientation());
+        m_resizeToWindowCheckBox.setSelected(m_config.getResizeToWindow());
+        m_titleTextField.setText(m_config.getTitle());
+        m_subtitleTextField.setText(m_config.getSubtitle());
+        m_enableClusterLabelsCheckBox.setSelected(m_config.getEnableClusterLabels());
+        m_useLogScaleCheckBox.setSelected(m_config.getUseLogScale());
+        m_orientationComboBox.setSelectedItem(m_config.getOrientation());
 
-        m_enableViewEditCheckBox.setSelected(config.getEnableViewEdit());
-        m_enableTitleEditCheckBox.setSelected(config.getEnableTitleEdit());
-        m_displayFullscreenButtonCheckBox.setSelected(config.getDisplayFullscreenButton());
-        m_enableNumClusterEditCheckBox.setSelected(config.getEnableNumClusterEdit());
-        m_enableLogScaleToggleCheckBox.setSelected(config.getEnableLogScaleToggle());
-        m_enableChangeOrientationCheckBox.setSelected(config.getEnableChangeOrientation());
+        m_enableViewEditCheckBox.setSelected(m_config.getEnableViewEdit());
+        m_enableTitleEditCheckBox.setSelected(m_config.getEnableTitleEdit());
+        m_displayFullscreenButtonCheckBox.setSelected(m_config.getDisplayFullscreenButton());
+        m_enableNumClusterEditCheckBox.setSelected(m_config.getEnableNumClusterEdit());
+        m_enableLogScaleToggleCheckBox.setSelected(m_config.getEnableLogScaleToggle());
+        m_enableChangeOrientationCheckBox.setSelected(m_config.getEnableChangeOrientation());
 
-        m_enableSelectionCheckBox.setSelected(config.getEnableSelection());
-        m_publishSelectionEventsCheckBox.setSelected(config.getPublishSelectionEvents());
-        m_subscribeSelectionEventsCheckBox.setSelected(config.getSubscribeSelectionEvents());
-        m_showClearSelectionButtonCheckBox.setSelected(config.getShowClearSelectionButton());
-        m_selectionColumnNameTextField.setText(config.getSelectionColumnName());
+        m_enableSelectionCheckBox.setSelected(m_config.getEnableSelection());
+        m_publishSelectionEventsCheckBox.setSelected(m_config.getPublishSelectionEvents());
+        m_subscribeSelectionEventsCheckBox.setSelected(m_config.getSubscribeSelectionEvents());
+        m_showClearSelectionButtonCheckBox.setSelected(m_config.getShowClearSelectionButton());
+        m_selectionColumnNameTextField.setText(m_config.getSelectionColumnName());
 
-        m_subscribeFilterEventsCheckBox.setSelected(config.getSubscribeFilterEvents());
+        m_subscribeFilterEventsCheckBox.setSelected(m_config.getSubscribeFilterEvents());
 
-        m_clusterCountModeRadioButton.setSelected(config.getNumClustersMode());
-        m_distanceThresholdModeRadioButton.setSelected(!config.getNumClustersMode());
+        m_clusterCountModeRadioButton.setSelected(m_config.getNumClustersMode());
+        m_distanceThresholdModeRadioButton.setSelected(!m_config.getNumClustersMode());
         m_numClustersSpinner.setEnabled(m_clusterCountModeRadioButton.isSelected());
         m_distanceThresholdSpinner.setEnabled(m_distanceThresholdModeRadioButton.isSelected());
-        m_clusterColumnNameTextField.setText(config.getClusterColumnName());
-        m_useNormalizedDistancesCheckBox.setSelected(config.getUseNormalizedDistances());
+        m_clusterColumnNameTextField.setText(m_config.getClusterColumnName());
+        m_useNormalizedDistancesCheckBox.setSelected(m_config.getUseNormalizedDistances());
         m_useNormalizedDistancesCheckBox.setEnabled(m_distanceThresholdModeRadioButton.isSelected());
-        m_numClustersSpinner.setValue(config.getNumClusters());
+        m_numClustersSpinner.setValue(m_config.getNumClusters());
         if (m_useNormalizedDistancesCheckBox.isSelected()) {
-            m_distanceThresholdSpinner.setValue(config.getNormalizedThreshold());
+            m_distanceThresholdSpinner.setValue(m_config.getNormalizedThreshold());
         } else {
-            m_distanceThresholdSpinner.setValue(config.getThreshold());
+            m_distanceThresholdSpinner.setValue(m_config.getThreshold());
         }
 
-        final boolean zoomAndPanningEnabled = config.getEnableZoomAndPanning();
+        final boolean zoomAndPanningEnabled = m_config.getEnableZoomAndPanning();
         m_enableZoomAndPanningCheckBox.setSelected(zoomAndPanningEnabled);
-        m_showZoomResetButtonCheckBox.setSelected(config.getShowZoomResetButton());
+        m_showZoomResetButtonCheckBox.setSelected(m_config.getShowZoomResetButton());
         m_showZoomResetButtonCheckBox.setEnabled(zoomAndPanningEnabled);
 
-        m_enableClusterColorRadioButton.setSelected(config.getEnableClusterColor());
-        m_enableTableColorRadioButton.setSelected(!config.getEnableClusterColor());
-        setColorPaletteRadioButtons(config.getColorPalette());
+        m_enableClusterColorRadioButton.setSelected(m_config.getEnableClusterColor());
+        m_enableTableColorRadioButton.setSelected(!m_config.getEnableClusterColor());
+        setColorPaletteRadioButtons(m_config.getColorPalette());
 
-        final boolean showThresholdBar = config.getShowThresholdBar();
+        final boolean showThresholdBar = m_config.getShowThresholdBar();
         m_showThresholdBarCheckBox.setSelected(showThresholdBar);
-        m_enableThresholdModificationCheckBox.setSelected(config.getEnableThresholdModification());
+        m_enableThresholdModificationCheckBox.setSelected(m_config.getEnableThresholdModification());
         m_enableThresholdModificationCheckBox.setEnabled(showThresholdBar);
 
         setNumberOfFilters((DataTableSpec) specs[1]);
