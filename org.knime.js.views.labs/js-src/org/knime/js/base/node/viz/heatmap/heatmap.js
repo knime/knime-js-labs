@@ -4,7 +4,6 @@ heatmap_namespace = (function() {
         _value,
         _table,
         _colNames,
-        _transformer,
         _axis,
         _scales,
         _drawCellQueue,
@@ -14,13 +13,15 @@ heatmap_namespace = (function() {
         _zoomDimensions,
         _context,
         _cellSize,
-        _devicePixelRatio,
         _wrapper,
-        _transformer;
+        _transformer,
+        _cellHighlighter,
+        _maxExtension;
 
     // Hardcoded Default Settings
     var _minCellSize = 10;
     var _devicePixelRatio = window.devicePixelRatio;
+    var _maxCanvasHeight = 16000; // canvas has native size limits
     var _margin = { top: 80, left: 50, right: 10 };
     var _defaultZoomLevel = {
         x: 0,
@@ -42,12 +43,12 @@ heatmap_namespace = (function() {
 
     heatmap.init = function(representation, value) {
         if (!representation.table) {
-            //todo: error
+            // todo: error handling
             return;
         }
 
         if (!representation.columns.length) {
-            //todo: error
+            // todo: error handling
             return;
         }
 
@@ -124,6 +125,7 @@ heatmap_namespace = (function() {
         }
         if (_value.showOnlySelectedRows) {
             drawChart();
+            resetZoom(true);
         }
     }
 
@@ -154,7 +156,8 @@ heatmap_namespace = (function() {
             'px"></span></div>';
         var toolTipWrapper = '<div class="knime-tooltip"></div>';
         var infoWrapperEl = '<div class="info-wrapper"></div>';
-        container.innerHTML = svgWrapper + infoWrapperEl + toolTipWrapper;
+        var progressBar = '<div class="progress-bar">Rendering ...<span class="progress"></span></div>';
+        container.innerHTML = svgWrapper + infoWrapperEl + toolTipWrapper + progressBar;
 
         var data = _filteredData ? getSelectionData(_filteredData) : getSelectionData(_table.getRows());
 
@@ -168,6 +171,31 @@ heatmap_namespace = (function() {
 
         // Events
         registerDomEvents();
+    }
+
+    function getProgressBar(totalRowsCount) {
+        if (!_drawCellQueue) {
+            return;
+        }
+        var progressBar = document.querySelector('.progress-bar');
+        var progressIndicator = progressBar.querySelector('.progress');
+
+        var interval = requestInterval(function() {
+            if (!_drawCellQueue) {
+                interval.clear();
+            }
+            var percentageComplete = 100 - (_drawCellQueue.remaining() / totalRowsCount) * 100;
+            if (percentageComplete < 30) {
+                // only display progress bar if initial rendered percentage is low
+                progressBar.style.opacity = 1;
+            }
+            percentageComplete = Math.min(100, percentageComplete);
+            progressIndicator.style.width = percentageComplete + '%';
+            if (percentageComplete >= 100) {
+                progressBar.style.opacity = 0;
+                interval.clear();
+            }
+        }, 10);
     }
 
     function drawMetaInfo(paginationData) {
@@ -286,7 +314,7 @@ heatmap_namespace = (function() {
                 'chartTitleText',
                 _value.chartTitle,
                 function() {
-                    if (_value.chartTitle != this.value) {
+                    if (_value.chartTitle !== this.value) {
                         _value.chartTitle = this.value;
                         updateTitles();
                     }
@@ -298,7 +326,7 @@ heatmap_namespace = (function() {
                 'chartSubtitleText',
                 _value.chartSubtitle,
                 function() {
-                    if (_value.chartSubtitle != this.value) {
+                    if (_value.chartSubtitle !== this.value) {
                         _value.chartSubtitle = this.value;
                         updateTitles();
                     }
@@ -326,6 +354,7 @@ heatmap_namespace = (function() {
             function() {
                 _value.showOnlySelectedRows = this.checked;
                 drawChart();
+                resetZoom(true);
             }
         );
         knimeService.addMenuItem('Show Selected Rows Only', 'filter', showOnlySelectedRows);
@@ -433,7 +462,7 @@ heatmap_namespace = (function() {
         var curPage;
 
         for (var i = 1; i <= pagination.pageCount; i++) {
-            if (i == 1 || i == pagination.pageCount || (i >= left && i < right)) {
+            if (i === 1 || i === pagination.pageCount || (i >= left && i < right)) {
                 range.push(i);
             }
         }
@@ -538,24 +567,21 @@ heatmap_namespace = (function() {
         if (!_value.displayDataCellToolTip && !_value.enableSelection) {
             return;
         }
-        // adjust the mouse position slightly for better ux
-        var relativeMouseOverPosition = (-_cellSize / 2) * _value.currentZoomLevel.k;
-
         var rect = e.target.getBoundingClientRect();
-        var offsetX = (e.clientX - rect.left) / _value.currentZoomLevel.k + relativeMouseOverPosition;
-        var offsetY = (e.clientY - rect.top) / _value.currentZoomLevel.k + relativeMouseOverPosition;
+        var top = document.querySelectorAll('canvas')[0].getBoundingClientRect().top;
+        var left = rect.left + _margin.left;
 
-        var x = offsetX - _margin.left;
-        var y = offsetY - _margin.top;
+        var offsetX = (e.clientX - left) / _value.currentZoomLevel.k;
+        var offsetY = (e.clientY - top) / _value.currentZoomLevel.k;
 
         // Todo: extract onetime operations
         var xEachBand = _scales.x.step();
-        var xIndex = Math.round(x / xEachBand);
+        var xIndex = Math.floor(offsetX / xEachBand);
         var xVal = _scales.x.domain()[xIndex];
         var xPos = _scales.x(xVal);
 
         var yEachBand = _scales.y.step();
-        var yIndex = Math.round(y / yEachBand);
+        var yIndex = Math.floor(offsetY / yEachBand);
         var yVal = _scales.y.domain()[yIndex];
         var yPos = _scales.y(yVal);
 
@@ -621,7 +647,7 @@ heatmap_namespace = (function() {
     }
 
     function formatImage(string) {
-        return 'data:image/svg+xml;base64,' + btoa(string);
+        return 'data:image/svg+xml;base64,' + window.btoa(string);
     }
 
     function initializeZoom() {
@@ -675,6 +701,21 @@ heatmap_namespace = (function() {
                 _transformer.node().style.transform = 'translate(' + t.x + 'px, ' + t.y + 'px) scale(' + t.k + ')';
 
                 _value.currentZoomLevel = t;
+
+                var borderWidth = getCurrentBorderWidth();
+                _cellHighlighter.style.borderWidth = borderWidth;
+                var rowHighlighters = svgD3.node().querySelectorAll('.row-highlighter');
+                if (rowHighlighters.length) {
+                    Array.from(rowHighlighters).map(function(rowHighlighter) {
+                        rowHighlighter.style.borderWidth = borderWidth;
+                    });
+                }
+
+                // hack: force canvas refresh as sometimes canvas gets not fully painted
+                _transformer.node().style.opacity = 0.999;
+                setTimeout(function() {
+                    _transformer.node().style.opacity = 1;
+                }, 0);
             });
 
         // reset
@@ -701,6 +742,11 @@ heatmap_namespace = (function() {
         return zoom;
     }
 
+    function getCurrentBorderWidth() {
+        var borderZoomFactor = 5;
+        return Math.max(2, 1 + borderZoomFactor * (1 - _value.currentZoomLevel.k)) + 'px';
+    }
+
     function showTooltip(e, innerHtml) {
         if (!_value.displayDataCellToolTip && innerHtml) {
             return;
@@ -709,12 +755,13 @@ heatmap_namespace = (function() {
         e.target.classList.add('active');
         _tooltip.innerHTML = innerHtml;
         var tooltipWidth = _tooltip.getBoundingClientRect().width;
-        var leftPos = event.clientX + _cellSize;
-        var topPos = event.clientY - _cellSize;
+        var tooltipHeight = _tooltip.getBoundingClientRect().height;
+        var leftPos = e.clientX;
+        var topPos = e.clientY - tooltipHeight;
 
         // make sure tooltip is visible on the right
         if (leftPos + tooltipWidth >= (window.innerWidth || document.documentElement.clientWidth)) {
-            leftPos = leftPos - tooltipWidth - _cellSize * 2;
+            leftPos = leftPos - tooltipWidth;
         }
         _tooltip.style.left = leftPos + 'px';
         _tooltip.style.top = topPos + 'px';
@@ -724,10 +771,49 @@ heatmap_namespace = (function() {
         _tooltip.classList.remove('active');
     }
 
+    function appendCanvasQuadrant(yExtension) {
+        var canvasWidth = _margin.left + _colNames.length * _cellSize;
+        var maxRows = Math.floor(_maxCanvasHeight / _devicePixelRatio / _cellSize);
+        var canvasHeight = maxRows * _cellSize;
+        var canvas = _transformer
+            .append('canvas')
+            .attr(
+                'style',
+                'position: absolute;top:' +
+                    (0 || yExtension) +
+                    'px;left:0;width:' +
+                    canvasWidth +
+                    'px;height:' +
+                    canvasHeight +
+                    'px'
+            )
+            .attr('width', _devicePixelRatio * canvasWidth + 'px')
+            .attr('height', _devicePixelRatio * canvasHeight + 'px');
+        var context = canvas.node().getContext('2d');
+        context.scale(_devicePixelRatio, _devicePixelRatio);
+        context.translate(0, -yExtension);
+        _maxExtension = yExtension + canvasHeight;
+
+        return context;
+    }
+
+    function getContext(cell) {
+        var yExtension = _scales.y(cell.y);
+        if (!document.querySelector('canvas')) {
+            _context = appendCanvasQuadrant(yExtension);
+        }
+
+        if (yExtension + _cellSize > _maxExtension) {
+            _context = appendCanvasQuadrant(yExtension);
+        }
+        return _context;
+    }
+
     function drawCanvasCell(cell) {
+        var context = getContext(cell);
         var color = cell.value === null ? _representation.missingValueColor : _scales.colorScale(cell.value);
-        _context.fillStyle = color;
-        _context.fillRect(_scales.x(cell.x), _scales.y(cell.y), _cellSize, _cellSize);
+        context.fillStyle = color;
+        context.fillRect(_scales.x(cell.x), _scales.y(cell.y), _cellSize, _cellSize);
     }
 
     function drawSvgCell(cell) {
@@ -767,7 +853,7 @@ heatmap_namespace = (function() {
 
         data.forEach(function(cell) {
             rowItemsWidth = rowItemsWidth + _cellSize * _value.currentZoomLevel.k;
-            if (cell.y == currentRowKey) {
+            if (cell.y === currentRowKey) {
                 if (rowItemsWidth < viewportSize.width - _value.currentZoomLevel.x) {
                     inViewportCells.push(cell);
                 } else {
@@ -802,6 +888,7 @@ heatmap_namespace = (function() {
             : _representation.discreteGradientColors;
 
         _cellSize = Math.max(_minCellSize, (window.innerWidth - _margin.left - _margin.right) / _colNames.length);
+
         _tooltip = document.querySelector('.knime-tooltip');
         _scales = createScales(formattedDataset);
         _axis = createAxis(formattedDataset);
@@ -839,7 +926,7 @@ heatmap_namespace = (function() {
             .attr('class', 'viewport')
             .attr('clip-path', 'url(#clip)');
 
-        if (renderMode === 'canvas') {
+        if (_representation.runningInView) {
             _wrapper = svg
                 .append('foreignObject')
                 .attr('width', '100%')
@@ -891,7 +978,7 @@ heatmap_namespace = (function() {
             // Improve performance: render cells progressivley
             var _cellViewPort = clipPath.node().getBoundingClientRect();
             sortedData = prioritizeCells(_cellViewPort, formattedDataset.data);
-            _drawCellQueue = renderQueue(drawCanvasCell).rate(1000);
+            _drawCellQueue = renderQueue(drawCanvasCell).rate(5000);
             _drawCellQueue(sortedData.inViewportCells);
             _drawCellQueue.add(sortedData.notInViewportCells);
         } else {
@@ -925,7 +1012,7 @@ heatmap_namespace = (function() {
             if (!data) {
                 return;
             }
-            toolTipInnerHTML =
+            var toolTipInnerHTML =
                 '<span class="knime-tooltip-caption">x:' +
                 data.x +
                 ' y:' +
@@ -952,9 +1039,9 @@ heatmap_namespace = (function() {
                 return;
             }
             if (e.shiftKey) {
-                return selectDeltaRow(data.y, formattedDataset);
+                return selectDeltaRow(data.y);
             }
-            if (event.ctrlKey || event.metaKey) {
+            if (e.ctrlKey || e.metaKey) {
                 return selectSingleRow(data.y, true);
             }
             return selectSingleRow(data.y);
@@ -992,7 +1079,7 @@ heatmap_namespace = (function() {
                     return;
                 }
                 d3.event.target.classList.add('active');
-                tooltipInnerHTML = '<img src="' + formatImage(formattedDataset.images[d]) + '" alt/>';
+                var tooltipInnerHTML = '<img src="' + formatImage(formattedDataset.images[d]) + '" alt/>';
                 showTooltip(d3.event, tooltipInnerHTML);
             })
             .on('mouseleave', function() {
@@ -1096,22 +1183,24 @@ heatmap_namespace = (function() {
             var tickValues = [];
             tickValues.push(_representation.minValue, _representation.maxValue);
 
-            for (var i = 0; i < colorDomain.length; i++) {
-                var currentPercentage = legendCellPercentage * (i + 1);
+            for (var j = 0; j < colorDomain.length; j++) {
+                var currentPercentage = legendCellPercentage * (j + 1);
 
                 tickValues.push(interpolator(currentPercentage / 100));
 
                 legendGradient
                     .append('stop')
                     .attr('offset', previousPercentage + '%')
-                    .attr('style', 'stop-opacity:1; stop-color:' + _scales.colorScale(colorDomain[i]));
+                    .attr('style', 'stop-opacity:1; stop-color:' + _scales.colorScale(colorDomain[j]));
                 legendGradient
                     .append('stop')
                     .attr('offset', currentPercentage + '%')
-                    .attr('style', 'stop-opacity:1; stop-color:' + _scales.colorScale(colorDomain[i]));
+                    .attr('style', 'stop-opacity:1; stop-color:' + _scales.colorScale(colorDomain[j]));
                 previousPercentage = currentPercentage;
             }
         }
+
+        getProgressBar(formattedDataset.data.length);
 
         var legendScale = d3
             .scaleLinear()
@@ -1133,19 +1222,6 @@ heatmap_namespace = (function() {
             .selectAll('text')
             .attr('font-weight', 'normal');
 
-        var interval = requestInterval(function() {
-            if (!_drawCellQueue) {
-                interval.clear();
-            }
-            var percentageComplete =
-                -100 + Math.round((formattedDataset.data.length / _drawCellQueue.remaining()) * 100);
-            percentageComplete = Math.min(100, percentageComplete);
-            console.log(percentageComplete);
-            if (percentageComplete === 100) {
-                interval.clear();
-            }
-        }, 10);
-
         // Initialize and reset zoom
         resetZoom();
 
@@ -1162,22 +1238,6 @@ heatmap_namespace = (function() {
         document.querySelector('.knime-svg-container').style.paddingBottom = infoWrapperHeight + 'px';
     }
 
-    function requestInterval(callback, delay) {
-        var dateNow = Date.now;
-        var start = dateNow();
-        var stop;
-        var interval = function() {
-            dateNow() - start < delay || ((start += delay), callback());
-            stop || window.requestAnimationFrame(interval);
-        };
-        window.requestAnimationFrame(interval);
-        return {
-            clear: function() {
-                stop = true;
-            }
-        };
-    }
-
     function resetZoom(setToDefault) {
         var zoom = initializeZoom();
         var svg = d3.select('.knime-svg-container svg');
@@ -1192,14 +1252,14 @@ heatmap_namespace = (function() {
      * Select multiple rows via shiftkey
      *
      * @param {String} selectedRowId
-     * @param {Object} formattedDataset
      */
-    function selectDeltaRow(selectedRowId, formattedDataset) {
+    function selectDeltaRow(selectedRowId) {
         // Get closest selected row to newly selected row
-        var currentIndex = formattedDataset.rowNames.indexOf(selectedRowId);
+        var rowNames = _scales.y.domain();
+        var currentIndex = rowNames.indexOf(selectedRowId);
         var closestRow = _value.selectedRowsBuffer.reduce(
             function(closestRow, rowId) {
-                var rowIdIndex = formattedDataset.rowNames.indexOf(rowId);
+                var rowIdIndex = rowNames.indexOf(rowId);
                 var indexDistance = Math.abs(currentIndex - rowIdIndex);
                 if (indexDistance < closestRow.distance) {
                     return {
@@ -1219,7 +1279,7 @@ heatmap_namespace = (function() {
         var endIndex = Math.max(closestRow.index, currentIndex);
         var rowKey;
         for (var i = startIndex; i <= endIndex; i++) {
-            rowKey = formattedDataset.rowNames[i];
+            rowKey = rowNames[i];
             if (!_value.selectedRowsBuffer.indexOf(rowKey) > -1) {
                 _value.selectedRowsBuffer.push(rowKey);
             }
@@ -1249,7 +1309,7 @@ heatmap_namespace = (function() {
             styleSelectedRows();
         }
 
-        if (_value.selectedRowsBuffer.indexOf(selectedRowId) != -1) {
+        if (_value.selectedRowsBuffer.indexOf(selectedRowId) > -1) {
             _value.selectedRowsBuffer = _value.selectedRowsBuffer.filter(function(rowId) {
                 return rowId !== selectedRowId;
             });
@@ -1276,18 +1336,6 @@ heatmap_namespace = (function() {
         // Style row labels
         _value.selectedRowsBuffer.map(function(selectedRowId) {
             d3.select('.knime-axis.knime-y [data-id="' + selectedRowId + '"]').attr('class', 'knime-tick active');
-        });
-
-        // Style row cells
-        d3.selectAll('.wrapper .cell').attr('selection', function(d) {
-            if (select && selectedRowIds.indexOf(d.y) > -1) {
-                return 'active';
-            }
-            if (!select && selectedRowIds.indexOf(d.y) > -1) {
-                return 'inactive';
-            }
-            // else return current state
-            return d3.select(this).attr('selection');
         });
 
         // remove row highlighters
@@ -1329,8 +1377,9 @@ heatmap_namespace = (function() {
 
         highlighter.style.left = _margin.left + 1 + 'px';
         highlighter.style.height = endPosition - startPosition + 1 + 'px';
-        highlighter.style.width = document.querySelector('canvas').getBoundingClientRect().width - _margin.left + 'px';
-        _wrapper.node().insertAdjacentElement('beforeend', highlighter);
+        highlighter.style.width = _colNames.length * _cellSize + 'px';
+        highlighter.style.borderWidth = getCurrentBorderWidth();
+        _transformer.node().insertAdjacentElement('beforeend', highlighter);
     }
 
     function getUniques(arr) {
@@ -1342,6 +1391,30 @@ heatmap_namespace = (function() {
         return arr.sort(function(a, b) {
             return yDomain.indexOf(a) - yDomain.indexOf(b);
         });
+    }
+
+    /**
+     * Create a callback to be called repeatedly via requestanimationframe
+     * @param {function} callback to be called repeatedly
+     * @param {Number} interval delay
+     */
+    function requestInterval(callback, delay) {
+        var dateNow = Date.now;
+        var start = dateNow();
+        var stop;
+        var interval = function() {
+            if (dateNow() - start > delay) {
+                start += delay;
+                callback();
+            }
+            return stop || window.requestAnimationFrame(interval);
+        };
+        window.requestAnimationFrame(interval);
+        return {
+            clear: function() {
+                stop = true;
+            }
+        };
     }
 
     return heatmap;
