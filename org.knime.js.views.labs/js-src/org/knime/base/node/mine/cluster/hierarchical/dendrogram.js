@@ -87,11 +87,10 @@ window.dendrogram_namespace = (function () {
 
         if (_representation.enableSelection) {
             initSelection();
+            toggleSubscribeSelection();
         }
 
-        if (_representation.subscribeFilterEvents) {
-            initFiltering();
-        }
+        toogleSubscribeFilter();
 
         if (_representation.resizeToWindow) {
             initWindowResize();
@@ -142,13 +141,47 @@ window.dendrogram_namespace = (function () {
         }
 
         // show selection only
-        if (_representation.enableSelection /*&& _representation.showSelectedOnlyToggle*/) {
+        if (_representation.enableSelection && _representation.showSelectedOnlyToggle) {
             knimeService.addMenuDivider();
             knimeService.addMenuItem('Show selected rows only', 'filter', knimeService.createMenuCheckbox('showSelectedOnlyCheckbox', _value.showSelectedOnly, function () {
                 _value.showSelectedOnly = this.checked;
 
                 svg.classed('showSelectedOnly', _value.showSelectedOnly);
             }));
+        }
+
+        // Selection / Filter configuration
+        const publishSelectionToggle = _representation.enableSelection && _representation.showPublishSelectionToggle;
+        const subscribeSelectionToggle = _representation.enableSelection && _representation.showSubscribeSelectionToggle;
+        const subscribeFilterToggle = _representation.showSubscribeFilterToggle;
+        if (publishSelectionToggle || subscribeSelectionToggle || subscribeFilterToggle) {
+            knimeService.addMenuDivider();
+
+            if (publishSelectionToggle) {
+                knimeService.addMenuItem('Publish selection',
+                    knimeService.createStackedIcon('check-square-o', 'angle-right', 'faded left sm', 'right bold'),
+                    knimeService.createMenuCheckbox('publishSelectionCheckbox', _value.publishSelectionEvents, function () {
+                        _value.publishSelectionEvents = this.checked;
+                    }));
+            }
+
+            if (subscribeSelectionToggle) {
+                knimeService.addMenuItem('Subscribe to selection',
+                    knimeService.createStackedIcon('check-square-o', 'angle-double-right', 'faded right sm', 'left bold'),
+                    knimeService.createMenuCheckbox('subscribeSelectionCheckbox', _value.subscribeSelectionEvents, function () {
+                        _value.subscribeSelectionEvents = this.checked;
+                        toggleSubscribeSelection();
+                    }));
+            }
+
+            if (subscribeFilterToggle) {
+                knimeService.addMenuItem('Subscribe to filter',
+                    knimeService.createStackedIcon('filter', 'angle-double-right', 'faded right sm', 'left bold'),
+                    knimeService.createMenuCheckbox('subscribeFilterCheckbox', _value.subscribeFilterEvents, function () {
+                        _value.subscribeFilterEvents = this.checked;
+                        toogleSubscribeFilter();
+                    }));
+            }
         }
     };
 
@@ -291,7 +324,7 @@ window.dendrogram_namespace = (function () {
             return n.children != null;
         })).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius);
         clusterMarkerEl.append('title').text(function (d) {
-            return 'Cluster ' + d.data.id + '; Distance: ' + d.data.distance;
+            return _value.clusterLabels[d.data.id] + '; Distance: ' + d.data.distance;
         });
     };
 
@@ -604,7 +637,7 @@ window.dendrogram_namespace = (function () {
         }
 
         updateSelectionInView();
-        if (_representation.publishSelectionEvents) {
+        if (_value.publishSelectionEvents) {
             knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
         }
     };
@@ -642,7 +675,7 @@ window.dendrogram_namespace = (function () {
         }
 
         updateSelectionInView();
-        if (_representation.publishSelectionEvents) {
+        if (_value.publishSelectionEvents) {
             knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
         }
     };
@@ -651,16 +684,12 @@ window.dendrogram_namespace = (function () {
         selectedRows = [];
         updateSelectionInView();
 
-        if (_representation.publishSelectionEvents) {
+        if (_value.publishSelectionEvents) {
             knimeService.setSelectedRows(table.getTableId(), selectedRows, onSelectionChange);
         }
     };
 
     const initSelection = function () {
-        if (_representation.subscribeSelectionEvents) {
-            knimeService.subscribeToSelection(table.getTableId(), onSelectionChange);
-        }
-
         if (_representation.runningInView) {
             svg.classed('selectionEnabled', true);
         }
@@ -679,6 +708,14 @@ window.dendrogram_namespace = (function () {
                 toggleSelectRow(rowKey);
             }
         });
+    };
+
+    const toggleSubscribeSelection = function () {
+        if (_value.subscribeSelectionEvents) {
+            knimeService.subscribeToSelection(table.getTableId(), onSelectionChange);
+        } else {
+            knimeService.unsubscribeSelection(table.getTableId(), onSelectionChange);
+        }
     };
 
     const updateFilterInView = function () {
@@ -725,10 +762,18 @@ window.dendrogram_namespace = (function () {
         updateFilterInView();
     };
 
-    const initFiltering = function () {
+    const toogleSubscribeFilter = function () {
         table.getFilterIds().forEach(function (filterId) {
-            knimeService.subscribeToFilter(table.getTableId(), onFilterChange, filterId);
+            if (_value.subscribeFilterEvents) {
+                knimeService.subscribeToFilter(table.getTableId(), onFilterChange, filterId);
+            } else {
+                knimeService.unsubscribeFilter(table.getTableId(), onFilterChange);
+            }
         });
+        if (!_value.subscribeFilterEvents) {
+            filteredRows = [];
+            updateFilterInView();
+        }
     };
 
     dendrogram.validate = function () {
