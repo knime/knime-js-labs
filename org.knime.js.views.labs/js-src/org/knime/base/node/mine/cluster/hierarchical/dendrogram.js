@@ -23,7 +23,8 @@ window.dendrogram_namespace = (function () {
     var cluster,
         nodes,
         leaves,
-        links;
+        links,
+        clusterMarker;
 
     // view related variables
     var svg,
@@ -67,13 +68,14 @@ window.dendrogram_namespace = (function () {
         table = new kt();
         table.setDataTable(_representation.table);
 
+        createHierarchyFromTree();
+
         if (_representation.enableViewEdit) {
             drawControls();
         }
 
         drawSVG();
         drawTitle();
-        createHierarchyFromTree();
         drawXAxis();
         drawYAxis();
         drawDendrogram();
@@ -143,11 +145,22 @@ window.dendrogram_namespace = (function () {
 
         if (_representation.enableNumClusterEdit) {
             knimeService.addMenuDivider();
-            numClustersField = knimeService.createMenuNumberField('numClusters', _value.numClusters, 1, Infinity, 1, function () {
-                _value.numClusters = this.value;
+            const minNumClusters = 1;
+            const maxNumClusters = clusterMarker.length + 1;
+            numClustersField = knimeService.createMenuNumberField('numClusters', _value.numClusters, minNumClusters, maxNumClusters, 1, function () {
+                const newValue = parseInt(this.value);
+                if (newValue >= minNumClusters && newValue <= maxNumClusters) {
+                    _value.numClusters = newValue;
+                    this.value = _value.numClusters;
+                } else if (!this.value.length) {
+                    _value.numClusters = 1;
+                } else {
+                    this.value = _value.numClusters;
+                }
+
                 setThresholdByNumClusters();
             }, true);
-            knimeService.addMenuItem('Number of clusters', 'filter', numClustersField);
+            knimeService.addMenuItem('Number of clusters', 'sitemap', numClustersField);
         }
 
         // show selection only
@@ -161,38 +174,28 @@ window.dendrogram_namespace = (function () {
         }
 
         // Selection / Filter configuration
-        const publishSelectionToggle = _representation.enableSelection && _representation.showPublishSelectionToggle;
-        const subscribeSelectionToggle = _representation.enableSelection && _representation.showSubscribeSelectionToggle;
-        const subscribeFilterToggle = _representation.showSubscribeFilterToggle;
-        if (publishSelectionToggle || subscribeSelectionToggle || subscribeFilterToggle) {
-            knimeService.addMenuDivider();
+        knimeService.addMenuDivider();
+        if (_representation.enableSelection) {
+            knimeService.addMenuItem('Publish selection',
+                knimeService.createStackedIcon('check-square-o', 'angle-right', 'faded left sm', 'right bold'),
+                knimeService.createMenuCheckbox('publishSelectionCheckbox', _value.publishSelectionEvents, function () {
+                    _value.publishSelectionEvents = this.checked;
+                }));
 
-            if (publishSelectionToggle) {
-                knimeService.addMenuItem('Publish selection',
-                    knimeService.createStackedIcon('check-square-o', 'angle-right', 'faded left sm', 'right bold'),
-                    knimeService.createMenuCheckbox('publishSelectionCheckbox', _value.publishSelectionEvents, function () {
-                        _value.publishSelectionEvents = this.checked;
-                    }));
-            }
-
-            if (subscribeSelectionToggle) {
-                knimeService.addMenuItem('Subscribe to selection',
-                    knimeService.createStackedIcon('check-square-o', 'angle-double-right', 'faded right sm', 'left bold'),
-                    knimeService.createMenuCheckbox('subscribeSelectionCheckbox', _value.subscribeSelectionEvents, function () {
-                        _value.subscribeSelectionEvents = this.checked;
-                        toggleSubscribeSelection();
-                    }));
-            }
-
-            if (subscribeFilterToggle) {
-                knimeService.addMenuItem('Subscribe to filter',
-                    knimeService.createStackedIcon('filter', 'angle-double-right', 'faded right sm', 'left bold'),
-                    knimeService.createMenuCheckbox('subscribeFilterCheckbox', _value.subscribeFilterEvents, function () {
-                        _value.subscribeFilterEvents = this.checked;
-                        toogleSubscribeFilter();
-                    }));
-            }
+            knimeService.addMenuItem('Subscribe to selection',
+                knimeService.createStackedIcon('check-square-o', 'angle-double-right', 'faded right sm', 'left bold'),
+                knimeService.createMenuCheckbox('subscribeSelectionCheckbox', _value.subscribeSelectionEvents, function () {
+                    _value.subscribeSelectionEvents = this.checked;
+                    toggleSubscribeSelection();
+                }));
         }
+
+        knimeService.addMenuItem('Subscribe to filter',
+            knimeService.createStackedIcon('filter', 'angle-double-right', 'faded right sm', 'left bold'),
+            knimeService.createMenuCheckbox('subscribeFilterCheckbox', _value.subscribeFilterEvents, function () {
+                _value.subscribeFilterEvents = this.checked;
+                toogleSubscribeFilter();
+            }));
     };
 
     const calcSVGSize = function () {
@@ -246,6 +249,9 @@ window.dendrogram_namespace = (function () {
         });
         links = nodes.links();
         leaves = nodes.leaves();
+        clusterMarker = nodes.descendants().filter(function (n) {
+            return n.children != null;
+        });
     };
 
     const drawXAxis = function () {
@@ -330,9 +336,7 @@ window.dendrogram_namespace = (function () {
             });
 
         // draw cluster markers
-        clusterMarkerEl = dendrogramEl.selectAll('.cluster').data(nodes.descendants().filter(function (n) {
-            return n.children != null;
-        })).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius);
+        clusterMarkerEl = dendrogramEl.selectAll('.cluster').data(clusterMarker).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius);
         clusterMarkerEl.append('title').text(function (d) {
             return _value.clusterLabels[d.data.id] + '; Distance: ' + d.data.distance;
         });
@@ -416,10 +420,15 @@ window.dendrogram_namespace = (function () {
             .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 40 + ')');
 
         // set initial threshold
-        onThresholdChange(_value.threshold);
+        // TODO fix mode switch
+        if (true /*_representation.numClustersMode*/) {
+            onThresholdChange(_value.threshold);
+        } else {
+            setThresholdByNumClusters();
+        }
     };
 
-    const onThresholdChange = function (threshold) {
+    const onThresholdChange = function (threshold, skipValueUpdate) {
         // save new threshold
         _value.threshold = threshold;
 
@@ -448,9 +457,11 @@ window.dendrogram_namespace = (function () {
         thresholdDisplayEl.text('Threshold: ' + thresholdFormatted);
         thresholdClusterDisplayEl.text('Cluster: ' + numberOfRootCluster);
 
-        _value.numClusters = numberOfRootCluster;
-        if (numClustersField) {
-            numClustersField.setAttribute('value', _value.numClusters);
+        if (!skipValueUpdate) {
+            _value.numClusters = numberOfRootCluster;
+            if (numClustersField) {
+                numClustersField.value = _value.numClusters;
+            }
         }
 
         // mark links
@@ -460,25 +471,26 @@ window.dendrogram_namespace = (function () {
     };
 
     const setThresholdByNumClusters = function () {
-        var threshold;
+        var threshold = nodes.data.distance;
         var clusterCount = 1;
-        var cluster = nodes.descendants().filter(function (n) {
-            return n.children != null;
-        });
 
-        cluster.sort(function (a, b) { return b.data.distance - a.data.distance; });
-        cluster.some(function (n) {
-            if (clusterCount == _value.numClusters) {
-                threshold = (n.data.distance + threshold) / 2;
-                return true; // aborts loop
-            } else {
-                clusterCount++;
-                threshold = n.data.distance;
-                return false;
-            }
-        });
+        clusterMarker
+            .sort(function (a, b) { return b.data.distance - a.data.distance; })
+            .some(function (n) {
+                if (_value.numClusters == clusterMarker.length + 1) {
+                    threshold = 0;
+                    return true;
+                } else if (clusterCount == _value.numClusters) {
+                    threshold = (n.data.distance + threshold) / 2;
+                    return true; // aborts loop
+                } else {
+                    clusterCount++;
+                    threshold = n.data.distance;
+                    return false;
+                }
+            });
 
-        onThresholdChange(threshold);
+        onThresholdChange(threshold, true);
 
         // move threshold handle
         thresholdEl.attr('transform', 'translate(0,' + (yScale(threshold) - (thresholdEl.attr('height') / 2)) + ')');
