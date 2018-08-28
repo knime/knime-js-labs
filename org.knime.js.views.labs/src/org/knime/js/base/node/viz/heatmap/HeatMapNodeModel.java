@@ -161,8 +161,6 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
                 // set internal table
                 try {
                     final JSONDataTable jT = createJSONTableFromBufferedDataTable(null);
-                    jT.setId(rep.getDataTableId());
-                    jT.getSpec().setFilterIds(rep.getFilterIds());
                     rep.setTable(jT);
                 } catch (Exception e) {
                     LOGGER.error("Could not create JSON table: " + e.getMessage(), e);
