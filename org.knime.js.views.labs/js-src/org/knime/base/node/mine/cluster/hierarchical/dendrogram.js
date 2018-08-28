@@ -50,7 +50,8 @@ window.dendrogram_namespace = (function () {
         yAxis,
         yAxisEl,
         yScale,
-        zoom;
+        zoom,
+        numClustersField;
 
     dendrogram.init = function (representation, value) {
         _representation = representation;
@@ -138,6 +139,15 @@ window.dendrogram_namespace = (function () {
             knimeService.addButton('selection-reset-button', 'minus-square-o', 'Reset Selection', function () {
                 clearSelection();
             });
+        }
+
+        if (_representation.enableNumClusterEdit) {
+            knimeService.addMenuDivider();
+            numClustersField = knimeService.createMenuNumberField('numClusters', _value.numClusters, 1, Infinity, 1, function () {
+                _value.numClusters = this.value;
+                setThresholdByNumClusters();
+            }, true);
+            knimeService.addMenuItem('Number of clusters', 'filter', numClustersField);
         }
 
         // show selection only
@@ -390,12 +400,9 @@ window.dendrogram_namespace = (function () {
                     }
 
                     // move threshold handle
-                    thresholdEl.attr('transform', 'translate(0,' + d3.event.y + ')');
+                    thresholdEl.attr('transform', 'translate(0,' + (d3.event.y - (thresholdEl.attr('height') / 2)) + ')');
 
                     onThresholdChange(newThreshold);
-
-                    // save new threshold
-                    _value.threshold = newThreshold;
                 }));
 
             if (_representation.runningInView) {
@@ -413,22 +420,25 @@ window.dendrogram_namespace = (function () {
     };
 
     const onThresholdChange = function (threshold) {
+        // save new threshold
+        _value.threshold = threshold;
+
         var numberOfRootCluster = 0;
         clusterMarkerEl.each(function (n) {
-            const isRoot = n.data.distance <= threshold && (!n.parent || n.parent && n.parent.data.distance >= threshold);
+            const isRoot = n.data.distance <= threshold && (!n.parent || n.parent && n.parent.data.distance > threshold);
             if (isRoot) {
                 numberOfRootCluster++;
             }
 
             // mark nodes out of threshold and after-threshold root nodes
             d3.select(this)
-                .classed('outOfThreshold', n.data.distance >= threshold)
+                .classed('outOfThreshold', n.data.distance > threshold)
                 .classed('root', isRoot);
         });
 
         // count all leaves which represent a single cluster
         leaves.forEach(function (leaf) {
-            if (leaf.parent.data.distance >= threshold) {
+            if (leaf.parent.data.distance > threshold) {
                 numberOfRootCluster++;
             }
         });
@@ -437,10 +447,41 @@ window.dendrogram_namespace = (function () {
         const thresholdFormatted = thresholdFormat(threshold);
         thresholdDisplayEl.text('Threshold: ' + thresholdFormatted);
         thresholdClusterDisplayEl.text('Cluster: ' + numberOfRootCluster);
+
+        _value.numClusters = numberOfRootCluster;
+        if (numClustersField) {
+            numClustersField.setAttribute('value', _value.numClusters);
+        }
+
         // mark links
         linkEl.each(function (n) {
-            d3.select(this).classed('outOfThreshold', n.source.data.distance >= threshold);
+            d3.select(this).classed('outOfThreshold', n.source.data.distance > threshold);
         });
+    };
+
+    const setThresholdByNumClusters = function () {
+        var threshold;
+        var clusterCount = 1;
+        var cluster = nodes.descendants().filter(function (n) {
+            return n.children != null;
+        });
+
+        cluster.sort(function (a, b) { return b.data.distance - a.data.distance; });
+        cluster.some(function (n) {
+            if (clusterCount == _value.numClusters) {
+                threshold = (n.data.distance + threshold) / 2;
+                return true; // aborts loop
+            } else {
+                clusterCount++;
+                threshold = n.data.distance;
+                return false;
+            }
+        });
+
+        onThresholdChange(threshold);
+
+        // move threshold handle
+        thresholdEl.attr('transform', 'translate(0,' + (yScale(threshold) - (thresholdEl.attr('height') / 2)) + ')');
     };
 
     const resizeDiagram = function (isInitial) {
@@ -482,7 +523,7 @@ window.dendrogram_namespace = (function () {
         });
 
         if (thresholdEl) {
-            thresholdEl.attr('transform', 'translate(0,' + yScale(_value.threshold) + ')');
+            thresholdEl.attr('transform', 'translate(0,' + (yScale(_value.threshold) - (thresholdEl.attr('height') / 2)) + ')');
         }
 
         zoom.translateExtent([[0, 0], [viewportWidth, viewportHeight]]);
@@ -530,6 +571,7 @@ window.dendrogram_namespace = (function () {
 
                 if (thresholdEl) {
                     thresholdEl.attr('height', thresholdHandleHeight / d3.event.transform.k);
+                    thresholdEl.attr('transform', 'translate(0,' + (yScale(_value.threshold) - (thresholdEl.attr('height') / 2)) + ')');
                 }
             })
             .on('end', function () {
