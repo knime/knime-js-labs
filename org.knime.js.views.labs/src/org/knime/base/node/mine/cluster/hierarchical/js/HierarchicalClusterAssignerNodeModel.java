@@ -151,8 +151,6 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
             if (rep.getTable() == null && m_table != null) {
                 try {
                     final JSONDataTable jTable = createJSONDataTable(null);
-                    jTable.setId(rep.getDataTableID());
-                    jTable.getSpec().setFilterIds(rep.getFilterIds());
                     rep.setTable(jTable);
                 } catch (Exception e) {
                     LOGGER.error("Could not create JSON table: " + e.getMessage(), e);
