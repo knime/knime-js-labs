@@ -127,6 +127,26 @@ public class HierarchicalClusterAssignerConfig {
     final static boolean DEFAULT_SHOW_CLEAR_SELECTION_BUTTON = true;
     private boolean m_showClearSelectionButton = DEFAULT_SHOW_CLEAR_SELECTION_BUTTON;
 
+    final static String CFG_SHOW_SELECTED_ONLY = "showSelectedOnly";
+    final static boolean DEFAULT_SHOW_SELECTED_ONLY = false;
+    private boolean m_showSelectedOnly = DEFAULT_SHOW_SELECTED_ONLY;
+
+    final static String CFG_SHOW_PUBLISH_SELECTION_TOGGLE = "showPublishSelectionToggle";
+    final static boolean DEFAULT_SHOW_PUBLISH_SELECTION_TOGGLE = true;
+    private boolean m_showPublishSelectionToggle = DEFAULT_SHOW_PUBLISH_SELECTION_TOGGLE;
+
+    final static String CFG_SHOW_SUBSCRIBE_SELECTION_TOGGLE = "showSubscribeSelectionToggle";
+    final static boolean DEFAULT_SHOW_SUBSCRIBE_SELECTION_TOGGLE = true;
+    private boolean m_showSubscribeSelectionToggle = DEFAULT_SHOW_SUBSCRIBE_SELECTION_TOGGLE;
+
+    final static String CFG_SHOW_SUBSCRIBE_FILTER_TOGGLE = "showSubscribeFilterToggle";
+    final static boolean DEFAULT_SHOW_SUBSCRIBE_FILTER_TOGGLE = true;
+    private boolean m_showSubscribeFilterToggle = DEFAULT_SHOW_SUBSCRIBE_FILTER_TOGGLE;
+
+    final static String CFG_SHOW_SELECTED_ONLY_TOGGLE = "showSelectedOnlyToggle";
+    final static boolean DEFAULT_SHOW_SELECTED_ONLY_TOGGLE = true;
+    private boolean m_showSelectedOnlyToggle = DEFAULT_SHOW_SELECTED_ONLY_TOGGLE;
+
     final static String CFG_NUM_CLUSTERS = "numClusters";
     final static int DEFAULT_NUM_CLUSTERS = 1;
     private int m_numClusters = DEFAULT_NUM_CLUSTERS;
@@ -443,6 +463,76 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
+     * @return the showSelectedOnly
+     */
+    public boolean getShowSelectedOnly() {
+        return m_showSelectedOnly;
+    }
+
+    /**
+     * @param showSelectedOnly the showSelectedOnly to set
+     */
+    public void setShowSelectedOnly(final boolean showSelectedOnly) {
+        m_showSelectedOnly = showSelectedOnly;
+    }
+
+    /**
+     * @return the showPublishSelectionToggle
+     */
+    public boolean getShowPublishSelectionToggle() {
+        return m_showPublishSelectionToggle;
+    }
+
+    /**
+     * @param showPublishSelectionToggle the showPublishSelectionToggle to set
+     */
+    public void setShowPublishSelectionToggle(final boolean showPublishSelectionToggle) {
+        m_showPublishSelectionToggle = showPublishSelectionToggle;
+    }
+
+    /**
+     * @return the showSubscribeSelectionToggle
+     */
+    public boolean getShowSubscribeSelectionToggle() {
+        return m_showSubscribeSelectionToggle;
+    }
+
+    /**
+     * @param showSubscribeSelectionToggle the showSubscribeSelectionToggle to set
+     */
+    public void setShowSubscribeSelectionToggle(final boolean showSubscribeSelectionToggle) {
+        m_showSubscribeSelectionToggle = showSubscribeSelectionToggle;
+    }
+
+    /**
+     * @return the showSubscribeFilterToggle
+     */
+    public boolean getShowSubscribeFilterToggle() {
+        return m_showSubscribeFilterToggle;
+    }
+
+    /**
+     * @param showSubscribeFilterToggle the showSubscribeFilterToggle to set
+     */
+    public void setShowSubscribeFilterToggle(final boolean showSubscribeFilterToggle) {
+        m_showSubscribeFilterToggle = showSubscribeFilterToggle;
+    }
+
+    /**
+     * @return the showSelectedOnlyToggle
+     */
+    public boolean getShowSelectedOnlyToggle() {
+        return m_showSelectedOnlyToggle;
+    }
+
+    /**
+     * @param showSelectedOnlyToggle the showSelectedOnlyToggle to set
+     */
+    public void setShowSelectedOnlyToggle(final boolean showSelectedOnlyToggle) {
+        m_showSelectedOnlyToggle = showSelectedOnlyToggle;
+    }
+
+    /**
      * @return the numClusters
      */
     public int getNumClusters() {
@@ -739,6 +829,10 @@ public class HierarchicalClusterAssignerConfig {
         settings.addBoolean(CFG_PUBLISH_SELECTION_EVENTS, m_publishSelectionEvents);
         settings.addBoolean(CFG_SUBSCRIBE_SELECTION_EVENTS, m_subscribeSelectionEvents);
         settings.addBoolean(CFG_SHOW_CLEAR_SELECTION_BUTTON, m_showClearSelectionButton);
+        settings.addBoolean(CFG_SHOW_SELECTED_ONLY, m_showSelectedOnly);
+        settings.addBoolean(CFG_SHOW_PUBLISH_SELECTION_TOGGLE, m_showPublishSelectionToggle);
+        settings.addBoolean(CFG_SHOW_SUBSCRIBE_SELECTION_TOGGLE, m_showSubscribeSelectionToggle);
+        settings.addBoolean(CFG_SHOW_SELECTED_ONLY_TOGGLE, m_showSelectedOnlyToggle);
         settings.addInt(CFG_NUM_CLUSTERS, m_numClusters);
         settings.addDouble(CFG_THRESHOLD, m_threshold);
         settings.addBoolean(CFG_NUM_CLUSTERS_MODE, m_numClustersMode);
@@ -756,6 +850,7 @@ public class HierarchicalClusterAssignerConfig {
         settings.addString(CFG_ORIENTATION, m_orientation.toValue());
         settings.addStringArray(CFG_COLOR_PALETTE, m_colorPalette);
         settings.addBoolean(CFG_SUBSCRIBE_FILTER_EVENTS, m_subscribeFilterEvents);
+        settings.addBoolean(CFG_SHOW_SUBSCRIBE_FILTER_TOGGLE, m_showSubscribeFilterToggle);
         settings.addBoolean(CFG_SHOW_THRESHOLD_BAR, m_showThresholdBar);
         settings.addBoolean(CFG_ENABLE_THRESHOLD_MODIFICATION, m_enableThresholdModification);
     }
@@ -784,6 +879,11 @@ public class HierarchicalClusterAssignerConfig {
         m_publishSelectionEvents = settings.getBoolean(CFG_PUBLISH_SELECTION_EVENTS);
         m_subscribeSelectionEvents = settings.getBoolean(CFG_SUBSCRIBE_SELECTION_EVENTS);
         m_showClearSelectionButton = settings.getBoolean(CFG_SHOW_CLEAR_SELECTION_BUTTON);
+        m_showSelectedOnly = settings.getBoolean(CFG_SHOW_SELECTED_ONLY);
+        m_showPublishSelectionToggle = settings.getBoolean(CFG_SHOW_PUBLISH_SELECTION_TOGGLE);
+        m_showSubscribeSelectionToggle = settings.getBoolean(CFG_SHOW_SUBSCRIBE_SELECTION_TOGGLE);
+        m_showSubscribeFilterToggle = settings.getBoolean(CFG_SHOW_SUBSCRIBE_FILTER_TOGGLE);
+        m_showSelectedOnlyToggle = settings.getBoolean(CFG_SHOW_SELECTED_ONLY_TOGGLE);
         m_enableClusterColor = settings.getBoolean(CFG_ENABLE_CLUSTER_COLOR);
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME);
         m_clusterColumnName = settings.getString(CFG_CLUSTER_COLUMN_NAME);
@@ -842,6 +942,11 @@ public class HierarchicalClusterAssignerConfig {
         m_publishSelectionEvents = settings.getBoolean(CFG_PUBLISH_SELECTION_EVENTS, DEFAULT_PUBLISH_SELECTION_EVENTS);
         m_subscribeSelectionEvents = settings.getBoolean(CFG_SUBSCRIBE_SELECTION_EVENTS, DEFAULT_SUBSCRIBE_SELECTION_EVENTS);
         m_showClearSelectionButton = settings.getBoolean(CFG_SHOW_CLEAR_SELECTION_BUTTON, DEFAULT_SHOW_CLEAR_SELECTION_BUTTON);
+        m_showSelectedOnly = settings.getBoolean(CFG_SHOW_SELECTED_ONLY, DEFAULT_SHOW_SELECTED_ONLY);
+        m_showPublishSelectionToggle = settings.getBoolean(CFG_SHOW_PUBLISH_SELECTION_TOGGLE, DEFAULT_SHOW_PUBLISH_SELECTION_TOGGLE);
+        m_showSubscribeSelectionToggle = settings.getBoolean(CFG_SHOW_SUBSCRIBE_SELECTION_TOGGLE, DEFAULT_SHOW_SUBSCRIBE_SELECTION_TOGGLE);
+        m_showSubscribeFilterToggle = settings.getBoolean(CFG_SHOW_SUBSCRIBE_FILTER_TOGGLE, DEFAULT_SHOW_SUBSCRIBE_FILTER_TOGGLE);
+        m_showSelectedOnlyToggle = settings.getBoolean(CFG_SHOW_SELECTED_ONLY_TOGGLE, DEFAULT_SHOW_SELECTED_ONLY_TOGGLE);
         m_enableClusterColor = settings.getBoolean(CFG_ENABLE_CLUSTER_COLOR, DEFAULT_ENABLE_CLUSTER_COLOR);
         m_numClusters = settings.getInt(CFG_NUM_CLUSTERS, DEFAULT_NUM_CLUSTERS);
         m_threshold = settings.getDouble(CFG_THRESHOLD, DEFAULT_THRESHOLD);

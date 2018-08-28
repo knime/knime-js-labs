@@ -66,8 +66,6 @@ import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
@@ -111,6 +109,11 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private final JCheckBox m_subscribeSelectionEventsCheckBox;
     private final JCheckBox m_showClearSelectionButtonCheckBox;
     private final JTextField m_selectionColumnNameTextField;
+    private final JCheckBox m_showSelectedOnlyCheckBox;
+    private final JCheckBox m_showPublishSelectionToggleCheckBox;
+    private final JCheckBox m_showSubscribeSelectionToggleCheckBox;
+    private final JCheckBox m_showSubscribeFilterToggleCheckBox;
+    private final JCheckBox m_showSelectedOnlyToggleCheckBox;
 
     private final JSpinner m_numClustersSpinner;
     private final JSpinner m_distanceThresholdSpinner;
@@ -158,12 +161,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_clusterCountModeRadioButton.addActionListener(al);
         m_distanceThresholdModeRadioButton.addActionListener(al);
         m_useNormalizedDistancesCheckBox.addActionListener(al);
-        m_useNormalizedDistancesCheckBox.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(final ChangeEvent e) {
-                enableNormalizedDistances();
-            }
-        });
+        m_useNormalizedDistancesCheckBox.addChangeListener(e -> enableNormalizedDistances());
 
         m_showWarningsInViewCheckBox = new JCheckBox("Show warnings in view");
         m_generateImageCheckBox = new JCheckBox("Create image at outport");
@@ -182,6 +180,11 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_subscribeSelectionEventsCheckBox = new JCheckBox("Subscribe to selection events");
         m_showClearSelectionButtonCheckBox = new JCheckBox("Show clear selection button");
         m_selectionColumnNameTextField = new JTextField(TEXT_FIELD_SIZE);
+        m_showSelectedOnlyCheckBox = new JCheckBox("Show selected clusters only");
+        m_showPublishSelectionToggleCheckBox = new JCheckBox("Toggle publish selection in view");
+        m_showSubscribeSelectionToggleCheckBox = new JCheckBox("Toggle subscribe selection in view");
+        m_showSubscribeFilterToggleCheckBox = new JCheckBox("Toggle subscribe to filters in view");
+        m_showSelectedOnlyToggleCheckBox = new JCheckBox("Toggle show selected clusters only in view");
         m_enableZoomAndPanningCheckBox = new JCheckBox("Enable zooming and panning");
         m_showZoomResetButtonCheckBox = new JCheckBox("Show zoom reset button");
         m_enableLogScaleToggleCheckBox= new JCheckBox("Enable switching y-axis scale");
@@ -195,19 +198,16 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         }
         m_subscribeFilterEventsCheckBox = new JCheckBox("Subscribe to filter events");
 
-        m_enableViewEditCheckBox.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(final ChangeEvent e) {
-                enableEditView();
-            }
-        });
-        m_enableSelectionCheckBox.addChangeListener(new ChangeListener() {
-
-            @Override
-            public void stateChanged(final ChangeEvent e) {
-                enableSelections();
-            }
-        });
+        m_enableViewEditCheckBox.addChangeListener(e -> enableEditView());
+        m_enableSelectionCheckBox.addChangeListener(e -> enableSelections());
+        m_publishSelectionEventsCheckBox.addChangeListener(
+            e -> m_showPublishSelectionToggleCheckBox.setEnabled(m_publishSelectionEventsCheckBox.isSelected()));
+        m_subscribeSelectionEventsCheckBox.addChangeListener(
+            e -> m_showSubscribeSelectionToggleCheckBox.setEnabled(m_subscribeSelectionEventsCheckBox.isSelected()));
+        m_subscribeFilterEventsCheckBox.addChangeListener(
+            e -> m_showSubscribeFilterToggleCheckBox.setEnabled(m_subscribeFilterEventsCheckBox.isSelected()));
+        m_showSelectedOnlyCheckBox.addChangeListener(
+            e -> m_showSelectedOnlyToggleCheckBox.setEnabled(m_showSelectedOnlyCheckBox.isSelected()));
 
         m_enableClusterColorRadioButton = new JRadioButton("Use cluster colors");
         m_enableTableColorRadioButton = new JRadioButton("Use table colors");
@@ -215,12 +215,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_useColorPaletteSet2RadioButton = new JRadioButton("Set 2");
         m_useColorPaletteSet3RadioButton = new JRadioButton("Set 3 (color blind safe)");
 
-        m_enableClusterColorRadioButton.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(final ChangeEvent e) {
-                enableColors();
-            }
-        });
+        m_enableClusterColorRadioButton.addChangeListener(e -> enableColors());
 
         m_showThresholdBarCheckBox = new JCheckBox("Show threshold bar");
         m_enableThresholdModificationCheckBox = new JCheckBox("Enable threshold modification");
@@ -261,8 +256,13 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_config.setSubscribeSelectionEvents(m_subscribeSelectionEventsCheckBox.isSelected());
         m_config.setShowClearSelectionButton(m_showClearSelectionButtonCheckBox.isSelected());
         m_config.setSelectionColumnName(m_selectionColumnNameTextField.getText());
+        m_config.setShowSelectedOnly(m_showSelectedOnlyCheckBox.isSelected());
+        m_config.setShowPublishSelectionToggle(m_showPublishSelectionToggleCheckBox.isSelected());
+        m_config.setShowSubscribeSelectionToggle(m_showSubscribeSelectionToggleCheckBox.isSelected());
+        m_config.setShowSelectedOnlyToggle(m_showSelectedOnlyToggleCheckBox.isSelected());
 
         m_config.setSubscribeFilterEvents(m_subscribeFilterEventsCheckBox.isSelected());
+        m_config.setShowSubscribeFilterToggle(m_showSubscribeFilterToggleCheckBox.isSelected());
 
         m_config.setNumClusters((int) m_numClustersSpinner.getValue());
         m_config.setNumClustersMode(m_clusterCountModeRadioButton.isSelected());
@@ -315,12 +315,25 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_enableChangeOrientationCheckBox.setSelected(m_config.getEnableChangeOrientation());
 
         m_enableSelectionCheckBox.setSelected(m_config.getEnableSelection());
-        m_publishSelectionEventsCheckBox.setSelected(m_config.getPublishSelectionEvents());
-        m_subscribeSelectionEventsCheckBox.setSelected(m_config.getSubscribeSelectionEvents());
+        final boolean publishSel = m_config.getPublishSelectionEvents();
+        final boolean subscribeSel = m_config.getSubscribeSelectionEvents();
+        final boolean showSelectedOnly = m_config.getShowSelectedOnly();
+        m_publishSelectionEventsCheckBox.setSelected(publishSel);
+        m_showPublishSelectionToggleCheckBox.setEnabled(publishSel);
+        m_showPublishSelectionToggleCheckBox.setSelected(m_config.getShowPublishSelectionToggle());
+        m_subscribeSelectionEventsCheckBox.setSelected(subscribeSel);
+        m_showSubscribeSelectionToggleCheckBox.setEnabled(subscribeSel);
+        m_showSubscribeSelectionToggleCheckBox.setSelected(m_config.getShowSubscribeSelectionToggle());
         m_showClearSelectionButtonCheckBox.setSelected(m_config.getShowClearSelectionButton());
         m_selectionColumnNameTextField.setText(m_config.getSelectionColumnName());
+        m_showSelectedOnlyCheckBox.setSelected(showSelectedOnly);
+        m_showSelectedOnlyToggleCheckBox.setEnabled(showSelectedOnly);
+        m_showSelectedOnlyToggleCheckBox.setSelected(m_config.getShowSelectedOnlyToggle());
 
-        m_subscribeFilterEventsCheckBox.setSelected(m_config.getSubscribeFilterEvents());
+        final boolean subscribeFilt = m_config.getSubscribeFilterEvents();
+        m_subscribeFilterEventsCheckBox.setSelected(subscribeFilt);
+        m_showSubscribeFilterToggleCheckBox.setEnabled(subscribeFilt);
+        m_showSubscribeFilterToggleCheckBox.setSelected(m_config.getShowSubscribeFilterToggle());
 
         m_clusterCountModeRadioButton.setSelected(m_config.getNumClustersMode());
         m_distanceThresholdModeRadioButton.setSelected(!m_config.getNumClustersMode());
@@ -389,6 +402,10 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_subscribeSelectionEventsCheckBox.setEnabled(enabled);
         m_showClearSelectionButtonCheckBox.setEnabled(enabled);
         m_selectionColumnNameTextField.setEnabled(enabled);
+        m_showSelectedOnlyCheckBox.setEnabled(enabled);
+        m_showPublishSelectionToggleCheckBox.setEnabled(enabled && m_publishSelectionEventsCheckBox.isSelected());
+        m_showSubscribeSelectionToggleCheckBox.setEnabled(enabled && m_subscribeSelectionEventsCheckBox.isSelected());
+        m_showSelectedOnlyToggleCheckBox.setEnabled(enabled && m_showSelectedOnlyCheckBox.isSelected());
     }
 
     private void enableNormalizedDistances() {
@@ -644,9 +661,29 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         selectionConstraints.gridx = 0;
         selectionConstraints.gridy = 0;
         selectionConstraints.weightx = 1;
+        selectionPanel.add(m_subscribeFilterEventsCheckBox, selectionConstraints);
+        selectionConstraints.gridx++;
+        selectionPanel.add(m_showSubscribeFilterToggleCheckBox, selectionConstraints);
+        selectionConstraints.gridx = 0;
+        selectionConstraints.gridy++;
         selectionPanel.add(m_enableSelectionCheckBox, selectionConstraints);
         selectionConstraints.gridx++;
-        selectionPanel.add(m_subscribeFilterEventsCheckBox, selectionConstraints);
+        selectionPanel.add(m_showClearSelectionButtonCheckBox, selectionConstraints);
+        selectionConstraints.gridx = 0;
+        selectionConstraints.gridy++;
+        selectionPanel.add(m_publishSelectionEventsCheckBox, selectionConstraints);
+        selectionConstraints.gridx++;
+        selectionPanel.add(m_showPublishSelectionToggleCheckBox, selectionConstraints);
+        selectionConstraints.gridx = 0;
+        selectionConstraints.gridy++;
+        selectionPanel.add(m_subscribeSelectionEventsCheckBox, selectionConstraints);
+        selectionConstraints.gridx++;
+        selectionPanel.add(m_showSubscribeSelectionToggleCheckBox, selectionConstraints);
+        selectionConstraints.gridx = 0;
+        selectionConstraints.gridy++;
+        selectionPanel.add(m_showSelectedOnlyCheckBox, selectionConstraints);
+        selectionConstraints.gridx++;
+        selectionPanel.add(m_showSelectedOnlyToggleCheckBox, selectionConstraints);
         selectionConstraints.gridx = 0;
         selectionConstraints.gridy++;
         selectionPanel.add(new JLabel("Selection column name: "), selectionConstraints);
@@ -654,12 +691,6 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         selectionPanel.add(m_selectionColumnNameTextField, selectionConstraints);
         selectionConstraints.gridx = 0;
         selectionConstraints.gridy++;
-        selectionPanel.add(m_publishSelectionEventsCheckBox, selectionConstraints);
-        selectionConstraints.gridx++;
-        selectionPanel.add(m_subscribeSelectionEventsCheckBox, selectionConstraints);
-        selectionConstraints.gridx = 0;
-        selectionConstraints.gridy++;
-        selectionPanel.add(m_showClearSelectionButtonCheckBox, selectionConstraints);
 
         gbc.gridx = 0;
         gbc.gridy++;

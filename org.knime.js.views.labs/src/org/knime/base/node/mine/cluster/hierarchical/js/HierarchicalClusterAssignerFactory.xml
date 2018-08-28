@@ -153,43 +153,57 @@
 				(i.e. horizontal, vertical,
 				etc.) from within the view.
 			</option>
+			<option name="Subscribe to filter events">
+				If checked, the view reacts when applied filters
+				have been changed.
+			</option>
+			<option name="Toggle subscribe to filters in view">
+				Enables switching the "subscribe to filter
+				events" functionality on/off from within the view.
+			</option>
 			<option name="Enable selection">
 				When this option is checked, data points can be
 				selected in the view. The selection appears in an
 				appended column of
 				the data table.
 			</option>
-			<option name="Selection column name">
-				Sets the name of the selection column in the
-				output data table.
+			<option name="Show clear selection button">
+				If enabled, a "clear selection" button will be
+				displayed.
 			</option>
 			<option name="Publish selection events">
 				Checking this option ensures that other views are
 				notified whenever the
 				selection in the current view is changed.
 			</option>
+			<option name="Toggle publish selection in view">
+				Enables switching the "publish selection events"
+				functionality on/off from within the view.
+			</option>
 			<option name="Subscribe to selection events">
 				Checking this option ensures that this view is
 				notified whenever other views publish new selections.
 			</option>
-			<option name="Show clear selection button">
-				If enabled, a "clear selection" button will be
-				displayed.
+			<option name="Toggle subscribe selection in view">
+				Enables switching the "subscribe to selection
+				events" functionality on/off from within the view.
 			</option>
-			<option name="Subscribe to filter events">
-				If checked, the view reacts when applied filters
-				have been changed.
+			<option name="Show selected clusters only">
+				If checked, only members of the selected clusters
+				will be displayed.
 			</option>
-			<option name="Enable panning">
-				Enable panning on the view. To start panning
+			<option name="Toggle show selected clusters only in view">
+				Enables switching the "show selected clusters
+				only" functionality on/off from within the view.
+			</option>
+			<option name="Selection column name">
+				Sets the name of the selection column in the
+				output data table.
+			</option>
+			<option name="Enable zooming &amp; panning">
+				Enable zooming using the mouse wheel and panning
+				on the view. To start panning
 				click and drag the mouse.
-				Note if panning and drag zooming are
-				enabled,
-				panning can be achieved by holding the Ctrl key and dragging
-				the mouse.
-			</option>
-			<option name="Enable zooming">
-				Enable zooming on the view using the mouse wheel.
 			</option>
 			<option name="Show zoom reset button">
 				Renders a button to resize the plot to its

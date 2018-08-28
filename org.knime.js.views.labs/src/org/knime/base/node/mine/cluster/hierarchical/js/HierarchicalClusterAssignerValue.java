@@ -84,6 +84,12 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
     private boolean m_useLogScale;
     private HierarchicalClusterAssignerOrientation m_orientation;
 
+    private boolean m_publishSelectionEvents;
+    private boolean m_subscribeSelectionEvents;
+    private boolean m_showSelectedOnly;
+
+    private boolean m_subscribeFilterEvents;
+
     /**
      * @return the title
      */
@@ -239,6 +245,62 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
     }
 
     /**
+     * @return the publishSelectionEvents
+     */
+    public boolean getPublishSelectionEvents() {
+        return m_publishSelectionEvents;
+    }
+
+    /**
+     * @param publishSelectionEvents the publishSelectionEvents to set
+     */
+    public void setPublishSelectionEvents(final boolean publishSelectionEvents) {
+        m_publishSelectionEvents = publishSelectionEvents;
+    }
+
+    /**
+     * @return the subscribeSelectionEvents
+     */
+    public boolean getSubscribeSelectionEvents() {
+        return m_subscribeSelectionEvents;
+    }
+
+    /**
+     * @param subscribeSelectionEvents the subscribeSelectionEvents to set
+     */
+    public void setSubscribeSelectionEvents(final boolean subscribeSelectionEvents) {
+        m_subscribeSelectionEvents = subscribeSelectionEvents;
+    }
+
+    /**
+     * @return the showSelectedOnly
+     */
+    public boolean getShowSelectedOnly() {
+        return m_showSelectedOnly;
+    }
+
+    /**
+     * @param showSelectedOnly the showSelectedOnly to set
+     */
+    public void setShowSelectedOnly(final boolean showSelectedOnly) {
+        m_showSelectedOnly = showSelectedOnly;
+    }
+
+    /**
+     * @return the subscribeFilterEvents
+     */
+    public boolean getSubscribeFilterEvents() {
+        return m_subscribeFilterEvents;
+    }
+
+    /**
+     * @param subscribeFilterEvents the subscribeFilterEvents to set
+     */
+    public void setSubscribeFilterEvents(final boolean subscribeFilterEvents) {
+        m_subscribeFilterEvents = subscribeFilterEvents;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -254,6 +316,10 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         settings.addDouble(CFG_ZOOM_K, getZoomK());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_USE_LOG_SCALE, getUseLogScale());
         settings.addString(HierarchicalClusterAssignerConfig.CFG_ORIENTATION, getOrientation().toValue());
+
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_PUBLISH_SELECTION_EVENTS, getPublishSelectionEvents());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_SELECTION_EVENTS, getSubscribeSelectionEvents());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS, getSubscribeFilterEvents());
     }
 
     /**
@@ -273,6 +339,10 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         m_useLogScale = settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_USE_LOG_SCALE);
         m_orientation = HierarchicalClusterAssignerOrientation
             .forValue(settings.getString(HierarchicalClusterAssignerConfig.CFG_ORIENTATION));
+
+        setPublishSelectionEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_PUBLISH_SELECTION_EVENTS));
+        setSubscribeSelectionEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_SELECTION_EVENTS));
+        setSubscribeFilterEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS));
     }
 
     /**
@@ -299,6 +369,9 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_zoomK, other.getZoomK())
                 .append(m_useLogScale, other.getUseLogScale())
                 .append(m_orientation, other.getOrientation())
+                .append(m_publishSelectionEvents, other.getPublishSelectionEvents())
+                .append(m_subscribeSelectionEvents, other.getSubscribeSelectionEvents())
+                .append(m_subscribeFilterEvents, other.getSubscribeFilterEvents())
                 .isEquals();
     }
 
@@ -319,6 +392,9 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_zoomK)
                 .append(m_useLogScale)
                 .append(m_orientation)
+                .append(m_publishSelectionEvents)
+                .append(m_subscribeSelectionEvents)
+                .append(m_subscribeFilterEvents)
                 .toHashCode();
     }
 
