@@ -270,10 +270,7 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
             representation.setColumns(m_config.getColumns().applyTo(m_table.getDataTableSpec()).getIncludes());
             representation.setLabelColumn(m_config.getLabelColumn());
             representation.setSvgLabelColumn(m_config.getSvgLabelColumn());
-            representation.setSubscribeFilter(m_config.getSubscribeFilter());
             representation.setEnableSelection(m_config.getEnableSelection());
-            representation.setPublishSelection(m_config.getPublishSelection());
-            representation.setSubscribeSelection(m_config.getSubscribeSelection());
             representation.setSelectionColumnName(m_config.getSelectionColumnName());
             representation.setEnablePaging(m_config.getEnablePaging());
             representation.setEnablePageSizeChange(m_config.getEnablePageSizeChange());
@@ -295,6 +292,9 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
                 value.setChartSubtitle(m_config.getChartSubtitle());
                 value.setContinuousGradient(m_config.getContinuousGradient());
                 value.setSelection(new String[0]);
+                value.setPublishSelection(m_config.getPublishSelection());
+                value.setSubscribeSelection(m_config.getSubscribeSelection());
+                value.setSubscribeFilter(m_config.getSubscribeFilter());
                 value.setInitialPageSize(m_config.getInitialPageSize());
                 value.setXMin(null);
                 value.setXMax(null);
@@ -421,6 +421,9 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
         m_config.setChartSubtitle(viewValue.getChartSubtitle());
         m_config.setContinuousGradient(viewValue.getContinuousGradient());
         m_config.setInitialPageSize(viewValue.getInitialPageSize());
+        m_config.setPublishSelection(viewValue.getPublishSelection());
+        m_config.setSubscribeSelection(viewValue.getSubscribeSelection());
+        m_config.setSubscribeFilter(viewValue.getSubscribeFilter());
     }
 
     private JSONDataTable createJSONTableFromBufferedDataTable(final ExecutionContext exec) throws CanceledExecutionException {

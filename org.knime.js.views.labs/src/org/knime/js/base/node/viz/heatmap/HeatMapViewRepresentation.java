@@ -93,11 +93,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     private String m_labelColumn;
     private String m_svgLabelColumn;
 
-    private boolean m_subscribeFilter;
-
     private boolean m_enableSelection;
-    private boolean m_publishSelection;
-    private boolean m_subscribeSelection;
     private String m_selectionColumnName;
 
     private boolean m_enablePaging;
@@ -377,22 +373,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_svgLabelColumn = svgLabelColumn;
     }
 
-    // -- Filter getters & setters --
-
-    /**
-     * @return the subscribeFilter
-     */
-    public boolean getSubscribeFilter() {
-        return m_subscribeFilter;
-    }
-
-    /**
-     * @param subscribeFilter the subscribeFilter to set
-     */
-    public void setSubscribeFilter(final boolean subscribeFilter) {
-        m_subscribeFilter = subscribeFilter;
-    }
-
     // -- Selection getters & setters --
 
     /**
@@ -407,34 +387,6 @@ public class HeatMapViewRepresentation extends JSONViewContent {
      */
     public void setEnableSelection(final boolean enableSelection) {
         m_enableSelection = enableSelection;
-    }
-
-    /**
-     * @return the publishSelection
-     */
-    public boolean getPublishSelection() {
-        return m_publishSelection;
-    }
-
-    /**
-     * @param publishSelection the publishSelection to set
-     */
-    public void setPublishSelection(final boolean publishSelection) {
-        m_publishSelection = publishSelection;
-    }
-
-    /**
-     * @return the subscribeSelection
-     */
-    public boolean getSubscribeSelection() {
-        return m_subscribeSelection;
-    }
-
-    /**
-     * @param subscribeSelection the subscribeSelection to set
-     */
-    public void setSubscribeSelection(final boolean subscribeSelection) {
-        m_subscribeSelection = subscribeSelection;
     }
 
     /**
@@ -646,11 +598,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         settings.addString(HeatMapViewConfig.CFG_LABEL_COLUMN, m_labelColumn);
         settings.addString(HeatMapViewConfig.CFG_SVG_LABEL_COLUMN, m_svgLabelColumn);
 
-        settings.addBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_FILTER, m_subscribeFilter);
-
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_SELECTION, m_enableSelection);
-        settings.addBoolean(HeatMapViewConfig.CFG_PUBLISH_SELECTION, m_publishSelection);
-        settings.addBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_SELECTION, m_subscribeSelection);
         settings.addString(HeatMapViewConfig.CFG_SELECTION_COLUMN_NAME, m_selectionColumnName);
 
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_PAGING, m_enablePaging);
@@ -694,11 +642,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_labelColumn = settings.getString(HeatMapViewConfig.CFG_LABEL_COLUMN);
         m_svgLabelColumn = settings.getString(HeatMapViewConfig.CFG_SVG_LABEL_COLUMN);
 
-        m_subscribeFilter = settings.getBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_FILTER);
-
         m_enableSelection = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_SELECTION);
-        m_publishSelection = settings.getBoolean(HeatMapViewConfig.CFG_PUBLISH_SELECTION);
-        m_subscribeSelection = settings.getBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_SELECTION);
         m_selectionColumnName = settings.getString(HeatMapViewConfig.CFG_SELECTION_COLUMN_NAME);
 
         m_enablePaging = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_PAGING);
@@ -749,10 +693,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_columns, other.getColumns())
                 .append(m_labelColumn, other.getLabelColumn())
                 .append(m_svgLabelColumn, other.getSvgLabelColumn())
-                .append(m_subscribeFilter, other.getSubscribeFilter())
                 .append(m_enableSelection, other.getEnableSelection())
-                .append(m_publishSelection, other.getPublishSelection())
-                .append(m_subscribeSelection, other.getSubscribeSelection())
                 .append(m_selectionColumnName, other.getSelectionColumnName())
                 .append(m_enablePaging, other.getEnablePaging())
                 .append(m_enablePageSizeChange, other.getEnablePageSizeChange())
@@ -792,10 +733,7 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_columns)
                 .append(m_labelColumn)
                 .append(m_svgLabelColumn)
-                .append(m_subscribeFilter)
                 .append(m_enableSelection)
-                .append(m_publishSelection)
-                .append(m_subscribeSelection)
                 .append(m_selectionColumnName)
                 .append(m_enablePaging)
                 .append(m_enablePageSizeChange)

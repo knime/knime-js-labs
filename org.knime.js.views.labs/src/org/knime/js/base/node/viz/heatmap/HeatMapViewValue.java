@@ -74,6 +74,9 @@ public class HeatMapViewValue extends JSONViewContent {
 
     private final static String CFG_SELECTION = "selection";
     private String[] m_selection;
+    private boolean m_publishSelection;
+    private boolean m_subscribeSelection;
+    private boolean m_subscribeFilter;
 
     private int m_initialPageSize;
 
@@ -146,6 +149,50 @@ public class HeatMapViewValue extends JSONViewContent {
      */
     public void setSelection(final String[] selection) {
         m_selection = selection;
+    }
+
+    /**
+     * @return the publishSelection
+     */
+    public boolean getPublishSelection() {
+        return m_publishSelection;
+    }
+
+    /**
+     * @param publishSelection the publishSelection to set
+     */
+    public void setPublishSelection(final boolean publishSelection) {
+        m_publishSelection = publishSelection;
+    }
+
+    /**
+     * @return the subscribeSelection
+     */
+    public boolean getSubscribeSelection() {
+        return m_subscribeSelection;
+    }
+
+    /**
+     * @param subscribeSelection the subscribeSelection to set
+     */
+    public void setSubscribeSelection(final boolean subscribeSelection) {
+        m_subscribeSelection = subscribeSelection;
+    }
+
+    // -- Filter getters & setters --
+
+    /**
+     * @return the subscribeFilter
+     */
+    public boolean getSubscribeFilter() {
+        return m_subscribeFilter;
+    }
+
+    /**
+     * @param subscribeFilter the subscribeFilter to set
+     */
+    public void setSubscribeFilter(final boolean subscribeFilter) {
+        m_subscribeFilter = subscribeFilter;
     }
 
     // -- Paging getters & setters --
@@ -235,6 +282,9 @@ public class HeatMapViewValue extends JSONViewContent {
         settings.addBoolean(HeatMapViewConfig.CFG_CONTINUOUS_GRADIENT, m_continuousGradient);
 
         settings.addStringArray(CFG_SELECTION, m_selection);
+        settings.addBoolean(HeatMapViewConfig.CFG_PUBLISH_SELECTION, m_publishSelection);
+        settings.addBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_SELECTION, m_subscribeSelection);
+        settings.addBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_FILTER, m_subscribeFilter);
 
         settings.addInt(HeatMapViewConfig.CFG_INITIAL_PAGE_SIZE, m_initialPageSize);
 
@@ -255,6 +305,9 @@ public class HeatMapViewValue extends JSONViewContent {
         m_continuousGradient = settings.getBoolean(HeatMapViewConfig.CFG_CONTINUOUS_GRADIENT);
 
         m_selection = settings.getStringArray(CFG_SELECTION);
+        m_publishSelection = settings.getBoolean(HeatMapViewConfig.CFG_PUBLISH_SELECTION);
+        m_subscribeSelection = settings.getBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_SELECTION);
+        m_subscribeFilter = settings.getBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_FILTER);
 
         m_initialPageSize = settings.getInt(HeatMapViewConfig.CFG_INITIAL_PAGE_SIZE);
 
@@ -284,6 +337,9 @@ public class HeatMapViewValue extends JSONViewContent {
                 .append(m_chartSubtitle, other.getChartSubtitle())
                 .append(m_continuousGradient, other.getContinuousGradient())
                 .append(m_selection, other.getSelection())
+                .append(m_publishSelection, other.getPublishSelection())
+                .append(m_subscribeSelection, other.getSubscribeSelection())
+                .append(m_subscribeFilter, other.getSubscribeFilter())
                 .append(m_initialPageSize, other.getInitialPageSize())
                 .append(m_xMin, other.getXMin())
                 .append(m_xMax, other.getXMax())
@@ -302,6 +358,9 @@ public class HeatMapViewValue extends JSONViewContent {
                 .append(m_chartSubtitle)
                 .append(m_continuousGradient)
                 .append(m_selection)
+                .append(m_publishSelection)
+                .append(m_subscribeSelection)
+                .append(m_subscribeFilter)
                 .append(m_initialPageSize)
                 .append(m_xMin)
                 .append(m_xMax)
