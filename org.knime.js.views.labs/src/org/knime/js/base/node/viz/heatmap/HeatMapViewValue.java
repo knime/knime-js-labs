@@ -80,14 +80,12 @@ public class HeatMapViewValue extends JSONViewContent {
 
     private int m_initialPageSize;
 
-    private final static String CFG_X_MIN = "xMin";
-    private String m_xMin;
-    private final static String CFG_X_MAX = "xMax";
-    private String m_xMax;
-    private final static String CFG_Y_MIN = "yMin";
-    private String m_yMin;
-    private final static String CFG_Y_MAX = "yMax";
-    private String m_yMax;
+    private final static String CFG_ZOOM_X = "zoomX";
+    private double m_zoomX = 0;
+    private final static String CFG_ZOOM_Y = "zoomY";
+    private double m_zoomY = 0;
+    private final static String CFG_ZOOM_K = "zoomK";
+    private double m_zoomK = 1;
 
     // -- General getters & setters --
 
@@ -214,59 +212,45 @@ public class HeatMapViewValue extends JSONViewContent {
     // -- Zoom & Panning getters & setters --
 
     /**
-     * @return the xMin
+     * @return the zoomX
      */
-    public String getXMin() {
-        return m_xMin;
+    public double getZoomX() {
+        return m_zoomX;
     }
 
     /**
-     * @param xMin the xMin to set
+     * @param zoomX the zoomX to set
      */
-    public void setXMin(final String xMin) {
-        m_xMin = xMin;
+    public void setZoomX(final double zoomX) {
+        m_zoomX = zoomX;
     }
 
     /**
-     * @return the xMax
+     * @return the zoomY
      */
-    public String getXMax() {
-        return m_xMax;
+    public double getZoomY() {
+        return m_zoomY;
     }
 
     /**
-     * @param xMax the xMax to set
+     * @param zoomY the zoomY to set
      */
-    public void setXMax(final String xMax) {
-        m_xMax = xMax;
+    public void setZoomY(final double zoomY) {
+        m_zoomY = zoomY;
     }
 
     /**
-     * @return the yMin
+     * @return the zoomK
      */
-    public String getYMin() {
-        return m_yMin;
+    public double getZoomK() {
+        return m_zoomK;
     }
 
     /**
-     * @param yMin the yMin to set
+     * @param zoomK the zoomK to set
      */
-    public void setYMin(final String yMin) {
-        m_yMin = yMin;
-    }
-
-    /**
-     * @return the yMax
-     */
-    public String getYMax() {
-        return m_yMax;
-    }
-
-    /**
-     * @param yMax the yMax to set
-     */
-    public void setYMax(final String yMax) {
-        m_yMax = yMax;
+    public void setZoomK(final double zoomK) {
+        m_zoomK = zoomK;
     }
 
     // -- Load & Save Settings --
@@ -288,10 +272,9 @@ public class HeatMapViewValue extends JSONViewContent {
 
         settings.addInt(HeatMapViewConfig.CFG_INITIAL_PAGE_SIZE, m_initialPageSize);
 
-        settings.addString(CFG_X_MIN, m_xMin);
-        settings.addString(CFG_X_MAX, m_xMax);
-        settings.addString(CFG_Y_MIN, m_yMin);
-        settings.addString(CFG_Y_MAX, m_yMax);
+        settings.addDouble(CFG_ZOOM_X, m_zoomX);
+        settings.addDouble(CFG_ZOOM_Y, m_zoomY);
+        settings.addDouble(CFG_ZOOM_K, m_zoomK);
     }
 
     /**
@@ -311,10 +294,9 @@ public class HeatMapViewValue extends JSONViewContent {
 
         m_initialPageSize = settings.getInt(HeatMapViewConfig.CFG_INITIAL_PAGE_SIZE);
 
-        m_xMin = settings.getString(CFG_X_MIN);
-        m_xMax = settings.getString(CFG_X_MAX);
-        m_yMin = settings.getString(CFG_Y_MIN);
-        m_yMax = settings.getString(CFG_Y_MAX);
+        m_zoomX = settings.getDouble(CFG_ZOOM_X);
+        m_zoomY = settings.getDouble(CFG_ZOOM_Y);
+        m_zoomK = settings.getDouble(CFG_ZOOM_K);
     }
 
     /**
@@ -341,10 +323,9 @@ public class HeatMapViewValue extends JSONViewContent {
                 .append(m_subscribeSelection, other.getSubscribeSelection())
                 .append(m_subscribeFilter, other.getSubscribeFilter())
                 .append(m_initialPageSize, other.getInitialPageSize())
-                .append(m_xMin, other.getXMin())
-                .append(m_xMax, other.getXMax())
-                .append(m_yMin, other.getYMin())
-                .append(m_yMax, other.getYMax())
+                .append(m_zoomX, other.getZoomX())
+                .append(m_zoomY, other.getZoomY())
+                .append(m_zoomK, other.getZoomK())
                 .isEquals();
     }
 
@@ -362,10 +343,9 @@ public class HeatMapViewValue extends JSONViewContent {
                 .append(m_subscribeSelection)
                 .append(m_subscribeFilter)
                 .append(m_initialPageSize)
-                .append(m_xMin)
-                .append(m_xMax)
-                .append(m_yMin)
-                .append(m_yMax)
+                .append(m_zoomX)
+                .append(m_zoomY)
+                .append(m_zoomK)
                 .toHashCode();
     }
 }

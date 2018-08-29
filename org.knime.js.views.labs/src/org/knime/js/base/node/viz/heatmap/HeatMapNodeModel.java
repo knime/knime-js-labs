@@ -296,10 +296,9 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
                 value.setSubscribeSelection(m_config.getSubscribeSelection());
                 value.setSubscribeFilter(m_config.getSubscribeFilter());
                 value.setInitialPageSize(m_config.getInitialPageSize());
-                value.setXMin(null);
-                value.setXMax(null);
-                value.setYMin(null);
-                value.setYMax(null);
+                value.setZoomX(0);
+                value.setZoomY(0);
+                value.setZoomK(1);
             }
         }
     }
