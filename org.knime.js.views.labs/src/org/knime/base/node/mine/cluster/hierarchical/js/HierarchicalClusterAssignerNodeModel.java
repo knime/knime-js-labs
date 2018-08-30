@@ -237,7 +237,7 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
         final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
         BufferedDataTable out = null;
         synchronized (getLock()) {
-            final Map<RowKey, String> rowToCluster = assignClusters(getAssignmentThreshold());
+            final Map<RowKey, String> rowToCluster = assignClusters(getViewValue().getThreshold());
             final List<String> selection = getViewValue().getSelection() == null ? null : Arrays.asList(getViewValue().getSelection());
             final ColumnRearranger createColumnRearranger = createColumnAppender(m_table.getDataTableSpec(), m_config.getEnableSelection(), rowToCluster, selection);
             out = exec.createColumnRearrangeTable(m_table, createColumnRearranger, exec);
@@ -703,15 +703,5 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
 
     private static double roundThreeDecimalPlaces(final double number) {
         return Math.round(number * 1000.0) / 1000.0;
-    }
-
-    private double getAssignmentThreshold() {
-        if (m_config.getNumClustersMode()) {
-            return computeThresholdFromNumClusters(m_config.getNumClusters());
-        }
-        if (m_config.getUseNormalizedDistances()) {
-            return computeThresholdFromNormThreshold();
-        }
-        return m_config.getThreshold();
     }
  }
