@@ -319,6 +319,7 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_PUBLISH_SELECTION_EVENTS, getPublishSelectionEvents());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_SELECTION_EVENTS, getSubscribeSelectionEvents());
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SELECTED_ONLY, getShowSelectedOnly());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS, getSubscribeFilterEvents());
     }
 
@@ -342,6 +343,7 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
 
         setPublishSelectionEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_PUBLISH_SELECTION_EVENTS));
         setSubscribeSelectionEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_SELECTION_EVENTS));
+        setShowSelectedOnly(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SELECTED_ONLY));
         setSubscribeFilterEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS));
     }
 
