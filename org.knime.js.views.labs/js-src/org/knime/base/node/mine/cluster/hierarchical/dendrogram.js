@@ -272,7 +272,13 @@ window.dendrogram_namespace = (function () {
                     return !!filteredRows.length && !(filteredRows.indexOf(rowKey) !== -1);
                 }).classed('ellipsis', showEllipsis);
             tickEl.select('line').classed('knime-tick-line', true);
-            d3.select(this).classed('knime-tick-label', true);
+
+            // TODO why can't we set this via CSS? works in browsers but not in KNIME SVG output
+            if (showEllipsis) {
+                d3.select(this).classed('knime-tick-label', true).attr('transform', 'translate(-16,9) rotate(-90)');
+            } else {
+                d3.select(this).classed('knime-tick-label', true).attr('transform', 'translate(-13,10) rotate(-90)');
+            }
 
             return showEllipsis ? '…' : d;
         });
