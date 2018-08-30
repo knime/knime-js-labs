@@ -374,6 +374,7 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_publishSelectionEvents, other.getPublishSelectionEvents())
                 .append(m_subscribeSelectionEvents, other.getSubscribeSelectionEvents())
                 .append(m_subscribeFilterEvents, other.getSubscribeFilterEvents())
+                .append(m_showSelectedOnly, other.getShowSelectedOnly())
                 .isEquals();
     }
 
@@ -397,6 +398,7 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_publishSelectionEvents)
                 .append(m_subscribeSelectionEvents)
                 .append(m_subscribeFilterEvents)
+                .append(m_showSelectedOnly)
                 .toHashCode();
     }
 
