@@ -69,6 +69,7 @@ public class HeatMapViewValue extends JSONViewContent {
 
     private String m_chartTitle;
     private String m_chartSubtitle;
+    private boolean m_showToolTips;
 
     private boolean m_continuousGradient;
 
@@ -77,15 +78,19 @@ public class HeatMapViewValue extends JSONViewContent {
     private boolean m_publishSelection;
     private boolean m_subscribeSelection;
     private boolean m_subscribeFilter;
+    private boolean m_showSelectedRowsOnly;
+
 
     private int m_initialPageSize;
+    private final static String CFG_CURRENT_PAGE = "currentPage";
+    private int m_currentPage;
 
     private final static String CFG_ZOOM_X = "zoomX";
-    private double m_zoomX = 0;
+    private double m_zoomX;
     private final static String CFG_ZOOM_Y = "zoomY";
-    private double m_zoomY = 0;
+    private double m_zoomY;
     private final static String CFG_ZOOM_K = "zoomK";
-    private double m_zoomK = 1;
+    private double m_zoomK;
 
     // -- General getters & setters --
 
@@ -115,6 +120,20 @@ public class HeatMapViewValue extends JSONViewContent {
      */
     public void setChartSubtitle(final String chartSubtitle) {
         m_chartSubtitle = chartSubtitle;
+    }
+
+    /**
+     * @return the showToolTips
+     */
+    public boolean getShowToolTips() {
+        return m_showToolTips;
+    }
+
+    /**
+     * @param showToolTips the showToolTips to set
+     */
+    public void setShowToolTips(final boolean showToolTips) {
+        m_showToolTips = showToolTips;
     }
 
     // -- Gradient getters & setters --
@@ -177,6 +196,20 @@ public class HeatMapViewValue extends JSONViewContent {
         m_subscribeSelection = subscribeSelection;
     }
 
+    /**
+     * @return the showSelectedRowsOnly
+     */
+    public boolean getShowSelectedRowsOnly() {
+        return m_showSelectedRowsOnly;
+    }
+
+    /**
+     * @param showSelectedRowsOnly the showSelectedRowsOnly to set
+     */
+    public void setShowSelectedRowsOnly(final boolean showSelectedRowsOnly) {
+        m_showSelectedRowsOnly = showSelectedRowsOnly;
+    }
+
     // -- Filter getters & setters --
 
     /**
@@ -207,6 +240,20 @@ public class HeatMapViewValue extends JSONViewContent {
      */
     public void setInitialPageSize(final int initialPageSize) {
         m_initialPageSize = initialPageSize;
+    }
+
+    /**
+     * @return the currentPage
+     */
+    public int getCurrentPage() {
+        return m_currentPage;
+    }
+
+    /**
+     * @param currentPage the currentPage to set
+     */
+    public void setCurrentPage(final int currentPage) {
+        m_currentPage = currentPage;
     }
 
     // -- Zoom & Panning getters & setters --
@@ -262,6 +309,7 @@ public class HeatMapViewValue extends JSONViewContent {
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         settings.addString(HeatMapViewConfig.CFG_CHART_TITLE, m_chartTitle);
         settings.addString(HeatMapViewConfig.CFG_CHART_SUBTITLE, m_chartSubtitle);
+        settings.addBoolean(HeatMapViewConfig.CFG_SHOW_TOOL_TIPS, m_showToolTips);
 
         settings.addBoolean(HeatMapViewConfig.CFG_CONTINUOUS_GRADIENT, m_continuousGradient);
 
@@ -269,8 +317,10 @@ public class HeatMapViewValue extends JSONViewContent {
         settings.addBoolean(HeatMapViewConfig.CFG_PUBLISH_SELECTION, m_publishSelection);
         settings.addBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_SELECTION, m_subscribeSelection);
         settings.addBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_FILTER, m_subscribeFilter);
+        settings.addBoolean(HeatMapViewConfig.CFG_SHOW_SELECTED_ROWS_ONLY, m_showSelectedRowsOnly);
 
         settings.addInt(HeatMapViewConfig.CFG_INITIAL_PAGE_SIZE, m_initialPageSize);
+        settings.addInt(CFG_CURRENT_PAGE, m_currentPage);
 
         settings.addDouble(CFG_ZOOM_X, m_zoomX);
         settings.addDouble(CFG_ZOOM_Y, m_zoomY);
@@ -284,6 +334,7 @@ public class HeatMapViewValue extends JSONViewContent {
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_chartTitle = settings.getString(HeatMapViewConfig.CFG_CHART_TITLE);
         m_chartSubtitle = settings.getString(HeatMapViewConfig.CFG_CHART_SUBTITLE);
+        m_showToolTips = settings.getBoolean(HeatMapViewConfig.CFG_SHOW_TOOL_TIPS);
 
         m_continuousGradient = settings.getBoolean(HeatMapViewConfig.CFG_CONTINUOUS_GRADIENT);
 
@@ -291,8 +342,10 @@ public class HeatMapViewValue extends JSONViewContent {
         m_publishSelection = settings.getBoolean(HeatMapViewConfig.CFG_PUBLISH_SELECTION);
         m_subscribeSelection = settings.getBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_SELECTION);
         m_subscribeFilter = settings.getBoolean(HeatMapViewConfig.CFG_SUBSCRIBE_FILTER);
+        m_showSelectedRowsOnly = settings.getBoolean(HeatMapViewConfig.CFG_SHOW_SELECTED_ROWS_ONLY);
 
         m_initialPageSize = settings.getInt(HeatMapViewConfig.CFG_INITIAL_PAGE_SIZE);
+        m_currentPage = settings.getInt(CFG_CURRENT_PAGE);
 
         m_zoomX = settings.getDouble(CFG_ZOOM_X);
         m_zoomY = settings.getDouble(CFG_ZOOM_Y);
@@ -317,12 +370,15 @@ public class HeatMapViewValue extends JSONViewContent {
         return new EqualsBuilder()
                 .append(m_chartTitle, other.getChartTitle())
                 .append(m_chartSubtitle, other.getChartSubtitle())
+                .append(m_showToolTips, other.getShowToolTips())
                 .append(m_continuousGradient, other.getContinuousGradient())
                 .append(m_selection, other.getSelection())
+                .append(m_showSelectedRowsOnly, other.getShowSelectedRowsOnly())
                 .append(m_publishSelection, other.getPublishSelection())
                 .append(m_subscribeSelection, other.getSubscribeSelection())
                 .append(m_subscribeFilter, other.getSubscribeFilter())
                 .append(m_initialPageSize, other.getInitialPageSize())
+                .append(m_currentPage, other.getCurrentPage())
                 .append(m_zoomX, other.getZoomX())
                 .append(m_zoomY, other.getZoomY())
                 .append(m_zoomK, other.getZoomK())
@@ -337,12 +393,15 @@ public class HeatMapViewValue extends JSONViewContent {
         return new HashCodeBuilder()
                 .append(m_chartTitle)
                 .append(m_chartSubtitle)
+                .append(m_showToolTips)
                 .append(m_continuousGradient)
                 .append(m_selection)
                 .append(m_publishSelection)
                 .append(m_subscribeSelection)
                 .append(m_subscribeFilter)
+                .append(m_showSelectedRowsOnly)
                 .append(m_initialPageSize)
+                .append(m_currentPage)
                 .append(m_zoomX)
                 .append(m_zoomY)
                 .append(m_zoomK)

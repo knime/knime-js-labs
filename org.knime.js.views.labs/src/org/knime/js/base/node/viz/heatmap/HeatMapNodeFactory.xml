@@ -86,6 +86,11 @@
 				graph shown above the generated image. If left blank, no subtitle
 				will be shown.
 			</option>
+			<option name="Show tool tips">
+				If selected, tool tips containing additional
+				information will be displayed when hovering over a cell within the
+				heatmap view.
+			</option>
 			<option name="Use discrete gradient">
 				If checked, a discrete gradient will be used to
 				color the heatmap. If not, a continuous gradient is used.
@@ -118,13 +123,9 @@
 				If checked, the color gradient can be toggled
 				between continuous and discrete from within the view.
 			</option>
-			<option name="Enable tool tip edit controls">
+			<option name="Enable 'show tool tips' option">
 				If enabled, tool tips for the heatmap data cells
 				and row labels can be toggled on/off from within the view.
-			</option>
-			<option name="Subscribe to filter events">
-				If checked, the view reacts when applied filters
-				are changed.
 			</option>
 			<option name="Enable selection">
 				When this option is checked, data points can be
@@ -132,6 +133,15 @@
 				clicking on data cells. Extend the selection by holding down the
 				Shift-key while clicking on points. The selection appears in an
 				appended column of the data table.
+			</option>
+			<option name="Show reset selection button">
+				If checked, a reset selection button will be
+				displayed in the view.
+			</option>
+			<option name="Selection column name">
+				Name of the appended column containing boolean
+				values to indicate, whether a data cell was selected in the view or
+				not.
 			</option>
 			<option name="Publish selection events">
 				If checked, notifies other interactive views when
@@ -143,10 +153,17 @@
 				other interactive views that the selection has been changed. See
 				also "Publish selection events".
 			</option>
-			<option name="Selection column name">
-				Name of the appended column containing boolean
-				values to indicate, whether a data cell was selected in the view or
-				not.
+			<option name="Enable 'show selected rows only' option">
+				If selected, a "show selected rows only" checkbox
+				will be displayed in the view's menu.
+			</option>
+			<option name="Show selected rows only">
+				If enabled, only the selected rows will be
+				displayed.
+			</option>
+			<option name="Subscribe to filter events">
+				If checked, the view reacts when applied filters
+				are changed.
 			</option>
 			<option name="Enable pagination">
 				Enable or disable the pagination feature

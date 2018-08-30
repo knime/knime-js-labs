@@ -272,6 +272,8 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
             representation.setSvgLabelColumn(m_config.getSvgLabelColumn());
             representation.setEnableSelection(m_config.getEnableSelection());
             representation.setSelectionColumnName(m_config.getSelectionColumnName());
+            representation.setShowResetSelectionButton(m_config.getShowResetSelectionButton());
+            representation.setEnableShowSelectedRowsOnly(m_config.getEnableShowSelectedRowsOnly());
             representation.setEnablePaging(m_config.getEnablePaging());
             representation.setEnablePageSizeChange(m_config.getEnablePageSizeChange());
             representation.setAllowedPageSizes(m_config.getAllowedPageSizes());
@@ -290,12 +292,15 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
             if (isViewValueEmpty()) {
                 value.setChartTitle(m_config.getChartTitle());
                 value.setChartSubtitle(m_config.getChartSubtitle());
+                value.setShowToolTips(m_config.getShowToolTips());
                 value.setContinuousGradient(m_config.getContinuousGradient());
                 value.setSelection(new String[0]);
                 value.setPublishSelection(m_config.getPublishSelection());
                 value.setSubscribeSelection(m_config.getSubscribeSelection());
                 value.setSubscribeFilter(m_config.getSubscribeFilter());
+                value.setShowSelectedRowsOnly(m_config.getShowSelectedRowsOnly());
                 value.setInitialPageSize(m_config.getInitialPageSize());
+                value.setCurrentPage(1);
                 value.setZoomX(0);
                 value.setZoomY(0);
                 value.setZoomK(1);
@@ -418,11 +423,13 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
         final HeatMapViewValue viewValue = getViewValue();
         m_config.setChartTitle(viewValue.getChartTitle());
         m_config.setChartSubtitle(viewValue.getChartSubtitle());
+        m_config.setShowToolTips(viewValue.getShowToolTips());
         m_config.setContinuousGradient(viewValue.getContinuousGradient());
         m_config.setInitialPageSize(viewValue.getInitialPageSize());
         m_config.setPublishSelection(viewValue.getPublishSelection());
         m_config.setSubscribeSelection(viewValue.getSubscribeSelection());
         m_config.setSubscribeFilter(viewValue.getSubscribeFilter());
+        m_config.setShowSelectedRowsOnly(viewValue.getShowSelectedRowsOnly());
     }
 
     private JSONDataTable createJSONTableFromBufferedDataTable(final ExecutionContext exec) throws CanceledExecutionException {

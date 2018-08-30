@@ -125,11 +125,15 @@ public class HeatMapNodeDialog extends NodeDialogPane {
     private final JCheckBox m_enableTitleChangeCheckBox;
     private final JCheckBox m_enableColorModeEditCheckBox;
     private final JCheckBox m_enableShowToolTipsCheckBox;
+    private final JCheckBox m_showToolTipsCheckBox;
     private final JCheckBox m_subscribeFilterCheckBox;
     private final JCheckBox m_enableSelectionCheckBox;
     private final JCheckBox m_publishSelectionCheckBox;
     private final JCheckBox m_subscribeSelectionCheckBox;
     private final JTextField m_selectionColumnNameTextField;
+    private final JCheckBox m_showResetSelectionButtonCheckBox;
+    private final JCheckBox m_showSelectedRowOnlyCheckBox;
+    private final JCheckBox m_enableShowSelectedRowOnlyCheckBox;
     private final JCheckBox m_enablePagingCheckBox;
     private final JSpinner m_initialPageSizeSpinner;
     private final JCheckBox m_enablePageSizeChangeCheckBox;
@@ -205,13 +209,17 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_enableViewConfigurationCheckBox.addChangeListener(e -> enableViewEdit());
         m_enableTitleChangeCheckBox = new JCheckBox("Enable title/subtitle edit controls");
         m_enableColorModeEditCheckBox = new JCheckBox("Enable color mode edit");
-        m_enableShowToolTipsCheckBox = new JCheckBox("Enable tool tip edit controls");
+        m_enableShowToolTipsCheckBox = new JCheckBox("Enable 'show tool tips' option");
+        m_showToolTipsCheckBox = new JCheckBox("Show tool tips");
         m_subscribeFilterCheckBox = new JCheckBox("Subscribe to filter events");
         m_enableSelectionCheckBox = new JCheckBox("Enable selection");
         m_enableSelectionCheckBox.addChangeListener(e -> enableSelection());
         m_publishSelectionCheckBox = new JCheckBox("Publish selection events");
         m_subscribeSelectionCheckBox = new JCheckBox("Subscribe to selection events");
         m_selectionColumnNameTextField = new JTextField(TEXT_FIELD_SIZE);
+        m_showResetSelectionButtonCheckBox = new JCheckBox("Show reset selection button");
+        m_showSelectedRowOnlyCheckBox = new JCheckBox("Show selected rows only");
+        m_enableShowSelectedRowOnlyCheckBox = new JCheckBox("Enable 'Show selected rows only' option");
         m_enablePagingCheckBox = new JCheckBox("Enable pagination");
         m_enablePagingCheckBox.addChangeListener(e -> enablePaging());
         m_initialPageSizeSpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
@@ -265,11 +273,15 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_config.setEnableTitleChange(m_enableTitleChangeCheckBox.isSelected());
         m_config.setEnableColorModeEdit(m_enableColorModeEditCheckBox.isSelected());
         m_config.setEnableShowToolTips(m_enableShowToolTipsCheckBox.isSelected());
+        m_config.setShowToolTips(m_showToolTipsCheckBox.isSelected());
         m_config.setSubscribeFilter(m_subscribeFilterCheckBox.isSelected());
         m_config.setEnableSelection(m_enableSelectionCheckBox.isSelected());
         m_config.setPublishSelection(m_publishSelectionCheckBox.isSelected());
         m_config.setSubscribeSelection(m_subscribeSelectionCheckBox.isSelected());
         m_config.setSelectionColumnName(m_selectionColumnNameTextField.getText());
+        m_config.setShowResetSelectionButton(m_showResetSelectionButtonCheckBox.isSelected());
+        m_config.setShowSelectedRowsOnly(m_showSelectedRowOnlyCheckBox.isSelected());
+        m_config.setEnableShowSelectedRowsOnly(m_enableShowSelectedRowOnlyCheckBox.isSelected());
         m_config.setEnablePaging(m_enablePagingCheckBox.isSelected());
         m_config.setInitialPageSize((int) m_initialPageSizeSpinner.getValue());
         m_config.setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
@@ -324,11 +336,15 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_enableTitleChangeCheckBox.setSelected(m_config.getEnableTitleChange());
         m_enableColorModeEditCheckBox.setSelected(m_config.getEnableColorModeEdit());
         m_enableShowToolTipsCheckBox.setSelected(m_config.getEnableShowToolTips());
+        m_showToolTipsCheckBox.setSelected(m_config.getShowToolTips());
         m_subscribeFilterCheckBox.setSelected(m_config.getSubscribeFilter());
         m_enableSelectionCheckBox.setSelected(m_config.getEnableSelection());
         m_publishSelectionCheckBox.setSelected(m_config.getPublishSelection());
         m_subscribeSelectionCheckBox.setSelected(m_config.getSubscribeSelection());
         m_selectionColumnNameTextField.setText(m_config.getSelectionColumnName());
+        m_showResetSelectionButtonCheckBox.setSelected(m_config.getShowResetSelectionButton());
+        m_showSelectedRowOnlyCheckBox.setSelected(m_config.getShowSelectedRowsOnly());
+        m_enableShowSelectedRowOnlyCheckBox.setSelected(m_config.getEnableShowSelectedRowsOnly());
         m_enablePagingCheckBox.setSelected(m_config.getEnablePaging());
         m_initialPageSizeSpinner.setValue(m_config.getInitialPageSize());
         m_enablePageSizeChangeCheckBox.setSelected(m_config.getEnablePageSizeChange());
@@ -476,6 +492,9 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         displayPanel.add(m_chartSubtitleTextField, displayPanelConstraints);
         displayPanelConstraints.gridx = 0;
         displayPanelConstraints.gridy++;
+        displayPanel.add(m_showToolTipsCheckBox, displayPanelConstraints);
+        displayPanelConstraints.gridx = 0;
+        displayPanelConstraints.gridy++;
 
         c.gridx = 0;
         c.gridy++;
@@ -565,12 +584,7 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         selectionPanelConstraints.weightx = 1;
         selectionPanel.add(m_enableSelectionCheckBox, selectionPanelConstraints);
         selectionPanelConstraints.gridx++;
-        selectionPanel.add(m_subscribeFilterCheckBox, selectionPanelConstraints);
-        selectionPanelConstraints.gridx = 0;
-        selectionPanelConstraints.gridy++;
-        selectionPanel.add(m_publishSelectionCheckBox, selectionPanelConstraints);
-        selectionPanelConstraints.gridx++;
-        selectionPanel.add(m_subscribeSelectionCheckBox, selectionPanelConstraints);
+        selectionPanel.add(m_showResetSelectionButtonCheckBox, selectionPanelConstraints);
         selectionPanelConstraints.gridx = 0;
         selectionPanelConstraints.gridy++;
         selectionPanel.add(new JLabel("Selection column name:"), selectionPanelConstraints);
@@ -578,6 +592,17 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         selectionPanel.add(m_selectionColumnNameTextField, selectionPanelConstraints);
         selectionPanelConstraints.gridx = 0;
         selectionPanelConstraints.gridy++;
+        selectionPanel.add(m_publishSelectionCheckBox, selectionPanelConstraints);
+        selectionPanelConstraints.gridx++;
+        selectionPanel.add(m_subscribeSelectionCheckBox, selectionPanelConstraints);
+        selectionPanelConstraints.gridx = 0;
+        selectionPanelConstraints.gridy++;
+        selectionPanel.add(m_enableShowSelectedRowOnlyCheckBox, selectionPanelConstraints);
+        selectionPanelConstraints.gridx++;
+        selectionPanel.add(m_showSelectedRowOnlyCheckBox, selectionPanelConstraints);
+        selectionPanelConstraints.gridx = 0;
+        selectionPanelConstraints.gridy++;
+        selectionPanel.add(m_subscribeFilterCheckBox, selectionPanelConstraints);
 
         c.gridx = 0;
         c.gridy++;
@@ -680,6 +705,9 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_publishSelectionCheckBox.setEnabled(enabled);
         m_subscribeSelectionCheckBox.setEnabled(enabled);
         m_selectionColumnNameTextField.setEnabled(enabled);
+        m_showResetSelectionButtonCheckBox.setEnabled(enabled);
+        m_showSelectedRowOnlyCheckBox.setEnabled(enabled);
+        m_enableShowSelectedRowOnlyCheckBox.setEnabled(enabled);
     }
 
     private void updateNumberOfBins() {

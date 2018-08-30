@@ -95,6 +95,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
 
     private boolean m_enableSelection;
     private String m_selectionColumnName;
+    private boolean m_showResetSelectionButton;
+    private boolean m_enableShowSelectedRowsOnly;
 
     private boolean m_enablePaging;
     private boolean m_enablePageSizeChange;
@@ -403,6 +405,34 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_selectionColumnName = selectionColumnName;
     }
 
+    /**
+     * @return the showResetSelectionButton
+     */
+    public boolean getShowResetSelectionButton() {
+        return m_showResetSelectionButton;
+    }
+
+    /**
+     * @param showResetSelectionButton the showResetSelectionButton to set
+     */
+    public void setShowResetSelectionButton(final boolean showResetSelectionButton) {
+        m_showResetSelectionButton = showResetSelectionButton;
+    }
+
+    /**
+     * @return the enableShowSelectedRowsOnly
+     */
+    public boolean getEnableShowSelectedRowsOnly() {
+        return m_enableShowSelectedRowsOnly;
+    }
+
+    /**
+     * @param enableShowSelectedRowsOnly the enableShowSelectedRowsOnly to set
+     */
+    public void setEnableShowSelectedRowsOnly(final boolean enableShowSelectedRowsOnly) {
+        m_enableShowSelectedRowsOnly = enableShowSelectedRowsOnly;
+    }
+
     // -- Paging getters & setters --
 
     /**
@@ -600,6 +630,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
 
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_SELECTION, m_enableSelection);
         settings.addString(HeatMapViewConfig.CFG_SELECTION_COLUMN_NAME, m_selectionColumnName);
+        settings.addBoolean(HeatMapViewConfig.CFG_SHOW_RESET_SELECTION_BUTTON, m_showResetSelectionButton);
+        settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_SHOW_SELECTED_ROWS_ONLY, m_enableShowSelectedRowsOnly);
 
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_PAGING, m_enablePaging);
         settings.addBoolean(HeatMapViewConfig.CFG_ENABLE_PAGE_SIZE_CHANGE, m_enablePageSizeChange);
@@ -644,6 +676,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
 
         m_enableSelection = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_SELECTION);
         m_selectionColumnName = settings.getString(HeatMapViewConfig.CFG_SELECTION_COLUMN_NAME);
+        m_showResetSelectionButton = settings.getBoolean(HeatMapViewConfig.CFG_SHOW_RESET_SELECTION_BUTTON);
+        m_enableShowSelectedRowsOnly = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_SHOW_SELECTED_ROWS_ONLY);
 
         m_enablePaging = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_PAGING);
         m_enablePageSizeChange = settings.getBoolean(HeatMapViewConfig.CFG_ENABLE_PAGE_SIZE_CHANGE);
@@ -695,6 +729,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_svgLabelColumn, other.getSvgLabelColumn())
                 .append(m_enableSelection, other.getEnableSelection())
                 .append(m_selectionColumnName, other.getSelectionColumnName())
+                .append(m_showResetSelectionButton, other.getShowResetSelectionButton())
+                .append(m_enableShowSelectedRowsOnly, other.getEnableShowSelectedRowsOnly())
                 .append(m_enablePaging, other.getEnablePaging())
                 .append(m_enablePageSizeChange, other.getEnablePageSizeChange())
                 .append(m_allowedPageSizes, other.getAllowedPageSizes())
@@ -735,6 +771,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_svgLabelColumn)
                 .append(m_enableSelection)
                 .append(m_selectionColumnName)
+                .append(m_showResetSelectionButton)
+                .append(m_enableShowSelectedRowsOnly)
                 .append(m_enablePaging)
                 .append(m_enablePageSizeChange)
                 .append(m_allowedPageSizes)

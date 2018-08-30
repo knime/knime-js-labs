@@ -138,6 +138,10 @@ public final class HeatMapViewConfig {
     final static boolean DEFAULT_ENABLE_SHOW_TOOLTIPS = true;
     private boolean m_enableShowToolTips = DEFAULT_ENABLE_SHOW_TOOLTIPS;
 
+    final static String CFG_SHOW_TOOL_TIPS = "showToolTips";
+    final static boolean DEFAULT_SHOW_TOOL_TIPS = false;
+    private boolean m_showToolTips = DEFAULT_SHOW_TOOL_TIPS;
+
     // Gradient
     final static String CFG_THREE_COLOR_GRADIENT = "threeColorGradient";
     final static String[] DEFAULT_THREE_COLOR_GRADIENT = new String[] {"#5e3c99", "#f7f7f7", "#e66101"};
@@ -199,6 +203,18 @@ public final class HeatMapViewConfig {
     final static String CFG_SELECTION_COLUMN_NAME = "selectionColumnName";
     final static String DEFAULT_SELECTION_COLUMN_NAME = "Selected (Heatmap)";
     private String m_selectionColumnName = DEFAULT_SELECTION_COLUMN_NAME;
+
+    final static String CFG_SHOW_SELECTED_ROWS_ONLY = "showSelectedRowsOnly";
+    final static boolean DEFAULT_SHOW_SELECTED_ROWS_ONLY = false;
+    private boolean m_showSelectedRowsOnly = DEFAULT_SHOW_SELECTED_ROWS_ONLY;
+
+    final static String CFG_ENABLE_SHOW_SELECTED_ROWS_ONLY = "enableShowSelectedRowsOnly";
+    final static boolean DEFAULT_ENABLE_SHOW_SELECTED_ROWS_ONLY = true;
+    private boolean m_enableShowSelectedRowsOnly = DEFAULT_ENABLE_SHOW_SELECTED_ROWS_ONLY;
+
+    final static String CFG_SHOW_RESET_SELECTION_BUTTON = "showResetSelectionButton";
+    final static boolean DEFAULT_SHOW_RESET_SELECTION_BUTTON = true;
+    private boolean m_showResetSelectionButton = DEFAULT_SHOW_RESET_SELECTION_BUTTON;
 
     // Paging
     final static String CFG_ENABLE_PAGING = "enablePaging";
@@ -490,6 +506,20 @@ public final class HeatMapViewConfig {
         m_enableShowToolTips = enableShowToolTips;
     }
 
+    /**
+     * @return the showToolTips
+     */
+    public boolean getShowToolTips() {
+        return m_showToolTips;
+    }
+
+    /**
+     * @param showToolTips the showToolTips to set
+     */
+    public void setShowToolTips(final boolean showToolTips) {
+        m_showToolTips = showToolTips;
+    }
+
     // -- Gradient getters & setters --
 
     /**
@@ -680,6 +710,48 @@ public final class HeatMapViewConfig {
         m_selectionColumnName = selectionColumnName;
     }
 
+    /**
+     * @return the showSelectedRowsOnly
+     */
+    public boolean getShowSelectedRowsOnly() {
+        return m_showSelectedRowsOnly;
+    }
+
+    /**
+     * @param showSelectedRowsOnly the showSelectedRowsOnly to set
+     */
+    public void setShowSelectedRowsOnly(final boolean showSelectedRowsOnly) {
+        m_showSelectedRowsOnly = showSelectedRowsOnly;
+    }
+
+    /**
+     * @return the enableShowSelectedRowsOnly
+     */
+    public boolean getEnableShowSelectedRowsOnly() {
+        return m_enableShowSelectedRowsOnly;
+    }
+
+    /**
+     * @param enableShowSelectedRowsOnly the enableShowSelectedRowsOnly to set
+     */
+    public void setEnableShowSelectedRowsOnly(final boolean enableShowSelectedRowsOnly) {
+        m_enableShowSelectedRowsOnly = enableShowSelectedRowsOnly;
+    }
+
+    /**
+     * @return the showResetSelectionButton
+     */
+    public boolean getShowResetSelectionButton() {
+        return m_showResetSelectionButton;
+    }
+
+    /**
+     * @param showResetSelectionButton the showResetSelectionButton to set
+     */
+    public void setShowResetSelectionButton(final boolean showResetSelectionButton) {
+        m_showResetSelectionButton = showResetSelectionButton;
+    }
+
     // -- Paging getters & setters --
 
     /**
@@ -821,6 +893,7 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_ENABLE_TTILE_CHANGE, m_enableTitleChange);
         settings.addBoolean(CFG_ENABLE_COLOR_MODE_EDIT, m_enableColorModeEdit);
         settings.addBoolean(CFG_ENABLE_SHOW_TOOLTIPS, m_enableShowToolTips);
+        settings.addBoolean(CFG_SHOW_TOOL_TIPS, m_showToolTips);
 
         settings.addStringArray(CFG_THREE_COLOR_GRADIENT, m_threeColorGradient);
         settings.addStringArray(CFG_DISCRETE_GRADIENT_COLORS, m_discreteGradientColors);
@@ -838,6 +911,9 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_PUBLISH_SELECTION, m_publishSelection);
         settings.addBoolean(CFG_SUBSCRIBE_SELECTION, m_subscribeSelection);
         settings.addString(CFG_SELECTION_COLUMN_NAME, m_selectionColumnName);
+        settings.addBoolean(CFG_SHOW_SELECTED_ROWS_ONLY, m_showSelectedRowsOnly);
+        settings.addBoolean(CFG_ENABLE_SHOW_SELECTED_ROWS_ONLY, m_enableShowSelectedRowsOnly);
+        settings.addBoolean(CFG_SHOW_RESET_SELECTION_BUTTON, m_showResetSelectionButton);
 
         settings.addBoolean(CFG_ENABLE_PAGING, m_enablePaging);
         settings.addInt(CFG_INITIAL_PAGE_SIZE, m_initialPageSize);
@@ -880,6 +956,7 @@ public final class HeatMapViewConfig {
         m_enableTitleChange = settings.getBoolean(CFG_ENABLE_TTILE_CHANGE);
         m_enableColorModeEdit = settings.getBoolean(CFG_ENABLE_COLOR_MODE_EDIT);
         m_enableShowToolTips = settings.getBoolean(CFG_ENABLE_SHOW_TOOLTIPS);
+        m_showToolTips = settings.getBoolean(CFG_SHOW_TOOL_TIPS);
 
         m_threeColorGradient = settings.getStringArray(CFG_THREE_COLOR_GRADIENT);
         m_discreteGradientColors = settings.getStringArray(CFG_DISCRETE_GRADIENT_COLORS);
@@ -897,6 +974,9 @@ public final class HeatMapViewConfig {
         m_publishSelection = settings.getBoolean(CFG_PUBLISH_SELECTION);
         m_subscribeSelection = settings.getBoolean(CFG_SUBSCRIBE_SELECTION);
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME);
+        m_showSelectedRowsOnly = settings.getBoolean(CFG_SHOW_SELECTED_ROWS_ONLY);
+        m_enableShowSelectedRowsOnly = settings.getBoolean(CFG_ENABLE_SHOW_SELECTED_ROWS_ONLY);
+        m_showResetSelectionButton = settings.getBoolean(CFG_SHOW_RESET_SELECTION_BUTTON);
 
         m_enablePaging = settings.getBoolean(CFG_ENABLE_PAGING);
         m_initialPageSize = settings.getInt(CFG_INITIAL_PAGE_SIZE);
@@ -933,6 +1013,7 @@ public final class HeatMapViewConfig {
         m_enableTitleChange = settings.getBoolean(CFG_ENABLE_TTILE_CHANGE, DEFAULT_ENABLE_TTILE_CHANGE);
         m_enableColorModeEdit = settings.getBoolean(CFG_ENABLE_COLOR_MODE_EDIT, DEFAULT_ENABLE_COLOR_MODE_EDIT);
         m_enableShowToolTips = settings.getBoolean(CFG_ENABLE_SHOW_TOOLTIPS, DEFAULT_ENABLE_SHOW_TOOLTIPS);
+        m_showToolTips = settings.getBoolean(CFG_SHOW_TOOL_TIPS, DEFAULT_SHOW_TOOL_TIPS);
 
         m_threeColorGradient = settings.getStringArray(CFG_THREE_COLOR_GRADIENT, DEFAULT_THREE_COLOR_GRADIENT);
         m_discreteGradientColors = settings.getStringArray(CFG_DISCRETE_GRADIENT_COLORS, DEFAULT_THREE_COLOR_GRADIENT);
@@ -950,6 +1031,9 @@ public final class HeatMapViewConfig {
         m_publishSelection = settings.getBoolean(CFG_PUBLISH_SELECTION, DEFAULT_PUBLISH_SELECTION);
         m_subscribeSelection = settings.getBoolean(CFG_SUBSCRIBE_SELECTION, DEFAULT_SUBSCRIBE_SELECTION);
         m_selectionColumnName = settings.getString(CFG_SELECTION_COLUMN_NAME, DEFAULT_SELECTION_COLUMN_NAME);
+        m_showSelectedRowsOnly = settings.getBoolean(CFG_SHOW_SELECTED_ROWS_ONLY, DEFAULT_SHOW_SELECTED_ROWS_ONLY);
+        m_enableShowSelectedRowsOnly = settings.getBoolean(CFG_ENABLE_SHOW_SELECTED_ROWS_ONLY, DEFAULT_ENABLE_SHOW_SELECTED_ROWS_ONLY);
+        m_showResetSelectionButton = settings.getBoolean(CFG_SHOW_RESET_SELECTION_BUTTON, DEFAULT_SHOW_RESET_SELECTION_BUTTON);
 
         m_enablePaging = settings.getBoolean(CFG_ENABLE_PAGING, DEFAULT_ENABLE_PAGING);
         m_initialPageSize = settings.getInt(CFG_INITIAL_PAGE_SIZE, DEFAULT_INITIAL_PAGE_SIZE);
