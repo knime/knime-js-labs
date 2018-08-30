@@ -159,6 +159,9 @@ window.dendrogram_namespace = (function () {
                 }
 
                 setThresholdByNumClusters();
+
+                // save that the threshold was specified by number of clusters
+                _value.numClustersMode = true;
             }, true);
             knimeService.addMenuItem('Number of clusters', 'sitemap', numClustersField);
         }
@@ -407,6 +410,9 @@ window.dendrogram_namespace = (function () {
                     thresholdEl.attr('transform', 'translate(0,' + (d3.event.y - (thresholdEl.attr('height') / 2)) + ')');
 
                     onThresholdChange(newThreshold);
+
+                    // save that the threshold was manually specified
+                    _value.numClustersMode = false;
                 }));
 
             if (_representation.runningInView) {
@@ -420,11 +426,10 @@ window.dendrogram_namespace = (function () {
             .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 40 + ')');
 
         // set initial threshold
-        // TODO fix mode switch
-        if (true /*_representation.numClustersMode*/) {
-            onThresholdChange(_value.threshold);
-        } else {
+        if (_value.numClustersMode) {
             setThresholdByNumClusters();
+        } else {
+            onThresholdChange(_value.threshold);
         }
     };
 
@@ -478,7 +483,7 @@ window.dendrogram_namespace = (function () {
             .sort(function (a, b) { return b.data.distance - a.data.distance; })
             .some(function (n) {
                 if (_value.numClusters == clusterMarker.length + 1) {
-                    threshold = 0;
+                    threshold = clusterMarker[clusterMarker.length - 1].data.distance / 2;
                     return true;
                 } else if (clusterCount == _value.numClusters) {
                     threshold = (n.data.distance + threshold) / 2;
