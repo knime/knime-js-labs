@@ -89,6 +89,7 @@ window.dendrogram_namespace = (function () {
         resizeDiagram(true);
 
         if (_representation.enableSelection) {
+            toggleShowSelectedOnly();
             initSelection();
             toggleSubscribeSelection();
         }
@@ -167,8 +168,7 @@ window.dendrogram_namespace = (function () {
             knimeService.addMenuDivider();
             knimeService.addMenuItem('Show selected rows only', 'filter', knimeService.createMenuCheckbox('showSelectedOnlyCheckbox', _value.showSelectedOnly, function () {
                 _value.showSelectedOnly = this.checked;
-
-                svg.classed('showSelectedOnly', _value.showSelectedOnly);
+                toggleShowSelectedOnly();
             }));
         }
 
@@ -820,6 +820,10 @@ window.dendrogram_namespace = (function () {
             filteredRows = [];
             updateFilterInView();
         }
+    };
+
+    const toggleShowSelectedOnly = function () {
+        svg.classed('showSelectedOnly', _value.showSelectedOnly);
     };
 
     dendrogram.validate = function () {
