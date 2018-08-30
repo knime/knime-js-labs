@@ -174,6 +174,10 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
      */
     @Override
     public ValidationError validateViewValue(final HierarchicalClusterAssignerValue viewContent) {
+        final int numClusters = computeNumClustersFromThreshold(viewContent.getThreshold());
+        if (numClusters != viewContent.getNumClusters()) {
+            return new ValidationError("Threshold value and number of cluster value are not in sync!");
+        }
         return null;
     }
 
@@ -495,9 +499,6 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
         m_config.setShowSelectedOnly(value.getShowSelectedOnly());
 
         if (m_config.getNumClustersMode()) {
-            // The view more or less ignores this value, and we always assume that the threshold is updates
-            final int numClusters = computeNumClustersFromThreshold(value.getThreshold());
-            value.setNumClusters(numClusters);
             m_config.setNumClusters(value.getNumClusters());
         } else if (!m_config.getNumClustersMode() && m_config.getUseNormalizedDistances()) {
             final double maxDist = m_tree.getClusterDistances()[m_tree.getClusterDistances().length - 1];
