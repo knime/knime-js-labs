@@ -519,6 +519,8 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         displayPanel.add(m_subtitleTextField, displayConstraints);
         displayConstraints.gridx = 0;
         displayConstraints.gridy++;
+        /* These settings will not be implemented for the first version
+         *
         displayPanel.add(new JLabel("Chart Orientation: "), displayConstraints);
         displayConstraints.gridx++;
         displayPanel.add(m_orientationComboBox, displayConstraints);
@@ -529,6 +531,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         displayPanel.add(m_useLogScaleCheckBox, displayConstraints);
         displayConstraints.gridx = 0;
         displayConstraints.gridy++;
+        */
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -614,11 +617,14 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         viewControlsPanel.add(m_enableNumClusterEditCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
+        /* These options will not be implemented for the first version
+         *
         viewControlsPanel.add(m_enableLogScaleToggleCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx++;
         viewControlsPanel.add(m_enableChangeOrientationCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
+        */
 
         gbc.gridx = 0;
         gbc.gridy++;
