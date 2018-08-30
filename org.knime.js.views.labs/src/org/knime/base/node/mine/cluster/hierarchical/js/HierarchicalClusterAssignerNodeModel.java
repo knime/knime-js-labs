@@ -526,9 +526,6 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
         representation.setEnableClusterColor(m_config.getEnableClusterColor());
         representation.setEnableSelection(m_config.getEnableSelection());
         representation.setShowClearSelectionButton(m_config.getShowClearSelectionButton());
-        representation.setShowPublishSelectionToggle(m_config.getShowPublishSelectionToggle());
-        representation.setShowSubscribeSelectionToggle(m_config.getShowSubscribeSelectionToggle());
-        representation.setShowSubscribeFilterToggle(m_config.getShowSubscribeFilterToggle());
         representation.setShowSelectedOnlyToggle(m_config.getShowSelectedOnlyToggle());
         representation.setShowWarningsInView(m_config.getShowWarningsInView());
         representation.setEnableZoom(m_config.getEnableZoomAndPanning());

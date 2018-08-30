@@ -85,9 +85,6 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
     private boolean m_enableSelection;
     private boolean m_showClearSelectionButton;
-    private boolean m_showPublishSelectionToggle;
-    private boolean m_showSubscribeSelectionToggle;
-    private boolean m_showSubscribeFilterToggle;
     private boolean m_showSelectedOnlyToggle;
 
     private boolean m_showWarningsInView;
@@ -279,48 +276,6 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
      */
     public void setShowClearSelectionButton(final boolean showClearSelectionButton) {
         m_showClearSelectionButton = showClearSelectionButton;
-    }
-
-    /**
-     * @return the showPublishSelectionToggle
-     */
-    public boolean getShowPublishSelectionToggle() {
-        return m_showPublishSelectionToggle;
-    }
-
-    /**
-     * @param showPublishSelectionToggle the showPublishSelectionToggle to set
-     */
-    public void setShowPublishSelectionToggle(final boolean showPublishSelectionToggle) {
-        m_showPublishSelectionToggle = showPublishSelectionToggle;
-    }
-
-    /**
-     * @return the showSubscribeSelectionToggle
-     */
-    public boolean getShowSubscribeSelectionToggle() {
-        return m_showSubscribeSelectionToggle;
-    }
-
-    /**
-     * @param showSubscribeSelectionToggle the showSubscribeSelectionToggle to set
-     */
-    public void setShowSubscribeSelectionToggle(final boolean showSubscribeSelectionToggle) {
-        m_showSubscribeSelectionToggle = showSubscribeSelectionToggle;
-    }
-
-    /**
-     * @return the showSubscribeFilterToggle
-     */
-    public boolean getShowSubscribeFilterToggle() {
-        return m_showSubscribeFilterToggle;
-    }
-
-    /**
-     * @param showSubscribeFilterToggle the showSubscribeFilterToggle to set
-     */
-    public void setShowSubscribeFilterToggle(final boolean showSubscribeFilterToggle) {
-        m_showSubscribeFilterToggle = showSubscribeFilterToggle;
     }
 
     /**
@@ -544,9 +499,6 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_SELECTION, getEnableSelection());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_CLEAR_SELECTION_BUTTON, getShowClearSelectionButton());
-        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_PUBLISH_SELECTION_TOGGLE, getShowPublishSelectionToggle());
-        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SUBSCRIBE_SELECTION_TOGGLE, getShowSubscribeSelectionToggle());
-        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SUBSCRIBE_FILTER_TOGGLE, getShowSubscribeFilterToggle());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SELECTED_ONLY_TOGGLE, getShowSelectedOnlyToggle());
 
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW, getShowWarningsInView());
@@ -588,9 +540,6 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
         setEnableSelection(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_SELECTION));
         setShowClearSelectionButton(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_CLEAR_SELECTION_BUTTON));
-        setShowPublishSelectionToggle(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_PUBLISH_SELECTION_TOGGLE));
-        setShowSubscribeSelectionToggle(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SUBSCRIBE_SELECTION_TOGGLE));
-        setShowSubscribeFilterToggle(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SUBSCRIBE_FILTER_TOGGLE));
         setShowSelectedOnlyToggle(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SELECTED_ONLY_TOGGLE));
 
         setShowWarningsInView(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_WARNINGS_IN_VIEW));
@@ -638,9 +587,6 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_enableNumClusterEdit, other.getEnableNumClusterEdit())
                 .append(m_enableSelection, other.getEnableSelection())
                 .append(m_showClearSelectionButton, other.getShowClearSelectionButton())
-                .append(m_showPublishSelectionToggle, other.getShowPublishSelectionToggle())
-                .append(m_showSubscribeSelectionToggle, other.getShowSubscribeSelectionToggle())
-                .append(m_showSubscribeFilterToggle, other.getShowSubscribeFilterToggle())
                 .append(m_showSelectedOnlyToggle, other.getShowSelectedOnlyToggle())
                 .append(m_showWarningsInView, other.getShowWarningsInView())
                 .append(m_enableZoomAndPanning, other.getEnableZoomAndPanning())
@@ -675,9 +621,6 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_enableNumClusterEdit)
                 .append(m_enableSelection)
                 .append(m_showClearSelectionButton)
-                .append(m_showPublishSelectionToggle)
-                .append(m_showSubscribeSelectionToggle)
-                .append(m_showSubscribeFilterToggle)
                 .append(m_showSelectedOnlyToggle)
                 .append(m_showWarningsInView)
                 .append(m_enableZoomAndPanning)

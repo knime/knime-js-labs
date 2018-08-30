@@ -153,14 +153,6 @@
 				(i.e. horizontal, vertical,
 				etc.) from within the view.
 			</option>
-			<option name="Subscribe to filter events">
-				If checked, the view reacts when applied filters
-				have been changed.
-			</option>
-			<option name="Toggle subscribe to filters in view">
-				Enables switching the "subscribe to filter
-				events" functionality on/off from within the view.
-			</option>
 			<option name="Enable selection">
 				When this option is checked, data points can be
 				selected in the view. The selection appears in an
@@ -171,34 +163,30 @@
 				If enabled, a "clear selection" button will be
 				displayed.
 			</option>
+			<option name="Selection column name">
+				Sets the name of the selection column in the
+				output data table.
+			</option>
 			<option name="Publish selection events">
 				Checking this option ensures that other views are
 				notified whenever the
 				selection in the current view is changed.
 			</option>
-			<option name="Toggle publish selection in view">
-				Enables switching the "publish selection events"
-				functionality on/off from within the view.
-			</option>
 			<option name="Subscribe to selection events">
 				Checking this option ensures that this view is
 				notified whenever other views publish new selections.
 			</option>
-			<option name="Toggle subscribe selection in view">
-				Enables switching the "subscribe to selection
-				events" functionality on/off from within the view.
+			<option name="Enable 'show selected clusters only' option">
+				Enables switching the "show selected clusters
+				only" functionality on/off from within the view.
 			</option>
 			<option name="Show selected clusters only">
 				If checked, only members of the selected clusters
 				will be displayed.
 			</option>
-			<option name="Toggle show selected clusters only in view">
-				Enables switching the "show selected clusters
-				only" functionality on/off from within the view.
-			</option>
-			<option name="Selection column name">
-				Sets the name of the selection column in the
-				output data table.
+			<option name="Subscribe to filter events">
+				If checked, the view reacts when applied filters
+				have been changed.
 			</option>
 			<option name="Enable zooming &amp; panning">
 				Enable zooming using the mouse wheel and panning
