@@ -148,20 +148,16 @@ window.dendrogram_namespace = (function () {
             const minNumClusters = 1;
             const maxNumClusters = clusterMarker.length + 1;
             numClustersField = knimeService.createMenuNumberField('numClusters', _value.numClusters, minNumClusters, maxNumClusters, 1, function () {
-                const newValue = parseInt(this.value);
-                if (newValue >= minNumClusters && newValue <= maxNumClusters) {
-                    _value.numClusters = newValue;
-                    this.value = _value.numClusters;
-                } else if (!this.value.length) {
-                    _value.numClusters = 1;
-                } else {
-                    this.value = _value.numClusters;
+                var newValue = parseInt(this.value);
+                if (this.value.length) {
+                    if (newValue < minNumClusters) {
+                        newValue = minNumClusters;
+                    } else if (newValue > maxNumClusters) {
+                        newValue = maxNumClusters;
+                    }
+
+                    setThresholdByNumClusters(newValue);
                 }
-
-                setThresholdByNumClusters();
-
-                // save that the threshold was specified by number of clusters
-                _value.numClustersMode = true;
             }, true);
             knimeService.addMenuItem('Number of clusters', 'sitemap', numClustersField);
         }
@@ -426,17 +422,10 @@ window.dendrogram_namespace = (function () {
             .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 40 + ')');
 
         // set initial threshold
-        if (_value.numClustersMode) {
-            setThresholdByNumClusters();
-        } else {
-            onThresholdChange(_value.threshold);
-        }
+        onThresholdChange(_value.threshold);
     };
 
-    const onThresholdChange = function (threshold, skipValueUpdate) {
-        // save new threshold
-        _value.threshold = threshold;
-
+    const onThresholdChange = function (threshold) {
         var numberOfRootCluster = 0;
         clusterMarkerEl.each(function (n) {
             const isRoot = n.data.distance <= threshold && (!n.parent || n.parent && n.parent.data.distance > threshold);
@@ -462,12 +451,10 @@ window.dendrogram_namespace = (function () {
         thresholdDisplayEl.text('Threshold: ' + thresholdFormatted);
         thresholdClusterDisplayEl.text('Cluster: ' + numberOfRootCluster);
 
-        if (!skipValueUpdate) {
-            _value.numClusters = numberOfRootCluster;
-            if (numClustersField) {
-                numClustersField.value = _value.numClusters;
-            }
-        }
+        // save new threshold values
+        _value.threshold = threshold;
+        _value.numClusters = numberOfRootCluster;
+        numClustersField.value = _value.numClusters;
 
         // mark links
         linkEl.each(function (n) {
@@ -475,17 +462,17 @@ window.dendrogram_namespace = (function () {
         });
     };
 
-    const setThresholdByNumClusters = function () {
+    const setThresholdByNumClusters = function (number) {
         var threshold = nodes.data.distance;
         var clusterCount = 1;
 
         clusterMarker
             .sort(function (a, b) { return b.data.distance - a.data.distance; })
             .some(function (n) {
-                if (_value.numClusters == clusterMarker.length + 1) {
+                if (number == clusterMarker.length + 1) {
                     threshold = clusterMarker[clusterMarker.length - 1].data.distance / 2;
                     return true;
-                } else if (clusterCount == _value.numClusters) {
+                } else if (number == clusterCount) {
                     threshold = (n.data.distance + threshold) / 2;
                     return true; // aborts loop
                 } else {
@@ -495,7 +482,7 @@ window.dendrogram_namespace = (function () {
                 }
             });
 
-        onThresholdChange(threshold, true);
+        onThresholdChange(threshold);
 
         // move threshold handle
         thresholdEl.attr('transform', 'translate(0,' + (yScale(threshold) - (thresholdEl.attr('height') / 2)) + ')');
