@@ -460,7 +460,9 @@ window.dendrogram_namespace = (function () {
         // save new threshold values
         _value.threshold = threshold;
         _value.numClusters = numberOfRootCluster;
-        numClustersField.value = _value.numClusters;
+        if (numClustersField) {
+            numClustersField.value = _value.numClusters;
+        }
 
         // mark links
         linkEl.each(function (n) {
