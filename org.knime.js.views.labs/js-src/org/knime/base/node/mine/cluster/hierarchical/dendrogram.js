@@ -762,6 +762,11 @@ window.dendrogram_namespace = (function () {
                 toggleSelectRow(rowKey);
             }
         });
+
+        if (Array.isArray(_value.selection) && _value.selection.length) {
+            selectedRows = _value.selection;
+            updateSelectionInView();
+        }
     };
 
     const toggleSubscribeSelection = function () {
@@ -839,6 +844,7 @@ window.dendrogram_namespace = (function () {
     };
 
     dendrogram.getComponentValue = function () {
+        _value.selection = selectedRows;
         return _value;
     };
 
