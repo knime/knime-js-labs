@@ -410,7 +410,7 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
             else {
                 leaves.put(getLeafRowKey(node), node);
             }
-            labels.add("Cluster " + id);
+            labels.add("Cluster_" + id);
             id++;
         }
         populateLeaves(leaves);
