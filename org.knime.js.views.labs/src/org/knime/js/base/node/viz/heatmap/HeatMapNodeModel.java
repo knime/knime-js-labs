@@ -59,6 +59,7 @@ import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
+import org.knime.core.data.DoubleValue;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.container.SingleCellFactory;
@@ -78,6 +79,7 @@ import org.knime.core.node.port.image.ImagePortObject;
 import org.knime.core.node.port.image.ImagePortObjectSpec;
 import org.knime.core.node.port.inactive.InactiveBranchPortObjectSpec;
 import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
+import org.knime.core.node.util.filter.column.DataColumnSpecFilterConfiguration;
 import org.knime.core.node.web.ValidationError;
 import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.layout.LayoutTemplateProvider;
@@ -252,6 +254,10 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
         synchronized (getLock()) {
             final HeatMapViewRepresentation representation = getViewRepresentation();
             m_table = (BufferedDataTable)inObjects[0];
+            // Ensures that min/max value set, even if dialog has not been opened
+            m_config.setMinValue(getMin(m_table.getDataTableSpec(), m_config.getColumns(), m_config.getUseCustomMin()));
+            m_config.setMaxValue(getMax(m_table.getDataTableSpec(), m_config.getColumns(), m_config.getUseCustomMax()));
+
             representation.setShowWarningInView(m_config.getShowWarningInView());
             representation.setImageWidth(m_config.getImageWidth());
             representation.setImageHeight(m_config.getImageHeight());
@@ -453,6 +459,44 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
                 .calculateDataHash(true)
                 .build(exec);
         return jsonTable;
+    }
+
+    private double getMax(final DataTableSpec spec, final DataColumnSpecFilterConfiguration filter,
+        final boolean useCustom) {
+        if (useCustom) {
+            return m_config.getMaxValue();
+        }
+        final String[] included = filter.applyTo(spec).getIncludes();
+        double max = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < included.length; i++) {
+            final DataCell upperBound = spec.getColumnSpec(included[i]).getDomain().getUpperBound();
+            if (upperBound != null && ((DoubleValue)upperBound).getDoubleValue() > max) {
+                max = ((DoubleValue)upperBound).getDoubleValue();
+            }
+        }
+        if (max == Double.NEGATIVE_INFINITY) {
+            max = m_config.getMaxValue();
+        }
+        return max;
+    }
+
+    private double getMin(final DataTableSpec spec, final DataColumnSpecFilterConfiguration filter,
+        final boolean useCustom) {
+        if (useCustom) {
+            return m_config.getMinValue();
+        }
+        final String[] included = filter.applyTo(spec).getIncludes();
+        double min = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < included.length; i++) {
+            final DataCell lowerBound = spec.getColumnSpec(included[i]).getDomain().getLowerBound();
+            if (lowerBound != null && ((DoubleValue)lowerBound).getDoubleValue() < min) {
+                min = ((DoubleValue)lowerBound).getDoubleValue();
+            }
+        }
+        if (min == Double.POSITIVE_INFINITY) {
+            min = m_config.getMinValue();
+        }
+        return min;
     }
 
 }
