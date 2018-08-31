@@ -54,7 +54,7 @@ import org.knime.core.node.NodeView;
 import org.knime.core.node.wizard.WizardNodeFactoryExtension;
 
 /**
- * @author Alison Walter, KNIME.com GmbH, Konstanz, Germany
+ * @author Alison Walter, KNIME GmbH, Konstanz, Germany
  */
 public class CardViewNodeFactory extends NodeFactory<CardViewNodeModel> implements
 WizardNodeFactoryExtension<CardViewNodeModel, CardViewRepresentation, CardViewValue> {

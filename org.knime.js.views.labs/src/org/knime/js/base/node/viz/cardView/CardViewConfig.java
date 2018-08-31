@@ -56,7 +56,7 @@ import org.knime.js.core.node.table.TableConfig;
 import org.knime.js.core.settings.table.TableSettings;
 
 /**
- * @author Alison Walter, KNIME.com GmbH, Konstanz, Germany
+ * @author Alison Walter, KNIME GmbH, Konstanz, Germany
  */
 public class CardViewConfig implements TableConfig {
 

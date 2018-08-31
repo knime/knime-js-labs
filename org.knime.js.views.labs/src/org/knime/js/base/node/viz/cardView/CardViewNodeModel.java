@@ -64,7 +64,7 @@ import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.node.table.AbstractTableNodeModel;
 
 /**
- * @author Alison Walter, KNIME.com GmbH, Konstanz, Germany
+ * @author Alison Walter, KNIME GmbH, Konstanz, Germany
  */
 public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresentation, CardViewValue> {
 

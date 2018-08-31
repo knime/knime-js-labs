@@ -83,7 +83,7 @@ import org.knime.js.core.settings.table.TableRepresentationSettings;
 import org.knime.js.core.settings.table.TableSettings;
 
 /**
- * @author Alison Walter, KNIME.com GmbH, Konstanz, Germany
+ * @author Alison Walter, KNIME GmbH, Konstanz, Germany
  */
 public class CardViewNodeDialog extends NodeDialogPane {
 
