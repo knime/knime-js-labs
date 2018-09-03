@@ -648,17 +648,21 @@ window.dendrogram_namespace = (function () {
     };
 
     const onSelectionChange = function (data) {
-        if (data.changeSet.removed) {
-            selectedRows = selectedRows.filter(function (item) {
-                return data.changeSet.removed.indexOf(item) === -1;
-            });
-        }
-        if (data.changeSet.added) {
-            data.changeSet.added.forEach(function (item) {
-                if (selectedRows.indexOf(item) === -1) {
-                    selectedRows.push(item);
-                }
-            });
+        if (data.reevaluate) {
+            selectedRows = knimeService.getAllRowsForSelection(table.getTableId());
+        } else if (data.changeSet) {
+            if (data.changeSet.removed) {
+                selectedRows = selectedRows.filter(function (item) {
+                    return data.changeSet.removed.indexOf(item) === -1;
+                });
+            }
+            if (data.changeSet.added) {
+                data.changeSet.added.forEach(function (item) {
+                    if (selectedRows.indexOf(item) === -1) {
+                        selectedRows.push(item);
+                    }
+                });
+            }
         }
 
         updateSelectionInView();
@@ -811,7 +815,6 @@ window.dendrogram_namespace = (function () {
     };
 
     const onFilterChange = function (data) {
-        // TODO support multiple filters?!
         filteredRows = leaves.map(function (leaf) {
             return leaf.data.rowKey;
         }).filter(function (rowKey) {
@@ -822,13 +825,12 @@ window.dendrogram_namespace = (function () {
     };
 
     const toogleSubscribeFilter = function () {
-        table.getFilterIds().forEach(function (filterId) {
-            if (_value.subscribeFilterEvents) {
-                knimeService.subscribeToFilter(table.getTableId(), onFilterChange, filterId);
-            } else {
-                knimeService.unsubscribeFilter(table.getTableId(), onFilterChange);
-            }
-        });
+        if (_value.subscribeFilterEvents) {
+            knimeService.subscribeToFilter(table.getTableId(), onFilterChange, table.getFilterIds());
+        } else {
+            knimeService.unsubscribeFilter(table.getTableId(), onFilterChange);
+        }
+
         if (!_value.subscribeFilterEvents) {
             filteredRows = [];
             updateFilterInView();
