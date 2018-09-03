@@ -209,8 +209,12 @@ window.dendrogram_namespace = (function () {
 
         const resizeToWindow = _representation.runningInView && _representation.resizeToWindow;
 
+        const svgContainer = d3.select('body')
+            .insert('div').attr('class', 'knime-layout-container')
+            .insert('div').attr('class', 'knime-svg-container').style('width', '100%').style('height', '100%');
+
         // create SVG
-        svg = d3.select('body').insert('svg:svg')
+        svg = svgContainer.insert('svg:svg')
             .attr('width', resizeToWindow ? '100%' : _representation.imageWidth)
             .attr('height', resizeToWindow ? '100%' : _representation.imageHeight);
 
