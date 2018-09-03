@@ -199,6 +199,7 @@ heatmap_namespace = (function() {
 
     function drawMetaInfo(paginationData) {
         var paginationHtml = _representation.enablePaging ? getPaginationHtml(paginationData) : '';
+
         var displayedRows =
             '<p>Showing ' +
             (paginationData.totalRowCount > 1 ? paginationData.pageRowStartIndex + 1 : paginationData.totalRowCount) +
@@ -1041,54 +1042,17 @@ heatmap_namespace = (function() {
                 .attr('style', 'clip-path:url(#clip)');
             _transformer = _wrapper.append('div').attr('class', 'transformer');
 
-            var canvasWidth = _margin.left + _colNames.length * _cellSize;
-            var canvasHeight = _margin.top + formattedDataset.rowNames.length * _cellSize;
-            var canvas = _transformer
-                .append('canvas')
-                .attr('class', 'transformer')
-                .attr('style', 'position: absolute;top:0;left:0')
-                .attr('width', _margin.left + _colNames.length * _cellSize + 'px')
-                .attr('height', _margin.top + formattedDataset.rowNames.length * _cellSize + 'px');
-            _context = _wrapper.node().getContext('2d');
-
-        var sortedData;
-
-        if (renderMode === 'canvas') {
-            _container = svg
-                .append('foreignObject')
-                .attr('width', '100%')
-                .attr('height', '100%')
-                .append('xhtml:div')
-                .attr('class', 'wrapper')
-                .attr('style', 'clip-path:url(#clip)')
-                .attr('width', '100%')
-                .attr('height', '100%');
-            _wrapper = _container.append('div').attr('class', 'transformer');
-
-            var canvasWidth = _margin.left + _colNames.length * _cellSize;
-            var canvasHeight = _margin.top + formattedDataset.rowNames.length * _cellSize;
-            var canvas = _wrapper
-                .append('canvas')
-                .attr(
-                    'style',
-                    'position: absolute;top:0;left:0;width:' + canvasWidth + 'px;height:' + canvasHeight + 'px'
-                )
-                .attr('width', _devicePixelRatio * canvasWidth + 'px')
-                .attr('height', _devicePixelRatio * canvasHeight + 'px');
-            _context = canvas.node().getContext('2d');
-            _context.scale(_devicePixelRatio, _devicePixelRatio);
-
             // Improve performance: render cells progressivley
             _maxExtensionY = 0;
             _maxExtensionX = 0;
             _drawCellQueue = renderQueue(drawCanvasRow).rate(1000);
             _drawCellQueue(formattedDataset.data);
         } else {
-            _wrapper = svg
+            _transformer = svg
                 .append('g')
                 .attr('clip-path', 'url(#clip)')
                 .append('g')
-                .attr('class', 'wrapper');
+                .attr('class', 'transformer');
             // Render cells at once for image rendering
             formattedDataset.data.map(function(row) {
                 drawSvgRow(row);

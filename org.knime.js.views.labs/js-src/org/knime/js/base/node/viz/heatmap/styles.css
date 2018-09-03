@@ -113,6 +113,7 @@ form {
     bottom: 0;
     left: 0;
     display: flex;
+    justify-content: space-between;
     box-sizing: border-box;
     font-size: 0.8rem;
     width: 100%;
