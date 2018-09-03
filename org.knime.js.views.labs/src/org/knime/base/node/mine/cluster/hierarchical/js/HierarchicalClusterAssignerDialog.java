@@ -537,6 +537,8 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         gbc.gridy++;
 
         // Color
+        /* These settings will not be implemented in the first version
+         *
         final JPanel colorPanel = new JPanel(new GridBagLayout());
         colorPanel.setBorder(BorderFactory.createTitledBorder("Color"));
         final Component set1 = ColorPaletteUtil.getColorPaletteSet1AsComponent();
@@ -581,6 +583,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
 
         gbc.gridx = 0;
         gbc.gridy++;
+        */
 
         return p;
     }
