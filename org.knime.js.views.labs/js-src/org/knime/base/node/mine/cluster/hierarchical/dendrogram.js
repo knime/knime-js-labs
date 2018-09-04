@@ -547,8 +547,13 @@ window.dendrogram_namespace = (function () {
         svg.call(zoom).on('dblclick.zoom', null); // prevent zoom on double click
 
         if (!isInitial) {
-            // zoom out? TODO maybe there is a smarter behaviour here
-            resetZoom();
+            // refresh zoom
+            const zoomX = _value.zoomX !== undefined ? _value.zoomX : 0;
+            const zoomY = _value.zoomY !== undefined ? _value.zoomY : 0;
+            const zoomK = _value.zoomK !== undefined ? _value.zoomK : 1;
+            if (zoomK != 1 || zoomX != 0 || zoomY != 0) {
+                svg.call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
+            }
         }
     };
 
@@ -611,9 +616,7 @@ window.dendrogram_namespace = (function () {
 
         // set initial zoom and pan
         if (zoomK != 1 || zoomX != 0 || zoomY != 0) {
-            svg.transition()
-                .duration(750)
-                .call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
+            svg.call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
         }
     };
 
