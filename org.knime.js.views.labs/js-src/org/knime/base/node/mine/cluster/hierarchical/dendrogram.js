@@ -457,9 +457,11 @@ window.dendrogram_namespace = (function () {
         });
 
         // update threshold display
-        const thresholdFormatted = thresholdFormat(threshold);
-        thresholdDisplayEl.text('Threshold: ' + thresholdFormatted);
-        thresholdClusterDisplayEl.text('Cluster: ' + numberOfRootCluster);
+        if (_representation.showThresholdBar) {
+            const thresholdFormatted = thresholdFormat(threshold);
+            thresholdDisplayEl.text('Threshold: ' + thresholdFormatted);
+            thresholdClusterDisplayEl.text('Cluster: ' + numberOfRootCluster);
+        }
 
         // save new threshold values
         _value.threshold = threshold;
