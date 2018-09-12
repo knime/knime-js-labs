@@ -437,7 +437,7 @@
 					toggleConfusionMatrixRatesDisplay();
 				}
 	    	});
-	    	knimeService.addMenuItem("Display confusion matrix totals as rates: ", 'table', switchCMRatesDisplay);
+	    	knimeService.addMenuItem("Display confusion matrix summary values: ", 'table', switchCMRatesDisplay);
 	    }
 
 	    if (classStatsDisplay) {
