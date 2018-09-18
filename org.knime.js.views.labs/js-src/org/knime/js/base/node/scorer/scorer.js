@@ -129,11 +129,7 @@
 			var lastCell = document.createElement('td');
 			var cellValue = confusionMatrixWithRates[row][confusionMatrixWithRates.length-1];
 			if (_value.displayFloatAsPercent === true) {
-        if ( (cellValue * 100).toFixed(2) >= 99.995 ) {
-          lastCell.appendChild(document.createTextNode('> 99.99 %'));
-        } else {
-          lastCell.appendChild(document.createTextNode((cellValue * 100).toFixed(2) + '\xA0%'));
-        }
+        addValueAsPercentToElement(lastCell, cellValue)
 			} else {
 				lastCell.appendChild(document.createTextNode(cellValue.toFixed(3)));
 			}
@@ -151,11 +147,7 @@
 			td = document.createElement('td');			
 			var cellValue = confusionMatrixWithRates[confusionMatrixWithRates.length-1][col];
 			if (_value.displayFloatAsPercent === true) {
-        if ( (cellValue * 100).toFixed(2) >= 99.995 ) {
-          td.appendChild(document.createTextNode('> 99.99 %'));
-        } else {
-          td.appendChild(document.createTextNode((cellValue * 100).toFixed(2) + '\xA0%'));
-        }
+        addValueAsPercentToElement(td, cellValue);
 			} else {
 				td.appendChild(document.createTextNode(cellValue.toFixed(3)));
 			}
@@ -171,6 +163,14 @@
 		toggleRowsNumberDisplay();
 		toggleConfusionMatrixRatesDisplay();
 	}
+
+  function addValueAsPercentToElement(element, value) {
+    if ( ((value * 100).toFixed(2) >= 99.995) && ((value * 100).toFixed(2) < 100) ) {
+      element.appendChild(document.createTextNode('> 99.99%'));
+    } else {
+      element.appendChild(document.createTextNode((value * 100).toFixed(2) + '%'));
+    }
+  }
 	
 	countRowsNumber = function(confusionMatrix) {
 		var count = 0;
@@ -280,11 +280,7 @@
 				} else {
 					// cellValue is a float
 					if (_value.displayFloatAsPercent === true) {
-            if ( (cellValue * 100).toFixed(2) >= 99.995 ) {
-              td.appendChild(document.createTextNode('> 99.99 %'));
-            } else {
-              td.appendChild(document.createTextNode((cellValue * 100).toFixed(2) + '\xA0%'));
-            }
+            addValueAsPercentToElement(td, cellValue)
 					} else {
 						td.appendChild(document.createTextNode(cellValue.toFixed(3)));
 					}
@@ -364,13 +360,13 @@
 				if (!_value.displayFloatAsPercent || columnNames[col].indexOf('Cohen') > -1) {
 					td.appendChild(document.createTextNode(cellValue.toFixed(3)));
 				} else {
-          if ( (columnNames[col] === 'Overall Error') && ((cellValue * 100).toFixed(2) < 0.004) ) {
-            td.appendChild(document.createTextNode('< 0.01 %'));
+          if ( (columnNames[col] === 'Overall Error') && ( ((cellValue * 100).toFixed(2) > 0) && ((cellValue * 100).toFixed(2) < 0.004) ) ) {
+            td.appendChild(document.createTextNode('< 0.01%'));
           }
-          if ( (columnNames[col] === 'Overall Accuracy') && ((cellValue * 100).toFixed(2) >= 99.995) ) {
-            td.appendChild(document.createTextNode('> 99.99 %'));
+          if ( (columnNames[col] === 'Overall Accuracy') && ( ((cellValue * 100).toFixed(2) >= 99.995) && ((cellValue * 100).toFixed(2) < 100) ) ) {
+            td.appendChild(document.createTextNode('> 99.99%'));
           }
-					td.appendChild(document.createTextNode((cellValue * 100).toFixed(2) + '\xA0%'));
+					td.appendChild(document.createTextNode((cellValue * 100).toFixed(2) + '%'));
 				}
 				td.setAttribute('class', 'knime-table-cell knime-double');
 			}
