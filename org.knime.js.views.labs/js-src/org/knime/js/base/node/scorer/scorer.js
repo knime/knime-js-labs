@@ -15,6 +15,35 @@
 	var body;
 	var confusionTable;
 
+	function formatValueAsPercent(value) {
+		//create percentage variable for better readability
+		var percent = value * 100;
+		/* In case the value would be '100%', when rounded to two decimals, but is smaller, we display a special string.
+		   (see AP-10197) */
+		if (percent >= 99.995 && percent < 100) {
+			return '>\xa099.99%';
+		//in case the value would be '0%', when rounded to two decimals, but is larger, we display that as well
+		} else if (percent < 0.005 && percent > 0){
+			return '<\xa00.01%';
+		//otherwise simply round to two decimals
+		} else {
+			return percent.toFixed(2) +'%';
+		}
+	}
+	
+	function formatValueAsFloat(value) {
+		if (value >= 0.9995 && value < 1) {
+			return '>\xa00.999';
+		} else if (value < 0.0005 && value > 0) {
+			return '<\xa00.001';
+		} else {
+			return value.toFixed(3);
+		}
+	}
+	
+	function addTextToElement(element, text) {
+		element.appendChild(document.createTextNode(text));
+	}
 
 	scorer.init = function(representation, value) {
 		_representation = representation;
@@ -50,12 +79,12 @@
 
 		//Title and subtitle
 		var h1 = document.createElement('h1');
-		h1.appendChild(document.createTextNode(title));
+		addTextToElement(h1, title);
 		h1.setAttribute('id', 'title');
 		h1.setAttribute('class', 'knime-title');
 		body.appendChild(h1);
 		var h4 = document.createElement('h4');
-		h4.appendChild(document.createTextNode(subtitle));
+		addTextToElement(h4, subtitle);
 		h4.setAttribute('id', 'subtitle');
 		h4.setAttribute('class', 'knime-subtitle');
 		h4.setAttribute('align', 'center');
@@ -79,25 +108,25 @@
 		table.setAttribute('class', 'center knime-table');
 		var caption = document.createElement('caption');
 		caption.setAttribute('class', 'knime-label knime-table-header')
-		caption.appendChild(document.createTextNode('Confusion Matrix'));
+		addTextToElement(caption, 'Confusion Matrix');
 		table.appendChild(caption);
 		
 		var tHeader = document.createElement('thead');		
 		//header row
 		var tRow = document.createElement('tr');
-		tRow.setAttribute('class', 'knime-table-row knime-table-header')
-		var th = document.createElement('th');		
-		th.appendChild(document.createTextNode('Rows Number : \n' + rowsNumber));
+		tRow.setAttribute('class', 'knime-table-row knime-table-header');
+		var th = document.createElement('th');
+		addTextToElement(th, 'Rows Number : \n' + rowsNumber);
 		th.setAttribute('class', 'rowsNumber knime-table-cell knime-table-header knime-string');
 		th.setAttribute('style', 'border-right-width: 2px');
 		th.style.backgroundColor = _representation.headerColor;
 		tRow.appendChild(th);
 		for (var i = 0; i < classes.length; i++) {
 			th = document.createElement('th');
-			th.appendChild(document.createTextNode(classes[i] + ' (Predicted)'));
+			addTextToElement(th, classes[i] + ' (Predicted)');
 			th.style.backgroundColor = _representation.headerColor;
 			th.setAttribute('title', classes[i] + ' (Predicted)');
-			th.setAttribute('class', 'knime-table-cell knime-table-header knime-integer')
+			th.setAttribute('class', 'knime-table-cell knime-table-header knime-integer');
 			tRow.appendChild(th);
 		}
 		tHeader.appendChild(tRow);
@@ -109,14 +138,14 @@
 			tRow = document.createElement('tr');
 			tRow.setAttribute('class', 'knime-table-row');
 			th = document.createElement('th');
-			th.appendChild(document.createTextNode(classes[row] + ' (Actual)'));
+			addTextToElement(th, classes[row] + ' (Actual)');
 			th.style.backgroundColor = _representation.headerColor;
 			th.setAttribute('title', classes[row] + ' (Actual)');
 			th.setAttribute('class', 'knime-table-cell knime-table-header knime-string');
 			tRow.appendChild(th);
 			for (var col = 0; col < confusionMatrix.getNumColumns(); col++) {
 				var td = document.createElement('td');
-				td.appendChild(document.createTextNode(confusionMatrix.getCell(row, col)));
+				addTextToElement(td, confusionMatrix.getCell(row, col));
 				td.setAttribute('data-row', row);
 				td.setAttribute('data-col', col);
 				td.setAttribute('class', 'knime-table-cell knime-integer');
@@ -129,9 +158,9 @@
 			var lastCell = document.createElement('td');
 			var cellValue = confusionMatrixWithRates[row][confusionMatrixWithRates.length-1];
 			if (_value.displayFloatAsPercent === true) {
-        addValueAsPercentToElement(lastCell, cellValue)
+				addTextToElement(lastCell, formatValueAsPercent(cellValue));
 			} else {
-				lastCell.appendChild(document.createTextNode(cellValue.toFixed(3)));
+				addTextToElement(lastCell, formatValueAsFloat(cellValue));
 			}
 			lastCell.setAttribute('class', 'rateCell knime-table-cell knime-double');
 			lastCell.setAttribute('title', rateCellDescription);
@@ -147,9 +176,9 @@
 			td = document.createElement('td');			
 			var cellValue = confusionMatrixWithRates[confusionMatrixWithRates.length-1][col];
 			if (_value.displayFloatAsPercent === true) {
-        addValueAsPercentToElement(td, cellValue);
+				addTextToElement(td, formatValueAsPercent(cellValue));
 			} else {
-				td.appendChild(document.createTextNode(cellValue.toFixed(3)));
+				addTextToElement(td, formatValueAsFloat(cellValue));
 			}
 			td.setAttribute('class', 'rateCell knime-table-cell knime-double');
 			td.setAttribute('title', rateCellDescription);	
@@ -163,14 +192,6 @@
 		toggleRowsNumberDisplay();
 		toggleConfusionMatrixRatesDisplay();
 	}
-
-  function addValueAsPercentToElement(element, value) {
-    if ( ((value * 100).toFixed(2) >= 99.995) && ((value * 100).toFixed(2) < 100) ) {
-      element.appendChild(document.createTextNode('> 99.99%'));
-    } else {
-      element.appendChild(document.createTextNode((value * 100).toFixed(2) + '%'));
-    }
-  }
 	
 	countRowsNumber = function(confusionMatrix) {
 		var count = 0;
@@ -184,7 +205,7 @@
 
 	createConfusionMatrixWithRates = function(confusionMatrix, numRows, numColumns) {
 		var confusionMatrixWithRates = new Array(numRows); 
-		for(var i = 0; i < numRows; i++) {
+		for (var i = 0; i < numRows; i++) {
 			confusionMatrixWithRates[i] = new Array(numColumns); 
 		}
 		for (var i = 0; i < confusionMatrix.getNumRows(); i++) {
@@ -227,8 +248,8 @@
 		table.setAttribute('class', 'center knime-table');
 		if (classStatistics.getNumColumns() !== 0) {
 			var caption = document.createElement('caption');
-			caption.setAttribute('class', 'knime-label knime-table-header')
-			caption.appendChild(document.createTextNode('Class Statistics'));
+			caption.setAttribute('class', 'knime-label knime-table-header');
+			addTextToElement(caption, 'Class Statistics');
 			table.appendChild(caption);
 		}
 
@@ -250,7 +271,7 @@
 					// cellValue is a float
 					th.setAttribute('class', 'knime-table-cell knime-table-header knime-double');
 				}
-				th.appendChild(document.createTextNode(statNames[i]));
+				addTextToElement(th, statNames[i]);
 				th.style.backgroundColor = _representation.headerColor;
 				tRow.appendChild(th);
 			}
@@ -266,7 +287,7 @@
 			if (classStatistics.getNumColumns() !== 0) {
 				th = document.createElement('th');
 				th.setAttribute('class', 'knime-table-cell knime-table-header');
-				th.appendChild(document.createTextNode(classStatistics.getRow(row).rowKey));
+				addTextToElement(th, classStatistics.getRow(row).rowKey);
 				tRow.appendChild(th);
 			}
 			for (var col = 0; col < classStatistics.getNumColumns(); col++) {
@@ -275,14 +296,14 @@
 				if (columnNames[col] === 'True Positives' || columnNames[col] === 'False Positives'
 					|| columnNames[col] === 'True Negatives' || columnNames[col] === 'False Negatives') {
 					// cellValue is an integer
-					td.appendChild(document.createTextNode(cellValue));
+					addTextToElement(td, cellValue);
 					td.setAttribute('class', 'knime-table-cell knime-integer');
 				} else {
 					// cellValue is a float
 					if (_value.displayFloatAsPercent === true) {
-            addValueAsPercentToElement(td, cellValue)
+						addTextToElement(td, formatValueAsPercent(cellValue));
 					} else {
-						td.appendChild(document.createTextNode(cellValue.toFixed(3)));
+						addTextToElement(td, formatValueAsFloat(cellValue));
 					}
 					td.setAttribute('class', 'knime-table-cell knime-double');
 				}
@@ -314,8 +335,8 @@
 		table.setAttribute('class', 'center knime-table');
 		if (overallStatistics.getNumColumns() !== 0) {
 			var caption = document.createElement('caption');
-			caption.setAttribute('class', 'knime-label knime-table-header')
-			caption.appendChild(document.createTextNode('Overall Statistics'));
+			caption.setAttribute('class', 'knime-label knime-table-header');
+			addTextToElement(caption, 'Overall Statistics');
 			table.appendChild(caption);		
 		}
 
@@ -337,7 +358,7 @@
 			if (statNames[i].indexOf('Cohen') > -1) {
 				headerText = "Cohen's kappa (𝝹)";
 			}
-			th.appendChild(document.createTextNode(headerText));
+			addTextToElement(th, headerText);
 			th.style.backgroundColor = _representation.headerColor;
 			tRow.appendChild(th);
 		}
@@ -353,20 +374,15 @@
 			var cellValue  = overallStatistics.getCell(0, col);
 			if (columnNames[col] === 'Correctly Classified' || columnNames[col] === 'Incorrectly Classified') {
 				// cellValue is an integer
-				td.appendChild(document.createTextNode(cellValue));
+				addTextToElement(td, cellValue);
 				td.setAttribute('class', 'knime-table-cell knime-integer');
 			} else {
 				// cellValue is a float
 				if (!_value.displayFloatAsPercent || columnNames[col].indexOf('Cohen') > -1) {
-					td.appendChild(document.createTextNode(cellValue.toFixed(3)));
+					//Cohen's kappa is always displayed as float
+					addTextToElement(td, formatValueAsFloat(cellValue));
 				} else {
-          if ( (columnNames[col] === 'Overall Error') && ( ((cellValue * 100).toFixed(2) > 0) && ((cellValue * 100).toFixed(2) < 0.004) ) ) {
-            td.appendChild(document.createTextNode('< 0.01%'));
-          }
-          if ( (columnNames[col] === 'Overall Accuracy') && ( ((cellValue * 100).toFixed(2) >= 99.995) && ((cellValue * 100).toFixed(2) < 100) ) ) {
-            td.appendChild(document.createTextNode('> 99.99%'));
-          }
-					td.appendChild(document.createTextNode((cellValue * 100).toFixed(2) + '%'));
+					addTextToElement(td, formatValueAsPercent(cellValue));
 				}
 				td.setAttribute('class', 'knime-table-cell knime-double');
 			}
@@ -500,7 +516,7 @@
 				curSubtitle.setAttribute('id', 'subtitle');
 				curSubtitle.setAttribute('class', 'knime-subtitle');
 			}
-			curSubtitle.innerHTML = _value.subtitle
+			curSubtitle.innerHTML = _value.subtitle;
 		}
 		
 		var isTitle = _value.title || _value.subtitle;
@@ -544,7 +560,6 @@
 	scorer.getComponentValue = function() {
 		return _value;
 	}
-	
 	
 	return scorer;
 	
