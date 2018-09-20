@@ -1289,13 +1289,20 @@ heatmap_namespace = (function() {
                 return Math.round(d * 100) / 100;
             });
 
-        legend
+        var axis = legend
             .append('g')
             .attr('transform', 'translate(' + _legendMargin + ', ' + _legendColorRangeHeight + ')')
             .attr('class', 'legend-axis')
-            .call(legendAxis)
+            .call(legendAxis);
+
+        var text = axis
             .selectAll('text')
             .attr('font-weight', 'normal');
+
+        if (axis && axis.node().getBoundingClientRect().width > _legendWidth) {
+            // make legend svg wider if axis is wider, for example if tick values are too long
+            legend.attr('width', axis.node().getBoundingClientRect().width);
+        }
     }
 
     /**

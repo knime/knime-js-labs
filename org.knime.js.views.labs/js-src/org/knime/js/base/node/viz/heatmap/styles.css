@@ -163,7 +163,7 @@ form {
 .knime-legend {
     flex-grow: 0;
     flex-shrink: 0;
-    padding: 2px;
+    padding: 2px 10px;
 }
 
 .missing-value {
