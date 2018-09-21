@@ -1101,7 +1101,7 @@ heatmap_namespace = (function() {
         document.querySelector('.gradient-x').style.bottom = infoWrapperHeight + 'px';
 
         // Display help message when not all rows are visible
-        if (areAllCellsVisible(infoWrapperHeight)) {
+        if (isContentCompletelyVisible(infoWrapperHeight)) {
             document.querySelector('.help-partially-visible').classList.remove('active');
         } else {
             document.querySelector('.help-partially-visible').classList.add('active');
@@ -1474,8 +1474,11 @@ heatmap_namespace = (function() {
         });
     }
 
-    function areAllCellsVisible(infoWrapperHeight) {
-        // isVisible = _scales.y.domain().length * _cellHeight + infoWrapperHeight + _margin.top + _margin.bottom < window.innerHeight;
+    /**
+     * Check if the axis overlap with the 'fade-out' gradients
+     * to see if all the content is displayed
+     */
+    function isContentCompletelyVisible() {
         var yAxisRect = document.querySelector('.knime-axis.knime-y').getBoundingClientRect();
         var xAxisRect = document.querySelector('.knime-axis.knime-x').getBoundingClientRect();
         var yAxisPos = yAxisRect.height + yAxisRect.top;
