@@ -56,6 +56,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.js.core.JSONViewContent;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
@@ -89,6 +90,9 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
     private boolean m_showSelectedOnly;
 
     private boolean m_subscribeFilterEvents;
+
+    private String m_xAxisLabel;
+    private String m_yAxisLabel;
 
     /**
      * @return the title
@@ -301,6 +305,38 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
     }
 
     /**
+     * @return the xAxisLabel
+     */
+    @JsonProperty("xAxisLabel")
+    public String getXAxisLabel() {
+        return m_xAxisLabel;
+    }
+
+    /**
+     * @param xAxisLabel the xAxisLabel to set
+     */
+    @JsonProperty("xAxisLabel")
+    public void setXAxisLabel(final String xAxisLabel) {
+        m_xAxisLabel = xAxisLabel;
+    }
+
+    /**
+     * @return the yAxisLabel
+     */
+    @JsonProperty("yAxisLabel")
+    public String getYAxisLabel() {
+        return m_yAxisLabel;
+    }
+
+    /**
+     * @param yAxisLabel the yAxisLabel to set
+     */
+    @JsonProperty("yAxisLabel")
+    public void setYAxisLabel(final String yAxisLabel) {
+        m_yAxisLabel = yAxisLabel;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -321,6 +357,8 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_SELECTION_EVENTS, getSubscribeSelectionEvents());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SELECTED_ONLY, getShowSelectedOnly());
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS, getSubscribeFilterEvents());
+        settings.addString(HierarchicalClusterAssignerConfig.CFG_X_AXIS_LABEL, m_xAxisLabel);
+        settings.addString(HierarchicalClusterAssignerConfig.CFG_Y_AXIS_LABEL, m_yAxisLabel);
     }
 
     /**
@@ -345,6 +383,8 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
         setSubscribeSelectionEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_SELECTION_EVENTS));
         setShowSelectedOnly(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_SELECTED_ONLY));
         setSubscribeFilterEvents(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SUBSCRIBE_FILTER_EVENTS));
+        setXAxisLabel(settings.getString(HierarchicalClusterAssignerConfig.CFG_X_AXIS_LABEL));
+        setYAxisLabel(settings.getString(HierarchicalClusterAssignerConfig.CFG_Y_AXIS_LABEL));
     }
 
     /**
@@ -375,6 +415,8 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_subscribeSelectionEvents, other.getSubscribeSelectionEvents())
                 .append(m_subscribeFilterEvents, other.getSubscribeFilterEvents())
                 .append(m_showSelectedOnly, other.getShowSelectedOnly())
+                .append(m_xAxisLabel, other.getXAxisLabel())
+                .append(m_yAxisLabel, other.getYAxisLabel())
                 .isEquals();
     }
 
@@ -399,6 +441,8 @@ public class HierarchicalClusterAssignerValue extends JSONViewContent {
                 .append(m_subscribeSelectionEvents)
                 .append(m_subscribeFilterEvents)
                 .append(m_showSelectedOnly)
+                .append(m_xAxisLabel)
+                .append(m_yAxisLabel)
                 .toHashCode();
     }
 

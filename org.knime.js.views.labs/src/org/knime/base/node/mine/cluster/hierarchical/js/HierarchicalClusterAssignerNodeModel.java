@@ -220,7 +220,7 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
             defaultLabels = initialSetUp();
         }
         else {
-            // m_tree is a new reference, and the model doesn't overrride equals(), so the HashMap is no longer valid
+            // m_tree is a new reference, and the model doesn't override equals(), so the HashMap is no longer valid
             // Populate the leaves, and regenerate nodeToId but DON'T reset cluster labels to defaults!
             initialSetUp();
         }
@@ -497,6 +497,8 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
         m_config.setSubscribeSelectionEvents(value.getSubscribeSelectionEvents());
         m_config.setSubscribeFilterEvents(value.getSubscribeFilterEvents());
         m_config.setShowSelectedOnly(value.getShowSelectedOnly());
+        m_config.setXAxisLabel(value.getXAxisLabel());
+        m_config.setYAxisLabel(value.getYAxisLabel());
 
         if (m_config.getNumClustersMode()) {
             m_config.setNumClusters(value.getNumClusters());
@@ -536,6 +538,7 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
         representation.setColorPalette(m_config.getColorPalette());
         representation.setShowThresholdBar(m_config.getShowThresholdBar());
         representation.setEnableThresholdModification(m_config.getEnableThresholdModification());
+        representation.setEnableAxisLabelEdit(m_config.getEnableAxisLabelEdit());
         representation.setTree(new JSClusterModelTree(m_tree, m_nodeToId));
         representation.setDataTableID(getTableId(1));
         representation.setTable(createJSONDataTable(exc));
@@ -576,6 +579,8 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
             value.setSubscribeSelectionEvents(m_config.getSubscribeSelectionEvents());
             value.setSubscribeFilterEvents(m_config.getSubscribeFilterEvents());
             value.setShowSelectedOnly(m_config.getShowSelectedOnly());
+            value.setXAxisLabel(m_config.getXAxisLabel());
+            value.setYAxisLabel(m_config.getYAxisLabel());
         }
     }
 

@@ -45,11 +45,13 @@ window.dendrogram_namespace = (function () {
         thresholdClusterDisplayEl,
         xAxis,
         xAxisEl,
+        xAxisLabelEl,
         xScale,
         xShowNthTicks,
         xEllipsisNthTick,
         yAxis,
         yAxisEl,
+        yAxisLabelEl,
         yScale,
         zoom,
         numClustersField;
@@ -78,6 +80,7 @@ window.dendrogram_namespace = (function () {
         drawTitle();
         drawXAxis();
         drawYAxis();
+        drawAxisLabels();
         drawDendrogram();
 
         if (_representation.showThresholdBar) {
@@ -110,7 +113,7 @@ window.dendrogram_namespace = (function () {
             knimeService.addMenuItem('Chart Title:', 'header', knimeService.createMenuTextField(
                 'chartTitleText', _value.title, function () {
                     if (_value.title != this.value) {
-                        const resize = !!_value.title.length != !!this.value.length;
+                        const resize = !!_value.title.length !== !!this.value.length;
                         _value.title = this.value;
                         drawTitle();
                         if (resize) {
@@ -122,7 +125,7 @@ window.dendrogram_namespace = (function () {
             knimeService.addMenuItem('Chart Subtitle:', 'header', knimeService.createMenuTextField(
                 'chartSubtitleText', _value.subtitle, function () {
                     if (_value.subtitle != this.value) {
-                        const resize = !!_value.subtitle.length != !!this.value.length;
+                        const resize = !!_value.subtitle.length !== !!this.value.length;
                         _value.subtitle = this.value;
                         drawTitle();
                         if (resize) {
@@ -130,6 +133,33 @@ window.dendrogram_namespace = (function () {
                         }
                     }
                 }, true), null, knimeService.SMALL_ICON);
+        }
+
+        if (_representation.enableAxisLabelEdit) {
+            knimeService.addMenuDivider();
+            knimeService.addMenuItem('X Axis Label:', 'ellipsis-h', knimeService.createMenuTextField(
+                'xAxisLabel', _value.xAxisLabel, function () {
+                    if (_value.xAxisLabel != this.value) {
+                        const resize = !!_value.xAxisLabel.length !== !!this.value.length;
+                        _value.xAxisLabel = this.value;
+                        drawAxisLabels();
+                        if (resize) {
+                            resizeDiagram();
+                        }
+                    }
+                }, true));
+
+            knimeService.addMenuItem('Y Axis Label:', 'ellipsis-v', knimeService.createMenuTextField(
+                'yAxisLabel', _value.yAxisLabel, function () {
+                    if (_value.yAxisLabel != this.value) {
+                        const resize = !!_value.yAxisLabel.length !== !!this.value.length;
+                        _value.yAxisLabel = this.value;
+                        drawAxisLabels();
+                        if (resize) {
+                            resizeDiagram();
+                        }
+                    }
+                }, true));
         }
 
         if (_representation.enableZoomAndPanning && _representation.showZoomResetButton) {
@@ -199,8 +229,8 @@ window.dendrogram_namespace = (function () {
 
     const calcSVGSize = function () {
         svgSize = d3.select('svg').node().getClientRects()[0];
-        viewportWidth = svgSize.width - yAxisWidth;
-        viewportHeight = svgSize.height - xAxisHeight - getTitleHeight();
+        viewportWidth = svgSize.width - yAxisWidth - getYAxisLabelWidth();
+        viewportHeight = svgSize.height - xAxisHeight - getTitleHeight() - getXAxisLabelHeight();
     };
 
     const drawSVG = function () {
@@ -255,6 +285,62 @@ window.dendrogram_namespace = (function () {
         clusterMarker = nodes.descendants().filter(function (n) {
             return n.children != null;
         }).sort(function (a, b) { return b.data.distance - a.data.distance; });
+    };
+
+    const drawAxisLabels = function () {
+        if (_value.xAxisLabel && _value.xAxisLabel.length) {
+            if (!xAxisLabelEl) {
+                xAxisLabelEl = svg.append('text')
+                    .attr('class', 'knime-axis-label')
+                    .attr('x', svgSize.width / 2)
+                    .attr('y', svgSize.height - 8)
+                    .attr('text-anchor', 'middle');
+
+            }
+            xAxisLabelEl.text(_value.xAxisLabel);
+        } else {
+            if (xAxisLabelEl) {
+                xAxisLabelEl.remove();
+                xAxisLabelEl = null;
+            }
+        }
+
+        if (_value.yAxisLabel && _value.yAxisLabel.length) {
+            if (!yAxisLabelEl) {
+                yAxisLabelEl = svg.append('text')
+                    .attr('class', 'knime-axis-label')
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('text-anchor', 'middle')
+                    .attr('transform', 'matrix(0,-1,1,0,12,' + (svgSize.height / 2) + ')');
+            }
+            yAxisLabelEl.text(_value.yAxisLabel);
+        } else {
+            if (yAxisLabelEl) {
+                yAxisLabelEl.remove();
+                yAxisLabelEl = null;
+            }
+        }
+    };
+
+    const getXAxisLabelHeight = function () {
+        var height = 0;
+
+        if (_value.xAxisLabel && _value.xAxisLabel.length) {
+            height = 12;
+        }
+
+        return height;
+    };
+
+    const getYAxisLabelWidth = function () {
+        var width = 0;
+
+        if (_value.yAxisLabel && _value.yAxisLabel.length) {
+            width = 12;
+        }
+
+        return width;
     };
 
     const drawXAxis = function () {
@@ -527,12 +613,21 @@ window.dendrogram_namespace = (function () {
         cluster(nodes);
 
         // re-position wrapper
-        wrapperEl.attr('transform', 'translate(0,' + getTitleHeight() + ')');
+        wrapperEl.attr('transform', 'translate(' + getYAxisLabelWidth() + ',' + getTitleHeight() + ')');
 
         // update axis
         xAxisEl.attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')');
         updateXAxis();
         updateYAxis();
+
+        if (xAxisLabelEl) {
+            xAxisLabelEl
+                .attr('x', svgSize.width / 2)
+                .attr('y', svgSize.height - 8);
+        }
+        if (yAxisLabelEl) {
+            yAxisLabelEl.attr('transform', 'matrix(0,-1,1,0,12,' + (svgSize.height / 2) + ')');
+        }
 
         // apply the distance of each node
         nodes.each(function (n) {

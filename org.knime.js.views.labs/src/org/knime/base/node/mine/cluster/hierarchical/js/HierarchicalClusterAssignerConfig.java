@@ -212,6 +212,18 @@ public class HierarchicalClusterAssignerConfig {
     final static boolean DEFAULT_ENABLE_THRESHOLD_MODIFICATION = true;
     private boolean m_enableThresholdModification = DEFAULT_ENABLE_THRESHOLD_MODIFICATION;
 
+    final static String CFG_ENABLE_AXIS_LABEL_EDIT = "enableAxisLabelEdit";
+    final static boolean DEFAULT_ENABLE_AXIS_LABEL_EDIT = true;
+    private boolean m_enableAxisLabelEdit = DEFAULT_ENABLE_AXIS_LABEL_EDIT;
+
+    final static String CFG_X_AXIS_LABEL = "xAxisLabel";
+    final static String DEFAULT_X_AXIS_LABEL = "Row Key";
+    private String m_xAxisLabel = DEFAULT_X_AXIS_LABEL;
+
+    final static String CFG_Y_AXIS_LABEL = "yAxisLabel";
+    final static String DEFAULT_Y_AXIS_LABEL = "Cluster Distance";
+    private String m_yAxisLabel = DEFAULT_Y_AXIS_LABEL;
+
     /**
      * @return the hideInWizard
      */
@@ -753,6 +765,48 @@ public class HierarchicalClusterAssignerConfig {
     }
 
     /**
+     * @return the enableAxisLabelEdit
+     */
+    public boolean getEnableAxisLabelEdit() {
+        return m_enableAxisLabelEdit;
+    }
+
+    /**
+     * @param enableAxisLabelEdit the enableAxisLabelEdit to set
+     */
+    public void setEnableAxisLabelEdit(final boolean enableAxisLabelEdit) {
+        m_enableAxisLabelEdit = enableAxisLabelEdit;
+    }
+
+    /**
+     * @return the xAxisLabel
+     */
+    public String getXAxisLabel() {
+        return m_xAxisLabel;
+    }
+
+    /**
+     * @param xAxisLabel the xAxisLabel to set
+     */
+    public void setXAxisLabel(final String xAxisLabel) {
+        m_xAxisLabel = xAxisLabel;
+    }
+
+    /**
+     * @return the yAxisLabel
+     */
+    public String getYAxisLabel() {
+        return m_yAxisLabel;
+    }
+
+    /**
+     * @param yAxisLabel the yAxisLabel to set
+     */
+    public void setYAxisLabel(final String yAxisLabel) {
+        m_yAxisLabel = yAxisLabel;
+    }
+
+    /**
      * Saves current parameters to settings object.
      *
      * @param settings To save to.
@@ -796,6 +850,9 @@ public class HierarchicalClusterAssignerConfig {
         settings.addBoolean(CFG_SUBSCRIBE_FILTER_EVENTS, m_subscribeFilterEvents);
         settings.addBoolean(CFG_SHOW_THRESHOLD_BAR, m_showThresholdBar);
         settings.addBoolean(CFG_ENABLE_THRESHOLD_MODIFICATION, m_enableThresholdModification);
+        settings.addBoolean(CFG_ENABLE_AXIS_LABEL_EDIT, m_enableAxisLabelEdit);
+        settings.addString(CFG_X_AXIS_LABEL, m_xAxisLabel);
+        settings.addString(CFG_Y_AXIS_LABEL, m_yAxisLabel);
     }
 
     /**
@@ -838,6 +895,9 @@ public class HierarchicalClusterAssignerConfig {
         m_subscribeFilterEvents = settings.getBoolean(CFG_SUBSCRIBE_FILTER_EVENTS);
         m_showThresholdBar = settings.getBoolean(CFG_SHOW_THRESHOLD_BAR);
         m_enableThresholdModification = settings.getBoolean(CFG_ENABLE_THRESHOLD_MODIFICATION);
+        m_enableAxisLabelEdit = settings.getBoolean(CFG_ENABLE_AXIS_LABEL_EDIT);
+        m_xAxisLabel = settings.getString(CFG_X_AXIS_LABEL);
+        m_yAxisLabel = settings.getString(CFG_Y_AXIS_LABEL);
 
         m_numClusters = settings.getInt(CFG_NUM_CLUSTERS);
         if (m_numClusters < 1) {
@@ -904,5 +964,8 @@ public class HierarchicalClusterAssignerConfig {
         m_subscribeFilterEvents = settings.getBoolean(CFG_SUBSCRIBE_FILTER_EVENTS, DEFAULT_SUBSCRIBE_FILTER_EVENTS);
         m_showThresholdBar = settings.getBoolean(CFG_SHOW_THRESHOLD_BAR, DEFAULT_SHOW_THRESHOLD_BAR);
         m_enableThresholdModification = settings.getBoolean(CFG_ENABLE_THRESHOLD_MODIFICATION, DEFAULT_ENABLE_THRESHOLD_MODIFICATION);
+        m_enableAxisLabelEdit = settings.getBoolean(CFG_ENABLE_AXIS_LABEL_EDIT, DEFAULT_ENABLE_AXIS_LABEL_EDIT);
+        m_xAxisLabel = settings.getString(CFG_X_AXIS_LABEL, DEFAULT_X_AXIS_LABEL);
+        m_yAxisLabel = settings.getString(CFG_Y_AXIS_LABEL, DEFAULT_Y_AXIS_LABEL);
     }
 }

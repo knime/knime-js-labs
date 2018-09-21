@@ -100,6 +100,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     private boolean m_showThresholdBar;
     private boolean m_enableThresholdModification;
 
+    private boolean m_enableAxisLabelEdit;
+
     private final static String CFG_DATA_TABLE_ID = "dataTableID";
     private String m_dataTableID;
     private final static String CFG_FILTER_IDS = "filterIds";
@@ -405,6 +407,20 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the enableAxisLabelEdit
+     */
+    public boolean getEnableAxisLabelEdit() {
+        return m_enableAxisLabelEdit;
+    }
+
+    /**
+     * @param enableAxisLabelEdit the enableAxisLabelEdit to set
+     */
+    public void setEnableAxisLabelEdit(final boolean enableAxisLabelEdit) {
+        m_enableAxisLabelEdit = enableAxisLabelEdit;
+    }
+
+    /**
      * @return the dataTableID
      */
     @JsonIgnore
@@ -514,6 +530,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_THRESHOLD_BAR, m_showThresholdBar);
         settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_THRESHOLD_MODIFICATION, m_enableThresholdModification);
 
+        settings.addBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_AXIS_LABEL_EDIT, m_enableAxisLabelEdit);
+
         settings.addString(CFG_DATA_TABLE_ID, getDataTableID());
         settings.addStringArray(CFG_FILTER_IDS, m_filterIds);
         settings.addBoolean(CFG_RUNNING_IN_VIEW, m_runningInView);
@@ -555,6 +573,8 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
         setShowThresholdBar(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_SHOW_THRESHOLD_BAR));
         setEnableThresholdModification(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_THRESHOLD_MODIFICATION));
 
+        setEnableAxisLabelEdit(settings.getBoolean(HierarchicalClusterAssignerConfig.CFG_ENABLE_AXIS_LABEL_EDIT));
+
         setDataTableID(settings.getString(CFG_DATA_TABLE_ID));
         setFilterIds(settings.getStringArray(CFG_FILTER_IDS));
         setRunningInView(settings.getBoolean(CFG_RUNNING_IN_VIEW));
@@ -595,6 +615,7 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_enableChangeOrientation, other.getEnableChangeOrientation())
                 .append(m_showThresholdBar, other.getShowThresholdBar())
                 .append(m_enableThresholdModification, other.getEnableThresholdModification())
+                .append(m_enableAxisLabelEdit, other.getEnableAxisLabelEdit())
                 .append(m_dataTableID, other.getDataTableID())
                 .append(m_filterIds, other.getFilterIds())
                 .append(m_runningInView, other.getRunningInView())
@@ -630,6 +651,7 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_colorPalette)
                 .append(m_showThresholdBar)
                 .append(m_enableThresholdModification)
+                .append(m_enableAxisLabelEdit)
                 .append(m_dataTableID)
                 .append(m_filterIds)
                 .append(m_runningInView)

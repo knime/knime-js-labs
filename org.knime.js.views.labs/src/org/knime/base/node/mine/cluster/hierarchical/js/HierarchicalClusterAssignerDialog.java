@@ -134,6 +134,10 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
     private JCheckBox m_showThresholdBarCheckBox;
     private JCheckBox m_enableThresholdModificationCheckBox;
 
+    private final JTextField m_xAxisLabelTextField;
+    private final JTextField m_yAxisLabelTextField;
+    private final JCheckBox m_enableAxisLabelEditCheckBox;
+
     HierarchicalClusterAssignerDialog() {
         m_config = new HierarchicalClusterAssignerConfig();
 
@@ -208,6 +212,10 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_showThresholdBarCheckBox.addChangeListener(
             e -> m_enableThresholdModificationCheckBox.setEnabled(m_showThresholdBarCheckBox.isSelected()));
 
+        m_xAxisLabelTextField = new JTextField(TEXT_FIELD_SIZE);
+        m_yAxisLabelTextField = new JTextField(TEXT_FIELD_SIZE);
+        m_enableAxisLabelEditCheckBox = new JCheckBox("Enable axis label editing");
+
         addTab("Options", optionsPanel());
         addTab("View Configuration", viewConfigPanel());
         addTab("Interactivity", interactivityPanel());
@@ -266,6 +274,10 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
 
         m_config.setShowThresholdBar(m_showThresholdBarCheckBox.isSelected());
         m_config.setEnableThresholdModification(m_enableThresholdModificationCheckBox.isSelected());
+
+        m_config.setXAxisLabel(m_xAxisLabelTextField.getText());
+        m_config.setYAxisLabel(m_yAxisLabelTextField.getText());
+        m_config.setEnableAxisLabelEdit(m_enableAxisLabelEditCheckBox.isSelected());
 
         m_config.saveSettings(settings);
     }
@@ -337,6 +349,10 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_enableThresholdModificationCheckBox.setSelected(m_config.getEnableThresholdModification());
         m_enableThresholdModificationCheckBox.setEnabled(showThresholdBar);
 
+        m_xAxisLabelTextField.setText(m_config.getXAxisLabel());
+        m_yAxisLabelTextField.setText(m_config.getYAxisLabel());
+        m_enableAxisLabelEditCheckBox.setSelected(m_config.getEnableAxisLabelEdit());
+
         setNumberOfFilters((DataTableSpec) specs[1]);
         enableEditView();
         enableSelections();
@@ -368,6 +384,7 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         m_displayFullscreenButtonCheckBox.setEnabled(enabled);
         m_enableLogScaleToggleCheckBox.setEnabled(enabled);
         m_enableChangeOrientationCheckBox.setEnabled(enabled);
+        m_enableAxisLabelEditCheckBox.setEnabled(enabled);
     }
 
     private void enableSelections() {
@@ -519,6 +536,16 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         displayPanel.add(m_subtitleTextField, displayConstraints);
         displayConstraints.gridx = 0;
         displayConstraints.gridy++;
+        displayPanel.add(new JLabel("X-axis label: "), displayConstraints);
+        displayConstraints.gridx++;
+        displayPanel.add(m_xAxisLabelTextField, displayConstraints);
+        displayConstraints.gridx = 0;
+        displayConstraints.gridy++;
+        displayPanel.add(new JLabel("Y-axis label: "), displayConstraints);
+        displayConstraints.gridx++;
+        displayPanel.add(m_yAxisLabelTextField, displayConstraints);
+        displayConstraints.gridx = 0;
+        displayConstraints.gridy++;
         /* These settings will not be implemented for the first version
          *
         displayPanel.add(new JLabel("Chart Orientation: "), displayConstraints);
@@ -628,6 +655,9 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
         */
+        viewControlsPanel.add(m_enableAxisLabelEditCheckBox, viewControlsConstraints);
+        viewControlsConstraints.gridx = 0;
+        viewControlsConstraints.gridy++;
 
         gbc.gridx = 0;
         gbc.gridy++;
