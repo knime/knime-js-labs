@@ -11,7 +11,8 @@ heatmap_namespace = (function() {
         _colorRange,
         _filteredData,
         _zoomDimensions,
-        _cellSize,
+        _cellWidth,
+        _cellHeight,
         _wrapper,
         _transformer,
         _cellHighlighter,
@@ -30,6 +31,7 @@ heatmap_namespace = (function() {
     var _legendHeight = 50;
     var _legendColorRangeHeight = 20;
     var _legendMargin = 5;
+    var _infoWrapperMinHeight = 80;
 
     // State managment objects
     var defaultViewValues = {
@@ -208,7 +210,9 @@ heatmap_namespace = (function() {
             ' of ' +
             paginationData.totalRowCount +
             ' entries</p>';
-        document.body.querySelector('.info-wrapper').innerHTML = displayedRows + paginationHtml;
+        var infoWrapper = document.body.querySelector('.info-wrapper');
+        infoWrapper.innerHTML = displayedRows + paginationHtml;
+        infoWrapper.style.minHeight = _infoWrapperMinHeight + 'px';
     }
 
     function updateTitles() {
@@ -651,9 +655,9 @@ heatmap_namespace = (function() {
         }
 
         _cellHighlighter.style.left = xPos - 1 + 'px';
-        _cellHighlighter.style.top = yPos - 1 + 'px';
-        _cellHighlighter.style.width = _cellSize + 1 + 'px';
-        _cellHighlighter.style.height = _cellSize + 1 + 'px';
+        _cellHighlighter.style.top = yPos + 'px';
+        _cellHighlighter.style.width = _cellWidth + 1 + 'px';
+        _cellHighlighter.style.height = _cellHeight + 'px';
 
         return cell;
     }
@@ -676,12 +680,12 @@ heatmap_namespace = (function() {
         return {
             x: d3
                 .scaleBand()
-                .range([_margin.left, _colNames.length * _cellSize + _margin.left])
+                .range([_margin.left, _colNames.length * _cellWidth + _margin.left])
                 .domain(_colNames),
             y: d3
                 .scaleBand()
                 .domain(formattedDataset.rowNames)
-                .range([_margin.top, formattedDataset.rowNames.length * _cellSize + _margin.top]),
+                .range([_margin.top, formattedDataset.rowNames.length * _cellHeight + _margin.top]),
             colorScale: _value.continuousGradient
                 ? d3
                       .scaleLinear()
@@ -894,13 +898,13 @@ heatmap_namespace = (function() {
     function getContext(x, y) {
         var yExtension = _scales.y(y);
         var xExtension = _scales.x(x);
-        var maxRows = Math.ceil(_maxCanvasHeight / _devicePixelRatio / _cellSize);
+        var maxRows = Math.ceil(_maxCanvasHeight / _devicePixelRatio / _cellWidth);
         var maxCols = maxRows;
         _maxExtensionX = _maxExtensionX || 0;
         _maxExtensionY = _maxExtensionY || 0;
 
-        var canvasHeight = Math.min(_scales.y.domain().length * _cellSize, maxRows * _cellSize);
-        var canvasWidth = Math.min(_scales.x.domain().length * _cellSize, maxCols * _cellSize);
+        var canvasHeight = Math.min(_scales.y.domain().length * _cellHeight, maxRows * _cellHeight);
+        var canvasWidth = Math.min(_scales.x.domain().length * _cellWidth, maxCols * _cellWidth);
         var context;
         var rowEls = _scales.x.domain();
 
@@ -910,10 +914,10 @@ heatmap_namespace = (function() {
         }
 
         // Extend the limits of the canvas
-        if (xExtension + _cellSize > _maxExtensionX) {
+        if (xExtension + _cellWidth > _maxExtensionX) {
             _maxExtensionX = xExtension + canvasWidth;
         }
-        if (yExtension + _cellSize > _maxExtensionY) {
+        if (yExtension + _cellHeight > _maxExtensionY) {
             _maxExtensionY = yExtension + canvasHeight;
         }
 
@@ -944,7 +948,7 @@ heatmap_namespace = (function() {
             var context = getContext(x, y);
             var color = value === null ? _representation.missingValueColor : _scales.colorScale(value);
             context.fillStyle = color;
-            context.fillRect(_scales.x(x), _scales.y(y), _cellSize, _cellSize);
+            context.fillRect(_scales.x(x), _scales.y(y), _cellWidth, _cellHeight);
         }, []);
     }
 
@@ -965,8 +969,8 @@ heatmap_namespace = (function() {
                 .append('g')
                 .append('rect')
                 .attr('class', 'cell')
-                .attr('width', _cellSize)
-                .attr('height', _cellSize)
+                .attr('width', _cellWidth)
+                .attr('height', _cellHeight)
                 .attr('y', function(d) {
                     return _scales.y(d.y);
                 })
@@ -998,7 +1002,13 @@ heatmap_namespace = (function() {
             ? _representation.threeColorGradient
             : _representation.discreteGradientColors;
 
-        _cellSize = Math.max(_minCellSize, (window.innerWidth - _margin.left - _margin.right) / _colNames.length);
+        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
+
+        _cellWidth = Math.max(_minCellSize, (window.innerWidth - _margin.left - _margin.right) / _colNames.length);
+        _cellHeight = Math.max(
+            _minCellSize,
+            (window.innerHeight - _margin.top - _margin.bottom - infoWrapperHeight) / _value.initialPageSize
+        );
         _tooltip = document.querySelector('.knime-tooltip');
 
         var svg = d3
@@ -1205,10 +1215,10 @@ heatmap_namespace = (function() {
         } else {
             // append in existing svg
             var extraImageMargin = 50;
-            var imageModeMarginTop = _scales.y.domain().length * _cellSize + _margin.top + 15;
+            var imageModeMarginTop = _scales.y.domain().length * _cellWidth + _margin.top + 15;
             var transform = 'translate(0 ' + imageModeMarginTop + ')';
             var imageHeight = imageModeMarginTop + _legendHeight + extraImageMargin;
-            var imageWidth = _colNames.length * _cellSize + _margin.left + _margin.right + extraImageMargin;
+            var imageWidth = _colNames.length * _cellWidth + _margin.left + _margin.right + extraImageMargin;
 
             // Resize svg
             if (!_representation.resizeToWindow) {
@@ -1426,7 +1436,7 @@ heatmap_namespace = (function() {
 
     function endSelection(startRowId, endRowId) {
         var startPosition = _scales.y(startRowId);
-        var endPosition = _scales.y(endRowId) + Math.ceil(_cellSize);
+        var endPosition = _scales.y(endRowId) + Math.ceil(_cellHeight);
         var highlighter = document.createElement('SPAN');
         highlighter.classList.add('row-highlighter');
 
@@ -1434,7 +1444,7 @@ heatmap_namespace = (function() {
 
         highlighter.style.left = _margin.left + 1 + 'px';
         highlighter.style.height = endPosition - startPosition + 'px';
-        highlighter.style.width = _colNames.length * _cellSize + 'px';
+        highlighter.style.width = _colNames.length * _cellWidth + 'px';
         highlighter.style.borderWidth = getCurrentBorderWidth();
         _transformer.node().insertAdjacentElement('beforeend', highlighter);
     }

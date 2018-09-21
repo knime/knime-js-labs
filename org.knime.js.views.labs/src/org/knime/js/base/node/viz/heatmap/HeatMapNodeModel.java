@@ -390,7 +390,7 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
     public JSONLayoutViewContent getLayoutTemplate() {
         final JSONLayoutViewContent template = new JSONLayoutViewContent();
         if (m_config.getResizeToWindow()) {
-            template.setResizeMethod(ResizeMethod.ASPECT_RATIO_16by9);
+            template.setResizeMethod(ResizeMethod.ASPECT_RATIO_4by3);
         } else {
             template.setResizeMethod(ResizeMethod.VIEW_TAGGED_ELEMENT);
         }
