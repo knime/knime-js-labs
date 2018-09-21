@@ -1005,9 +1005,10 @@ heatmap_namespace = (function() {
         var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
 
         _cellWidth = Math.max(_minCellSize, (window.innerWidth - _margin.left - _margin.right) / _colNames.length);
+        
         _cellHeight = Math.max(
             _minCellSize,
-            (window.innerHeight - _margin.top - _margin.bottom - infoWrapperHeight) / _value.initialPageSize
+            (window.innerHeight - _margin.top - _margin.bottom - infoWrapperHeight) / rows.length
         );
         _tooltip = document.querySelector('.knime-tooltip');
 
