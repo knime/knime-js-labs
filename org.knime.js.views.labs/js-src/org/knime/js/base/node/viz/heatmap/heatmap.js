@@ -23,7 +23,7 @@ heatmap_namespace = (function() {
     var _minCellSize = 10;
     var _devicePixelRatio = window.devicePixelRatio;
     var _maxCanvasHeight = 8000; // canvas has native size limits
-    var _margin = { top: 80, left: 50, right: 10, bottom: 10 };
+    var _margin = { top: 100, left: 50, right: 10, bottom: 10 };
     var _defaultZoomX = 0;
     var _defaultZoomY = 0;
     var _defaultZoomK = 1;
@@ -40,7 +40,7 @@ heatmap_namespace = (function() {
         zoomX: _defaultZoomX,
         zoomY: _defaultZoomY,
         zoomK: _defaultZoomK,
-        titlesHeight: 50
+        titlesHeight: 30
     };
 
     heatmap.init = function(representation, value) {
