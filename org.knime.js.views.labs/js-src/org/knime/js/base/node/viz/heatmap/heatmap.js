@@ -203,13 +203,16 @@ heatmap_namespace = (function() {
         var paginationHtml = _representation.enablePaging ? getPaginationHtml(paginationData) : '';
 
         var displayedRows =
-            '<p>Showing ' +
+            '<div><p>Showing ' +
             (paginationData.totalRowCount > 1 ? paginationData.pageRowStartIndex + 1 : paginationData.totalRowCount) +
             ' to ' +
             paginationData.pageRowEndIndex +
             ' of ' +
             paginationData.totalRowCount +
             ' entries</p>';
+        
+        displayedRows += '<p class="help-partially-visible">(Partially displayed)</p></div>';
+
         var infoWrapper = document.body.querySelector('.info-wrapper');
         infoWrapper.innerHTML = displayedRows + paginationHtml;
         infoWrapper.style.minHeight = _infoWrapperMinHeight + 'px';
@@ -1002,16 +1005,6 @@ heatmap_namespace = (function() {
             ? _representation.threeColorGradient
             : _representation.discreteGradientColors;
 
-        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
-
-        _cellWidth = Math.max(_minCellSize, (window.innerWidth - _margin.left - _margin.right) / _colNames.length);
-        
-        _cellHeight = Math.max(
-            _minCellSize,
-            (window.innerHeight - _margin.top - _margin.bottom - infoWrapperHeight) / rows.length
-        );
-        _tooltip = document.querySelector('.knime-tooltip');
-
         var svg = d3
             .select('.knime-svg-container')
             .append('svg')
@@ -1031,6 +1024,19 @@ heatmap_namespace = (function() {
 
         updateTitles();
 
+        // Determine cell sizes
+        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
+        var extraAxisLabelBuffer = 30; // TODO: calculate programatically
+        _cellWidth = Math.max(
+            _minCellSize,
+            (window.innerWidth - _margin.left - _margin.right - extraAxisLabelBuffer) / _colNames.length
+        );
+        _cellHeight = Math.max(
+            _minCellSize,
+            (window.innerHeight - _margin.top - _value.titlesHeight - infoWrapperHeight) / rows.length
+        );
+
+        _tooltip = document.querySelector('.knime-tooltip');
         _scales = createScales(formattedDataset);
         _axis = createAxis(formattedDataset);
 
@@ -1093,6 +1099,13 @@ heatmap_namespace = (function() {
         var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
         document.querySelector('.knime-svg-container').style.paddingBottom = infoWrapperHeight + 'px';
         document.querySelector('.gradient-x').style.bottom = infoWrapperHeight + 'px';
+
+        // Display help message when not all rows are visible
+        if (areAllCellsVisible(infoWrapperHeight)) {
+            document.querySelector('.help-partially-visible').classList.remove('active');
+        } else {
+            document.querySelector('.help-partially-visible').classList.add('active');
+        }
     }
 
     function resetZoom(setToDefault) {
@@ -1459,6 +1472,18 @@ heatmap_namespace = (function() {
         return arr.sort(function(a, b) {
             return yDomain.indexOf(a) - yDomain.indexOf(b);
         });
+    }
+
+    function areAllCellsVisible(infoWrapperHeight) {
+        // isVisible = _scales.y.domain().length * _cellHeight + infoWrapperHeight + _margin.top + _margin.bottom < window.innerHeight;
+        var yAxisRect = document.querySelector('.knime-axis.knime-y').getBoundingClientRect();
+        var xAxisRect = document.querySelector('.knime-axis.knime-x').getBoundingClientRect();
+        var yAxisPos = yAxisRect.height + yAxisRect.top;
+        var xAxisPos = xAxisRect.width + yAxisRect.left;
+        var gradientXTopPos = document.querySelector('.gradient-x').getBoundingClientRect().top;
+        var gradientYLeftPos = document.querySelector('.gradient-y').getBoundingClientRect().left;
+
+        return yAxisPos < gradientXTopPos && xAxisPos < gradientYLeftPos;
     }
 
     /**
