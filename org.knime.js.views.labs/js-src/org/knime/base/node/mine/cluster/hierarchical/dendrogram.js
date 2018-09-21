@@ -254,7 +254,7 @@ window.dendrogram_namespace = (function () {
         leaves = nodes.leaves();
         clusterMarker = nodes.descendants().filter(function (n) {
             return n.children != null;
-        });
+        }).sort(function (a, b) { return b.data.distance - a.data.distance; });
     };
 
     const drawXAxis = function () {
@@ -346,9 +346,9 @@ window.dendrogram_namespace = (function () {
 
         // draw cluster markers
         clusterMarkerEl = dendrogramEl.selectAll('.cluster').data(clusterMarker).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius);
-        clusterMarkerEl.append('title').text(function (d) {
-            return _value.clusterLabels[d.data.id] + '; Distance: ' + d.data.distance;
-        });
+
+        // cluster marker title; content will be filled in onThresholdChange()
+        clusterMarkerEl.append('title');
     };
 
     const getTitleHeight = function () {
@@ -446,7 +446,20 @@ window.dendrogram_namespace = (function () {
             // mark nodes out of threshold and after-threshold root nodes
             d3.select(this)
                 .classed('outOfThreshold', n.data.distance > threshold)
-                .classed('root', isRoot);
+                .classed('root', isRoot)
+                .select('title').text(function (d) {
+                    if (isRoot) {
+                        // save calculated label; if we later want custom labels we have to do it differently
+                        _value.clusterLabels[d.data.id] = 'Cluster_' + (numberOfRootCluster - 1);
+                        // tooltip should show label and distance
+                        return _value.clusterLabels[d.data.id] + '; Distance: ' + d.data.distance;
+                    } else {
+                        // reset label
+                        _value.clusterLabels[d.data.id] = '';
+                        // tooltip only shows distance
+                        return 'Distance: ' + d.data.distance;
+                    }
+                });
         });
 
         // count all leaves which represent a single cluster
@@ -481,7 +494,6 @@ window.dendrogram_namespace = (function () {
         var clusterCount = 1;
 
         clusterMarker
-            .sort(function (a, b) { return b.data.distance - a.data.distance; })
             .some(function (n) {
                 if (number == clusterMarker.length + 1) {
                     threshold = clusterMarker[clusterMarker.length - 1].data.distance / 2;
