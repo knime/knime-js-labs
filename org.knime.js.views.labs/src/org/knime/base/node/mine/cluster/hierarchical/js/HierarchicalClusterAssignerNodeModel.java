@@ -410,7 +410,7 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
             else {
                 leaves.put(getLeafRowKey(node), node);
             }
-            labels.add("Cluster_" + id);
+            labels.add("");
             id++;
         }
         populateLeaves(leaves);
@@ -634,20 +634,22 @@ HierarchicalClusterAssignerValue> implements PortObjectHolder, CSSModifiable, La
                 clusterNodes.add(n);
             }
             else {
-                stack.push(n.getFirstSubnode());
+                // Push the second subnode (right child) first so it will be "popped" second
+                // Results in a list of cluster nodes from left-most cluster to right-most cluster
                 stack.push(n.getSecondSubnode());
+                stack.push(n.getFirstSubnode());
             }
         }
 
-        int clusterID = 0;
+        int clusterCount = 0;
         for (final DendrogramNode node : clusterNodes) {
             final int id = m_nodeToId.get(node);
             String label = getViewValue().getClusterLabels()[id];
             if (label == null || label.isEmpty()) {
-                label = "Cluster " + clusterID;
-                clusterID++;
+                label = "Cluster_" + clusterCount;
             }
             assignClusterLabelToRows(node, label, assignedClusters);
+            clusterCount++;
         }
 
         return assignedClusters;
