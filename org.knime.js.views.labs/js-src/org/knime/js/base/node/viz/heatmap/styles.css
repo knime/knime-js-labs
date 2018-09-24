@@ -68,7 +68,7 @@ p {
     cursor: pointer;
 }
 
-.knime-tick text {
+text.knime-tick-label {
     font-size: 10px;
 }
 

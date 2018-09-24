@@ -23,7 +23,8 @@ heatmap_namespace = (function() {
     var _minCellSize = 11;
     var _devicePixelRatio = window.devicePixelRatio;
     var _maxCanvasHeight = 8000; // canvas has native size limits
-    var _margin = { top: 100, left: 50, right: 10, bottom: 10 };
+    var _defaultMargin = { top: 30, left: 0, right: 10, bottom: 10 };
+    var _margin = {};
     var _defaultZoomX = 0;
     var _defaultZoomY = 0;
     var _defaultZoomK = 1;
@@ -153,11 +154,10 @@ heatmap_namespace = (function() {
         container.innerHTML = '';
 
         var svgWrapper =
-            '<div class="knime-svg-container" data-iframe-height><span class="gradient-y" style="width:' +
-            _margin.right +
-            'px"></span><span class="gradient-x" style="height:' +
-            _margin.bottom +
-            'px"></div>';
+            '<div class="knime-svg-container" data-iframe-height>\
+                <span class="gradient-y"></span>\
+                <span class="gradient-x"></span>\
+            </div>';
         var toolTipWrapper = '<div class="knime-tooltip"></div>';
         var infoWrapperEl = '<div class="info-wrapper"></div>';
         var progressBar = '<div class="progress-bar">Rendering ...<span class="progress"></span></div>';
@@ -633,7 +633,7 @@ heatmap_namespace = (function() {
     function formatPageData(rows) {
         var rowLabelImages = [];
         var rowNames = [];
-        var rowLables = [];
+        var rowLabels = [];
 
         var allValues = rows.reduce(function(accumulator, row) {
             rowNames.push(row.rowKey);
@@ -641,7 +641,7 @@ heatmap_namespace = (function() {
             var label = _representation.labelColumn
                 ? _table.getCell(row.rowKey, _representation.labelColumn)
                 : row.rowKey;
-            rowLables[row.rowKey] = label;
+            rowLabels[row.rowKey] = label;
 
             // Storing images in an separate array is enough
             if (_representation.svgLabelColumn) {
@@ -655,7 +655,7 @@ heatmap_namespace = (function() {
             rowLabelImages: rowLabelImages,
             data: allValues,
             rowNames: rowNames,
-            rowLables: rowLables
+            rowLabels: rowLabels
         };
     }
 
@@ -750,7 +750,7 @@ heatmap_namespace = (function() {
             }),
 
             y: d3.axisLeft(_scales.y).tickFormat(function(d) {
-                return formattedDataset.rowLables[d];
+                return formattedDataset.rowLabels[d];
             })
         };
     }
@@ -1054,18 +1054,33 @@ heatmap_namespace = (function() {
             .append('svg')
             .attr('class', 'heatmap');
 
+        var tickExtraSize = 15; // approximation to d3's text positioning, including tick line and text offset
+        var xAxisMaxTextSize = calculateTextSize(svg, d3.values(formattedDataset.rowLabels), 'knime-tick-label', function(label) {
+            return label;
+        });
+        var yAxisMaxTextSize = calculateTextSize(svg, _colNames, 'knime-tick-label', function(label) {
+            return label;
+        });
+
+        Object.assign(_margin, _defaultMargin, {
+            top: yAxisMaxTextSize[0] + tickExtraSize,
+            left:  xAxisMaxTextSize[0] + tickExtraSize
+        });
+
+        document.querySelector('.gradient-x').style.height = _margin.bottom;
+        document.querySelector('.gradient-y').style.width = _margin.right;
+
         // Create titles
         svg.append('text')
             .attr('class', 'knime-title')
-            .attr('x', _margin.left)
+            .attr('x', _defaultMargin.left)
             .attr('y', 30)
             .text(_value.chartTitle);
         svg.append('text')
             .attr('class', 'knime-subtitle')
-            .attr('x', _margin.left)
+            .attr('x', _defaultMargin.left)
             .attr('y', 50)
             .text(_value.chartSubtitle);
-
         updateTitles();
 
         // Determine cell sizes
@@ -1148,6 +1163,35 @@ heatmap_namespace = (function() {
         togglePanningClass();
         toggleSelectionClass();
         togglePartiallyDisplayedClass();
+    }
+
+    /**
+     * Function to calculate the max width and height of a data array. Automatically assigns the given strings to the provided cssClass
+     * to get the right styling. TextFunction is used to extract strings out of the given data array.
+     * The text is wrapped when it exceeds the svg.width * wrapFactor. If meassureHeight is set true, svg.height is used instead.
+     * The function returns an array with 1. max width, 2. max height, 3. the wrapped text string.
+     */
+    function calculateTextSize(svg, data, cssClass, textFunction) {
+        var maxWidth = 0;
+        var maxHeight = 0;
+        var group = svg.append('g').classed('knime-axis', true);
+
+        group
+            .selectAll('.tempText')
+            .data(data)
+            .enter()
+            .append('text')
+            .classed(cssClass, true)
+            .text(textFunction)
+            .each(function(d, i) {
+                var tempWidth = this.getComputedTextLength();
+                maxHeight = this.getBBox().height;
+                if (tempWidth > maxWidth) {
+                    maxWidth = tempWidth;
+                }
+            });
+        group.remove();
+        return [maxWidth, maxHeight];
     }
 
     function resetZoom(setToDefault) {
