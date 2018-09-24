@@ -91,7 +91,7 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
 
     private boolean m_enableZoomAndPanning;
     private boolean m_showZoomResetButton;
-    private boolean m_enableLocalScaleToggle;
+    private boolean m_enableLogScaleToggle;
 
     private boolean m_enableChangeOrientation;
 
@@ -340,14 +340,14 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
      * @return the enableLogScaleToggle
      */
     public boolean getEnableLogScaleToggle() {
-        return m_enableLocalScaleToggle;
+        return m_enableLogScaleToggle;
     }
 
     /**
      * @param enableLogScaleToggle the enableLogScaleToggle to set
      */
     public void setEnableLogScaleToggle(final boolean enableLogScaleToggle) {
-        m_enableLocalScaleToggle = enableLogScaleToggle;
+        m_enableLogScaleToggle = enableLogScaleToggle;
     }
 
     /**
@@ -611,7 +611,7 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_showWarningsInView, other.getShowWarningsInView())
                 .append(m_enableZoomAndPanning, other.getEnableZoomAndPanning())
                 .append(m_showZoomResetButton, other.getShowZoomResetButton())
-                .append(m_enableLocalScaleToggle, other.getEnableLogScaleToggle())
+                .append(m_enableLogScaleToggle, other.getEnableLogScaleToggle())
                 .append(m_enableChangeOrientation, other.getEnableChangeOrientation())
                 .append(m_showThresholdBar, other.getShowThresholdBar())
                 .append(m_enableThresholdModification, other.getEnableThresholdModification())
@@ -646,7 +646,7 @@ public class HierarchicalClusterAssignerRepresentation extends JSONViewContent {
                 .append(m_showWarningsInView)
                 .append(m_enableZoomAndPanning)
                 .append(m_showZoomResetButton)
-                .append(m_enableLocalScaleToggle)
+                .append(m_enableLogScaleToggle)
                 .append(m_enableChangeOrientation)
                 .append(m_colorPalette)
                 .append(m_showThresholdBar)

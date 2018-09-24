@@ -17,7 +17,8 @@ window.dendrogram_namespace = (function () {
         leafWidth = 8,
         leafHeight = 20,
         thresholdHandleHeight = 2,
-        thresholdFormat = d3.format('.3f');
+        thresholdFormat = d3.format('.3f'),
+        animationDuration = 400;
 
     // hierarchy related variables
     var cluster,
@@ -79,6 +80,7 @@ window.dendrogram_namespace = (function () {
         drawSVG();
         drawTitle();
         drawXAxis();
+        setYScale();
         drawYAxis();
         drawAxisLabels();
         drawDendrogram();
@@ -191,6 +193,15 @@ window.dendrogram_namespace = (function () {
                 }
             }, true);
             knimeService.addMenuItem('Number of clusters', 'sitemap', numClustersField);
+        }
+
+        // toogle log scale
+        if (_representation.enableLogScaleToggle) {
+            knimeService.addMenuDivider();
+            knimeService.addMenuItem('Use log scale', 'arrows-v', knimeService.createMenuCheckbox('useLogScale', _value.useLogScale, function () {
+                _value.useLogScale = this.checked;
+                toggleLogScale();
+            }));
         }
 
         // show selection only
@@ -385,11 +396,34 @@ window.dendrogram_namespace = (function () {
         xAxisEl.call(xAxis);
     };
 
-    const drawYAxis = function () {
+    const setYScale = function () {
+        var useLogScale = _value.useLogScale;
+        const minDistance = clusterMarker[clusterMarker.length - 1].data.distance;
         const maxDistance = nodes.data.distance;
-        yScale = d3.scaleLinear()
-            .domain([0, maxDistance])
-            .nice();
+
+        if (useLogScale && minDistance === 0) {
+            knimeService.setWarningMessage('Minimal distance is 0, therefore log scaling is not possible. Switched to linear scaling of Y axis.');
+            useLogScale = false;
+        }
+
+        if (useLogScale) {
+            // IE11 doesn't support Math.log10...
+            const log10 = Math.log10 ? Math.log10 : function (value) { return Math.log(value) / Math.log(10); };
+            const lowerPowerOfTen = function (value) {
+                //calculate puffers depending on maxDistance: next lower power of ten by one order of magnitude.
+                return Math.pow(10, Math.round(log10(value)) - 1);
+            };
+            yScale = d3.scaleLog()
+                .clamp(true)
+                .domain([minDistance - lowerPowerOfTen(minDistance), maxDistance + lowerPowerOfTen(maxDistance)]);
+        } else {
+            yScale = d3.scaleLinear()
+                .domain([0, maxDistance])
+                .nice();
+        }
+    };
+
+    const drawYAxis = function () {
         yAxis = d3.axisLeft(yScale)
             .ticks(5);
         yAxisEl = wrapperEl.append('g')
@@ -402,12 +436,19 @@ window.dendrogram_namespace = (function () {
         });
     };
 
-    const updateYAxis = function (transformEvent) {
+    const updateYAxis = function (transformEvent, animate) {
         yScale.range([viewportHeight, 0]);
         if (transformEvent) {
             yAxis.scale(transformEvent.rescaleY(yScale));
         }
-        yAxisEl.call(yAxis);
+
+        if (animate) {
+            yAxisEl.transition()
+                .duration(400)
+                .call(yAxis.scale(yScale));
+        } else {
+            yAxisEl.call(yAxis);
+        }
 
         // apply knime classes
         // TODO is there any way to only add these classes when the d3 tick element is created? updateYAxis() is called quite often...
@@ -600,7 +641,7 @@ window.dendrogram_namespace = (function () {
         thresholdEl.attr('transform', 'translate(0,' + (yScale(threshold) - (thresholdEl.attr('height') / 2)) + ')');
     };
 
-    const resizeDiagram = function (isInitial) {
+    const resizeDiagram = function (isInitial, animate) {
         calcSVGSize();
 
         viewportClipEl.attr('width', viewportWidth)
@@ -618,7 +659,7 @@ window.dendrogram_namespace = (function () {
         // update axis
         xAxisEl.attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')');
         updateXAxis();
-        updateYAxis();
+        updateYAxis(null, animate);
 
         if (xAxisLabelEl) {
             xAxisLabelEl
@@ -634,8 +675,24 @@ window.dendrogram_namespace = (function () {
             n.y = yScale(n.data.distance);
         });
 
+        // maybe enable animation
+        var localLinkEl = linkEl;
+        var localClusterMarkerEl = clusterMarkerEl;
+        var localThresholdEl = thresholdEl;
+        if (animate) {
+            localLinkEl = localLinkEl.transition()
+                .duration(animationDuration);
+            localClusterMarkerEl = localClusterMarkerEl.transition()
+                .duration(animationDuration);
+
+            if (localThresholdEl) {
+                localThresholdEl = localThresholdEl.transition()
+                    .duration(animationDuration);
+            }
+        }
+
         // re-position elements
-        linkEl.attr('d', function (l) {
+        localLinkEl.attr('d', function (l) {
             return 'M' + l.source.x + ' ' + l.source.y + ' L' + l.target.x + ' ' + l.source.y + ' L' + l.target.x + ' ' + l.target.y;
         });
 
@@ -643,12 +700,12 @@ window.dendrogram_namespace = (function () {
             return 'translate(' + d.x + ',' + d.y + ')';
         });
 
-        clusterMarkerEl.attr('transform', function (d) {
+        localClusterMarkerEl.attr('transform', function (d) {
             return 'translate(' + d.x + ',' + d.y + ')';
         });
 
-        if (thresholdEl) {
-            thresholdEl.attr('transform', 'translate(0,' + (yScale(_value.threshold) - (thresholdEl.attr('height') / 2)) + ')');
+        if (localThresholdEl) {
+            localThresholdEl.attr('transform', 'translate(0,' + (yScale(_value.threshold) - (thresholdEl.attr('height') / 2)) + ')');
         }
 
         zoom.translateExtent([[0, 0], [viewportWidth, viewportHeight]]);
@@ -660,9 +717,7 @@ window.dendrogram_namespace = (function () {
             const zoomX = _value.zoomX !== undefined ? _value.zoomX : 0;
             const zoomY = _value.zoomY !== undefined ? _value.zoomY : 0;
             const zoomK = _value.zoomK !== undefined ? _value.zoomK : 1;
-            if (zoomK != 1 || zoomX != 0 || zoomY != 0) {
-                svg.call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
-            }
+            svg.call(zoom.transform, d3.zoomIdentity.translate(zoomX, zoomY).scale(zoomK));
         }
     };
 
@@ -955,6 +1010,11 @@ window.dendrogram_namespace = (function () {
 
     const toggleShowSelectedOnly = function () {
         svg.classed('showSelectedOnly', _value.showSelectedOnly);
+    };
+
+    const toggleLogScale = function () {
+        setYScale();
+        resizeDiagram(true, true);
     };
 
     dendrogram.validate = function () {

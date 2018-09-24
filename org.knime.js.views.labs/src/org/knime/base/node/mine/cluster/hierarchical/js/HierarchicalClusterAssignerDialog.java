@@ -555,10 +555,10 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         displayConstraints.gridy++;
         displayPanel.add(m_enableClusterLabelsCheckBox, displayConstraints);
         displayConstraints.gridx++;
+        */
         displayPanel.add(m_useLogScaleCheckBox, displayConstraints);
         displayConstraints.gridx = 0;
         displayConstraints.gridy++;
-        */
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -647,10 +647,10 @@ public class HierarchicalClusterAssignerDialog extends NodeDialogPane {
         viewControlsPanel.add(m_enableNumClusterEditCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
-        /* These options will not be implemented for the first version
-         *
         viewControlsPanel.add(m_enableLogScaleToggleCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx++;
+        /* These options will not be implemented for the first version
+        *
         viewControlsPanel.add(m_enableChangeOrientationCheckBox, viewControlsConstraints);
         viewControlsConstraints.gridx = 0;
         viewControlsConstraints.gridy++;
