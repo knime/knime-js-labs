@@ -218,3 +218,7 @@ text.knime-legend-label {
 .partially-displayed .partially-displayed-hint {
     display: block;
 }
+
+.partially-displayed .panning-enabled {
+    cursor: move;
+}

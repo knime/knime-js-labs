@@ -1057,7 +1057,9 @@ heatmap_namespace = (function() {
                 .append('xhtml:div')
                 .attr('class', 'wrapper')
                 .attr('style', 'clip-path:url(#clip)');
-            _transformer = _wrapper.append('div').attr('class', 'transformer');
+            _transformer = _wrapper.append('div').attr('class', function() {
+                return _value.enablePanning ? 'transformer panning-enabled' : 'transformer';
+            });
 
             // Improve performance: render cells progressivley
             _maxExtensionY = 0;
