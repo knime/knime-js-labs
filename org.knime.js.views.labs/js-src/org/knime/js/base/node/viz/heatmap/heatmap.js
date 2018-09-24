@@ -810,7 +810,7 @@ heatmap_namespace = (function() {
             .constrain(function(transform, extent, translateExtent) {
                 // see https://github.com/d3/d3-zoom/blob/master/README.md#zoom_constrain
                 // the translate extent needs to dynamically append to the zoom level, therefore we need to overwrite it
-                var theight = translateExtent[1][1] + (_margin.top + _margin.bottom) / transform.k;
+                var theight = translateExtent[1][1] + (_margin.top + _margin.bottom - 1) / transform.k;
 
                 var dx0 = transform.invertX(extent[0][0]) - translateExtent[0][0];
                 var dx1 = transform.invertX(extent[1][0]) - translateExtent[1][0];
