@@ -64,18 +64,12 @@ p {
     cursor: pointer;
 }
 
-.knime-svg-container line,
-.knime-svg-container text {
-    fill: #222;
-}
-
-.knime-svg-container .knime-tick text {
+.knime-tick text {
     font-size: 10px;
 }
 
-.knime-svg-container text.active {
+text.active {
     fill: #003389;
-    cursor: default;
 }
 
 .knime-tooltip {
@@ -84,7 +78,6 @@ p {
     padding: 0.25rem 0.5rem;
     color: #333;
     background: #fff;
-    color: #444;
     opacity: 0;
     user-select: none; /* prevent mouse pointer icon change */
     pointer-events: none; /* make sure mouseleave on the cell is always fired */
@@ -170,6 +163,10 @@ form {
     padding: 2px 10px;
 }
 
+text.knime-legend-label {
+    font-size: 10px;
+}
+
 .missing-value {
     color: red;
 }
@@ -214,10 +211,10 @@ form {
     background-color: #ffd800;
 }
 
-.help-partially-visible {
+.partially-displayed-hint {
     display: none;
 }
 
-.help-partially-visible.active {
+.partially-displayed .partially-displayed-hint {
     display: block;
 }

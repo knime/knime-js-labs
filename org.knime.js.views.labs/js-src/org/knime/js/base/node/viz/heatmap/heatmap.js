@@ -20,7 +20,7 @@ heatmap_namespace = (function() {
         _maxExtensionX;
 
     // Hardcoded Default Settings
-    var _minCellSize = 10;
+    var _minCellSize = 11;
     var _devicePixelRatio = window.devicePixelRatio;
     var _maxCanvasHeight = 8000; // canvas has native size limits
     var _margin = { top: 100, left: 50, right: 10, bottom: 10 };
@@ -211,7 +211,7 @@ heatmap_namespace = (function() {
             paginationData.totalRowCount +
             ' entries</p>';
         
-        displayedRows += '<p class="help-partially-visible">(Partially displayed)</p></div>';
+        displayedRows += '<p class="partially-displayed-hint">(Partially displayed)</p></div>';
 
         var infoWrapper = document.body.querySelector('.info-wrapper');
         infoWrapper.innerHTML = displayedRows + paginationHtml;
@@ -1102,9 +1102,9 @@ heatmap_namespace = (function() {
 
         // Display help message when not all rows are visible
         if (isContentCompletelyVisible(infoWrapperHeight)) {
-            document.querySelector('.help-partially-visible').classList.remove('active');
+            document.querySelector('.knime-layout-container').classList.remove('partially-displayed');
         } else {
-            document.querySelector('.help-partially-visible').classList.add('active');
+            document.querySelector('.knime-layout-container').classList.add('partially-displayed');
         }
     }
 
@@ -1183,7 +1183,7 @@ heatmap_namespace = (function() {
 
         // general tick styling
         var ticks = axisWrapper.selectAll('.tick').attr('class', 'knime-tick');
-        ticks.select('text').attr('class', 'knime-tick-label');
+        ticks.select('text').attr('class', 'knime-label knime-tick-label');
         ticks.select('line').attr('class', 'knime-tick-line');
 
         axisWrapper
@@ -1263,6 +1263,7 @@ heatmap_namespace = (function() {
             .append('rect')
             .attr('y', 0)
             .attr('x', _legendMargin)
+            .attr('class', 'knime-legend-symbol')
             .attr('width', _legendWidth)
             .attr('height', _legendColorRangeHeight)
             .attr('right', _legendMargin)
@@ -1321,6 +1322,7 @@ heatmap_namespace = (function() {
 
         var text = axis
             .selectAll('text')
+            .attr('class', 'knime-legend-label')
             .attr('font-weight', 'normal');
 
         if (axis && axis.node().getBoundingClientRect().width > _legendWidth) {
