@@ -945,8 +945,8 @@ heatmap_namespace = (function() {
     function getContext(x, y) {
         var yExtension = _scales.y(y);
         var xExtension = _scales.x(x);
-        var maxRows = Math.ceil(_maxCanvasHeight / _devicePixelRatio / _cellWidth);
-        var maxCols = maxRows;
+        var maxRows = Math.ceil(_maxCanvasHeight / _devicePixelRatio / _cellHeight);
+        var maxCols = Math.ceil(_maxCanvasHeight / _devicePixelRatio / _cellWidth);
         _maxExtensionX = _maxExtensionX || 0;
         _maxExtensionY = _maxExtensionY || 0;
 
