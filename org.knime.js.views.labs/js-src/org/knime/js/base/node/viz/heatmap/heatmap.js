@@ -210,7 +210,7 @@ heatmap_namespace = (function() {
             ' of ' +
             paginationData.totalRowCount +
             ' entries</p>';
-        
+
         displayedRows += '<p class="partially-displayed-hint">(Partially displayed)</p></div>';
 
         var infoWrapper = document.body.querySelector('.info-wrapper');
@@ -268,6 +268,8 @@ heatmap_namespace = (function() {
                 _value.enableSelection = !_value.enableSelection;
                 var button = document.getElementById('heatmap-selection-mode');
                 button.classList.toggle('active');
+
+                toggleSelectionClass();
             };
             knimeService.addButton(
                 'heatmap-selection-mode',
@@ -310,9 +312,12 @@ heatmap_namespace = (function() {
                 _value.enablePanning = !_value.enablePanning;
                 var button = document.getElementById('heatmap-mouse-mode-pan');
                 button.classList.toggle('active');
+
                 if (!initialize) {
                     setZoomEvents();
                 }
+
+                togglePanningClass();
             };
             knimeService.addButton('heatmap-mouse-mode-pan', 'arrows', 'Mouse Mode "Pan"', panButtonClicked);
             if (_representation.enablePanning) {
@@ -412,6 +417,43 @@ heatmap_namespace = (function() {
             });
 
             knimeService.addMenuItem('Rows per Page', 'table', pageSize);
+        }
+    }
+
+    function togglePanningClass() {
+        // add general css classes
+        var layoutContainer = document.querySelector('.knime-layout-container');
+        if (!layoutContainer) {
+            return;
+        }
+        if (_value.enablePanning) {
+            layoutContainer.classList.add('panning-enabled');
+        } else {
+            layoutContainer.classList.remove('panning-enabled');
+        }
+    }
+
+    function toggleSelectionClass() {
+        var layoutContainer = document.querySelector('.knime-layout-container');
+        if (!layoutContainer) {
+            return;
+        }
+        if (_value.enableSelection) {
+            layoutContainer.classList.add('selection-enabled');
+        } else {
+            layoutContainer.classList.remove('selection-enabled');
+        }
+    }
+
+    function togglePartiallyDisplayedClass() {
+        var layoutContainer = document.querySelector('.knime-layout-container');
+        if (!layoutContainer) {
+            return;
+        }
+        if (isContentCompletelyVisible()) {
+            layoutContainer.classList.remove('partially-displayed');
+        } else {
+            layoutContainer.classList.add('partially-displayed');
         }
     }
 
@@ -795,6 +837,8 @@ heatmap_namespace = (function() {
                 _value.zoomY = t.y;
                 _value.zoomK = t.k;
 
+                togglePartiallyDisplayedClass();
+
                 // hack: force canvas refresh as sometimes canvas gets not fully painted
                 _transformer.node().style.opacity = 0.999;
                 setTimeout(function() {
@@ -1057,9 +1101,7 @@ heatmap_namespace = (function() {
                 .append('xhtml:div')
                 .attr('class', 'wrapper')
                 .attr('style', 'clip-path:url(#clip)');
-            _transformer = _wrapper.append('div').attr('class', function() {
-                return _value.enablePanning ? 'transformer panning-enabled' : 'transformer';
-            });
+            _transformer = _wrapper.append('div').attr('class', 'transformer');
 
             // Improve performance: render cells progressivley
             _maxExtensionY = 0;
@@ -1102,12 +1144,10 @@ heatmap_namespace = (function() {
         document.querySelector('.knime-svg-container').style.paddingBottom = infoWrapperHeight + 'px';
         document.querySelector('.gradient-x').style.bottom = infoWrapperHeight + 'px';
 
-        // Display help message when not all rows are visible
-        if (isContentCompletelyVisible(infoWrapperHeight)) {
-            document.querySelector('.knime-layout-container').classList.remove('partially-displayed');
-        } else {
-            document.querySelector('.knime-layout-container').classList.add('partially-displayed');
-        }
+        // add some general CSS classes
+        togglePanningClass();
+        toggleSelectionClass();
+        togglePartiallyDisplayedClass();
     }
 
     function resetZoom(setToDefault) {
