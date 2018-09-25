@@ -158,9 +158,9 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
         // remove(...) methods
         // this is a different class than java.util.ArrayList
         final List<String> excluded = new ArrayList<>(Arrays.asList(filter.getExcludes()));
-        if (((CardViewConfig)m_config).getLabelCol() != null
-            && excluded.contains(((CardViewConfig)m_config).getLabelCol())) {
-            excluded.remove(((CardViewConfig)m_config).getLabelCol());
+        String labelColumn = ((CardViewConfig)m_config).getLabelCol();
+        if (labelColumn != null && excluded.contains(labelColumn)) {
+            excluded.remove(labelColumn);
         }
         final String[] excludedArray = excluded.toArray(new String[excluded.size()]);
         return JSONDataTable.newBuilder()
