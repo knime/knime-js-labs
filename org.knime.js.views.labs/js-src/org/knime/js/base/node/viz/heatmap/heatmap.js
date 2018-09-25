@@ -837,8 +837,6 @@ heatmap_namespace = (function() {
                 _value.zoomY = t.y;
                 _value.zoomK = t.k;
 
-                togglePartiallyDisplayedClass();
-
                 // hack: force canvas refresh as sometimes canvas gets not fully painted
                 _transformer.node().style.opacity = 0.999;
                 setTimeout(function() {
@@ -846,6 +844,8 @@ heatmap_namespace = (function() {
                 }, 0);
             })
             .on('end', function() {
+                togglePartiallyDisplayedClass();
+
                 // style borders
                 var borderWidth = getCurrentBorderWidth();
                 _cellHighlighter.style.borderWidth = borderWidth;
