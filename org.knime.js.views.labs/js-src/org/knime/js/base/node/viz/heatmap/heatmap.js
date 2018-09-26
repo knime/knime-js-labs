@@ -20,10 +20,10 @@ heatmap_namespace = (function() {
         _maxExtensionX;
 
     // Hardcoded Default Settings
-    var _minCellSize = 11;
+    var _minCellSize = 12;
     var _devicePixelRatio = window.devicePixelRatio;
     var _maxCanvasHeight = 8000; // canvas has native size limits
-    var _defaultMargin = { top: 30, left: 0, right: 10, bottom: 10 };
+    var _defaultMargin = { top: 15, left: 10, right: 10, bottom: 10 };
     var _margin = {};
     var _defaultZoomX = 0;
     var _defaultZoomY = 0;
@@ -33,13 +33,16 @@ heatmap_namespace = (function() {
     var _legendColorRangeHeight = 20;
     var _legendMargin = 5;
     var _infoWrapperMinHeight = 80;
+    var _xAxisLabelTransform = 'rotate(-65) translate(10 8)';
+    var _titlesExtraMargin = 15;
+
+    // State management object
     var defaultViewValues = {
         selection: [],
         currentPage: 1,
         zoomX: _defaultZoomX,
         zoomY: _defaultZoomY,
-        zoomK: _defaultZoomK,
-        titlesHeight: 30
+        zoomK: _defaultZoomK
     };
 
     heatmap.init = function(representation, value) {
@@ -95,7 +98,7 @@ heatmap_namespace = (function() {
         } else {
             knimeService.unsubscribeSelection(_table.getTableId(), onSelectionChange);
         }
-    };
+    }
 
     function toggleSubscribeFilter() {
         if (_value.subscribeFilter) {
@@ -103,7 +106,7 @@ heatmap_namespace = (function() {
         } else {
             knimeService.unsubscribeFilter(_table.getTableId(), onFilterChange);
         }
-    };
+    }
 
     function onFilterChange(data) {
         _filteredData = _table.getRows().filter(function(row) {
@@ -133,7 +136,7 @@ heatmap_namespace = (function() {
                 });
             }
         }
-        
+
         styleSelectedRows();
 
         if (_value.showSelectedRowsOnly) {
@@ -233,26 +236,8 @@ heatmap_namespace = (function() {
         document.querySelector('.knime-title').textContent = _value.chartTitle;
         document.querySelector('.knime-subtitle').textContent = _value.chartSubtitle;
 
-        if (_value.titlesExist === undefined) {
-            // on first draw check if titles exist
-            _value.titlesExist = !!_value.chartTitle || !!_value.chartSubtitle;
-            _margin.top = _value.titlesExist ? _margin.top + _value.titlesHeight : _margin.top;
-        }
-
-        // Decide whether or not a redraw is neccessary
-        if (!_value.chartTitle && !_value.chartSubtitle) {
-            if (_value.titlesExist === true) {
-                _value.titlesExist = false;
-                _margin.top = _margin.top - _value.titlesHeight;
-                drawChart();
-            }
-        }
         if (_value.chartTitle || _value.chartSubtitle) {
-            if (_value.titlesExist === false) {
-                _value.titlesExist = true;
-                _margin.top = _margin.top + _value.titlesHeight;
-                drawChart();
-            }
+            _margin.top += _titlesExtraMargin;
         }
     }
 
@@ -299,7 +284,6 @@ heatmap_namespace = (function() {
                 }
             });
             knimeService.addNavSpacer();
-            
         }
 
         if (_representation.enableZoom) {
@@ -348,7 +332,7 @@ heatmap_namespace = (function() {
                 function() {
                     if (_value.chartTitle !== this.value) {
                         _value.chartTitle = this.value;
-                        updateTitles();
+                        drawChart();
                     }
                 },
                 true
@@ -360,7 +344,7 @@ heatmap_namespace = (function() {
                 function() {
                     if (_value.chartSubtitle !== this.value) {
                         _value.chartSubtitle = this.value;
-                        updateTitles();
+                        drawChart();
                     }
                 },
                 true
@@ -392,29 +376,35 @@ heatmap_namespace = (function() {
         // Selection / Filter configuration
         knimeService.addMenuDivider();
         if (_representation.enableSelection) {
-            knimeService.addMenuItem('Publish selection',
+            knimeService.addMenuItem(
+                'Publish selection',
                 knimeService.createStackedIcon('check-square-o', 'angle-right', 'faded left sm', 'right bold'),
-                knimeService.createMenuCheckbox('publishSelectionCheckbox', _value.publishSelection, function () {
+                knimeService.createMenuCheckbox('publishSelectionCheckbox', _value.publishSelection, function() {
                     _value.publishSelection = this.checked;
                     if (_value.publishSelection) {
                         knimeService.setSelectedRows(_table.getTableId(), _value.selection);
-                    } 
-                }));
+                    }
+                })
+            );
 
-            knimeService.addMenuItem('Subscribe to selection',
+            knimeService.addMenuItem(
+                'Subscribe to selection',
                 knimeService.createStackedIcon('check-square-o', 'angle-double-right', 'faded right sm', 'left bold'),
-                knimeService.createMenuCheckbox('subscribeSelectionCheckbox', _value.subscribeSelection, function () {
+                knimeService.createMenuCheckbox('subscribeSelectionCheckbox', _value.subscribeSelection, function() {
                     _value.subscribeSelection = this.checked;
                     toggleSubscribeSelection();
-                }));
+                })
+            );
         }
 
-        knimeService.addMenuItem('Subscribe to filter',
+        knimeService.addMenuItem(
+            'Subscribe to filter',
             knimeService.createStackedIcon('filter', 'angle-double-right', 'faded right sm', 'left bold'),
-            knimeService.createMenuCheckbox('subscribeFilterCheckbox', _value.subscribeFilter, function () {
+            knimeService.createMenuCheckbox('subscribeFilterCheckbox', _value.subscribeFilter, function() {
                 _value.subscribeFilter = this.checked;
                 toggleSubscribeFilter();
-            }));
+            })
+        );
 
         knimeService.addMenuDivider();
         if (_representation.enableColorModeEdit) {
@@ -688,11 +678,13 @@ heatmap_namespace = (function() {
             return accumulator.concat(row);
         }, []);
 
+        var measuredLabels = setMarginsForLabels(rowLabels);
+
         return {
             rowLabelImages: rowLabelImages,
             data: allValues,
             rowNames: rowNames,
-            rowLabels: rowLabels
+            measuredLabels: measuredLabels
         };
     }
 
@@ -737,7 +729,7 @@ heatmap_namespace = (function() {
         }
 
         _cellHighlighter.style.left = Math.ceil(xPos) + 'px';
-        _cellHighlighter.style.top = Math.ceil(yPos) + 'px';
+        _cellHighlighter.style.top = Math.floor(yPos) + 'px';
         _cellHighlighter.style.width = Math.ceil(_cellWidth) + 'px';
         _cellHighlighter.style.height = Math.ceil(_cellHeight) + 'px';
 
@@ -783,11 +775,15 @@ heatmap_namespace = (function() {
     function createAxis(formattedDataset) {
         return {
             x: d3.axisTop(_scales.x).tickFormat(function(d) {
-                return d;
+                var index = formattedDataset.measuredLabels.x.values.originalData.indexOf(d);
+                var label = formattedDataset.measuredLabels.x.values.truncated[index];
+                return label ? label : formattedDataset.measuredLabels.x.values.originalData[index];
             }),
 
             y: d3.axisLeft(_scales.y).tickFormat(function(d) {
-                return formattedDataset.rowLabels[d];
+                var index = formattedDataset.measuredLabels.y.values.originalData.indexOf(d);
+                var label = formattedDataset.measuredLabels.y.values.truncated[index];
+                return label ? label : formattedDataset.measuredLabels.y.values.originalData[index];
             })
         };
     }
@@ -1070,6 +1066,37 @@ heatmap_namespace = (function() {
         });
     }
 
+    /**
+     * Set new margins based on the label sizes
+     */
+    function setMarginsForLabels(rowLabels) {
+        var tickExtraSize = 15;
+        var container = document.querySelector('svg.heatmap');
+        var maxWidth = container.getBoundingClientRect().width * 0.4;
+
+        var measuredLabelsY = knimeService.meassureAndTruncate(d3.values(rowLabels), {
+            classes: ['knime-tick-label', 'active'],
+            maxWidth: maxWidth,
+            container: container
+        });
+        var measuredLabelsX = knimeService.meassureAndTruncate(_colNames, {
+            classes: ['knime-tick-label', 'active'],
+            attributes: ['transform="_xAxisLabelTransform"'],
+            maxWidth: maxWidth,
+            container: container
+        });
+
+        _margin = Object.assign({}, _defaultMargin, {
+            top: measuredLabelsX.max.width + tickExtraSize + _defaultMargin.top,
+            left: measuredLabelsY.max.width + tickExtraSize + _defaultMargin.left
+        });
+
+        return {
+            y: measuredLabelsY,
+            x: measuredLabelsX
+        };
+    }
+
     function drawContents(rows) {
         if (_drawCellQueue) {
             _drawCellQueue.invalidate();
@@ -1086,28 +1113,7 @@ heatmap_namespace = (function() {
             ? _representation.threeColorGradient
             : _representation.discreteGradientColors;
 
-        var svg = d3.select('.knime-svg-container svg')
-
-        var tickExtraSize = 15; // approximation to d3's text positioning, including tick line and text offset
-        var xAxisMaxTextSize = calculateTextSize(
-            svg,
-            d3.values(formattedDataset.rowLabels),
-            'knime-tick-label',
-            function(label) {
-                return label;
-            }
-        );
-        var yAxisMaxTextSize = calculateTextSize(svg, _colNames, 'knime-tick-label', function(label) {
-            return label;
-        });
-
-        Object.assign(_margin, _defaultMargin, {
-            top: yAxisMaxTextSize[0] + tickExtraSize,
-            left: xAxisMaxTextSize[0] + tickExtraSize
-        });
-
-        document.querySelector('.gradient-x').style.height = _margin.bottom + 'px';
-        document.querySelector('.gradient-y').style.width = _margin.right + 'px';
+        var svg = d3.select('.knime-svg-container svg');
 
         // Create titles
         svg.append('text')
@@ -1131,7 +1137,7 @@ heatmap_namespace = (function() {
         );
         _cellHeight = Math.max(
             _minCellSize,
-            (window.innerHeight - _margin.top - _value.titlesHeight - infoWrapperHeight) / rows.length
+            (window.innerHeight - _margin.top - _titlesExtraMargin - infoWrapperHeight) / rows.length
         );
 
         _tooltip = document.querySelector('.knime-tooltip');
@@ -1198,51 +1204,14 @@ heatmap_namespace = (function() {
         document.querySelector('.knime-svg-container').style.paddingBottom = infoWrapperHeight + 'px';
         document.querySelector('.gradient-x').style.bottom = infoWrapperHeight + 'px';
 
+        // Set gradient overlays
+        document.querySelector('.gradient-x').style.height = _margin.bottom + 'px';
+        document.querySelector('.gradient-y').style.width = _margin.right + 'px';
+
         // add some general CSS classes
         togglePanningClass();
         toggleSelectionClass();
         togglePartiallyDisplayedClass();
-    }
-
-    /**
-     * Function to cut off text after it exceeds a calculated size.
-     * Returns the calculated wraped string.
-     */
-    function cutText(textElement, maxWidth) {
-        while (textElement.getComputedTextLength() > maxWidth && textElement.innerText.length > 1) {
-            textElement.innerText = textElement.innerText.slice(0, -1) + '...';
-            textLength = textElement.getComputedTextLength();
-        }
-        return textElement;
-    }
-
-    /**
-     * Function to calculate the max width and height of a data array. Automatically assigns the given strings to the provided cssClass
-     * to get the right styling. TextFunction is used to extract strings out of the given data array.
-     * The text is wrapped when it exceeds the svg.width * wrapFactor. If meassureHeight is set true, svg.height is used instead.
-     * The function returns an array with 1. max width, 2. max height, 3. the wrapped text string.
-     */
-    function calculateTextSize(svg, data, cssClass, textFunction) {
-        var maxWidth = 0;
-        var maxHeight = 0;
-        var group = svg.append('g').classed('knime-axis', true);
-
-        group
-            .selectAll('.tempText')
-            .data(data)
-            .enter()
-            .append('text')
-            .classed(cssClass, true)
-            .text(textFunction)
-            .each(function(d, i) {
-                var tempWidth = this.getComputedTextLength();
-                maxHeight = this.getBBox().height;
-                if (tempWidth > maxWidth) {
-                    maxWidth = tempWidth;
-                }
-            });
-        group.remove();
-        return [maxWidth, maxHeight];
     }
 
     function resetZoom(setToDefault) {
@@ -1323,7 +1292,7 @@ heatmap_namespace = (function() {
             .selectAll('text')
             .attr('font-weight', 'normal')
             .style('text-anchor', 'start')
-            .attr('transform', 'rotate(-65) translate(10 8)');
+            .attr('transform', _xAxisLabelTransform);
 
         // general tick styling
         var ticks = axisWrapper.selectAll('.tick').attr('class', 'knime-tick');
@@ -1514,7 +1483,7 @@ heatmap_namespace = (function() {
 
         styleSelectedRows();
 
-        if(_value.publishSelection) {
+        if (_value.publishSelection) {
             knimeService.setSelectedRows(_table.getTableId(), _value.selection);
         }
     }
@@ -1600,7 +1569,7 @@ heatmap_namespace = (function() {
         var highlighter = document.createElement('SPAN');
         highlighter.classList.add('row-highlighter');
 
-        highlighter.style.top = Math.ceil(startPosition) + 'px';
+        highlighter.style.top = Math.floor(startPosition) + 'px';
 
         highlighter.style.left = Math.ceil(_margin.left) + 'px';
         highlighter.style.height = Math.ceil(endPosition - startPosition) + 'px';
