@@ -18,6 +18,7 @@ window.cards_namespace = (function () {
         this._infoColsCount = 0;
         this._nonSelectableColsCount = 0;
         this._rowIdColInd = null;
+        this._nonHiddenDataIndexes = [];
     };
 
     CardView.prototype = Object.create(KnimeBaseTableViewer.prototype);

@@ -259,6 +259,9 @@
          <webDependency
                webResourceBundleID="dataTables_1_10_11_bootstrap">
          </webDependency>
+         <webDependency
+               webResourceBundleID="knimeBaseTableViewer_1.0.0">
+         </webDependency>
       </webResourceBundle>
       <webResourceBundle
             debug="true"
