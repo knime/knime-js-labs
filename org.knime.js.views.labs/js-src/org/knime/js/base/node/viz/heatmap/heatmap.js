@@ -23,7 +23,7 @@ heatmap_namespace = (function() {
     var _minCellSize = 12;
     var _devicePixelRatio = window.devicePixelRatio;
     var _maxCanvasHeight = 8000; // canvas has native size limits
-    var _defaultMargin = { top: 15, left: 10, right: 10, bottom: 10 };
+    var _defaultMargin = { top: 40, left: 10, right: 10, bottom: 10 };
     var _margin = {};
     var _defaultZoomX = 0;
     var _defaultZoomY = 0;
@@ -34,7 +34,7 @@ heatmap_namespace = (function() {
     var _legendMargin = 5;
     var _infoWrapperMinHeight = 80;
     var _xAxisLabelTransform = 'rotate(-65) translate(10 8)';
-    var _titlesExtraMargin = 15;
+    var _titlesExtraMargin = 25;
 
     // State management object
     var defaultViewValues = {
@@ -282,6 +282,7 @@ heatmap_namespace = (function() {
                 if (_value.publishSelection) {
                     knimeService.setSelectedRows(_table.getTableId(), _value.selection);
                 }
+                styleSelectedRows();
             });
             knimeService.addNavSpacer();
         }
@@ -395,6 +396,8 @@ heatmap_namespace = (function() {
                     toggleSubscribeSelection();
                 })
             );
+
+            knimeService.addMenuDivider();
         }
 
         knimeService.addMenuItem(
@@ -477,7 +480,7 @@ heatmap_namespace = (function() {
         if (!layoutContainer) {
             return;
         }
-        if (isContentCompletelyVisible()) {
+        if (areAxisCompletelyVisible()) {
             layoutContainer.classList.remove('partially-displayed');
         } else {
             layoutContainer.classList.add('partially-displayed');
@@ -728,10 +731,10 @@ heatmap_namespace = (function() {
             };
         }
 
-        _cellHighlighter.style.left = Math.ceil(xPos) + 'px';
+        _cellHighlighter.style.left = Math.floor(xPos) + 'px';
         _cellHighlighter.style.top = Math.floor(yPos) + 'px';
-        _cellHighlighter.style.width = Math.ceil(_cellWidth) + 'px';
-        _cellHighlighter.style.height = Math.ceil(_cellHeight) + 'px';
+        _cellHighlighter.style.width = Math.ceil(_cellWidth) + 1 + 'px';
+        _cellHighlighter.style.height = Math.ceil(_cellHeight) + 1 + 'px';
 
         return cell;
     }
@@ -777,12 +780,17 @@ heatmap_namespace = (function() {
             x: d3.axisTop(_scales.x).tickFormat(function(d) {
                 var index = formattedDataset.measuredLabels.x.values.originalData.indexOf(d);
                 var label = formattedDataset.measuredLabels.x.values.truncated[index];
+                this.parentNode.insertAdjacentHTML('beforeend', '<title>' + d+ '</title>');
+
                 return label ? label : formattedDataset.measuredLabels.x.values.originalData[index];
+
             }),
 
             y: d3.axisLeft(_scales.y).tickFormat(function(d) {
                 var index = formattedDataset.measuredLabels.y.values.originalData.indexOf(d);
                 var label = formattedDataset.measuredLabels.y.values.truncated[index];
+                this.parentNode.insertAdjacentHTML('beforeend', '<title>' + d+ '</title>');
+                
                 return label ? label : formattedDataset.measuredLabels.y.values.originalData[index];
             })
         };
@@ -1070,25 +1078,24 @@ heatmap_namespace = (function() {
      * Set new margins based on the label sizes
      */
     function setMarginsForLabels(rowLabels) {
-        var tickExtraSize = 15;
         var container = document.querySelector('svg.heatmap');
         var maxWidth = container.getBoundingClientRect().width * 0.4;
+        var maxHeight = container.getBoundingClientRect().height * 0.4;
 
         var measuredLabelsY = knimeService.meassureAndTruncate(d3.values(rowLabels), {
-            classes: ['knime-tick-label', 'active'],
+            tempContainerClasses: 'knime-tick-label active',
             maxWidth: maxWidth,
             container: container
         });
         var measuredLabelsX = knimeService.meassureAndTruncate(_colNames, {
-            classes: ['knime-tick-label', 'active'],
-            attributes: ['transform="_xAxisLabelTransform"'],
-            maxWidth: maxWidth,
+            tempContainerClasses: 'knime-tick-label active',
+            maxWidth: maxHeight,
             container: container
         });
 
         _margin = Object.assign({}, _defaultMargin, {
-            top: measuredLabelsX.max.width + tickExtraSize + _defaultMargin.top,
-            left: measuredLabelsY.max.width + tickExtraSize + _defaultMargin.left
+            top: measuredLabelsX.max.width + _defaultMargin.top,
+            left: measuredLabelsY.max.width + _defaultMargin.left
         });
 
         return {
@@ -1450,6 +1457,10 @@ heatmap_namespace = (function() {
      * @param {String} selectedRowId
      */
     function selectDeltaRow(selectedRowId) {
+        if(!_value.selection.length) {
+            // Delta selection is not possible if no row is selected
+            return;
+        }
         // Get closest selected row to newly selected row
         var rowNames = _scales.y.domain();
         var currentIndex = rowNames.indexOf(selectedRowId);
@@ -1572,7 +1583,7 @@ heatmap_namespace = (function() {
         highlighter.style.top = Math.floor(startPosition) + 'px';
 
         highlighter.style.left = Math.ceil(_margin.left) + 'px';
-        highlighter.style.height = Math.ceil(endPosition - startPosition) + 'px';
+        highlighter.style.height = Math.ceil(endPosition - startPosition) + 1 + 'px';
         highlighter.style.width = Math.floor(_colNames.length * _cellWidth) + 'px';
         highlighter.style.borderWidth = getCurrentBorderWidth();
         _transformer.node().insertAdjacentElement('beforeend', highlighter);
@@ -1593,15 +1604,15 @@ heatmap_namespace = (function() {
      * Check if the axis overlap with the 'fade-out' gradients
      * to see if all the content is displayed
      */
-    function isContentCompletelyVisible() {
+    function areAxisCompletelyVisible() {
         var yAxisRect = document.querySelector('.knime-axis.knime-y').getBoundingClientRect();
         var xAxisRect = document.querySelector('.knime-axis.knime-x').getBoundingClientRect();
-        var yAxisPos = yAxisRect.height + yAxisRect.top;
-        var xAxisPos = xAxisRect.width + yAxisRect.left;
+        var yAxisEndPos = yAxisRect.height + yAxisRect.top;
+        var xAxisEndPos = xAxisRect.width + yAxisRect.left;
         var gradientXTopPos = document.querySelector('.gradient-x').getBoundingClientRect().top;
         var gradientYLeftPos = document.querySelector('.gradient-y').getBoundingClientRect().left;
 
-        return yAxisPos < gradientXTopPos && xAxisPos < gradientYLeftPos;
+        return Math.floor(yAxisEndPos) <= gradientXTopPos && Math.floor(xAxisEndPos) <= gradientYLeftPos;
     }
 
     /**
