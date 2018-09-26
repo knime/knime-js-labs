@@ -39,6 +39,8 @@ window.dendrogram_namespace = (function () {
         subtitleEl,
         dendrogramEl,
         clusterMarkerEl,
+        leafClusterMarkerContainerEl,
+        leafClusterMarkerEl,
         leafEl,
         linkEl,
         thresholdEl,
@@ -477,6 +479,8 @@ window.dendrogram_namespace = (function () {
 
         // cluster marker title; content will be filled in onThresholdChange()
         clusterMarkerEl.append('title');
+
+        leafClusterMarkerContainerEl = dendrogramEl.append('g');
     };
 
     const getTitleHeight = function () {
@@ -610,10 +614,29 @@ window.dendrogram_namespace = (function () {
                 });
         });
 
+        // get leaves which form a cluster
+        const leafCluster = clusterNodes.filter(function (n) {
+            return leaves.indexOf(n) !== -1;
+        });
+
+        // update DOM: add clusterMarkers for leaves
+        leafClusterMarkerEl = leafClusterMarkerContainerEl.selectAll('circle')
+            .data(leafCluster);
+        leafClusterMarkerEl.exit().remove();
+        leafClusterMarkerEl.selectAll('title').remove();
+        leafClusterMarkerEl = leafClusterMarkerEl.enter().append('circle').merge(leafClusterMarkerEl)
+            .attr('class', 'cluster root')
+            .attr('r', clusterMarkerRadius / _value.zoomK)
+            .attr('transform', function (d) {
+                return 'translate(' + d.x + ',' + (d.y - (leafHeight / _value.zoomK)) + ')';
+            });
+        leafClusterMarkerEl.append('title').text(function (d) {
+            return _value.clusterLabels[d.data.id] + '\n' + d.data.rowKey;
+        });
+
         // update DOM: leaves
         leafEl.each(function (d) {
             const el = d3.select(this);
-            el.classed('root', d.root);
 
             var titleEl = el.select('title');
             if (d.root) {
@@ -780,11 +803,16 @@ window.dendrogram_namespace = (function () {
                 // rescale line widths and markers
                 linkEl.attr('stroke-width', linkStrokeWidth / d3.event.transform.k);
                 clusterMarkerEl.attr('r', clusterMarkerRadius / d3.event.transform.k);
+                leafClusterMarkerEl
+                    .attr('r', clusterMarkerRadius / d3.event.transform.k)
+                    .attr('transform', function (d) {
+                        return 'translate(' + d.x + ',' + (d.y - (leafHeight / d3.event.transform.k)) + ')';
+                    });
+
                 leafEl.attr('width', leafWidth / d3.event.transform.k)
                     .attr('height', leafHeight / d3.event.transform.k)
                     .attr('x', -(leafWidth / d3.event.transform.k) / 2)
-                    .attr('y', -(leafHeight / d3.event.transform.k))
-                    .attr('stroke-width', linkStrokeWidth / d3.event.transform.k);
+                    .attr('y', -(leafHeight / d3.event.transform.k));
 
                 if (thresholdEl) {
                     thresholdEl.attr('height', thresholdHandleHeight / d3.event.transform.k);
@@ -840,6 +868,9 @@ window.dendrogram_namespace = (function () {
             return d.selected;
         });
         clusterMarkerEl.classed('selected', function (d) {
+            return d.selected;
+        });
+        leafClusterMarkerEl.classed('selected', function (d) {
             return d.selected;
         });
         linkEl.classed('selected', function (d) {
