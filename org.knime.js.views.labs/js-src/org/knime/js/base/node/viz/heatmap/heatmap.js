@@ -33,8 +33,6 @@ heatmap_namespace = (function() {
     var _legendColorRangeHeight = 20;
     var _legendMargin = 5;
     var _infoWrapperMinHeight = 80;
-
-    // State managment objects
     var defaultViewValues = {
         selection: [],
         currentPage: 1,
@@ -68,15 +66,8 @@ heatmap_namespace = (function() {
             _colNames[repColNames.indexOf(hmColName)] = hmColName;
         });
 
-        if (_value.subscribeSelection) {
-            knimeService.subscribeToSelection(_table.getTableId(), onSelectionChange);
-        }
-        if (_value.subscribeFilter) {
-            var filterIds = _table.getFilterIds();
-            for (var i = 0; i < filterIds.length; i++) {
-                knimeService.subscribeToFilter(_table.getTableId(), onFilterChange, filterIds[i]);
-            }
-        }
+        toggleSubscribeFilter();
+        toggleSubscribeSelection();
 
         drawControls();
 
@@ -98,6 +89,22 @@ heatmap_namespace = (function() {
         return new XMLSerializer().serializeToString(svgElement);
     };
 
+    function toggleSubscribeSelection() {
+        if (_value.subscribeSelection) {
+            knimeService.subscribeToSelection(_table.getTableId(), onSelectionChange);
+        } else {
+            knimeService.unsubscribeSelection(_table.getTableId(), onSelectionChange);
+        }
+    };
+
+    function toggleSubscribeFilter() {
+        if (_value.subscribeFilter) {
+            knimeService.subscribeToFilter(_table.getTableId(), onFilterChange, _table.getFilterIds());
+        } else {
+            knimeService.unsubscribeFilter(_table.getTableId(), onFilterChange);
+        }
+    };
+
     function onFilterChange(data) {
         _filteredData = _table.getRows().filter(function(row) {
             return _table.isRowIncludedInFilter(row.rowKey, data);
@@ -106,26 +113,29 @@ heatmap_namespace = (function() {
     }
 
     function onSelectionChange(data) {
-        var removed = data.changeSet.removed;
-        var added = data.changeSet.added;
-        if (added) {
-            added.map(function(rowId) {
-                var index = _value.selection.indexOf(rowId);
-                if (index === -1) {
-                    _value.selection.push(rowId);
-                }
-            });
-            styleSelectedRows();
+        if (data.reevaluate) {
+            _value.selection = knimeService.getAllRowsForSelection(_table.getTableId());
+        } else if (data.changeSet) {
+            if (data.changeSet.added) {
+                data.changeSet.added.map(function(rowId) {
+                    var index = _value.selection.indexOf(rowId);
+                    if (index === -1) {
+                        _value.selection.push(rowId);
+                    }
+                });
+            }
+            if (data.changeSet.removed) {
+                data.changeSet.removed.map(function(rowId) {
+                    var index = _value.selection.indexOf(rowId);
+                    if (index > -1) {
+                        _value.selection.splice(index, 1);
+                    }
+                });
+            }
         }
-        if (removed) {
-            removed.map(function(rowId) {
-                var index = _value.selection.indexOf(rowId);
-                if (index > -1) {
-                    _value.selection.splice(index, 1);
-                }
-            });
-            styleSelectedRows();
-        }
+        
+        styleSelectedRows();
+
         if (_value.showSelectedRowsOnly) {
             drawChart();
             resetZoom(true);
@@ -157,6 +167,7 @@ heatmap_namespace = (function() {
             '<div class="knime-svg-container" data-iframe-height>\
                 <span class="gradient-y"></span>\
                 <span class="gradient-x"></span>\
+                <svg class="heatmap"></svg>\
             </div>';
         var toolTipWrapper = '<div class="knime-tooltip"></div>';
         var infoWrapperEl = '<div class="info-wrapper"></div>';
@@ -282,14 +293,13 @@ heatmap_namespace = (function() {
             }
 
             knimeService.addButton('heatmap-clear-selection-button', 'minus-square-o', 'Clear selection', function() {
-                var tableId = _table.getTableId();
                 _value.selection = [];
                 if (_value.publishSelection) {
-                    knimeService.setSelectedRows(tableId, _value.selection);
+                    knimeService.setSelectedRows(_table.getTableId(), _value.selection);
                 }
-                styleSelectedRows();
             });
             knimeService.addNavSpacer();
+            
         }
 
         if (_representation.enableZoom) {
@@ -378,6 +388,33 @@ heatmap_namespace = (function() {
             );
             knimeService.addMenuItem('Show Selected Rows Only', 'filter', showSelectedRowsOnly);
         }
+
+        // Selection / Filter configuration
+        knimeService.addMenuDivider();
+        if (_representation.enableSelection) {
+            knimeService.addMenuItem('Publish selection',
+                knimeService.createStackedIcon('check-square-o', 'angle-right', 'faded left sm', 'right bold'),
+                knimeService.createMenuCheckbox('publishSelectionCheckbox', _value.publishSelection, function () {
+                    _value.publishSelection = this.checked;
+                    if (_value.publishSelection) {
+                        knimeService.setSelectedRows(_table.getTableId(), _value.selection);
+                    } 
+                }));
+
+            knimeService.addMenuItem('Subscribe to selection',
+                knimeService.createStackedIcon('check-square-o', 'angle-double-right', 'faded right sm', 'left bold'),
+                knimeService.createMenuCheckbox('subscribeSelectionCheckbox', _value.subscribeSelection, function () {
+                    _value.subscribeSelection = this.checked;
+                    toggleSubscribeSelection();
+                }));
+        }
+
+        knimeService.addMenuItem('Subscribe to filter',
+            knimeService.createStackedIcon('filter', 'angle-double-right', 'faded right sm', 'left bold'),
+            knimeService.createMenuCheckbox('subscribeFilterCheckbox', _value.subscribeFilter, function () {
+                _value.subscribeFilter = this.checked;
+                toggleSubscribeFilter();
+            }));
 
         knimeService.addMenuDivider();
         if (_representation.enableColorModeEdit) {
@@ -699,10 +736,10 @@ heatmap_namespace = (function() {
             };
         }
 
-        _cellHighlighter.style.left = xPos - 1 + 'px';
-        _cellHighlighter.style.top = yPos + 'px';
-        _cellHighlighter.style.width = _cellWidth + 1 + 'px';
-        _cellHighlighter.style.height = _cellHeight + 'px';
+        _cellHighlighter.style.left = Math.ceil(xPos) + 'px';
+        _cellHighlighter.style.top = Math.ceil(yPos) + 'px';
+        _cellHighlighter.style.width = Math.ceil(_cellWidth) + 'px';
+        _cellHighlighter.style.height = Math.ceil(_cellHeight) + 'px';
 
         return cell;
     }
@@ -1049,26 +1086,28 @@ heatmap_namespace = (function() {
             ? _representation.threeColorGradient
             : _representation.discreteGradientColors;
 
-        var svg = d3
-            .select('.knime-svg-container')
-            .append('svg')
-            .attr('class', 'heatmap');
+        var svg = d3.select('.knime-svg-container svg')
 
         var tickExtraSize = 15; // approximation to d3's text positioning, including tick line and text offset
-        var xAxisMaxTextSize = calculateTextSize(svg, d3.values(formattedDataset.rowLabels), 'knime-tick-label', function(label) {
-            return label;
-        });
+        var xAxisMaxTextSize = calculateTextSize(
+            svg,
+            d3.values(formattedDataset.rowLabels),
+            'knime-tick-label',
+            function(label) {
+                return label;
+            }
+        );
         var yAxisMaxTextSize = calculateTextSize(svg, _colNames, 'knime-tick-label', function(label) {
             return label;
         });
 
         Object.assign(_margin, _defaultMargin, {
             top: yAxisMaxTextSize[0] + tickExtraSize,
-            left:  xAxisMaxTextSize[0] + tickExtraSize
+            left: xAxisMaxTextSize[0] + tickExtraSize
         });
 
-        document.querySelector('.gradient-x').style.height = _margin.bottom;
-        document.querySelector('.gradient-y').style.width = _margin.right;
+        document.querySelector('.gradient-x').style.height = _margin.bottom + 'px';
+        document.querySelector('.gradient-y').style.width = _margin.right + 'px';
 
         // Create titles
         svg.append('text')
@@ -1166,6 +1205,18 @@ heatmap_namespace = (function() {
     }
 
     /**
+     * Function to cut off text after it exceeds a calculated size.
+     * Returns the calculated wraped string.
+     */
+    function cutText(textElement, maxWidth) {
+        while (textElement.getComputedTextLength() > maxWidth && textElement.innerText.length > 1) {
+            textElement.innerText = textElement.innerText.slice(0, -1) + '...';
+            textLength = textElement.getComputedTextLength();
+        }
+        return textElement;
+    }
+
+    /**
      * Function to calculate the max width and height of a data array. Automatically assigns the given strings to the provided cssClass
      * to get the right styling. TextFunction is used to extract strings out of the given data array.
      * The text is wrapped when it exceeds the svg.width * wrapFactor. If meassureHeight is set true, svg.height is used instead.
@@ -1231,9 +1282,16 @@ heatmap_namespace = (function() {
             .append('rect')
             .attr('y', 0)
             .attr('x', 0)
-            .attr('width', _margin.left + 1)
-            .attr('height', _margin.top + 1)
+            .attr('width', Math.ceil(_margin.left) + 1)
+            .attr('height', Math.ceil(_margin.top) + 1)
             .attr('fill', 'black');
+        maskAxis
+            .append('rect')
+            .attr('y', Math.ceil(_margin.top))
+            .attr('x', Math.ceil(_margin.left))
+            .attr('width', 1)
+            .attr('height', 1)
+            .attr('fill', 'white');
 
         var axisWrapper = svg
             .append('g')
@@ -1454,9 +1512,11 @@ heatmap_namespace = (function() {
             }
         }
 
-        var tableId = _table.getTableId();
         styleSelectedRows();
-        knimeService.setSelectedRows(tableId, _value.selection);
+
+        if(_value.publishSelection) {
+            knimeService.setSelectedRows(_table.getTableId(), _value.selection);
+        }
     }
 
     function selectSingleRow(selectedRowId, keepCurrentSelections) {
@@ -1467,13 +1527,11 @@ heatmap_namespace = (function() {
         // Cast optional parameter to boolean
         keepCurrentSelections = !!keepCurrentSelections;
 
-        var tableId = _table.getTableId();
-
         if (!keepCurrentSelections) {
             // Remove all selections
             _value.selection = [];
             if (_value.publishSelection) {
-                knimeService.setSelectedRows(tableId, []);
+                knimeService.setSelectedRows(_table.getTableId(), []);
             }
             styleSelectedRows();
         }
@@ -1484,13 +1542,13 @@ heatmap_namespace = (function() {
             });
             styleSelectedRows();
             if (_value.publishSelection) {
-                knimeService.removeRowsFromSelection(tableId, [selectedRowId]);
+                knimeService.removeRowsFromSelection(_table.getTableId(), [selectedRowId]);
             }
         } else {
             _value.selection.push(selectedRowId);
             styleSelectedRows();
             if (_value.publishSelection) {
-                knimeService.addRowsToSelection(tableId, [selectedRowId]);
+                knimeService.addRowsToSelection(_table.getTableId(), [selectedRowId]);
             }
         }
 
@@ -1542,11 +1600,11 @@ heatmap_namespace = (function() {
         var highlighter = document.createElement('SPAN');
         highlighter.classList.add('row-highlighter');
 
-        highlighter.style.top = Math.floor(startPosition) + 'px';
+        highlighter.style.top = Math.ceil(startPosition) + 'px';
 
-        highlighter.style.left = _margin.left + 1 + 'px';
-        highlighter.style.height = endPosition - startPosition + 'px';
-        highlighter.style.width = _colNames.length * _cellWidth + 'px';
+        highlighter.style.left = Math.ceil(_margin.left) + 'px';
+        highlighter.style.height = Math.ceil(endPosition - startPosition) + 'px';
+        highlighter.style.width = Math.floor(_colNames.length * _cellWidth) + 'px';
         highlighter.style.borderWidth = getCurrentBorderWidth();
         _transformer.node().insertAdjacentElement('beforeend', highlighter);
     }
