@@ -99,7 +99,7 @@ window.dendrogram_namespace = (function () {
             toggleSubscribeSelection();
         }
 
-        toogleSubscribeFilter();
+        toggleSubscribeFilter();
 
         if (_representation.resizeToWindow) {
             initWindowResize();
@@ -234,7 +234,7 @@ window.dendrogram_namespace = (function () {
             knimeService.createStackedIcon('filter', 'angle-double-right', 'faded right sm', 'left bold'),
             knimeService.createMenuCheckbox('subscribeFilterCheckbox', _value.subscribeFilterEvents, function () {
                 _value.subscribeFilterEvents = this.checked;
-                toogleSubscribeFilter();
+                toggleSubscribeFilter();
             }));
     };
 
@@ -295,7 +295,7 @@ window.dendrogram_namespace = (function () {
         leaves = nodes.leaves();
         clusterMarker = nodes.descendants().filter(function (n) {
             return n.children != null;
-        }).sort(function (a, b) { return b.data.distance - a.data.distance; });
+        });
     };
 
     const drawAxisLabels = function () {
@@ -469,7 +469,8 @@ window.dendrogram_namespace = (function () {
             .attr('height', leafHeight)
             .attr('fill', function (d) {
                 return d.data.color;
-            });
+            })
+            .attr('stroke-width', linkStrokeWidth);
 
         // draw cluster markers
         clusterMarkerEl = dendrogramEl.selectAll('.cluster').data(clusterMarker).enter().append('circle').attr('class', 'cluster').attr('r', clusterMarkerRadius);
@@ -563,36 +564,65 @@ window.dendrogram_namespace = (function () {
     };
 
     const onThresholdChange = function (threshold) {
-        var numberOfRootCluster = 0;
-        clusterMarkerEl.each(function (n) {
-            const isRoot = n.data.distance <= threshold && (!n.parent || n.parent && n.parent.data.distance > threshold);
-            if (isRoot) {
-                numberOfRootCluster++;
-            }
+        // reset root prop and cluster labels
+        nodes.each(function (n) {
+            n.root = false;
+            _value.clusterLabels[n.data.id] = '';
+        });
 
-            // mark nodes out of threshold and after-threshold root nodes
+        // collect all nodes which form a cluster
+        const clusterNodes = [];
+        const stack = [nodes];
+        while (stack.length) {
+            var n = stack.pop();
+            if (n.data.distance <= threshold) {
+                clusterNodes.push(n);
+            }
+            else {
+                if (n.children) {
+                    // so push them in this order to ensure labels increase from left (Cluster_0) to right (Cluster_n)
+                    stack.push(n.children[1]);
+                    stack.push(n.children[0]);
+                }
+            }
+        }
+        const numberOfRootCluster = clusterNodes.length;
+
+        // set root prop and set new cluster labels
+        clusterNodes.forEach(function (n, i) {
+            n.root = true;
+            _value.clusterLabels[n.data.id] = 'Cluster_' + i;
+        });
+
+        // update DOM: cluster marker
+        clusterMarkerEl.each(function (n) {
             d3.select(this)
                 .classed('outOfThreshold', n.data.distance > threshold)
-                .classed('root', isRoot)
-                .select('title').text(function (d) {
-                    if (isRoot) {
-                        // save calculated label; if we later want custom labels we have to do it differently
-                        _value.clusterLabels[d.data.id] = 'Cluster_' + (numberOfRootCluster - 1);
+                .classed('root', n.root)
+                .select('title').text(function () {
+                    if (n.root) {
                         // tooltip should show label and distance
-                        return _value.clusterLabels[d.data.id] + '; Distance: ' + d.data.distance;
+                        return _value.clusterLabels[n.data.id] + '\nDistance: ' + n.data.distance;
                     } else {
-                        // reset label
-                        _value.clusterLabels[d.data.id] = '';
                         // tooltip only shows distance
-                        return 'Distance: ' + d.data.distance;
+                        return 'Distance: ' + n.data.distance;
                     }
                 });
         });
 
-        // count all leaves which represent a single cluster
-        leaves.forEach(function (leaf) {
-            if (leaf.parent.data.distance > threshold) {
-                numberOfRootCluster++;
+        // update DOM: leaves
+        leafEl.each(function (d) {
+            const el = d3.select(this);
+            el.classed('root', d.root);
+
+            var titleEl = el.select('title');
+            if (d.root) {
+                if (titleEl.empty()) {
+                    titleEl = el.append('title');
+                }
+                titleEl.text(_value.clusterLabels[d.data.id] + '\n' + d.data.rowKey);
+            } else {
+                titleEl.remove();
             }
         });
 
@@ -621,6 +651,7 @@ window.dendrogram_namespace = (function () {
         var clusterCount = 1;
 
         clusterMarker
+            .sort(function (a, b) { return b.data.distance - a.data.distance; })
             .some(function (n) {
                 if (number == clusterMarker.length + 1) {
                     threshold = clusterMarker[clusterMarker.length - 1].data.distance / 2;
@@ -752,7 +783,8 @@ window.dendrogram_namespace = (function () {
                 leafEl.attr('width', leafWidth / d3.event.transform.k)
                     .attr('height', leafHeight / d3.event.transform.k)
                     .attr('x', -(leafWidth / d3.event.transform.k) / 2)
-                    .attr('y', -(leafHeight / d3.event.transform.k));
+                    .attr('y', -(leafHeight / d3.event.transform.k))
+                    .attr('stroke-width', linkStrokeWidth / d3.event.transform.k);
 
                 if (thresholdEl) {
                     thresholdEl.attr('height', thresholdHandleHeight / d3.event.transform.k);
@@ -995,7 +1027,7 @@ window.dendrogram_namespace = (function () {
         updateFilterInView();
     };
 
-    const toogleSubscribeFilter = function () {
+    const toggleSubscribeFilter = function () {
         if (_value.subscribeFilterEvents) {
             knimeService.subscribeToFilter(table.getTableId(), onFilterChange, table.getFilterIds());
         } else {

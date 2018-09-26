@@ -35,6 +35,10 @@
     cursor: pointer;
 }
 
+.leaf.root {
+    stroke: #000000;
+}
+
 .cluster {
     fill: #a3a2a2;
 }
