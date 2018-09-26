@@ -48,9 +48,9 @@
  */
 package org.knime.js.base.node.viz.cardView;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.ColumnRearranger;
@@ -59,7 +59,6 @@ import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.port.PortObject;
-import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
 import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.node.table.AbstractTableNodeModel;
 
@@ -152,23 +151,14 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
     }
 
     @Override
-    protected JSONDataTable.Builder getJsonDataTableBuilder(final BufferedDataTable table) {
-        final FilterResult filter = m_config.getSettings().getColumnFilterConfig().applyTo(table.getDataTableSpec());
-        // The List class returned by Arrays.asList(...) is java.util.Arrays$ArrayList which does not implement
-        // remove(...) methods
-        // this is a different class than java.util.ArrayList
-        final List<String> excluded = new ArrayList<>(Arrays.asList(filter.getExcludes()));
+    protected String[] determineExcludedColumns(final BufferedDataTable table) {
+        String[] excluded = super.determineExcludedColumns(table);
         String labelColumn = ((CardViewConfig)m_config).getLabelCol();
-        if (labelColumn != null && excluded.contains(labelColumn)) {
-            excluded.remove(labelColumn);
+        if (labelColumn == null) {
+            return excluded;
         }
-        final String[] excludedArray = excluded.toArray(new String[excluded.size()]);
-        return JSONDataTable.newBuilder()
-            .setDataTable(table)
-            .setId(getTableId(0))
-            .setFirstRow(1)
-            .setMaxRows(m_config.getSettings().getRepresentationSettings().getMaxRows())
-            .setExcludeColumns(excludedArray);
+        Stream<String> result = Arrays.stream(excluded).filter(columnName -> !labelColumn.equals(columnName));
+        return result.toArray(String[]::new);
     }
 
     /**
