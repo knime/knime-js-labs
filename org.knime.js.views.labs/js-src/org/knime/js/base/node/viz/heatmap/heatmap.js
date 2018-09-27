@@ -1025,6 +1025,19 @@ heatmap_namespace = (function() {
         return context;
     }
 
+    function getCellColor(value) {
+        if(value === null) {
+            return _representation.missingValueColor;
+        }
+        if(value > _representation.maxValue) {
+            return _representation.upperOutOfRangeColor;
+        }
+        if(value < _representation.minValue) {
+            return _representation.lowerOutOfRangeColor;
+        }
+        return _scales.colorScale(value);
+    }
+
     function drawCanvasRow(row) {
         var y = row.rowKey;
         row.data.map(function(value, currentIndex) {
@@ -1034,8 +1047,7 @@ heatmap_namespace = (function() {
             var x = _colNames[currentIndex];
 
             var context = getContext(x, y);
-            var color = value === null ? _representation.missingValueColor : _scales.colorScale(value);
-            context.fillStyle = color;
+            context.fillStyle = getCellColor(value);
             context.fillRect(_scales.x(x), _scales.y(y), _cellWidth, _cellHeight);
         }, []);
     }
@@ -1066,10 +1078,7 @@ heatmap_namespace = (function() {
                     return _scales.x(d.x);
                 })
                 .attr('fill', function(d) {
-                    if (d.value === null) {
-                        return _representation.missingValueColor;
-                    }
-                    return _scales.colorScale(d.value);
+                    return getCellColor(d.value);
                 });
         });
     }
