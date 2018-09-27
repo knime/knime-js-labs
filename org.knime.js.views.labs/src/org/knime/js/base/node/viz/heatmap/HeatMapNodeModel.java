@@ -273,6 +273,8 @@ implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
             representation.setDiscreteGradientColors(m_config.getDiscreteGradientColors());
             representation.setNumDiscreteColors(m_config.getNumDiscreteColors());
             representation.setMissingValueColor(m_config.getMissingValueColor());
+            representation.setUpperOutOfRangeColor(m_config.getUpperOutOfRangeColor());
+            representation.setLowerOutOfRangeColor(m_config.getLowerOutOfRangeColor());
             representation.setColumns(m_config.getColumns().applyTo(m_table.getDataTableSpec()).getIncludes());
             representation.setLabelColumn(m_config.getLabelColumn());
             representation.setSvgLabelColumn(m_config.getSvgLabelColumn());

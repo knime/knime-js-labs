@@ -87,6 +87,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
     private String[] m_discreteGradientColors;
     private int m_numDiscreteColors;
     private String m_missingValueColor;
+    private String m_upperOutOfRangeColor;
+    private String m_lowerOutOfRangeColor;
 
     final static String CFG_INCLUDED_COLUMNS = "includedColumns";
     private String[] m_columns;
@@ -329,6 +331,34 @@ public class HeatMapViewRepresentation extends JSONViewContent {
      */
     public void setMissingValueColor(final String missingValueColor) {
         m_missingValueColor = missingValueColor;
+    }
+
+    /**
+     * @return the upperOutOfRangeColor
+     */
+    public String getUpperOutOfRangeColor() {
+        return m_upperOutOfRangeColor;
+    }
+
+    /**
+     * @param upperOutOfRangeColor the upperOutOfRangeColor to set
+     */
+    public void setUpperOutOfRangeColor(final String upperOutOfRangeColor) {
+        m_upperOutOfRangeColor = upperOutOfRangeColor;
+    }
+
+    /**
+     * @return the lowerOutOfRangeColor
+     */
+    public String getLowerOutOfRangeColor() {
+        return m_lowerOutOfRangeColor;
+    }
+
+    /**
+     * @param lowerOutOfRangeColor the lowerOutOfRangeColor to set
+     */
+    public void setLowerOutOfRangeColor(final String lowerOutOfRangeColor) {
+        m_lowerOutOfRangeColor = lowerOutOfRangeColor;
     }
 
     // -- Columns getters & setters --
@@ -623,6 +653,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         settings.addStringArray(HeatMapViewConfig.CFG_DISCRETE_GRADIENT_COLORS, m_discreteGradientColors);
         settings.addInt(HeatMapViewConfig.CFG_NUM_DISCRETE_COLORS, m_numDiscreteColors);
         settings.addString(HeatMapViewConfig.CFG_MISSING_VALUE_COLOR, m_missingValueColor);
+        settings.addString(HeatMapViewConfig.CFG_UPPER_OUT_OF_RANGE_COLOR, m_upperOutOfRangeColor);
+        settings.addString(HeatMapViewConfig.CFG_LOWER_OUT_OF_RANGE_COLOR, m_lowerOutOfRangeColor);
 
         settings.addStringArray(CFG_INCLUDED_COLUMNS, m_columns);
         settings.addString(HeatMapViewConfig.CFG_LABEL_COLUMN, m_labelColumn);
@@ -669,6 +701,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
         m_discreteGradientColors = settings.getStringArray(HeatMapViewConfig.CFG_DISCRETE_GRADIENT_COLORS);
         m_numDiscreteColors = settings.getInt(HeatMapViewConfig.CFG_NUM_DISCRETE_COLORS);
         m_missingValueColor = settings.getString(HeatMapViewConfig.CFG_MISSING_VALUE_COLOR);
+        m_upperOutOfRangeColor = settings.getString(HeatMapViewConfig.CFG_UPPER_OUT_OF_RANGE_COLOR);
+        m_lowerOutOfRangeColor = settings.getString(HeatMapViewConfig.CFG_LOWER_OUT_OF_RANGE_COLOR);
 
         m_columns = settings.getStringArray(CFG_INCLUDED_COLUMNS);
         m_labelColumn = settings.getString(HeatMapViewConfig.CFG_LABEL_COLUMN);
@@ -724,6 +758,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_discreteGradientColors, other.getDiscreteGradientColors())
                 .append(m_numDiscreteColors, other.getNumDiscreteColors())
                 .append(m_missingValueColor, other.getMissingValueColor())
+                .append(m_upperOutOfRangeColor, other.getUpperOutOfRangeColor())
+                .append(m_lowerOutOfRangeColor, other.getLowerOutOfRangeColor())
                 .append(m_columns, other.getColumns())
                 .append(m_labelColumn, other.getLabelColumn())
                 .append(m_svgLabelColumn, other.getSvgLabelColumn())
@@ -766,6 +802,8 @@ public class HeatMapViewRepresentation extends JSONViewContent {
                 .append(m_discreteGradientColors)
                 .append(m_numDiscreteColors)
                 .append(m_missingValueColor)
+                .append(m_upperOutOfRangeColor)
+                .append(m_lowerOutOfRangeColor)
                 .append(m_columns)
                 .append(m_labelColumn)
                 .append(m_svgLabelColumn)

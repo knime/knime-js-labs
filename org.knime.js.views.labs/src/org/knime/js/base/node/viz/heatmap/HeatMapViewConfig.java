@@ -162,6 +162,12 @@ public final class HeatMapViewConfig {
     final static String DEFAULT_MISSING_VALUE_COLOR = "#000000";
     private String m_missingValueColor = DEFAULT_MISSING_VALUE_COLOR;
 
+    final static String CFG_UPPER_OUT_OF_RANGE_COLOR = "upperOutOfRangeColor";
+    private String m_upperOutOfRangeColor = DEFAULT_MISSING_VALUE_COLOR;
+
+    final static String CFG_LOWER_OUT_OF_RANGE_COLOR = "lowerOutOfRangeColor";
+    private String m_lowerOutOfRangeColor = DEFAULT_MISSING_VALUE_COLOR;
+
     // Columns
     final static String CFG_COLUMNS = "columns";
     final static DataColumnSpecFilterConfiguration DEFAULT_COLUMNS =
@@ -592,6 +598,34 @@ public final class HeatMapViewConfig {
         m_missingValueColor = missingValueColor;
     }
 
+    /**
+     * @return the upperOutOfRangeColor
+     */
+    public String getUpperOutOfRangeColor() {
+        return m_upperOutOfRangeColor;
+    }
+
+    /**
+     * @param upperOutOfRangeColor the upperOutOfRangeColor to set
+     */
+    public void setUpperOutOfRangeColor(final String upperOutOfRangeColor) {
+        m_upperOutOfRangeColor = upperOutOfRangeColor;
+    }
+
+    /**
+     * @return the lowerOutOfRangeColor
+     */
+    public String getLowerOutOfRangeColor() {
+        return m_lowerOutOfRangeColor;
+    }
+
+    /**
+     * @param lowerOutOfRangeColor the lowerOutOfRangeColor to set
+     */
+    public void setLowerOutOfRangeColor(final String lowerOutOfRangeColor) {
+        m_lowerOutOfRangeColor = lowerOutOfRangeColor;
+    }
+
     // -- Columns getters & setters --
 
     /**
@@ -900,6 +934,8 @@ public final class HeatMapViewConfig {
         settings.addBoolean(CFG_CONTINUOUS_GRADIENT, m_continuousGradient);
         settings.addInt(CFG_NUM_DISCRETE_COLORS, m_numDiscreteColors);
         settings.addString(CFG_MISSING_VALUE_COLOR, m_missingValueColor);
+        settings.addString(CFG_UPPER_OUT_OF_RANGE_COLOR, m_upperOutOfRangeColor);
+        settings.addString(CFG_LOWER_OUT_OF_RANGE_COLOR, m_lowerOutOfRangeColor);
 
         m_columns.saveConfiguration(settings);
         settings.addString(CFG_LABEL_COLUMN, m_labelColumn);
@@ -963,6 +999,8 @@ public final class HeatMapViewConfig {
         m_continuousGradient = settings.getBoolean(CFG_CONTINUOUS_GRADIENT);
         m_numDiscreteColors = settings.getInt(CFG_NUM_DISCRETE_COLORS);
         m_missingValueColor = settings.getString(CFG_MISSING_VALUE_COLOR);
+        m_upperOutOfRangeColor = settings.getString(CFG_UPPER_OUT_OF_RANGE_COLOR);
+        m_lowerOutOfRangeColor = settings.getString(CFG_LOWER_OUT_OF_RANGE_COLOR);
 
         m_columns.loadConfigurationInModel(settings);
         m_labelColumn = settings.getString(CFG_LABEL_COLUMN);
@@ -1020,6 +1058,8 @@ public final class HeatMapViewConfig {
         m_continuousGradient = settings.getBoolean(CFG_CONTINUOUS_GRADIENT, DEFAULT_CONTINUOUS_GRADIENT);
         m_numDiscreteColors = settings.getInt(CFG_NUM_DISCRETE_COLORS, DEFAULT_NUM_DISCRETE_COLORS);
         m_missingValueColor = settings.getString(CFG_MISSING_VALUE_COLOR, DEFAULT_MISSING_VALUE_COLOR);
+        m_upperOutOfRangeColor = settings.getString(CFG_UPPER_OUT_OF_RANGE_COLOR, DEFAULT_MISSING_VALUE_COLOR);
+        m_lowerOutOfRangeColor = settings.getString(CFG_LOWER_OUT_OF_RANGE_COLOR, DEFAULT_MISSING_VALUE_COLOR);
 
         m_columns.loadConfigurationInDialog(settings, spec);
         m_labelColumn = settings.getString(CFG_LABEL_COLUMN, null);

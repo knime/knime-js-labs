@@ -108,6 +108,16 @@
 				Sets the color used to represent missing values
 				in the heatmap.
 			</option>
+			<option
+				name="Select a color for values greater than the range maximum">
+				Sets the color used to represent values above the specified
+				maximum.
+			</option>
+			<option
+				name="Select a color for values less than the range minimum">
+				Sets the color used to represent values below the specified
+				minimum.
+			</option>
 		</tab>
 		<tab name="Interactivity">
 			<option name="Enable view edit">

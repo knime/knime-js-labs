@@ -111,6 +111,8 @@ public class HeatMapNodeDialog extends NodeDialogPane {
     private final JSpinner m_numberOfBinsSpinner;
     private final ThreeColorGradientComponent m_gradientColors;
     private final DialogComponentColorChooser m_missingValueColorColorChooser;
+    private final DialogComponentColorChooser m_upperOutOfRangeColorColorChooser;
+    private final DialogComponentColorChooser m_lowerOutOfRangeColorColorChooser;
 
     private final JCheckBox m_showWarningInViewCheckBox;
     private final JCheckBox m_generateImageCheckBox;
@@ -194,7 +196,9 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_numberOfBinsSpinner = new JSpinner(new SpinnerNumberModel(3, 3, 21, 2));
         m_useBinsCheckBox.addChangeListener(e -> enableSpinner());
         m_numberOfBinsSpinner.addChangeListener(e -> updateNumberOfBins());
-        m_missingValueColorColorChooser = new DialogComponentColorChooser(new SettingsModelColor("thirdGradientColor", Color.BLACK), "Select color for missing values:", true);
+        m_missingValueColorColorChooser = new DialogComponentColorChooser(new SettingsModelColor("missingColor", Color.BLACK), "Select color for missing values:", true);
+        m_upperOutOfRangeColorColorChooser = new DialogComponentColorChooser(new SettingsModelColor("upperOutOfRangeColor", Color.BLACK), "Select a color for values greater than the range maximum:", true);
+        m_lowerOutOfRangeColorColorChooser = new DialogComponentColorChooser(new SettingsModelColor("lowerOutOfRangeColor", Color.BLACK), "Select a color for values less than the range minimum:", true);
 
         m_showWarningInViewCheckBox = new JCheckBox("Show warnings in view");
         m_generateImageCheckBox = new JCheckBox("Create image at outport");
@@ -259,6 +263,8 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_config.setContinuousGradient(!m_useBinsCheckBox.isSelected());
         m_config.setNumDiscreteColors((int) m_numberOfBinsSpinner.getValue());
         m_config.setMissingValueColor(CSSUtils.cssHexStringFromColor(m_missingValueColorColorChooser.getColor()));
+        m_config.setUpperOutOfRangeColor(CSSUtils.cssHexStringFromColor(m_upperOutOfRangeColorColorChooser.getColor()));
+        m_config.setLowerOutOfRangeColor(CSSUtils.cssHexStringFromColor(m_lowerOutOfRangeColorColorChooser.getColor()));
 
         m_config.setShowWarningInView(m_showWarningInViewCheckBox.isSelected());
         m_config.setGenerateImage(m_generateImageCheckBox.isSelected());
@@ -322,6 +328,8 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         m_secondColorColorChooser.setColor(CSSUtils.colorFromCssHexString(colors[1]));
         m_thirdColorColorChooser.setColor(CSSUtils.colorFromCssHexString(colors[2]));
         m_missingValueColorColorChooser.setColor(CSSUtils.colorFromCssHexString(m_config.getMissingValueColor()));
+        m_upperOutOfRangeColorColorChooser.setColor(CSSUtils.colorFromCssHexString(m_config.getUpperOutOfRangeColor()));
+        m_lowerOutOfRangeColorColorChooser.setColor(CSSUtils.colorFromCssHexString(m_config.getLowerOutOfRangeColor()));
 
         m_showWarningInViewCheckBox.setSelected(m_config.getShowWarningInView());
         m_generateImageCheckBox.setSelected(m_config.getGenerateImage());
@@ -541,6 +549,21 @@ public class HeatMapNodeDialog extends NodeDialogPane {
         missingValuePanel.add(m_missingValueColorColorChooser.getComponentPanel(), missingValueConstraints);
         missingValueConstraints.gridx = 0;
         missingValueConstraints.gridy++;
+
+        c.gridx = 0;
+        c.gridy++;
+
+        final JPanel outOfRangeColorPanel = new JPanel(new GridBagLayout());
+        outOfRangeColorPanel.setBorder(BorderFactory.createTitledBorder("Out of range value colors"));
+        panel.add(outOfRangeColorPanel, c);
+        final GridBagConstraints outOfRangeColorConstraints = DialogUtil.defaultGridBagConstraints();
+        outOfRangeColorConstraints.weightx = 1;
+        outOfRangeColorPanel.add(m_upperOutOfRangeColorColorChooser.getComponentPanel(), outOfRangeColorConstraints);
+        outOfRangeColorConstraints.gridx = 0;
+        outOfRangeColorConstraints.gridy++;
+        outOfRangeColorPanel.add(m_lowerOutOfRangeColorColorChooser.getComponentPanel(), outOfRangeColorConstraints);
+        outOfRangeColorConstraints.gridx = 0;
+        outOfRangeColorConstraints.gridy++;
 
         c.gridx = 0;
         c.gridy++;
