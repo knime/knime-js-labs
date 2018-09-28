@@ -419,13 +419,13 @@ window.table_editor = (function() {
 	TableEditor.prototype._catchTdEventsOn = function($td) {
 		$td.on('keydown', this._selectedCellKeyDownHandler);
 		$td.on('focusout', this._selectedCellFocusOutHandler);
-		$td.on('paste', this._pasteHandler);
+		$(document).on('paste', this._pasteHandler);
 	};
 
 	TableEditor.prototype._catchTdEventsOff = function($td) {
 		$td.off('keydown', this._selectedCellKeyDownHandler);
 		$td.off('focusout', this._selectedCellFocusOutHandler);
-		$td.off('paste', this._pasteHandler);
+		$(document).off('paste', this._pasteHandler);
 		$td.removeAttr('tabindex');
 	};
 
@@ -444,6 +444,7 @@ window.table_editor = (function() {
 		    	} else {
 		    		this._selectCell(this._getFirstCellInRow(this._selectedCell));
 		    	}
+		    	e.preventDefault();
 		    	break;
 		    case 'End':
 		    	if (ctrlKey) {
@@ -451,6 +452,7 @@ window.table_editor = (function() {
 		    	} else {
 		    		this._selectCell(this._getLastCellInRow(this._selectedCell));
 		    	}
+		    	e.preventDefault();
 		    	break;
 			case 'Enter':
 				this._selectCell(this._getCellByShift(this._selectedCell, 1, 0));  // same as ArrowDown
@@ -527,7 +529,7 @@ window.table_editor = (function() {
 		var startCell = cell;
 
 		// validation
-		if (!this._iterateSubtable(startCell, values, function(cell, value) {
+		var isCompatible = this._iterateSubtable(startCell, values, function(cell, value) {
 			if (!cell) {
 				alert('Cannot paste the values. Range out of bounds.');
 				return false;
@@ -546,7 +548,9 @@ window.table_editor = (function() {
 			}
 
 			return true;
-		})) {
+		});
+
+		if (!isCompatible) {
 			return;
 		}
 
