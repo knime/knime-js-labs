@@ -519,7 +519,7 @@
             init-method-name="init"
             javascriptComponentID="org.knime.js.base.node.viz.cardView"
             name="Card View"
-            namespace="window.cards_namespace"
+            namespace="cards_namespace"
             setValidationError-method-name="setValidationError"
             validate-method-name="validate">
       </javascriptComponent>
