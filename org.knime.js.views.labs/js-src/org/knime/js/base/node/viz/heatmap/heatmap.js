@@ -34,7 +34,7 @@ heatmap_namespace = (function() {
     var _legendMargin = 5;
     var _infoWrapperMinHeight = 80;
     var _xAxisLabelTransform = 'rotate(-65) translate(10 8)';
-    var _titlesExtraMargin = 25;
+    var _titlesHeight = 25;
 
     // State management object
     var defaultViewValues = {
@@ -236,8 +236,8 @@ heatmap_namespace = (function() {
         document.querySelector('.knime-title').textContent = _value.chartTitle;
         document.querySelector('.knime-subtitle').textContent = _value.chartSubtitle;
 
-        if (_value.chartTitle || _value.chartSubtitle) {
-            _margin.top += _titlesExtraMargin;
+        if (!_representation.enableViewConfiguration && (_value.chartTitle || _value.chartSubtitle)) {
+            _margin.top += _titlesHeight;
         }
     }
 
@@ -480,7 +480,10 @@ heatmap_namespace = (function() {
         if (!layoutContainer) {
             return;
         }
-        if (areAxisCompletelyVisible()) {
+        var yAxis = document.querySelector('.knime-axis.knime-y');
+        var xAxis = document.querySelector('.knime-axis.knime-x');
+        var axisExist = yAxis && xAxis;
+        if (!axisExist || areAxisCompletelyVisible(xAxis, yAxis)) {
             layoutContainer.classList.remove('partially-displayed');
         } else {
             layoutContainer.classList.add('partially-displayed');
@@ -778,20 +781,18 @@ heatmap_namespace = (function() {
     function createAxis(formattedDataset) {
         return {
             x: d3.axisTop(_scales.x).tickFormat(function(d) {
-                var index = formattedDataset.measuredLabels.x.values.originalData.indexOf(d);
-                var label = formattedDataset.measuredLabels.x.values.truncated[index];
-                this.parentNode.insertAdjacentHTML('beforeend', '<title>' + d+ '</title>');
-
-                return label ? label : formattedDataset.measuredLabels.x.values.originalData[index];
-
+                var label = formattedDataset.measuredLabels.x.values.find(function(value) {
+                    return value.originalData === d;
+                });
+                this.parentNode.insertAdjacentHTML('beforeend', '<title>' + d + '</title>');
+                return label && label.truncated ? label.truncated : label.originalData;
             }),
 
             y: d3.axisLeft(_scales.y).tickFormat(function(d) {
-                var index = formattedDataset.measuredLabels.y.values.originalData.indexOf(d);
-                var label = formattedDataset.measuredLabels.y.values.truncated[index];
-                this.parentNode.insertAdjacentHTML('beforeend', '<title>' + d+ '</title>');
-                
-                return label ? label : formattedDataset.measuredLabels.y.values.originalData[index];
+                var index = formattedDataset.rowNames.indexOf(d);
+                var label = formattedDataset.measuredLabels.y.values[index];
+                this.parentNode.insertAdjacentHTML('beforeend', '<title>' + d + '</title>');
+                return label && label.truncated ? label.truncated : label.originalData;
             })
         };
     }
@@ -1026,13 +1027,13 @@ heatmap_namespace = (function() {
     }
 
     function getCellColor(value) {
-        if(value === null) {
+        if (value === null) {
             return _representation.missingValueColor;
         }
-        if(value > _representation.maxValue) {
+        if (value > _representation.maxValue) {
             return _representation.upperOutOfRangeColor;
         }
-        if(value < _representation.minValue) {
+        if (value < _representation.minValue) {
             return _representation.lowerOutOfRangeColor;
         }
         return _scales.colorScale(value);
@@ -1088,23 +1089,31 @@ heatmap_namespace = (function() {
      */
     function setMarginsForLabels(rowLabels) {
         var container = document.querySelector('svg.heatmap');
-        var maxWidth = container.getBoundingClientRect().width * 0.4;
-        var maxHeight = container.getBoundingClientRect().height * 0.4;
+        var maxWidth = container.getBoundingClientRect().width * 0.33;
+        var maxHeight = container.getBoundingClientRect().height * 0.33;
 
         var measuredLabelsY = knimeService.meassureAndTruncate(d3.values(rowLabels), {
-            tempContainerClasses: 'knime-tick-label active',
-            maxWidth: maxWidth,
-            container: container
-        });
-        var measuredLabelsX = knimeService.meassureAndTruncate(_colNames, {
-            tempContainerClasses: 'knime-tick-label active',
-            maxWidth: maxHeight,
-            container: container
+            classes: 'active',
+            container: container,
+            tempContainerClasses: 'knime-tick-label',
+            maxWidth: maxWidth
         });
 
+        var tempContainerAttributes = [];
+        tempContainerAttributes['transform'] = _xAxisLabelTransform;
+
+        var measuredLabelsX = knimeService.meassureAndTruncate(_colNames, {
+            container: container,
+            tempContainerClasses: 'knime-tick-label',
+            tempContainerAttributes: tempContainerAttributes,
+            maxHeight: maxHeight
+        });
+
+        var headerHeight = Math.max(knimeService.headerHeight(), _titlesHeight);
+
         _margin = Object.assign({}, _defaultMargin, {
-            top: measuredLabelsX.max.width + _defaultMargin.top,
-            left: measuredLabelsY.max.width + _defaultMargin.left
+            top: measuredLabelsX.max.maxHeight + _defaultMargin.top + headerHeight,
+            left: measuredLabelsY.max.maxWidth + _defaultMargin.left
         });
 
         return {
@@ -1147,13 +1156,16 @@ heatmap_namespace = (function() {
         // Determine cell sizes
         var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
         var extraAxisLabelBuffer = 30; // TODO: calculate programatically
+        var headerHeight = Math.max(knimeService.headerHeight(), _titlesHeight);
+        var containerWidth = _representation.resizeToWindow ? window.innerWidth : _representation.imageWidth;
+        var containerHeight = _representation.resizeToWindow ? window.innerHeight : _representation.imageHeight;
         _cellWidth = Math.max(
             _minCellSize,
-            (window.innerWidth - _margin.left - _margin.right - extraAxisLabelBuffer) / _colNames.length
+            (containerWidth - _margin.left - _margin.right - extraAxisLabelBuffer) / _colNames.length
         );
         _cellHeight = Math.max(
             _minCellSize,
-            (window.innerHeight - _margin.top - _titlesExtraMargin - infoWrapperHeight) / rows.length
+            (containerHeight - _margin.top - headerHeight - infoWrapperHeight) / rows.length
         );
 
         _tooltip = document.querySelector('.knime-tooltip');
@@ -1343,8 +1355,8 @@ heatmap_namespace = (function() {
             if (_representation.imageWidth) {
                 container.style.width = _representation.imageWidth + 'px';
             }
-        } 
-        if(!_representation.runningInView) {
+        }
+        if (!_representation.runningInView) {
             var imageMargin = 50;
             var legendMargin = 15;
             var imageModeMarginTop = _scales.y.domain().length * _cellHeight + _margin.top + legendMargin;
@@ -1371,7 +1383,7 @@ heatmap_namespace = (function() {
                 .attr('class', 'knime-legend')
                 .attr('width', _legendWidth + 2 * _legendMargin)
                 .attr('height', _legendHeight);
-         } else {
+        } else {
             // append in existing svg
             var imageModeMarginTop = _scales.y.domain().length * _cellWidth + _margin.top + 15;
             var transform = 'translate(0 ' + imageModeMarginTop + ')';
@@ -1468,7 +1480,7 @@ heatmap_namespace = (function() {
      * @param {String} selectedRowId
      */
     function selectDeltaRow(selectedRowId) {
-        if(!_value.selection.length) {
+        if (!_value.selection.length) {
             // Delta selection is not possible if no row is selected
             return;
         }
@@ -1615,9 +1627,9 @@ heatmap_namespace = (function() {
      * Check if the axis overlap with the 'fade-out' gradients
      * to see if all the content is displayed
      */
-    function areAxisCompletelyVisible() {
-        var yAxisRect = document.querySelector('.knime-axis.knime-y').getBoundingClientRect();
-        var xAxisRect = document.querySelector('.knime-axis.knime-x').getBoundingClientRect();
+    function areAxisCompletelyVisible(xAxis, yAxis) {
+        var yAxisRect = yAxis.getBoundingClientRect();
+        var xAxisRect = xAxis.getBoundingClientRect();
         var yAxisEndPos = yAxisRect.height + yAxisRect.top;
         var xAxisEndPos = xAxisRect.width + yAxisRect.left;
         var gradientXTopPos = document.querySelector('.gradient-x').getBoundingClientRect().top;
