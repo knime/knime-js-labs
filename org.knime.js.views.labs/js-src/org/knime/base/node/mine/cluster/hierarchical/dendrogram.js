@@ -9,8 +9,8 @@ window.dendrogram_namespace = (function () {
 
     // view related settings
     const xAxisHeight = 100,
-        yAxisWidth = 40,
         xAxisLabelWidth = 15,
+        yAxisWidthDefault = 40,
         linkStrokeWidth = 1,
         clusterMarkerRadius = 4,
         viewportMarginTop = 10,
@@ -30,6 +30,7 @@ window.dendrogram_namespace = (function () {
     // view related variables
     var svg,
         svgSize,
+        viewportEl,
         viewportWidth,
         viewportHeight,
         wrapperEl,
@@ -55,6 +56,7 @@ window.dendrogram_namespace = (function () {
         yAxis,
         yAxisEl,
         yAxisLabelEl,
+        yAxisWidth,
         yScale,
         zoom,
         numClustersField;
@@ -197,7 +199,7 @@ window.dendrogram_namespace = (function () {
             knimeService.addMenuItem('Number of clusters', 'sitemap', numClustersField);
         }
 
-        // toogle log scale
+        // toggle log scale
         if (_representation.enableLogScaleToggle) {
             knimeService.addMenuDivider();
             knimeService.addMenuItem('Use log scale', 'arrows-v', knimeService.createMenuCheckbox('useLogScale', _value.useLogScale, function () {
@@ -242,6 +244,7 @@ window.dendrogram_namespace = (function () {
 
     const calcSVGSize = function () {
         svgSize = d3.select('svg').node().getClientRects()[0];
+        yAxisWidth = getYAxisWidth();
         viewportWidth = svgSize.width - yAxisWidth - getYAxisLabelWidth();
         viewportHeight = svgSize.height - xAxisHeight - getTitleHeight() - getXAxisLabelHeight();
     };
@@ -281,8 +284,8 @@ window.dendrogram_namespace = (function () {
 
         wrapperEl = svg.append('g').attr('class', 'wrapper');
 
-        dendrogramEl = wrapperEl.append('g').attr('class', 'viewport').attr('transform', 'translate(' + yAxisWidth + ',0)')
-            .append('g').attr('transform', 'translate(0,' + viewportMarginTop + ')')
+        viewportEl = wrapperEl.append('g').attr('class', 'viewport');
+        dendrogramEl = viewportEl.append('g').attr('transform', 'translate(0,' + viewportMarginTop + ')')
             .append('g');
 
     };
@@ -361,6 +364,15 @@ window.dendrogram_namespace = (function () {
         xScale = d3.scaleBand()
             .domain(labels);
         xAxis = d3.axisBottom(xScale);
+
+        // meassure and truncate long labels
+        const measured = knimeService.measureAndTruncate(labels, {
+            classes: 'tick knime-tick',
+            tempContainerClasses: 'knime-tick-label',
+            container: svg.node(),
+            maxWidth: xAxisHeight - 40
+        });
+
         xAxis.tickFormat(function (d, i) {
             // show ellipsis if not all labels are shown
             const showEllipsis = !!(i % xEllipsisNthTick);
@@ -383,18 +395,32 @@ window.dendrogram_namespace = (function () {
                 d3.select(this).classed('knime-tick-label', true).attr('transform', 'translate(-13,10) rotate(-90)');
             }
 
-            return showEllipsis ? '…' : d;
+            if (showEllipsis) {
+                return '…';
+            } else {
+                const index = labels.indexOf(d);
+                const label = measured.values[index].truncated;
+
+                var titleEl = tickEl.select('title');
+                if (titleEl.empty()) {
+                    titleEl = tickEl.append('title');
+                }
+                titleEl.text(d);
+
+                return label ? label : d;
+            }
         });
         xAxisEl = wrapperEl.append('g').attr('class', 'knime-axis knime-x');
     };
 
-    const updateXAxis = function (transformEvent) {
+    const updateXAxis = function () {
         // prevent overlapping labels by removing some if there is not enough space to show all
-        const scale = transformEvent ? transformEvent.k : 1;
+        const transform = d3.zoomTransform(svg.node());
+        const scale = transform.k;
         xShowNthTicks = Math.round(xScale.domain().length / (viewportWidth * scale / (xAxisLabelWidth + 2)));
         xEllipsisNthTick = xShowNthTicks <= 1 ? 0 : 2;
         xAxis.tickValues(xScale.domain().filter(function (d, i) { return !(i % xShowNthTicks); }));
-        xScale.range([0, viewportWidth].map(function (d) { return transformEvent ? d3.event.transform.applyX(d) : d; }));
+        xScale.range([0, viewportWidth].map(function (d) { return transform.applyX(d); }));
         xAxisEl.call(xAxis);
     };
 
@@ -429,13 +455,7 @@ window.dendrogram_namespace = (function () {
         yAxis = d3.axisLeft(yScale)
             .ticks(5);
         yAxisEl = wrapperEl.append('g')
-            .attr('class', 'knime-axis knime-y')
-            .attr('transform', 'translate(' + yAxisWidth + ',' + viewportMarginTop + ')');
-
-        // apply the distance of each node
-        nodes.each(function (n) {
-            n.y = yScale(n.data.distance);
-        });
+            .attr('class', 'knime-axis knime-y');
     };
 
     const updateYAxis = function (transformEvent, animate) {
@@ -457,6 +477,19 @@ window.dendrogram_namespace = (function () {
         const yTickEls = yAxisEl.selectAll('.tick').classed('knime-tick', true);
         yTickEls.selectAll('line').classed('knime-tick-line', true);
         yTickEls.selectAll('text').classed('knime-tick-label', true);
+    };
+
+    const getYAxisWidth = function () {
+        if (!yAxisEl) {
+            return yAxisWidthDefault;
+        }
+
+        const yAxisTickWidths = yAxisEl.selectAll('.tick > text').nodes().map(function (t) {
+            return t.getBoundingClientRect().width + 15;
+        });
+        yAxisTickWidths.push(yAxisWidthDefault);
+
+        return Math.max.apply(null, yAxisTickWidths);
     };
 
     const drawDendrogram = function () {
@@ -557,11 +590,9 @@ window.dendrogram_namespace = (function () {
                 svg.classed('thresholdEnabled', true);
             }
         }
-        thresholdDisplayEl = wrapperEl.append('text').attr('class', 'thresholdDisplay')
-            .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 25 + ')');
 
-        thresholdClusterDisplayEl = wrapperEl.append('text').attr('class', 'thresholdClusterDisplay')
-            .attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 40 + ')');
+        thresholdDisplayEl = wrapperEl.append('text').attr('class', 'thresholdDisplay');
+        thresholdClusterDisplayEl = wrapperEl.append('text').attr('class', 'thresholdClusterDisplay');
 
         // set initial threshold
         onThresholdChange(_value.threshold);
@@ -698,9 +729,9 @@ window.dendrogram_namespace = (function () {
     const resizeDiagram = function (isInitial, animate) {
         calcSVGSize();
 
+        viewportEl.attr('transform', 'translate(' + yAxisWidth + ',0)');
         viewportClipEl.attr('width', viewportWidth)
             .attr('height', viewportHeight + viewportMarginTop);
-
         xAxisClipEl.attr('width', viewportWidth + yAxisWidth);
 
         // recalculate cluster
@@ -712,6 +743,7 @@ window.dendrogram_namespace = (function () {
 
         // update axis
         xAxisEl.attr('transform', 'translate(' + yAxisWidth + ',' + (viewportHeight + viewportMarginTop) + ')');
+        yAxisEl.attr('transform', 'translate(' + yAxisWidth + ',' + viewportMarginTop + ')');
         updateXAxis();
         updateYAxis(null, animate);
 
@@ -760,6 +792,11 @@ window.dendrogram_namespace = (function () {
 
         if (localThresholdEl) {
             localThresholdEl.attr('transform', 'translate(0,' + (yScale(_value.threshold) - (thresholdEl.attr('height') / 2)) + ')');
+        }
+
+        if (thresholdDisplayEl) {
+            thresholdDisplayEl.attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 25 + ')');
+            thresholdClusterDisplayEl.attr('transform', 'translate(' + (yAxisWidth + 5) + ' ,' + 40 + ')');
         }
 
         zoom.translateExtent([[0, 0], [viewportWidth, viewportHeight]]);
@@ -824,6 +861,9 @@ window.dendrogram_namespace = (function () {
                 _value.zoomX = d3.event.transform.x;
                 _value.zoomY = d3.event.transform.y;
                 _value.zoomK = d3.event.transform.k;
+
+                // maybe y axis width has changed, therefore we need to resize the diagram
+                resizeDiagram(true, false);
             });
 
         const zoomX = _value.zoomX !== undefined ? _value.zoomX : 0;

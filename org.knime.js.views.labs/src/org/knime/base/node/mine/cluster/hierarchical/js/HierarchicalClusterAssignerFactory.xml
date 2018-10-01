@@ -16,7 +16,7 @@
 				the clustering, and creates an
 				interactive dendrogram using JavaScript. The interactive view allows
 				for the selection of a threshold, which is used to define clusters
-				and assign rows to clusters.
+				and assign rows to clusters. In the view, clusters are marked as black dots.
 			</p>
 			<p>
 				This node is only intended for small data tables (&lt;65,500
