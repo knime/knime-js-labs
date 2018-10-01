@@ -34,16 +34,8 @@ heatmap_namespace = (function() {
     var _legendMargin = 5;
     var _infoWrapperMinHeight = 80;
     var _xAxisLabelTransform = 'rotate(-65) translate(10 8)';
-    var _titlesHeight = 25;
-
-    // State management object
-    var defaultViewValues = {
-        selection: [],
-        currentPage: 1,
-        zoomX: _defaultZoomX,
-        zoomY: _defaultZoomY,
-        zoomK: _defaultZoomK
-    };
+    var _foreignObjectUnsupported = typeof SVGForeignObjectElement === 'undefined';
+    var _titlesHeight = 0;
 
     heatmap.init = function(representation, value) {
         if (!representation.table) {
@@ -58,7 +50,13 @@ heatmap_namespace = (function() {
 
         // prepare data
         _representation = representation;
-        _value = Object.assign(defaultViewValues, value);
+        _value = value || {};
+        _value.selection = value.selection || [];
+        _value.currentPage = value.currentPage || 1;
+        _value.zoomX = value.zoomX || _defaultZoomX;
+        _value.zoomY = value.zoomY || _defaultZoomY;
+        _value.zoomK = value.zoomK || _defaultZoomK;
+
         _table = new kt();
         _table.setDataTable(representation.table);
 
@@ -74,7 +72,10 @@ heatmap_namespace = (function() {
 
         drawControls();
 
-        document.body.insertAdjacentHTML('beforeend', '<div class="knime-layout-container"></div>');
+        var container = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+        container.classList.add('knime-layout-container');
+        document.body.appendChild(container);
+
         drawChart();
     };
 
@@ -235,10 +236,7 @@ heatmap_namespace = (function() {
     function updateTitles() {
         document.querySelector('.knime-title').textContent = _value.chartTitle;
         document.querySelector('.knime-subtitle').textContent = _value.chartSubtitle;
-
-        if (!_representation.enableViewConfiguration && (_value.chartTitle || _value.chartSubtitle)) {
-            _margin.top += _titlesHeight;
-        }
+        _titlesHeight = _value.chartTitle || _value.chartSubtitle ? 50 : 0;
     }
 
     function drawControls() {
@@ -333,7 +331,7 @@ heatmap_namespace = (function() {
                 function() {
                     if (_value.chartTitle !== this.value) {
                         _value.chartTitle = this.value;
-                        drawChart();
+                        updateTitles();
                     }
                 },
                 true
@@ -345,7 +343,7 @@ heatmap_namespace = (function() {
                 function() {
                     if (_value.chartSubtitle !== this.value) {
                         _value.chartSubtitle = this.value;
-                        drawChart();
+                        updateTitles();
                     }
                 },
                 true
@@ -705,8 +703,9 @@ heatmap_namespace = (function() {
         if (!_value.showToolTips && !_value.enableSelection) {
             return;
         }
-        var left = document.querySelectorAll('canvas')[0].getBoundingClientRect().left;
-        var top = document.querySelectorAll('canvas')[0].getBoundingClientRect().top;
+        var firstCanvas = document.querySelectorAll('canvas')[0];
+        var left = firstCanvas.getBoundingClientRect().left;
+        var top = firstCanvas.getBoundingClientRect().top;
 
         var offsetX = (e.clientX - left) / _value.zoomK;
         var offsetY = (e.clientY - top) / _value.zoomK;
@@ -781,24 +780,25 @@ heatmap_namespace = (function() {
     function createAxis(formattedDataset) {
         return {
             x: d3.axisTop(_scales.x).tickFormat(function(d) {
-                var label = formattedDataset.measuredLabels.x.values.find(function(value) {
+                var labelArr = formattedDataset.measuredLabels.x.values.filter(function(value) {
                     return value.originalData === d;
                 });
-                this.parentNode.insertAdjacentHTML('beforeend', '<title>' + d + '</title>');
+                var label = labelArr[0];
+                var title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                title.innerHTML = d;
+                this.parentNode.appendChild(title);
                 return label && label.truncated ? label.truncated : label.originalData;
             }),
 
             y: d3.axisLeft(_scales.y).tickFormat(function(d) {
                 var index = formattedDataset.rowNames.indexOf(d);
                 var label = formattedDataset.measuredLabels.y.values[index];
-                this.parentNode.insertAdjacentHTML('beforeend', '<title>' + d + '</title>');
+                var title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                title.innerHTML = d;
+                this.parentNode.appendChild(title);
                 return label && label.truncated ? label.truncated : label.originalData;
             })
         };
-    }
-
-    function formatImage(string) {
-        return 'data:image/svg+xml;base64,' + window.btoa(string);
     }
 
     /**
@@ -873,7 +873,11 @@ heatmap_namespace = (function() {
 
                 xAxisD3El.attr('transform', 'translate(' + t.x + ', ' + _margin.top + ') scale(' + t.k + ')');
                 yAxisD3El.attr('transform', 'translate(' + _margin.left + ', ' + t.y + ') scale(' + t.k + ')');
-                transformerNode.style.transform = 'translate(' + t.x + 'px, ' + t.y + 'px) scale(' + t.k + ')';
+                if (_foreignObjectUnsupported) {
+                    transformerNode.setAttribute('transform', 'translate(' + t.x + ', ' + t.y + ') scale(' + t.k + ')');
+                } else {
+                    transformerNode.style.transform = 'translate(' + t.x + 'px, ' + t.y + 'px) scale(' + t.k + ')';
+                }
 
                 _value.zoomX = t.x;
                 _value.zoomY = t.y;
@@ -893,7 +897,7 @@ heatmap_namespace = (function() {
                 _cellHighlighter.style.borderWidth = borderWidth;
                 var rowHighlighters = svgD3.node().querySelectorAll('.row-highlighter');
                 if (rowHighlighters.length) {
-                    Array.from(rowHighlighters).map(function(rowHighlighter) {
+                    rowHighlighters.forEach(function(rowHighlighter) {
                         rowHighlighter.style.borderWidth = borderWidth;
                     });
                 }
@@ -1092,29 +1096,28 @@ heatmap_namespace = (function() {
         var maxWidth = container.getBoundingClientRect().width * 0.33;
         var maxHeight = container.getBoundingClientRect().height * 0.33;
 
-        var measuredLabelsY = knimeService.meassureAndTruncate(d3.values(rowLabels), {
-            classes: 'active',
+        var measuredLabelsY = knimeService.measureAndTruncate(d3.values(rowLabels), {
+            tempContainerClasses: 'active',
             container: container,
-            tempContainerClasses: 'knime-tick-label',
+            classes: 'knime-tick-label',
             maxWidth: maxWidth
         });
 
-        var tempContainerAttributes = [];
-        tempContainerAttributes['transform'] = _xAxisLabelTransform;
+        var attributes = [];
+        attributes['transform'] = _xAxisLabelTransform;
 
-        var measuredLabelsX = knimeService.meassureAndTruncate(_colNames, {
+        var measuredLabelsX = knimeService.measureAndTruncate(_colNames, {
             container: container,
-            tempContainerClasses: 'knime-tick-label',
-            tempContainerAttributes: tempContainerAttributes,
+            classes: 'knime-tick-label',
+            attributes: attributes,
             maxHeight: maxHeight
         });
 
         var headerHeight = Math.max(knimeService.headerHeight(), _titlesHeight);
 
-        _margin = Object.assign({}, _defaultMargin, {
-            top: measuredLabelsX.max.maxHeight + _defaultMargin.top + headerHeight,
-            left: measuredLabelsY.max.maxWidth + _defaultMargin.left
-        });
+        _margin = JSON.parse(JSON.stringify(_defaultMargin));
+        _margin.top = measuredLabelsX.max.maxHeight + _defaultMargin.top + headerHeight;
+        _margin.left = measuredLabelsY.max.maxWidth + _defaultMargin.left;
 
         return {
             y: measuredLabelsY,
@@ -1181,7 +1184,7 @@ heatmap_namespace = (function() {
             .attr('width', '100%')
             .attr('height', '100%');
 
-        if (_representation.runningInView) {
+        if (_representation.runningInView && !_foreignObjectUnsupported) {
             _wrapper = svg
                 .append('foreignObject')
                 .attr('width', '100%')
@@ -1197,11 +1200,8 @@ heatmap_namespace = (function() {
             _drawCellQueue = renderQueue(drawCanvasRow).rate(1000);
             _drawCellQueue(formattedDataset.data);
         } else {
-            _transformer = svg
-                .append('g')
-                .attr('clip-path', 'url(#clip)')
-                .append('g')
-                .attr('class', 'transformer');
+            _wrapper = svg.append('g').attr('clip-path', 'url(#clip)');
+            _transformer = _wrapper.append('g').attr('class', 'transformer');
             // Render cells at once for image rendering
             formattedDataset.data.map(function(row) {
                 drawSvgRow(row);
@@ -1210,9 +1210,7 @@ heatmap_namespace = (function() {
 
         _cellHighlighter = document.createElement('span');
         _cellHighlighter.classList.add('cell-highlighter');
-        document
-            .querySelector('.knime-svg-container .transformer')
-            .insertAdjacentElement('beforeend', _cellHighlighter);
+        document.querySelector('.knime-svg-container .transformer').appendChild(_cellHighlighter);
 
         registerEvents();
 
@@ -1307,7 +1305,7 @@ heatmap_namespace = (function() {
                     return;
                 }
                 d3.event.target.classList.add('active');
-                var tooltipInnerHTML = '<img src="' + formatImage(rowLabelImages[d]) + '" alt/>';
+                var tooltipInnerHTML = '<img src="data:image/svg+xml;base64,' + window.btoa(rowLabelImages[d]) + '" alt/>';
                 showTooltip(d3.event, tooltipInnerHTML);
             })
             .on('mouseleave', function() {
@@ -1571,13 +1569,12 @@ heatmap_namespace = (function() {
         // remove row highlighters
         var rowHighlighters = document.querySelectorAll('.row-highlighter');
         if (rowHighlighters.length) {
-            rowHighlighters = Array.from(rowHighlighters);
-            rowHighlighters.map(function(highlighter) {
+            rowHighlighters.forEach(function(highlighter) {
                 highlighter.outerHTML = '';
             });
         }
 
-        _value.selection = sortByDatasetRows(getUniques(_value.selection));
+        _value.selection = sortByDatasetRows(_value.selection.filter(onlyUniques));
         var startRowId = false;
         var selectionEnded = true;
         var yDomain = _scales.y.domain();
@@ -1609,18 +1606,7 @@ heatmap_namespace = (function() {
         highlighter.style.height = Math.ceil(endPosition - startPosition) + 1 + 'px';
         highlighter.style.width = Math.floor(_colNames.length * _cellWidth) + 'px';
         highlighter.style.borderWidth = getCurrentBorderWidth();
-        _transformer.node().insertAdjacentElement('beforeend', highlighter);
-    }
-
-    function getUniques(arr) {
-        return Array.from(new Set(arr));
-    }
-
-    function sortByDatasetRows(arr) {
-        var yDomain = _scales.y.domain();
-        return arr.sort(function(a, b) {
-            return yDomain.indexOf(a) - yDomain.indexOf(b);
-        });
+        _transformer.node().appendChild(highlighter);
     }
 
     /**
@@ -1636,6 +1622,18 @@ heatmap_namespace = (function() {
         var gradientYLeftPos = document.querySelector('.gradient-y').getBoundingClientRect().left;
 
         return Math.floor(yAxisEndPos) <= gradientXTopPos && Math.floor(xAxisEndPos) <= gradientYLeftPos;
+    }
+
+
+    function onlyUniques(value, index, self) {
+        return self.indexOf(value) === index;
+    }
+
+    function sortByDatasetRows(arr) {
+        var yDomain = _scales.y.domain();
+        return arr.sort(function(a, b) {
+            return yDomain.indexOf(a) - yDomain.indexOf(b);
+        });
     }
 
     /**
