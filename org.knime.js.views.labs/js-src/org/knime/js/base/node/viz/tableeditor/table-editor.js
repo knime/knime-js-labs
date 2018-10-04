@@ -374,8 +374,9 @@ window.table_editor = (function() {
 
 	TableEditor.prototype._createCellEditorComponent = function(cell, cellValue) {
 		// get column type
-		var colInd = cell.index().column - this._infoColsCount;
-		var colType = this._knimeTable.getKnimeColumnTypes()[colInd];
+		var colInd = cell.index().column;
+		var dataInd = this._dataIndexFromColIndex(colInd);
+		var colType = this._knimeTable.getKnimeColumnTypes()[dataInd];
 		var editor = createEditor(colType);
 		editor.setValue(cellValue !== undefined ? cellValue : cell.data());
 		return editor;
@@ -386,8 +387,11 @@ window.table_editor = (function() {
 			return null;
 		}
 		var ind = cell.index();
-		var newColInd = ind.column + columnShift - this._infoColsCount;
-		if (newColInd < 0 || newColInd >= this._knimeTable.getColumnNames().length) {
+		var newColInd = ind.column + columnShift;
+
+		var dataIndex = this._dataIndexFromColIndex(newColInd);
+		var isDataCell = typeof dataIndex !== 'undefined';
+		if (!isDataCell) {
 			return null;
 		}
 
@@ -399,7 +403,7 @@ window.table_editor = (function() {
 		}
 		newRowInd = indexes[newRowInd];
 
-		return this._dataTable.cell(newRowInd, newColInd + this._infoColsCount);
+		return this._dataTable.cell(newRowInd, newColInd);
 	};
 
 	TableEditor.prototype._setCellValue = function(cell, newValue) {
@@ -407,7 +411,8 @@ window.table_editor = (function() {
 		this._dataTable.data()[index.row][index.column] = newValue;
 
 		var rowKey = this._knimeTable.getRows()[index.row].rowKey;
-		var colName = this._knimeTable.getColumnNames()[index.column - this._infoColsCount];
+		var dataIndex = this._dataIndexFromColIndex(index.column);
+		var colName = this._knimeTable.getColumnNames()[dataIndex];
 		if (this._value.editorChanges.changes[rowKey] === undefined) {
 			this._value.editorChanges.changes[rowKey] = {};
 		}
@@ -535,7 +540,8 @@ window.table_editor = (function() {
 				return false;
 			}
 
-			var colName = this._knimeTable.getColumnNames()[cell.index().column - this._infoColsCount];
+			var dataIndex = this._dataIndexFromColIndex(cell.index().column);
+			var colName = this._knimeTable.getColumnNames()[dataIndex];
 			if (!this._isEditableCell(cell)) {
 				alert('Cannot paste the values as column "' + colName + '" is not editable.');
 				return false;
@@ -583,10 +589,11 @@ window.table_editor = (function() {
 	};
 
 	TableEditor.prototype._convertValueToCellType = function(cell, value) {
+		var dataIndex = this._dataIndexFromColIndex(cell.index().column);
 		var res = {
 			status: false,
 			value: undefined,
-			type: this._knimeTable.getKnimeColumnTypes()[this._dataIndexFromColIndex(cell.index().column)]
+			type: this._knimeTable.getKnimeColumnTypes()[dataIndex]
 		};
 		switch (res.type) {
 			case 'String':
@@ -643,7 +650,8 @@ window.table_editor = (function() {
 	};
 
 	TableEditor.prototype._isEditableCell = function(cell) {
-		var colName = this._knimeTable.getColumnNames()[this._dataIndexFromColIndex(cell.index().column)];
+		var dataIndex = this._dataIndexFromColIndex(cell.index().column);
+		var colName = this._knimeTable.getColumnNames()[dataIndex];
 		return this._representation.editableColumns.indexOf(colName) !== -1;
 	};
 
