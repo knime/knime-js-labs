@@ -384,11 +384,11 @@ public class TableEditorViewNodeModel extends AbstractWizardNodeModel<TableEdito
                 .setFirstRow(1)
                 .setMaxRows(m_config.getMaxRows())
                 .setExcludeColumns(filter.getExcludes())
+                .keepFilterColumns(true)
                 .calculateDataHash(true)
                 .build(exec);
         if (m_config.getMaxRows() < table.size()) {
-            setWarningMessage("Only the first "
-                    + m_config.getMaxRows() + " rows are displayed.");
+            setWarningMessage("Only the first " + m_config.getMaxRows() + " rows are displayed.");
         }
         return jsonTable;
     }
