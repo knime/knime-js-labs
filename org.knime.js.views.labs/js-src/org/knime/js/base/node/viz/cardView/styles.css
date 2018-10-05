@@ -131,3 +131,7 @@ body #knime-service-header {
     right: 0;
     bottom: 0;
 }
+
+.knime-cards-rowtitle {
+    font-weight: bold;
+}

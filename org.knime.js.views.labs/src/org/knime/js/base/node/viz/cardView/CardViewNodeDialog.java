@@ -94,6 +94,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
     // Options
     private final JSpinner m_maxRowsSpinner;
     private final JCheckBox m_displayRowColorsCheckBox;
+    private final JCheckBox m_displayColumnHeadersCheckBox;
     private final JCheckBox m_displayFullscreenButtonCheckBox;
     private final JTextField m_titleField;
     private final JTextField m_subtitleField;
@@ -145,6 +146,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_enableShowAllCheckBox = new JCheckBox("Add \"All\" option to page sizes");
         m_enableJumpToPageCheckBox = new JCheckBox("Display field to jump to a page directly");
         m_displayRowColorsCheckBox = new JCheckBox("Display row colors");
+        m_displayColumnHeadersCheckBox = new JCheckBox("Display column headers");
         m_displayFullscreenButtonCheckBox = new JCheckBox("Display fullscreen button");
         m_titleField = new JTextField(TEXT_FIELD_SIZE);
         m_subtitleField = new JTextField(TEXT_FIELD_SIZE);
@@ -205,6 +207,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_config.getSettings().getRepresentationSettings().setPageSizeShowAll(m_enableShowAllCheckBox.isSelected());
         m_config.getSettings().getRepresentationSettings().setEnableJumpToPage(m_enableJumpToPageCheckBox.isSelected());
         m_config.getSettings().getRepresentationSettings().setDisplayRowColors(m_displayRowColorsCheckBox.isSelected());
+        m_config.getSettings().getRepresentationSettings().setDisplayColumnHeaders(m_displayColumnHeadersCheckBox.isSelected());
         m_config.getSettings().getRepresentationSettings().setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
         m_config.getSettings().getRepresentationSettings().setTitle(m_titleField.getText());
         m_config.getSettings().getRepresentationSettings().setSubtitle(m_subtitleField.getText());
@@ -268,6 +271,8 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_enableShowAllCheckBox.setSelected(m_config.getSettings().getRepresentationSettings().getPageSizeShowAll());
         m_enableJumpToPageCheckBox.setSelected(m_config.getSettings().getRepresentationSettings().getEnableJumpToPage());
         m_displayRowColorsCheckBox.setSelected(m_config.getSettings().getRepresentationSettings().getDisplayRowColors());
+        m_displayColumnHeadersCheckBox.setSelected(
+            m_config.getSettings().getRepresentationSettings().getDisplayColumnHeaders());
         m_displayFullscreenButtonCheckBox.setSelected(
             m_config.getSettings().getRepresentationSettings().getDisplayFullscreenButton());
         m_titleField.setText(m_config.getSettings().getRepresentationSettings().getTitle());
@@ -368,6 +373,8 @@ public class CardViewNodeDialog extends NodeDialogPane {
         gbcD.gridwidth = 1;
         gbcD.gridx = 0;
         displayPanel.add(m_displayRowColorsCheckBox, gbcD);
+        gbcD.gridx++;
+        displayPanel.add(m_displayColumnHeadersCheckBox, gbcD);
         gbcD.gridx++;
         displayPanel.add(m_displayFullscreenButtonCheckBox, gbcD);
         // end

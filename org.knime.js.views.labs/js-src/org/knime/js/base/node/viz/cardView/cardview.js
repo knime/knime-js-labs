@@ -28,7 +28,6 @@ window.cards_namespace = (function () {
         var textAlignment = representation.alignRight ? 'right' : representation.alignCenter ? 'center' : 'left';
 
         var overrides = {
-            displayColumnHeaders: false,
             displayRowIds: representation.useRowID,
             displayRowIndex: false,
             enableClearSortButton: false,
@@ -88,6 +87,49 @@ window.cards_namespace = (function () {
                 };
             }
         });
+        if (this._representation.displayColumnHeaders) {
+            this._addColumnTitles();
+        }
+    };
+
+    // render columns along with cell entries
+    CardView.prototype._addColumnTitles = function () {
+        var self = this;
+        this._dataTableConfig.columns.forEach(function (column) {
+            if (!self._shouldShowTitleOnColumn(column)) {
+                return;
+            }
+            var titlePrefix = '<span class="knime-cards-rowtitle">' + column.title + ':</span> ';
+            if (column.hasOwnProperty('render')) {
+                column.render = (function (original) {
+                    return function (data) {
+                        if (!data) {
+                            return null;
+                        }
+                        return titlePrefix + (original.call(self, data) || '');
+                    };
+                })(column.render);
+            } else {
+                column.render = function (data) {
+                    if (!data) {
+                        return null;
+                    }
+                    return titlePrefix + data;
+                };
+            }
+            column.defaultContent = titlePrefix + (column.defaultContent || '');
+        });
+    };
+
+    // helper for _addColumnTitles()
+    CardView.prototype._shouldShowTitleOnColumn = function (column) {
+        if (/\b(selection-cell|knime-card-title|knime-svg|knime-png)\b/.test(column.className)) {
+            return false;
+        }
+        if (!column.hasOwnProperty('title') || !column.title || column.title === 'RowID') {
+            return false;
+        }
+        return true;
     };
 
     // push title column data to top
@@ -151,6 +193,7 @@ window.cards_namespace = (function () {
     // auto-size cell heights
     CardView.prototype._dataTableDrawCallback = function () {
         KnimeBaseTableViewer.prototype._dataTableDrawCallback.apply(this);
+        $("#knimePagedTable thead").remove();
         var infoColsCount = this._infoColsCount;
         var columns = this._dataTableConfig.columns;
         // for some reason, images are rendered with size 0x0 in Chromium at this point, hence the timeout

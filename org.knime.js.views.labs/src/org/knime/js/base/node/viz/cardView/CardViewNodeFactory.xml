@@ -35,6 +35,10 @@
                 Enable or disable the display of row colors. Colors can be assigned e.g. with the Color Manager node and
                 will be rendered as a colored stripe at the top of the respective card.
             </option>
+            <option name="Display column headers">
+                Enable or disable the display of column headers. The column headers will be shown along with the cell
+                entries in each card. Note that column headers are not rendered for images.
+            </option>
             <option name="Display full screen button">
                 Check to display a button which switches the view into fullscreen mode.
                 The button is only available in the KNIME WebPortal.
