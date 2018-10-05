@@ -31,19 +31,17 @@ heatmap_namespace = (function() {
     var _legendWidth = 140;
     var _legendHeight = 50;
     var _legendColorRangeHeight = 20;
-    var _legendMargin = 5;
+    var _legendStandardMargin = 5;
+    var _legendTopMargin = 15;
     var _infoWrapperMinHeight = 80;
     var _xAxisLabelTransform = 'rotate(-65) translate(10 8)';
     var _foreignObjectUnsupported = typeof SVGForeignObjectElement === 'undefined';
 
     heatmap.init = function(representation, value) {
-        if (!representation.table) {
-            // todo: error handling
-            return;
-        }
-
-        if (!representation.columns.length) {
-            // todo: error handling
+        if (!representation.table || !representation.columns.length) {
+            d3.select('body')
+                .append('p')
+                .text('Error: No data available');
             return;
         }
 
@@ -735,11 +733,11 @@ heatmap_namespace = (function() {
         } else {
             return;
         }
-        
-        _cellHighlighter.setAttribute('x' , xPos);
-        _cellHighlighter.setAttribute('y' , yPos);
-        _cellHighlighter.setAttribute('width' , _cellWidth);
-        _cellHighlighter.setAttribute('height' , _cellHeight);
+
+        _cellHighlighter.setAttribute('x', xPos);
+        _cellHighlighter.setAttribute('y', yPos);
+        _cellHighlighter.setAttribute('width', _cellWidth);
+        _cellHighlighter.setAttribute('height', _cellHeight);
 
         return cell;
     }
@@ -1211,7 +1209,7 @@ heatmap_namespace = (function() {
                 .attr('class', 'wrapper')
                 .attr('style', 'clip-path:url(#clip)');
             _transformer = _wrapper.append('div').attr('class', 'transformer');
-            _transformer.append('svg').attr('class','highlighters');
+            _transformer.append('svg').attr('class', 'highlighters');
 
             // Improve performance: render cells progressivley
             _maxExtensionY = 0;
@@ -1221,8 +1219,8 @@ heatmap_namespace = (function() {
         } else {
             _wrapper = svg.append('g').attr('clip-path', 'url(#clip)');
             _transformer = _wrapper.append('g').attr('class', 'transformer');
-            _transformer.append('g').attr('class','rows');
-            _transformer.append('g').attr('class','highlighters');
+            _transformer.append('g').attr('class', 'rows');
+            _transformer.append('g').attr('class', 'highlighters');
             // Render cells at once for image rendering
             formattedDataset.data.map(function(row) {
                 drawSvgRow(row);
@@ -1230,8 +1228,8 @@ heatmap_namespace = (function() {
         }
 
         _cellHighlighter = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        _cellHighlighter.setAttribute('width',0);
-        _cellHighlighter.setAttribute('height',0);
+        _cellHighlighter.setAttribute('width', 0);
+        _cellHighlighter.setAttribute('height', 0);
         _cellHighlighter.setAttribute('class', 'cell-highlighter');
         document.querySelector('.knime-svg-container .transformer .highlighters').appendChild(_cellHighlighter);
 
@@ -1327,7 +1325,8 @@ heatmap_namespace = (function() {
                 if (!rowLabelImages[d]) {
                     return;
                 }
-                var tooltipInnerHTML = '<img src="data:image/svg+xml;base64,' + window.btoa(rowLabelImages[d]) + '" alt/>';
+                var tooltipInnerHTML =
+                    '<img src="data:image/svg+xml;base64,' + window.btoa(rowLabelImages[d]) + '" alt/>';
                 showTooltip(d3.event, tooltipInnerHTML);
             })
             .on('mouseleave', function() {
@@ -1377,8 +1376,7 @@ heatmap_namespace = (function() {
         }
         if (!_representation.runningInView) {
             var imageMargin = 50;
-            var legendMargin = 15;
-            var imageModeMarginTop = _scales.y.domain().length * _cellHeight + _margin.top + legendMargin;
+            var imageModeMarginTop = _scales.y.domain().length * _cellHeight + _margin.top + _legendTopMargin;
             var calcImageHeight = imageModeMarginTop + _legendHeight + imageMargin;
             var calcImageWidth = _colNames.length * _cellWidth + _margin.left + _margin.right + imageMargin;
             svg.attr('viewBox', '0 0 ' + calcImageWidth + ' ' + calcImageHeight);
@@ -1400,17 +1398,17 @@ heatmap_namespace = (function() {
                 .select('.info-wrapper')
                 .append('svg')
                 .attr('class', 'knime-legend')
-                .attr('width', _legendWidth + 2 * _legendMargin)
+                .attr('width', _legendWidth + 2 * _legendStandardMargin)
                 .attr('height', _legendHeight);
         } else {
             // append in existing svg
-            var imageModeMarginTop = _scales.y.domain().length * _cellHeight + _margin.top + 15;
+            var imageModeMarginTop = _scales.y.domain().length * _cellHeight + _margin.top + _legendTopMargin;
             var transform = 'translate(' + _defaultMargin.left + ' ' + imageModeMarginTop + ')';
 
             legend = svg
                 .append('g')
                 .attr('class', 'knime-legend')
-                .attr('width', _legendWidth + 2 * _legendMargin)
+                .attr('width', _legendWidth + 2 * _legendStandardMargin)
                 .attr('height', _legendHeight)
                 .attr('transform', transform);
         }
@@ -1424,11 +1422,11 @@ heatmap_namespace = (function() {
         legend
             .append('rect')
             .attr('y', 0)
-            .attr('x', _legendMargin)
+            .attr('x', _legendStandardMargin)
             .attr('class', 'knime-legend-symbol')
             .attr('width', _legendWidth)
             .attr('height', _legendColorRangeHeight)
-            .attr('right', _legendMargin)
+            .attr('right', _legendStandardMargin)
             .attr('fill', 'url(#legendGradient)');
 
         // set gradient stops
@@ -1478,7 +1476,7 @@ heatmap_namespace = (function() {
 
         var axis = legend
             .append('g')
-            .attr('transform', 'translate(' + _legendMargin + ', ' + _legendColorRangeHeight + ')')
+            .attr('transform', 'translate(' + _legendStandardMargin + ', ' + _legendColorRangeHeight + ')')
             .attr('class', 'legend-axis')
             .call(legendAxis);
 
@@ -1644,7 +1642,6 @@ heatmap_namespace = (function() {
 
         return Math.floor(yAxisEndPos) <= gradientXTopPos && Math.floor(xAxisEndPos) <= gradientYLeftPos;
     }
-
 
     function onlyUniques(value, index, self) {
         return self.indexOf(value) === index;
