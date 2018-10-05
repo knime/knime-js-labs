@@ -35,7 +35,6 @@ heatmap_namespace = (function() {
     var _infoWrapperMinHeight = 80;
     var _xAxisLabelTransform = 'rotate(-65) translate(10 8)';
     var _foreignObjectUnsupported = typeof SVGForeignObjectElement === 'undefined';
-    var _titlesHeight = 0;
 
     heatmap.init = function(representation, value) {
         if (!representation.table) {
@@ -201,7 +200,7 @@ heatmap_namespace = (function() {
                 interval.clear();
             }
             var percentageComplete = 100 - (_drawCellQueue.remaining() / totalRowsCount) * 100;
-            if (percentageComplete < 60) {
+            if (percentageComplete < 20) {
                 // only display progress bar if initial rendered percentage is low
                 progressBar.style.opacity = 1;
             }
@@ -236,7 +235,13 @@ heatmap_namespace = (function() {
     function updateTitles() {
         document.querySelector('.knime-title').textContent = _value.chartTitle;
         document.querySelector('.knime-subtitle').textContent = _value.chartSubtitle;
-        _titlesHeight = _value.chartTitle || _value.chartSubtitle ? 50 : 0;
+    }
+
+    function getTitlesHeight() {
+        var titleHeight = 0;
+        titleHeight += _value.chartTitle ? 30 : 0;
+        titleHeight += _value.chartSubtitle ? 20 : 0;
+        return titleHeight;
     }
 
     function drawControls() {
@@ -703,19 +708,15 @@ heatmap_namespace = (function() {
         if (!_value.showToolTips && !_value.enableSelection) {
             return;
         }
-        var firstCanvas = document.querySelectorAll('canvas')[0];
-        var left = firstCanvas.getBoundingClientRect().left;
-        var top = firstCanvas.getBoundingClientRect().top;
-
-        var offsetX = (e.clientX - left) / _value.zoomK;
-        var offsetY = (e.clientY - top) / _value.zoomK;
+       
+        var offsetX = (e.clientX - _margin.left - _value.zoomX) / _value.zoomK;
+        var offsetY = (e.clientY - _margin.top - _value.zoomY) / _value.zoomK;
 
         // Todo: extract onetime operations
         var xEachBand = _scales.x.step();
         var xIndex = Math.floor(offsetX / xEachBand);
         var xVal = _scales.x.domain()[xIndex];
         var xPos = _scales.x(xVal);
-
         var yEachBand = _scales.y.step();
         var yIndex = Math.floor(offsetY / yEachBand);
         var yVal = _scales.y.domain()[yIndex];
@@ -731,12 +732,14 @@ heatmap_namespace = (function() {
                 y: yVal,
                 value: value
             };
+        } else {
+            return;
         }
-
-        _cellHighlighter.style.left = Math.floor(xPos) + 'px';
-        _cellHighlighter.style.top = Math.floor(yPos) + 'px';
-        _cellHighlighter.style.width = Math.ceil(_cellWidth) + 1 + 'px';
-        _cellHighlighter.style.height = Math.ceil(_cellHeight) + 1 + 'px';
+        
+        _cellHighlighter.setAttribute('x' , xPos);
+        _cellHighlighter.setAttribute('y' , yPos);
+        _cellHighlighter.setAttribute('width' , _cellWidth);
+        _cellHighlighter.setAttribute('height' , _cellHeight);
 
         return cell;
     }
@@ -893,13 +896,13 @@ heatmap_namespace = (function() {
                 togglePartiallyDisplayedClass();
 
                 // style borders
-                var borderWidth = getCurrentBorderWidth();
-                _cellHighlighter.style.borderWidth = borderWidth;
+                var strokeWidth = getCurrentStrokeWidth();
+                _cellHighlighter.setAttribute('stroke-width', strokeWidth);
                 var rowHighlighters = svgD3.node().querySelectorAll('.row-highlighter');
                 if (rowHighlighters.length) {
-                    rowHighlighters.forEach(function(rowHighlighter) {
-                        rowHighlighter.style.borderWidth = borderWidth;
-                    });
+                    for (var i = 0; i < rowHighlighters.length; i++) {
+                        rowHighlighters[i].setAttribute('stroke-width', strokeWidth);
+                    }
                 }
             });
 
@@ -927,9 +930,9 @@ heatmap_namespace = (function() {
         return zoom;
     }
 
-    function getCurrentBorderWidth() {
-        var borderZoomFactor = 5;
-        return Math.max(2, 1 + borderZoomFactor * (1 - _value.zoomK)) + 'px';
+    function getCurrentStrokeWidth() {
+        var strokeZoomFactor = 5;
+        return Math.max(2, 1 + strokeZoomFactor * (1 - _value.zoomK));
     }
 
     function showTooltip(e, innerHtml) {
@@ -1059,7 +1062,7 @@ heatmap_namespace = (function() {
 
     function drawSvgRow(row) {
         var y = row.rowKey;
-        var cellGroup = _transformer.append('g');
+        var cellGroup = _transformer.select('.rows').append('g');
         row.data.map(function(value, currentIndex) {
             if (_colNames[currentIndex] === undefined) {
                 return;
@@ -1113,7 +1116,8 @@ heatmap_namespace = (function() {
             maxHeight: maxHeight
         });
 
-        var headerHeight = Math.max(knimeService.headerHeight(), _titlesHeight);
+        var titlesHeight = getTitlesHeight();
+        var headerHeight = Math.max(knimeService.headerHeight(), titlesHeight);
 
         _margin = JSON.parse(JSON.stringify(_defaultMargin));
         _margin.top = measuredLabelsX.max.maxHeight + _defaultMargin.top + headerHeight;
@@ -1155,11 +1159,27 @@ heatmap_namespace = (function() {
             .attr('y', 50)
             .text(_value.chartSubtitle);
         updateTitles();
+        
 
         // Determine cell sizes
         var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
         var extraAxisLabelBuffer = 30; // TODO: calculate programatically
-        var headerHeight = Math.max(knimeService.headerHeight(), _titlesHeight);
+        var headerHeight = Math.max(knimeService.headerHeight(), getTitlesHeight());
+        var containerWidth = _representation.resizeToWindow ? window.innerWidth : _representation.imageWidth;
+        var containerHeight = _representation.resizeToWindow ? window.innerHeight : _representation.imageHeight;
+        _cellWidth = Math.max(
+            _minCellSize,
+            (containerWidth - _margin.left - _margin.right - extraAxisLabelBuffer) / _colNames.length
+        );
+        _cellHeight = Math.max(
+            _minCellSize,
+            (containerHeight - _margin.top - headerHeight - infoWrapperHeight) / rows.length
+        );
+
+        // Determine cell sizes
+        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
+        var extraAxisLabelBuffer = 30; // TODO: calculate programatically
+        var headerHeight = Math.max(knimeService.headerHeight(), getTitlesHeight());
         var containerWidth = _representation.resizeToWindow ? window.innerWidth : _representation.imageWidth;
         var containerHeight = _representation.resizeToWindow ? window.innerHeight : _representation.imageHeight;
         _cellWidth = Math.max(
@@ -1187,30 +1207,33 @@ heatmap_namespace = (function() {
         if (_representation.runningInView && !_foreignObjectUnsupported) {
             _wrapper = svg
                 .append('foreignObject')
-                .attr('width', '100%')
-                .attr('height', '100%')
                 .append('xhtml:div')
                 .attr('class', 'wrapper')
                 .attr('style', 'clip-path:url(#clip)');
             _transformer = _wrapper.append('div').attr('class', 'transformer');
+            _transformer.append('svg').attr('class','highlighters');
 
             // Improve performance: render cells progressivley
             _maxExtensionY = 0;
             _maxExtensionX = 0;
-            _drawCellQueue = renderQueue(drawCanvasRow).rate(1000);
+            _drawCellQueue = renderQueue(drawCanvasRow).rate(500);
             _drawCellQueue(formattedDataset.data);
         } else {
             _wrapper = svg.append('g').attr('clip-path', 'url(#clip)');
             _transformer = _wrapper.append('g').attr('class', 'transformer');
+            _transformer.append('g').attr('class','rows');
+            _transformer.append('g').attr('class','highlighters');
             // Render cells at once for image rendering
             formattedDataset.data.map(function(row) {
                 drawSvgRow(row);
             });
         }
 
-        _cellHighlighter = document.createElement('span');
-        _cellHighlighter.classList.add('cell-highlighter');
-        document.querySelector('.knime-svg-container .transformer').appendChild(_cellHighlighter);
+        _cellHighlighter = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        _cellHighlighter.setAttribute('width',0);
+        _cellHighlighter.setAttribute('height',0);
+        _cellHighlighter.setAttribute('class', 'cell-highlighter');
+        document.querySelector('.knime-svg-container .transformer .highlighters').appendChild(_cellHighlighter);
 
         registerEvents();
 
@@ -1304,13 +1327,11 @@ heatmap_namespace = (function() {
                 if (!rowLabelImages[d]) {
                     return;
                 }
-                d3.event.target.classList.add('active');
                 var tooltipInnerHTML = '<img src="data:image/svg+xml;base64,' + window.btoa(rowLabelImages[d]) + '" alt/>';
                 showTooltip(d3.event, tooltipInnerHTML);
             })
             .on('mouseleave', function() {
                 hideTooltip();
-                d3.event.target.classList.remove('active');
             });
 
         axisWrapper
@@ -1569,9 +1590,9 @@ heatmap_namespace = (function() {
         // remove row highlighters
         var rowHighlighters = document.querySelectorAll('.row-highlighter');
         if (rowHighlighters.length) {
-            rowHighlighters.forEach(function(highlighter) {
-                highlighter.outerHTML = '';
-            });
+            for (var i = 0; i < rowHighlighters.length; i++) {
+                rowHighlighters[i].parentNode.removeChild(rowHighlighters[i]); // IE11 compatible remove
+            }
         }
 
         _value.selection = sortByDatasetRows(_value.selection.filter(onlyUniques));
@@ -1596,17 +1617,17 @@ heatmap_namespace = (function() {
 
     function endSelection(startRowId, endRowId) {
         var startPosition = _scales.y(startRowId);
-        var endPosition = _scales.y(endRowId) + Math.ceil(_cellHeight);
-        var highlighter = document.createElement('SPAN');
-        highlighter.classList.add('row-highlighter');
+        var endPosition = _scales.y(endRowId) + _cellHeight;
+        var highlighter = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        highlighter.setAttribute('class', 'row-highlighter');
 
-        highlighter.style.top = Math.floor(startPosition) + 'px';
-
-        highlighter.style.left = Math.ceil(_margin.left) + 'px';
-        highlighter.style.height = Math.ceil(endPosition - startPosition) + 1 + 'px';
-        highlighter.style.width = Math.floor(_colNames.length * _cellWidth) + 'px';
-        highlighter.style.borderWidth = getCurrentBorderWidth();
-        _transformer.node().appendChild(highlighter);
+        highlighter.setAttribute('y', startPosition);
+        highlighter.setAttribute('x', _margin.left);
+        highlighter.setAttribute('height', endPosition - startPosition);
+        highlighter.setAttribute('width', _colNames.length * _cellWidth);
+        highlighter.setAttribute('borderWidth', getCurrentStrokeWidth());
+        var container = document.querySelector('.highlighters');
+        container.appendChild(highlighter);
     }
 
     /**

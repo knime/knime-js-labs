@@ -14,6 +14,11 @@ p {
     position: relative;
 }
 
+.heatmap,
+foreignObject,
+.wrapper,
+.transformer,
+.highlighters,
 .knime-svg-container {
     width: 100%;
     height: 100%;
@@ -49,11 +54,13 @@ p {
     );
 }
 
-.knime-svg-container .heatmap {
-    height: 100%;
-    width: 100%;
-    padding: 0;
-    margin: 0;
+
+.highlighters {
+    z-index: 1000;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
 }
 
 .active text {
@@ -175,23 +182,16 @@ text.knime-legend-label {
     color: red;
 }
 
+.row-highlighter,
 .cell-highlighter {
-    position: absolute;
-    border: 2px solid #fff;
-    display: block;
-    box-sizing: border-box;
+    stroke: #fff;
+    fill: none;
     pointer-events: none;
-    z-index: 100;
+    stroke-width: 2;
 }
 
 .row-highlighter {
-    position: absolute;
-    width: 100%;
-    left: 0;
-    border: 2px dashed #f3f3f3;
-    box-sizing: border-box;
-    pointer-events: none;
-    z-index: 100;
+    stroke-dasharray: 5;
 }
 
 .progress-bar {
