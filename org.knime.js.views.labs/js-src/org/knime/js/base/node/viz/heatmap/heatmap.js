@@ -1404,8 +1404,8 @@ heatmap_namespace = (function() {
                 .attr('height', _legendHeight);
         } else {
             // append in existing svg
-            var imageModeMarginTop = _scales.y.domain().length * _cellWidth + _margin.top + 15;
-            var transform = 'translate(0 ' + imageModeMarginTop + ')';
+            var imageModeMarginTop = _scales.y.domain().length * _cellHeight + _margin.top + 15;
+            var transform = 'translate(' + _defaultMargin.left + ' ' + imageModeMarginTop + ')';
 
             legend = svg
                 .append('g')
