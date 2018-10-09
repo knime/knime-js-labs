@@ -2,7 +2,7 @@
 
 	var optics = {};
 	var layoutContainer = "layoutContainer";
-	var MIN_HEIGHT = 300, MIN_WIDTH = 400;
+	var MIN_HEIGHT = 100, MIN_WIDTH = 100;
 	var _representation, _value;
 	var chart, svg;
     var _keyedDataset = null;
