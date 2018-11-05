@@ -1174,21 +1174,6 @@ heatmap_namespace = (function() {
             (containerHeight - _margin.top - headerHeight - infoWrapperHeight) / rows.length
         );
 
-        // Determine cell sizes
-        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
-        var extraAxisLabelBuffer = 30; // TODO: calculate programatically
-        var headerHeight = Math.max(knimeService.headerHeight(), getTitlesHeight());
-        var containerWidth = _representation.resizeToWindow ? window.innerWidth : _representation.imageWidth;
-        var containerHeight = _representation.resizeToWindow ? window.innerHeight : _representation.imageHeight;
-        _cellWidth = Math.max(
-            _minCellSize,
-            (containerWidth - _margin.left - _margin.right - extraAxisLabelBuffer) / _colNames.length
-        );
-        _cellHeight = Math.max(
-            _minCellSize,
-            (containerHeight - _margin.top - headerHeight - infoWrapperHeight) / rows.length
-        );
-
         _tooltip = document.querySelector('.knime-tooltip');
         _scales = createScales(formattedDataset);
         _axis = createAxis(formattedDataset);
