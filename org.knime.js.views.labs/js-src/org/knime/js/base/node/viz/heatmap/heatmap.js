@@ -1625,7 +1625,9 @@ heatmap_namespace = (function() {
         highlighter.setAttribute('width', _colNames.length * _cellWidth);
         highlighter.setAttribute('borderWidth', getCurrentStrokeWidth());
         var container = document.querySelector('.highlighters');
-        container.appendChild(highlighter);
+        if(container) {
+            container.appendChild(highlighter);
+        }
     }
 
     /**
