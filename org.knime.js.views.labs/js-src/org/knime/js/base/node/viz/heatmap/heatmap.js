@@ -212,18 +212,22 @@ heatmap_namespace = (function() {
     }
 
     function drawMetaInfo(paginationData) {
-        var paginationHtml = _representation.enablePaging ? getPaginationHtml(paginationData) : '';
+        var displayedRows = '';
+        var paginationHtml = '';
 
-        var displayedRows =
-            '<div><p>Showing ' +
-            (paginationData.totalRowCount > 1 ? paginationData.pageRowStartIndex + 1 : paginationData.totalRowCount) +
-            ' to ' +
-            paginationData.pageRowEndIndex +
-            ' of ' +
-            paginationData.totalRowCount +
-            ' entries</p>';
+        if(_representation.enablePaging) {
+            paginationHtml += getPaginationHtml(paginationData);
+            displayedRows +=
+                '<div><p>Showing ' +
+                (paginationData.totalRowCount > 1 ? paginationData.pageRowStartIndex + 1 : paginationData.totalRowCount) +
+                ' to ' +
+                paginationData.pageRowEndIndex +
+                ' of ' +
+                paginationData.totalRowCount +
+                ' entries</p>';
 
-        displayedRows += '<p class="partially-displayed-hint">(Partially displayed)</p></div>';
+            displayedRows += '<p class="partially-displayed-hint">(Partially displayed)</p></div>';
+        }
 
         var infoWrapper = document.body.querySelector('.info-wrapper');
         infoWrapper.innerHTML = displayedRows + paginationHtml;
@@ -750,8 +754,12 @@ heatmap_namespace = (function() {
     function getLinearColorDomain(minimum, maximum) {
         var domain = [];
         var interpolator = d3.interpolateNumber(minimum, maximum);
+        var color;
         for (var i = 0; i < _colorRange.length; i++) {
-            domain.push(interpolator(i / (_colorRange.length - 1)));
+            color = interpolator(i / (_colorRange.length - 1));
+            if (!isNaN(color)) {
+                domain.push(color);
+            }
         }
         return domain;
     }
@@ -760,8 +768,8 @@ heatmap_namespace = (function() {
         return {
             x: d3
                 .scaleBand()
-                .range([_margin.left, _colNames.length * _cellWidth + _margin.left])
-                .domain(_colNames),
+                .range([_margin.left, _representation.columns.length * _cellWidth + _margin.left])
+                .domain(_representation.columns),
             y: d3
                 .scaleBand()
                 .domain(formattedDataset.rowNames)
@@ -781,10 +789,12 @@ heatmap_namespace = (function() {
     function createAxis(formattedDataset) {
         return {
             x: d3.axisTop(_scales.x).tickFormat(function(d) {
-                var labelArr = formattedDataset.measuredLabels.x.values.filter(function(value) {
-                    return value.originalData === d;
-                });
-                var label = labelArr[0];
+                var label = formattedDataset.measuredLabels.x.values.filter(function(value) {
+                    return value && value.originalData === d;
+                })[0];
+                if(!label) {
+                    return;
+                }
                 var title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
                 title.innerHTML = d;
                 this.parentNode.appendChild(title);
@@ -1167,7 +1177,7 @@ heatmap_namespace = (function() {
         var containerHeight = _representation.resizeToWindow ? window.innerHeight : _representation.imageHeight;
         _cellWidth = Math.max(
             _minCellSize,
-            (containerWidth - _margin.left - _margin.right - extraAxisLabelBuffer) / _colNames.length
+            (containerWidth - _margin.left - _margin.right - extraAxisLabelBuffer) / _representation.columns.length
         );
         _cellHeight = Math.max(
             _minCellSize,
@@ -1363,7 +1373,7 @@ heatmap_namespace = (function() {
             var imageMargin = 50;
             var imageModeMarginTop = _scales.y.domain().length * _cellHeight + _margin.top + _legendTopMargin;
             var calcImageHeight = imageModeMarginTop + _legendHeight + imageMargin;
-            var calcImageWidth = _colNames.length * _cellWidth + _margin.left + _margin.right + imageMargin;
+            var calcImageWidth = _representation.columns.length * _cellWidth + _margin.left + _margin.right + imageMargin;
             svg.attr('viewBox', '0 0 ' + calcImageWidth + ' ' + calcImageHeight);
             if (_representation.imageHeight) {
                 svg.attr('height', _representation.imageHeight + 'px');
@@ -1607,7 +1617,7 @@ heatmap_namespace = (function() {
         highlighter.setAttribute('y', startPosition);
         highlighter.setAttribute('x', _margin.left);
         highlighter.setAttribute('height', endPosition - startPosition);
-        highlighter.setAttribute('width', _colNames.length * _cellWidth);
+        highlighter.setAttribute('width', _representation.columns.length * _cellWidth);
         highlighter.setAttribute('borderWidth', getCurrentStrokeWidth());
         var container = document.querySelector('.highlighters');
         if(container) {

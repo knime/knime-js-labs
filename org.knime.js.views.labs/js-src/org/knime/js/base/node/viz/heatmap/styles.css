@@ -169,6 +169,7 @@ form {
 }
 
 .knime-legend {
+    overflow: visible;
     flex-grow: 0;
     flex-shrink: 0;
     padding: 2px 10px;
