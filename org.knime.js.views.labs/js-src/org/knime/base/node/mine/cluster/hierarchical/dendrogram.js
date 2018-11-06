@@ -684,7 +684,7 @@ window.dendrogram_namespace = (function () {
         if (_representation.showThresholdBar) {
             const thresholdFormatted = thresholdFormat(threshold);
             thresholdDisplayEl.text('Threshold: ' + thresholdFormatted);
-            thresholdClusterDisplayEl.text('Cluster: ' + numberOfRootCluster);
+            thresholdClusterDisplayEl.text('Clusters: ' + numberOfRootCluster);
         }
 
         // save new threshold values
