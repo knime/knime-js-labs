@@ -35,6 +35,8 @@ heatmap_namespace = (function() {
     var _infoWrapperMinHeight = 80;
     var _xAxisLabelTransform = 'rotate(-65) translate(10 8)';
     var _canvases = [];
+    var _labelsMargins = false;
+    var _previousDataLength = 0;
 
     heatmap.init = function(representation, value) {
         if (!representation.table || !representation.columns.length) {
@@ -216,7 +218,6 @@ heatmap_namespace = (function() {
      * more cross-browser compatible than via foreignObject
      */
     function createImagesFromCanvases() {
-        // var existingImages = _transformer.selectAll('.imagewrapper').remove();
         var existingImages = document.querySelectorAll('.imagewrapper');
         for (var i = 0; i < existingImages.length; i++) {
             existingImages[i].parentNode.removeChild(existingImages[i]);
@@ -235,7 +236,7 @@ heatmap_namespace = (function() {
             image.setAttribute('width', currentCanvas.width);
             image.setAttribute('height', currentCanvas.height);
             
-            group.setAttribute('style', 'width:' + currentCanvas.width + 'px; height:' + currentCanvas.height + 'px; scale(' + 1 / window.devicePixelRatio + ')');
+            group.setAttribute('style', 'width:' + currentCanvas.width + 'px; height:' + currentCanvas.height + 'px;');
             group.setAttribute('transform', 'translate(' + currentCanvas.transformX + ' ' + currentCanvas.transformY + ')');
             group.appendChild(image);
         
@@ -698,6 +699,24 @@ heatmap_namespace = (function() {
         };
     }
 
+    function setMarginsOnce(measuredLabels) {
+        if(_labelsMargins) {
+            return;
+        }
+        var labelBufferMargin = 15; // leave some wiggleroom for longer labels (e.g. counting up labels)
+        var titlesHeight = getTitlesHeight();
+        var headerHeight = Math.max(knimeService.headerHeight(), titlesHeight);
+
+        _margin = JSON.parse(JSON.stringify(_defaultMargin));
+        _margin.top = measuredLabels.x.max.maxHeight + labelBufferMargin + _defaultMargin.top + headerHeight;
+        _margin.left = measuredLabels.y.max.maxWidth + labelBufferMargin +  _defaultMargin.left;
+        
+        _labelsMargins = {
+            x: measuredLabels.y.max.maxWidth + labelBufferMargin,
+            y: measuredLabels.x.max.maxHeight + labelBufferMargin 
+        };
+    }
+
     /**
      * Format the data on a per-row level and
      * - get current row names
@@ -726,7 +745,8 @@ heatmap_namespace = (function() {
             return accumulator.concat(row);
         }, []);
 
-        var measuredLabels = setMarginsForLabels(rowLabels);
+        var measuredLabels = getMarginsForLabels(rowLabels);
+        setMarginsOnce(measuredLabels);
 
         return {
             rowLabelImages: rowLabelImages,
@@ -863,10 +883,10 @@ heatmap_namespace = (function() {
         var yAxisHeight = yAxisEl ? yAxisEl.getBoundingClientRect().height : 0;
 
         // Set transform origins
-        xAxisD3El.attr('transform-origin', _margin.left + 'px 0');
-        yAxisD3El.attr('transform-origin', '0 ' + _margin.top + 'px');
+        xAxisD3El.node().style['transform-origin'] = _margin.left + 'px 0';
+        yAxisD3El.node().style['transform-origin'] = '0 ' + _margin.top + 'px';
 
-        _transformer.node().style.transformOrigin = _margin.left + 'px ' + _margin.top + 'px';
+        _transformer.node().style['transform-origin'] = _margin.left + 'px ' + _margin.top + 'px';
         var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
 
         _zoomDimensions = {
@@ -1146,10 +1166,10 @@ heatmap_namespace = (function() {
     /**
      * Set new margins based on the label sizes
      */
-    function setMarginsForLabels(rowLabels) {
+    function getMarginsForLabels(rowLabels) {
         var container = document.querySelector('svg.heatmap');
-        var maxWidth = container.getBoundingClientRect().width * 0.33;
-        var maxHeight = container.getBoundingClientRect().height * 0.33;
+        var maxWidth = _labelsMargins ? _labelsMargins.x : container.getBoundingClientRect().width * 0.33;
+        var maxHeight = _labelsMargins ? _labelsMargins.y : container.getBoundingClientRect().height * 0.33;
 
         var measuredLabelsY = knimeService.measureAndTruncate(d3.values(rowLabels), {
             tempContainerClasses: 'active',
@@ -1167,13 +1187,6 @@ heatmap_namespace = (function() {
             attributes: attributes,
             maxHeight: maxHeight
         });
-
-        var titlesHeight = getTitlesHeight();
-        var headerHeight = Math.max(knimeService.headerHeight(), titlesHeight);
-
-        _margin = JSON.parse(JSON.stringify(_defaultMargin));
-        _margin.top = measuredLabelsX.max.maxHeight + _defaultMargin.top + headerHeight;
-        _margin.left = measuredLabelsY.max.maxWidth + _defaultMargin.left;
 
         return {
             y: measuredLabelsY,
@@ -1214,19 +1227,21 @@ heatmap_namespace = (function() {
         
 
         // Determine cell sizes
-        var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
-        var extraAxisLabelBuffer = 30; // TODO: calculate programatically
-        var headerHeight = Math.max(knimeService.headerHeight(), getTitlesHeight());
-        var containerWidth = _representation.resizeToWindow ? window.innerWidth : _representation.imageWidth;
-        var containerHeight = _representation.resizeToWindow ? window.innerHeight : _representation.imageHeight;
-        _cellWidth = Math.max(
-            _minCellSize,
-            (containerWidth - _margin.left - _margin.right - extraAxisLabelBuffer) / _representation.columns.length
-        );
-        _cellHeight = Math.max(
-            _minCellSize,
-            (containerHeight - _margin.top - headerHeight - infoWrapperHeight) / rows.length
-        );
+        if(!_cellHeight || !_cellWidth) {
+            var infoWrapperHeight = document.querySelector('.info-wrapper').getBoundingClientRect().height || 0;
+            var extraAxisLabelBuffer = 30; // TODO: calculate programatically
+            var headerHeight = Math.max(knimeService.headerHeight(), getTitlesHeight());
+            var containerWidth = _representation.resizeToWindow ? window.innerWidth : _representation.imageWidth;
+            var containerHeight = _representation.resizeToWindow ? window.innerHeight : _representation.imageHeight;
+            _cellWidth = Math.max(
+                _minCellSize,
+                (containerWidth - _margin.left - _margin.right - extraAxisLabelBuffer) / _representation.columns.length
+            );
+            _cellHeight = Math.max(
+                _minCellSize,
+                (containerHeight - _margin.top - headerHeight - infoWrapperHeight) / rows.length
+            );
+        }
 
         _tooltip = document.querySelector('.knime-tooltip');
         _scales = createScales(formattedDataset);
@@ -1277,7 +1292,9 @@ heatmap_namespace = (function() {
         drawLegend(svg);
 
         // Initialize and reset zoom
-        resetZoom();
+        // when row number is different than previous, reset to default to keep everything visible
+        resetZoom(_previousDataLength !== formattedDataset.data.length);
+        _previousDataLength = formattedDataset.data.length;
 
         styleSelectedRows();
 
