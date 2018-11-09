@@ -49,7 +49,7 @@
 		_representation = representation;
 		_value = value;
 		
-        if (_representation.warningMessage && _representation.showWarningsInView) {
+    if (_representation.warningMessage && _representation.showWarningsInView) {
 			knimeService.setWarningMessage(_representation.warnMessage);
 		}
 
@@ -422,7 +422,8 @@
 	    var titleEdit = _representation.enableTitleEditing;
 	    var subtitleEdit = _representation.enableSubtitleEditing;
 	    var classStatsDisplay = _representation.enableClassStatisticsConfig;	    
-	    var overallStatsDisplay = _representation.enableOverallStatisticsConfig;	    
+	    var overallStatsDisplay = _representation.enableOverallStatisticsConfig;
+      var labelsDisplay = _representation.enableLabelsDisplayConfig;      	    
 	    var CMRatesDisplay = _representation.enableConfusionMatrixRatesConfig;	    
 	    var RowsNumberDisplay = _representation.enableRowsNumberConfig;	    
 	    
@@ -445,10 +446,20 @@
 	    		}, true);
 	    		var mi = knimeService.addMenuItem('Chart Subtitle:', 'header', chartSubtitleText, null, knimeService.SMALL_ICON);
 	    	}
-	    	if (RowsNumberDisplay || CMRatesDisplay || classStatsDisplay || overallStatsDisplay) {
+	    	if (labelsDisplay || RowsNumberDisplay || CMRatesDisplay || classStatsDisplay || overallStatsDisplay) {
 	    		knimeService.addMenuDivider();
 	    	}
 	    }
+
+      if (labelsDisplay) {
+        var switchLabelsDisplay = knimeService.createMenuCheckbox('switchLabelsDisplay', _value.displayLabels, function() {
+          if (_value.displayLabels != this.checked) {
+            _value.displayLabels = this.checked;
+            toggleLabelsDisplay();
+          }
+        });
+        knimeService.addMenuItem("Display labels: ", 'table', switchLabelsDisplay);
+      }
 
 	    if (RowsNumberDisplay) {
 	    	var switchRowsNumberDisplay = knimeService.createMenuCheckbox('switchRowsNumberDisplay', _value.displayTotalRows, function() {
@@ -543,6 +554,13 @@
 			noBorder[i].style.display = _value.displayConfusionMatrixRates ? "table-cell" : "none";
 		}
 	}
+
+  function toggleLabelsDisplay() {
+    var labels = document.querySelectorAll(".knime-label");
+    for (var i = 0; i < labels.length; i++) {
+      labels[i].style.visibility = _value.displayLabels ? "" : "hidden";
+    }  
+  }
 
 	function toggleRowsNumberDisplay() {
 		var rowsNumber = document.querySelector(".rowsNumber");

@@ -63,6 +63,7 @@ public class ScorerViewValue extends JSONViewContent {
 
     private String m_title;
     private String m_subtitle;
+    private boolean m_displayLabels;
     private boolean m_displayTotalRows;
     private boolean m_displayConfusionMatrixRates;
     private boolean m_displayFloatAsPercent;
@@ -95,6 +96,20 @@ public class ScorerViewValue extends JSONViewContent {
      */
     public void setSubtitle(final String subtitle) {
         m_subtitle = subtitle;
+    }
+
+    /**
+     * @return the displayLabels
+     */
+    public boolean isDisplayLabels() {
+        return m_displayLabels;
+    }
+
+    /**
+     * @param displayLabels the displayLabels to set
+     */
+    public void setDisplayLabels(final boolean displayLabels) {
+        m_displayLabels = displayLabels;
     }
 
     /**
@@ -174,6 +189,7 @@ public class ScorerViewValue extends JSONViewContent {
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         settings.addString(ScorerConfig.CFG_TITLE, m_title);
         settings.addString(ScorerConfig.CFG_SUBTITLE, m_subtitle);
+        settings.addBoolean(ScorerConfig.CFG_DISPLAY_LABELS, m_displayLabels);
         settings.addBoolean(ScorerConfig.CFG_DISPLAY_TOTAL_ROWS, m_displayTotalRows);
         settings.addBoolean(ScorerConfig.CFG_DISPLAY_CONFUSION_MATRIX_RATES, m_displayConfusionMatrixRates);
         settings.addBoolean(ScorerConfig.CFG_DISPLAY_FLOAT_AS_PERCENT, m_displayFloatAsPercent);
@@ -188,6 +204,7 @@ public class ScorerViewValue extends JSONViewContent {
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_title = settings.getString(ScorerConfig.CFG_TITLE);
         m_subtitle = settings.getString(ScorerConfig.CFG_SUBTITLE);
+        m_displayLabels = settings.getBoolean(ScorerConfig.CFG_DISPLAY_LABELS);
         m_displayTotalRows = settings.getBoolean(ScorerConfig.CFG_DISPLAY_TOTAL_ROWS);
         m_displayConfusionMatrixRates = settings.getBoolean(ScorerConfig.CFG_DISPLAY_CONFUSION_MATRIX_RATES);
         m_displayFloatAsPercent = settings.getBoolean(ScorerConfig.CFG_DISPLAY_FLOAT_AS_PERCENT);
@@ -213,6 +230,7 @@ public class ScorerViewValue extends JSONViewContent {
         return new EqualsBuilder()
                 .append(m_title, other.m_title)
                 .append(m_subtitle, other.m_subtitle)
+                .append(m_displayLabels, other.m_displayLabels)
                 .append(m_displayTotalRows, other.m_displayTotalRows)
                 .append(m_displayConfusionMatrixRates, other.m_displayConfusionMatrixRates)
                 .append(m_displayFloatAsPercent, other.m_displayFloatAsPercent)
@@ -229,6 +247,7 @@ public class ScorerViewValue extends JSONViewContent {
         return new HashCodeBuilder()
                 .append(m_title)
                 .append(m_subtitle)
+                .append(m_displayLabels)
                 .append(m_displayTotalRows)
                 .append(m_displayConfusionMatrixRates)
                 .append(m_displayFloatAsPercent)

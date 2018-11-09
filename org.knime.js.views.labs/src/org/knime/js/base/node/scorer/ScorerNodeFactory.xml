@@ -72,6 +72,9 @@
 				Background color used for highlighting the values on the diagonal of the
 				confusion matrix (the correct predictions).
 			</option>
+			<option name="Display labels">
+				Check to display the "confusion matrix" and "overall statistics" labels.
+			</option>		
 			<option name="Display number of rows">
 				Check to display the total number of rows in the top left corner of the
 				confusion matrix.
@@ -175,6 +178,9 @@
 			<option name="Enable Subtitle editing">
 				Check to enable the editing of the subtitle within the view.
 			</option>
+			<option name="Enable Labels display">
+				Check to enable the display of the labels.
+			</option>			
 			<option name="Enable Rows Number display">
 				Check to enable the display of the rows number.
 			</option>

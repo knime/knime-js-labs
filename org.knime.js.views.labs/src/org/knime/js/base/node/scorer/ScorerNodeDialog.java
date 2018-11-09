@@ -88,6 +88,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
     private final JCheckBox m_ignoreMissingValuesCheckBox;
     private final JTextField m_titleTextField;
     private final JTextField m_subtitleTextField;
+    private final JCheckBox m_displayLabelsCheckBox;
     private final JCheckBox m_displayTotalRowsCheckBox;
     private final JCheckBox m_displayConfusionMatrixRatesCheckBox;
     private final DialogComponentColorChooser m_headerColorChooser;
@@ -120,6 +121,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
     private final JCheckBox m_enableViewControlsCheckBox;
     private final JCheckBox m_enableTitleEditingCheckBox;
     private final JCheckBox m_enableSubtitleEditingCheckBox;
+    private final JCheckBox m_enableLabelsDisplayConfigCheckBox;
     private final JCheckBox m_enableRowsNumberConfigCheckBox;
     private final JCheckBox m_enableConfusionMatrixRatesCheckBox;
     private final JCheckBox m_enableClassStatisticsConfigCheckBox;
@@ -141,6 +143,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_ignoreMissingValuesCheckBox = new JCheckBox("Ignore missing values");
         m_titleTextField = new JTextField(DialogUtil.DEF_TEXTFIELD_WIDTH);
         m_subtitleTextField = new JTextField(DialogUtil.DEF_TEXTFIELD_WIDTH);
+        m_displayLabelsCheckBox = new JCheckBox("Display labels");
         m_displayTotalRowsCheckBox = new JCheckBox("Display number of rows");
         m_displayConfusionMatrixRatesCheckBox = new JCheckBox("Display confusion matrix rates");
         m_headerColorChooser = new DialogComponentColorChooser(
@@ -176,6 +179,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_enableViewControlsCheckBox.addActionListener(action -> enableControlOptions());
         m_enableTitleEditingCheckBox = new JCheckBox("Enable title edit controls");
         m_enableSubtitleEditingCheckBox = new JCheckBox("Enable subtitle edit controls");
+        m_enableLabelsDisplayConfigCheckBox = new JCheckBox("Enable display labels toggle");
         m_enableRowsNumberConfigCheckBox = new JCheckBox("Enable display rows number toggle");
         m_enableConfusionMatrixRatesCheckBox = new JCheckBox("Enable display confusion matrix rates toggle");
         m_enableClassStatisticsConfigCheckBox = new JCheckBox("Enable display class statistics table toggle");
@@ -244,7 +248,8 @@ public class ScorerNodeDialog extends NodeDialogPane {
         gbcD.gridx = 0;
         gbcD.gridy++;
         displayPanel.add(m_showWarningsCheckBox, gbcD);
-
+        gbcD.gridx++;
+        displayPanel.add(m_displayLabelsCheckBox, gbcD);
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = DialogUtil.defaultGridBagConstraints();
@@ -336,6 +341,8 @@ public class ScorerNodeDialog extends NodeDialogPane {
         menuPanel.add(m_enableSubtitleEditingCheckBox, gbcM);
         gbcM.gridx = 0;
         gbcM.gridy++;
+        menuPanel.add(m_enableLabelsDisplayConfigCheckBox, gbcM);
+        gbcM.gridy++;
         menuPanel.add(m_enableRowsNumberConfigCheckBox, gbcM);
         gbcM.gridy++;
         menuPanel.add(m_enableConfusionMatrixRatesCheckBox, gbcM);
@@ -367,6 +374,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_config.setIgnoreMissingValues(m_ignoreMissingValuesCheckBox.isSelected());
         m_config.setTitle(m_titleTextField.getText());
         m_config.setSubtitle(m_subtitleTextField.getText());
+        m_config.setDisplayLabels(m_displayLabelsCheckBox.isSelected());
         m_config.setDisplayTotalRows(m_displayTotalRowsCheckBox.isSelected());
         m_config.setDisplayConfusionMatrixRates(m_displayConfusionMatrixRatesCheckBox.isSelected());
         m_config.setHeaderColor(m_headerColorChooser.getColor());
@@ -396,6 +404,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_config.setEnableViewControls(m_enableViewControlsCheckBox.isSelected());
         m_config.setEnableTitleEditing(m_enableTitleEditingCheckBox.isSelected());
         m_config.setEnableSubtitleEditing(m_enableSubtitleEditingCheckBox.isSelected());
+        m_config.setEnableLabelsDisplayConfig(m_enableLabelsDisplayConfigCheckBox.isSelected());
         m_config.setEnableRowsNumberConfig(m_enableRowsNumberConfigCheckBox.isSelected());
         m_config.setEnableConfusionMatrixRatesConfig(m_enableConfusionMatrixRatesCheckBox.isSelected());
         m_config.setEnableClassStatisticsConfig(m_enableClassStatisticsConfigCheckBox.isSelected());
@@ -429,6 +438,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_ignoreMissingValuesCheckBox.setSelected(m_config.isIgnoreMissingValues());
         m_titleTextField.setText(m_config.getTitle());
         m_subtitleTextField.setText(m_config.getSubtitle());
+        m_displayLabelsCheckBox.setSelected(m_config.isDisplayLabels());
         m_displayTotalRowsCheckBox.setSelected(m_config.isDisplayTotalRows());
         m_displayConfusionMatrixRatesCheckBox.setSelected(m_config.isDisplayConfusionMatrixRates());
         m_headerColorChooser.setColor(m_config.getHeaderColor());
@@ -458,6 +468,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_enableViewControlsCheckBox.setSelected(m_config.isEnableViewControls());
         m_enableTitleEditingCheckBox.setSelected(m_config.isEnableTitleEditing());
         m_enableSubtitleEditingCheckBox.setSelected(m_config.isEnableSubtitleEditing());
+        m_enableLabelsDisplayConfigCheckBox.setSelected(m_config.isEnableLabelsDisplayConfig());
         m_enableRowsNumberConfigCheckBox.setSelected(m_config.isEnableRowsNumberConfig());
         m_enableConfusionMatrixRatesCheckBox.setSelected(m_config.isEnableConfusionMatrixRatesConfig());
         m_enableClassStatisticsConfigCheckBox.setSelected(m_config.isEnableClassStatisticsConfig());

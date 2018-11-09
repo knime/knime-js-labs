@@ -103,6 +103,10 @@ public class ScorerConfig {
     private final static String DEFAULT_SUBTITLE = "";
     private String m_subtitle = DEFAULT_SUBTITLE;
 
+    static final String CFG_DISPLAY_LABELS = "displayLabels";
+    private final static boolean DEFAULT_DISPLAY_LABELS = true;
+    private boolean m_displayLabels = DEFAULT_DISPLAY_LABELS;
+
     static final String CFG_DISPLAY_TOTAL_ROWS = "displayTotalRows";
     private final static boolean DEFAULT_DISPLAY_TOTAL_ROWS = false;
     private boolean m_displayTotalRows = DEFAULT_DISPLAY_TOTAL_ROWS;
@@ -218,6 +222,10 @@ public class ScorerConfig {
     static final String CFG_ENABLE_SUBTITLE_EDITING = "enableSubtitleEditing";
     private final static boolean DEFAULT_ENABLE_SUBTITLE_EDITING = true;
     private boolean m_enableSubtitleEditing = DEFAULT_ENABLE_SUBTITLE_EDITING;
+
+    static final String CFG_ENABLE_LABELS_DISPLAY_CONFIG = "enableLabelsDisplayConfig";
+    private final static boolean DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG = true;
+    private boolean m_enableLabelsDisplayConfig = DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG;
 
     static final String CFG_ENABLE_ROWS_NUMBER_CONFIG = "enableRowsNumberConfig";
     private final static boolean DEFAULT_ENABLE_ROWS_NUMBER_CONFIG = true;
@@ -377,6 +385,20 @@ public class ScorerConfig {
      */
     public void setSubtitle(final String subtitle) {
         m_subtitle = subtitle;
+    }
+
+    /**
+     * @return the displayLabels
+     */
+    public boolean isDisplayLabels() {
+        return m_displayLabels;
+    }
+
+    /**
+     * @param displayLabels the displayLabels to set
+     */
+    public void setDisplayLabels(final boolean displayLabels) {
+        m_displayLabels = displayLabels;
     }
 
     /**
@@ -786,6 +808,20 @@ public class ScorerConfig {
     }
 
     /**
+     * @return the enableLabelsDisplayConfig
+     */
+    public boolean isEnableLabelsDisplayConfig() {
+        return m_enableLabelsDisplayConfig;
+    }
+
+    /**
+     * @param enableLabelsDisplayConfig the enableLabelsDisplayConfig to set
+     */
+    public void setEnableLabelsDisplayConfig(final boolean enableLabelsDisplayConfig) {
+        m_enableLabelsDisplayConfig = enableLabelsDisplayConfig;
+    }
+
+    /**
      * @return the enableRowsNumberConfig
      */
     public boolean isEnableRowsNumberConfig() {
@@ -871,6 +907,7 @@ public class ScorerConfig {
         settings.addBoolean(CFG_IGNORE_MISSING_VALUES, m_ignoreMissingValues);
         settings.addString(CFG_TITLE, m_title);
         settings.addString(CFG_SUBTITLE, m_subtitle);
+        settings.addBoolean(CFG_DISPLAY_LABELS, m_displayLabels);
         settings.addBoolean(CFG_DISPLAY_TOTAL_ROWS, m_displayTotalRows);
         settings.addBoolean(CFG_DISPLAY_CONFUSION_MATRIX_RATES, m_displayConfusionMatrixRates);
         settings.addString(CFG_HEADER_COLOR, CSSUtils.cssHexStringFromColor(m_headerColor));
@@ -900,6 +937,7 @@ public class ScorerConfig {
         settings.addBoolean(CFG_ENABLE_VIEW_CONTROLS, m_enableViewControls);
         settings.addBoolean(CFG_ENABLE_TITLE_EDITING, m_enableTitleEditing);
         settings.addBoolean(CFG_ENABLE_SUBTITLE_EDITING, m_enableSubtitleEditing);
+        settings.addBoolean(CFG_ENABLE_LABELS_DISPLAY_CONFIG, m_enableLabelsDisplayConfig);
         settings.addBoolean(CFG_ENABLE_ROWS_NUMBER_CONFIG, m_enableRowsNumberConfig);
         settings.addBoolean(CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG, m_enableConfusionMatrixRatesConfig);
         settings.addBoolean(CFG_ENABLE_CLASS_STATISTICS_CONFIG, m_enableClassStatisticsConfig);
@@ -924,6 +962,7 @@ public class ScorerConfig {
         m_ignoreMissingValues = settings.getBoolean(CFG_IGNORE_MISSING_VALUES);
         m_title = settings.getString(CFG_TITLE);
         m_subtitle = settings.getString(CFG_SUBTITLE);
+        m_displayLabels = settings.getBoolean(CFG_DISPLAY_LABELS);
         m_displayTotalRows = settings.getBoolean(CFG_DISPLAY_TOTAL_ROWS);
         m_displayConfusionMatrixRates = settings.getBoolean(CFG_DISPLAY_CONFUSION_MATRIX_RATES);
         m_headerColor = CSSUtils.colorFromCssHexString(settings.getString(CFG_HEADER_COLOR));
@@ -953,6 +992,7 @@ public class ScorerConfig {
         m_enableViewControls = settings.getBoolean(CFG_ENABLE_VIEW_CONTROLS);
         m_enableTitleEditing = settings.getBoolean(CFG_ENABLE_TITLE_EDITING);
         m_enableSubtitleEditing = settings.getBoolean(CFG_ENABLE_SUBTITLE_EDITING);
+        m_enableLabelsDisplayConfig = settings.getBoolean(CFG_ENABLE_LABELS_DISPLAY_CONFIG);
         m_enableRowsNumberConfig = settings.getBoolean(CFG_ENABLE_ROWS_NUMBER_CONFIG);
         m_enableConfusionMatrixRatesConfig = settings.getBoolean(CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG);
         m_enableClassStatisticsConfig = settings.getBoolean(CFG_ENABLE_CLASS_STATISTICS_CONFIG);
@@ -978,6 +1018,7 @@ public class ScorerConfig {
         m_ignoreMissingValues = settings.getBoolean(CFG_IGNORE_MISSING_VALUES, DEFAULT_IGNORE_MISSING_VALUES);
         m_title = settings.getString(CFG_TITLE, DEFAULT_TITLE);
         m_subtitle = settings.getString(CFG_SUBTITLE, DEFAULT_SUBTITLE);
+        m_displayLabels = settings.getBoolean(CFG_DISPLAY_LABELS, DEFAULT_DISPLAY_LABELS);
         m_displayTotalRows = settings.getBoolean(CFG_DISPLAY_TOTAL_ROWS, DEFAULT_DISPLAY_TOTAL_ROWS);
         m_displayConfusionMatrixRates =
             settings.getBoolean(CFG_DISPLAY_CONFUSION_MATRIX_RATES, DEFAULT_DISPLAY_CONFUSION_MATRIX_RATES);
@@ -1014,6 +1055,8 @@ public class ScorerConfig {
         m_enableViewControls = settings.getBoolean(CFG_ENABLE_VIEW_CONTROLS, DEFAULT_ENABLE_VIEW_CONTROLS);
         m_enableTitleEditing = settings.getBoolean(CFG_ENABLE_TITLE_EDITING, DEFAULT_ENABLE_TITLE_EDITING);
         m_enableSubtitleEditing = settings.getBoolean(CFG_ENABLE_SUBTITLE_EDITING, DEFAULT_ENABLE_SUBTITLE_EDITING);
+        m_enableLabelsDisplayConfig =
+                settings.getBoolean(CFG_ENABLE_LABELS_DISPLAY_CONFIG, DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG);
         m_enableRowsNumberConfig =
             settings.getBoolean(CFG_ENABLE_ROWS_NUMBER_CONFIG, DEFAULT_ENABLE_ROWS_NUMBER_CONFIG);
         m_enableConfusionMatrixRatesConfig =

@@ -85,6 +85,7 @@ public class ScorerViewRepresentation extends JSONViewContent {
     private boolean m_enableViewControls;
     private boolean m_enableTitleEditing;
     private boolean m_enableSubtitleEditing;
+    private boolean m_enableLabelsDisplayConfig;
     private boolean m_enableRowsNumberConfig;
     private boolean m_enableConfusionMatrixRatesConfig;
     private boolean m_enableClassStatisticsConfig;
@@ -259,6 +260,20 @@ public class ScorerViewRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the enableLabelsDisplayConfig
+     */
+    public boolean isEnableLabelsDisplayConfig() {
+        return m_enableLabelsDisplayConfig;
+    }
+
+    /**
+     * @param enableLabelsDisplayConfig the enableLabelsDisplayConfig to set
+     */
+    public void setEnableLabelsDisplayConfig(final boolean enableLabelsDisplayConfig) {
+        m_enableLabelsDisplayConfig = enableLabelsDisplayConfig;
+    }
+
+    /**
      * @return the enableRowsNumberConfig
      */
     public boolean isEnableRowsNumberConfig() {
@@ -337,6 +352,7 @@ public class ScorerViewRepresentation extends JSONViewContent {
         settings.addBoolean(ScorerConfig.CFG_ENABLE_VIEW_CONTROLS, m_enableViewControls);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_TITLE_EDITING, m_enableTitleEditing);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_SUBTITLE_EDITING, m_enableSubtitleEditing);
+        settings.addBoolean(ScorerConfig.CFG_ENABLE_LABELS_DISPLAY_CONFIG, m_enableLabelsDisplayConfig);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_ROWS_NUMBER_CONFIG, m_enableRowsNumberConfig);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG, m_enableConfusionMatrixRatesConfig);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_CLASS_STATISTICS_CONFIG, m_enableClassStatisticsConfig);
@@ -369,6 +385,7 @@ public class ScorerViewRepresentation extends JSONViewContent {
         m_enableViewControls = settings.getBoolean(ScorerConfig.CFG_ENABLE_VIEW_CONTROLS);
         m_enableTitleEditing = settings.getBoolean(ScorerConfig.CFG_ENABLE_TITLE_EDITING);
         m_enableSubtitleEditing = settings.getBoolean(ScorerConfig.CFG_ENABLE_SUBTITLE_EDITING);
+        m_enableLabelsDisplayConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_LABELS_DISPLAY_CONFIG);
         m_enableRowsNumberConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_ROWS_NUMBER_CONFIG);
         m_enableConfusionMatrixRatesConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG);
         m_enableClassStatisticsConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_CLASS_STATISTICS_CONFIG);
@@ -403,6 +420,7 @@ public class ScorerViewRepresentation extends JSONViewContent {
                 .append(m_enableViewControls, other.m_enableViewControls)
                 .append(m_enableTitleEditing, other.m_enableTitleEditing)
                 .append(m_enableSubtitleEditing, other.m_enableSubtitleEditing)
+                .append(m_enableLabelsDisplayConfig, other.m_enableLabelsDisplayConfig)
                 .append(m_enableRowsNumberConfig, other.m_enableRowsNumberConfig)
                 .append(m_enableConfusionMatrixRatesConfig, other.m_enableConfusionMatrixRatesConfig)
                 .append(m_enableClassStatisticsConfig, other.m_enableClassStatisticsConfig)
@@ -427,6 +445,7 @@ public class ScorerViewRepresentation extends JSONViewContent {
                 .append(m_enableViewControls)
                 .append(m_enableTitleEditing)
                 .append(m_enableSubtitleEditing)
+                .append(m_enableLabelsDisplayConfig)
                 .append(m_enableRowsNumberConfig)
                 .append(m_enableConfusionMatrixRatesConfig)
                 .append(m_enableClassStatisticsConfig)

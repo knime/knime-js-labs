@@ -371,6 +371,7 @@ public class ScorerNodeModel extends AbstractWizardNodeModel<ScorerViewRepresent
         presentation.setEnableViewControls(m_config.isEnableViewControls());
         presentation.setEnableTitleEditing(m_config.isEnableTitleEditing());
         presentation.setEnableSubtitleEditing(m_config.isEnableSubtitleEditing());
+        presentation.setEnableLabelsDisplayConfig(m_config.isEnableLabelsDisplayConfig());
         presentation.setEnableRowsNumberConfig(m_config.isEnableRowsNumberConfig());
         presentation.setEnableConfusionMatrixRatesConfig(m_config.isEnableConfusionMatrixRatesConfig());
         presentation.setEnableClassStatisticsConfig(m_config.isEnableClassStatisticsConfig());
@@ -380,6 +381,7 @@ public class ScorerNodeModel extends AbstractWizardNodeModel<ScorerViewRepresent
             ScorerViewValue value = getViewValue();
             value.setTitle(m_config.getTitle());
             value.setSubtitle(m_config.getSubtitle());
+            value.setDisplayLabels(m_config.isDisplayLabels());
             value.setDisplayTotalRows(m_config.isDisplayTotalRows());
             value.setDisplayConfusionMatrixRates(m_config.isDisplayConfusionMatrixRates());
             value.setDisplayFloatAsPercent(m_config.isDisplayFloatAsPercent());
@@ -392,6 +394,7 @@ public class ScorerNodeModel extends AbstractWizardNodeModel<ScorerViewRepresent
         ScorerViewValue value = getViewValue();
         m_config.setTitle(value.getTitle());
         m_config.setSubtitle(value.getSubtitle());
+        m_config.setDisplayLabels(value.isDisplayLabels());
         m_config.setDisplayTotalRows(value.isDisplayTotalRows());
         m_config.setDisplayConfusionMatrixRates(value.isDisplayConfusionMatrixRates());
         m_config.setDisplayFloatAsPercent(value.isDisplayFloatAsPercent());
