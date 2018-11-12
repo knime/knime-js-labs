@@ -382,6 +382,7 @@ public class ScorerNodeModel extends AbstractWizardNodeModel<ScorerViewRepresent
             value.setTitle(m_config.getTitle());
             value.setSubtitle(m_config.getSubtitle());
             value.setDisplayLabels(m_config.isDisplayLabels());
+            value.setDisplayClassNature(m_config.isDisplayClassNature());
             value.setDisplayTotalRows(m_config.isDisplayTotalRows());
             value.setDisplayConfusionMatrixRates(m_config.isDisplayConfusionMatrixRates());
             value.setDisplayFloatAsPercent(m_config.isDisplayFloatAsPercent());
@@ -395,6 +396,7 @@ public class ScorerNodeModel extends AbstractWizardNodeModel<ScorerViewRepresent
         m_config.setTitle(value.getTitle());
         m_config.setSubtitle(value.getSubtitle());
         m_config.setDisplayLabels(value.isDisplayLabels());
+        m_config.setDisplayClassNature(value.isDisplayClassNature());
         m_config.setDisplayTotalRows(value.isDisplayTotalRows());
         m_config.setDisplayConfusionMatrixRates(value.isDisplayConfusionMatrixRates());
         m_config.setDisplayFloatAsPercent(value.isDisplayFloatAsPercent());

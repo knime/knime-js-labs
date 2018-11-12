@@ -89,6 +89,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
     private final JTextField m_titleTextField;
     private final JTextField m_subtitleTextField;
     private final JCheckBox m_displayLabelsCheckBox;
+    private final JCheckBox m_displayClassNatureCheckBox;
     private final JCheckBox m_displayTotalRowsCheckBox;
     private final JCheckBox m_displayConfusionMatrixRatesCheckBox;
     private final DialogComponentColorChooser m_headerColorChooser;
@@ -144,6 +145,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_titleTextField = new JTextField(DialogUtil.DEF_TEXTFIELD_WIDTH);
         m_subtitleTextField = new JTextField(DialogUtil.DEF_TEXTFIELD_WIDTH);
         m_displayLabelsCheckBox = new JCheckBox("Display labels");
+        m_displayClassNatureCheckBox = new JCheckBox("Display class nature (Actual or Predicted)");
         m_displayTotalRowsCheckBox = new JCheckBox("Display number of rows");
         m_displayConfusionMatrixRatesCheckBox = new JCheckBox("Display confusion matrix rates");
         m_headerColorChooser = new DialogComponentColorChooser(
@@ -250,6 +252,9 @@ public class ScorerNodeDialog extends NodeDialogPane {
         displayPanel.add(m_showWarningsCheckBox, gbcD);
         gbcD.gridx++;
         displayPanel.add(m_displayLabelsCheckBox, gbcD);
+        gbcD.gridx = 0;
+        gbcD.gridy++;
+        displayPanel.add(m_displayClassNatureCheckBox, gbcD);
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = DialogUtil.defaultGridBagConstraints();
@@ -375,6 +380,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_config.setTitle(m_titleTextField.getText());
         m_config.setSubtitle(m_subtitleTextField.getText());
         m_config.setDisplayLabels(m_displayLabelsCheckBox.isSelected());
+        m_config.setDisplayClassNature(m_displayClassNatureCheckBox.isSelected());
         m_config.setDisplayTotalRows(m_displayTotalRowsCheckBox.isSelected());
         m_config.setDisplayConfusionMatrixRates(m_displayConfusionMatrixRatesCheckBox.isSelected());
         m_config.setHeaderColor(m_headerColorChooser.getColor());
@@ -439,6 +445,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_titleTextField.setText(m_config.getTitle());
         m_subtitleTextField.setText(m_config.getSubtitle());
         m_displayLabelsCheckBox.setSelected(m_config.isDisplayLabels());
+        m_displayClassNatureCheckBox.setSelected(m_config.isDisplayClassNature());
         m_displayTotalRowsCheckBox.setSelected(m_config.isDisplayTotalRows());
         m_displayConfusionMatrixRatesCheckBox.setSelected(m_config.isDisplayConfusionMatrixRates());
         m_headerColorChooser.setColor(m_config.getHeaderColor());

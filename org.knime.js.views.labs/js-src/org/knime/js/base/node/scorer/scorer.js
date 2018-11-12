@@ -123,7 +123,9 @@
 		tRow.appendChild(th);
 		for (var i = 0; i < classes.length; i++) {
 			th = document.createElement('th');
-			addTextToElement(th, classes[i] + ' (Predicted)');
+      var thContent = classes[i];
+      if (_value.displayClassNature) thContent += ' (Predicted)';
+      addTextToElement(th, thContent);
 			th.style.backgroundColor = _representation.headerColor;
 			th.setAttribute('title', classes[i] + ' (Predicted)');
 			th.setAttribute('class', 'knime-table-cell knime-table-header knime-integer');
@@ -138,7 +140,9 @@
 			tRow = document.createElement('tr');
 			tRow.setAttribute('class', 'knime-table-row');
 			th = document.createElement('th');
-			addTextToElement(th, classes[row] + ' (Actual)');
+      var thContent = classes[row];
+      if (_value.displayClassNature) thContent += ' (Actual)';
+			addTextToElement(th, thContent);
 			th.style.backgroundColor = _representation.headerColor;
 			th.setAttribute('title', classes[row] + ' (Actual)');
 			th.setAttribute('class', 'knime-table-cell knime-table-header knime-string');
@@ -425,7 +429,7 @@
 	    var overallStatsDisplay = _representation.enableOverallStatisticsConfig;
       var labelsDisplay = _representation.enableLabelsDisplayConfig;      	    
 	    var CMRatesDisplay = _representation.enableConfusionMatrixRatesConfig;	    
-	    var RowsNumberDisplay = _representation.enableRowsNumberConfig;	    
+	    var RowsNumberDisplay = _representation.enableRowsNumberConfig;   
 	    
 	    if (titleEdit || subtitleEdit) {	    	    
 	    	if (titleEdit) {

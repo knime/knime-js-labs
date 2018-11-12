@@ -107,6 +107,10 @@ public class ScorerConfig {
     private final static boolean DEFAULT_DISPLAY_LABELS = true;
     private boolean m_displayLabels = DEFAULT_DISPLAY_LABELS;
 
+    static final String CFG_DISPLAY_CLASS_NATURE = "displayClassNature";
+    private final static boolean DEFAULT_DISPLAY_CLASS_NATURE = true;
+    private boolean m_displayClassNature = DEFAULT_DISPLAY_CLASS_NATURE;
+
     static final String CFG_DISPLAY_TOTAL_ROWS = "displayTotalRows";
     private final static boolean DEFAULT_DISPLAY_TOTAL_ROWS = false;
     private boolean m_displayTotalRows = DEFAULT_DISPLAY_TOTAL_ROWS;
@@ -399,6 +403,20 @@ public class ScorerConfig {
      */
     public void setDisplayLabels(final boolean displayLabels) {
         m_displayLabels = displayLabels;
+    }
+
+    /**
+     * @return the displayClassNature
+     */
+    public boolean isDisplayClassNature() {
+        return m_displayClassNature;
+    }
+
+    /**
+     * @param displayClassNature the displayClassNature to set
+     */
+    public void setDisplayClassNature(final boolean displayClassNature) {
+        m_displayClassNature = displayClassNature;
     }
 
     /**
@@ -908,6 +926,7 @@ public class ScorerConfig {
         settings.addString(CFG_TITLE, m_title);
         settings.addString(CFG_SUBTITLE, m_subtitle);
         settings.addBoolean(CFG_DISPLAY_LABELS, m_displayLabels);
+        settings.addBoolean(CFG_DISPLAY_CLASS_NATURE, m_displayClassNature);
         settings.addBoolean(CFG_DISPLAY_TOTAL_ROWS, m_displayTotalRows);
         settings.addBoolean(CFG_DISPLAY_CONFUSION_MATRIX_RATES, m_displayConfusionMatrixRates);
         settings.addString(CFG_HEADER_COLOR, CSSUtils.cssHexStringFromColor(m_headerColor));
@@ -963,6 +982,7 @@ public class ScorerConfig {
         m_title = settings.getString(CFG_TITLE);
         m_subtitle = settings.getString(CFG_SUBTITLE);
         m_displayLabels = settings.getBoolean(CFG_DISPLAY_LABELS);
+        m_displayClassNature = settings.getBoolean(CFG_DISPLAY_CLASS_NATURE);
         m_displayTotalRows = settings.getBoolean(CFG_DISPLAY_TOTAL_ROWS);
         m_displayConfusionMatrixRates = settings.getBoolean(CFG_DISPLAY_CONFUSION_MATRIX_RATES);
         m_headerColor = CSSUtils.colorFromCssHexString(settings.getString(CFG_HEADER_COLOR));
@@ -1019,6 +1039,7 @@ public class ScorerConfig {
         m_title = settings.getString(CFG_TITLE, DEFAULT_TITLE);
         m_subtitle = settings.getString(CFG_SUBTITLE, DEFAULT_SUBTITLE);
         m_displayLabels = settings.getBoolean(CFG_DISPLAY_LABELS, DEFAULT_DISPLAY_LABELS);
+        m_displayClassNature = settings.getBoolean(CFG_DISPLAY_CLASS_NATURE, DEFAULT_DISPLAY_CLASS_NATURE);
         m_displayTotalRows = settings.getBoolean(CFG_DISPLAY_TOTAL_ROWS, DEFAULT_DISPLAY_TOTAL_ROWS);
         m_displayConfusionMatrixRates =
             settings.getBoolean(CFG_DISPLAY_CONFUSION_MATRIX_RATES, DEFAULT_DISPLAY_CONFUSION_MATRIX_RATES);

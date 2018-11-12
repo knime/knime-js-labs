@@ -75,6 +75,9 @@
 			<option name="Display labels">
 				Check to display the "confusion matrix" and "overall statistics" labels.
 			</option>		
+			<option name="Display class nature">
+				Check to display the class nature (Actual or Predicted).
+			</option>		
 			<option name="Display number of rows">
 				Check to display the total number of rows in the top left corner of the
 				confusion matrix.
