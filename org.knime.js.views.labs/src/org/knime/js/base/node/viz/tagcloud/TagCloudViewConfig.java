@@ -68,7 +68,7 @@ public class TagCloudViewConfig {
     private boolean m_hideInWizard = DEFAULT_HIDE_IN_WIZARD;
 
     private static final String CFG_GENERATE_IMAGE = "generateImage";
-    private final static boolean DEFAULT_GENERATE_IMAGE = true;
+    private final static boolean DEFAULT_GENERATE_IMAGE = false;
     private boolean m_generateImage = DEFAULT_GENERATE_IMAGE;
 
     static final String CFG_WARNINGS_IN_VIEW = "warningsInView";

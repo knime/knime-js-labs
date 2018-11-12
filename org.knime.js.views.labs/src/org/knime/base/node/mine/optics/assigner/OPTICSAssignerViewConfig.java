@@ -122,7 +122,7 @@ final class OPTICSAssignerViewConfig {
     private boolean m_resizeToWindow = DEFAULT_RESIZE_TO_WINDOW;
 
     static final String CFG_GENERATE_IMAGE = "generateImage";
-    static final boolean DEFAULT_GENERATE_IMAGE = true;
+    static final boolean DEFAULT_GENERATE_IMAGE = false;
     private boolean m_generateImage = DEFAULT_GENERATE_IMAGE;
 
     static final String CFG_ENABLE_CONFIG = "enableViewConfiguration";

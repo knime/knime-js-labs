@@ -78,7 +78,7 @@ public final class HeatMapViewConfig {
     private boolean m_showWarningInView = DEFAULT_SHOW_WARNING_IN_VIEW;
 
     final static String CFG_GENERATE_IMAGE = "generateImage";
-    final static boolean DEFAULT_GENERATE_IMAGE = true;
+    final static boolean DEFAULT_GENERATE_IMAGE = false;
     private boolean m_generateImage = DEFAULT_GENERATE_IMAGE;
 
     final static String CFG_IMAGE_WIDTH = "imageWidth";

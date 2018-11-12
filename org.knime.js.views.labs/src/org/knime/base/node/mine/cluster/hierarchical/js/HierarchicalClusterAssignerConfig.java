@@ -64,7 +64,7 @@ public class HierarchicalClusterAssignerConfig {
     private boolean m_hideInWizard = DEFAULT_HIDE_IN_WIZARD;
 
     final static String CFG_GENERATE_IMAGE = "generateImage";
-    final static boolean DEFAULT_GENERATE_IMAGE = true;
+    final static boolean DEFAULT_GENERATE_IMAGE = false;
     private boolean m_generateImage = DEFAULT_GENERATE_IMAGE;
 
     final static String CFG_IMAGE_WIDTH = "imageWidth";
