@@ -332,7 +332,7 @@
             init-method-name="init"
             javascriptComponentID="org.knime.js.base.node.viz.heatmap"
             name="Heatmap"
-            namespace="heatmap_namespace"
+            namespace="heatmapNamespace"
             setValidationError-method-name="setValidationError"
             validate-method-name="validate">
       </javascriptComponent>
