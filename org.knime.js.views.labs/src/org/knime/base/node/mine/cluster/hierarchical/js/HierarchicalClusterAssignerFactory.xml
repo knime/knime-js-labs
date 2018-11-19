@@ -207,7 +207,7 @@
 	<ports>
 		<inPort name="Cluster Tree" index="0">
 			The hierarchical cluster tree
-			that has been created by the hierarchical clustering node.
+			that has been created by the hierarchical clustering node (DistMatrix).
 		</inPort>
 		<inPort name="Data to Cluster" index="1">
 			The
