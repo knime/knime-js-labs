@@ -43,12 +43,12 @@
                 Check to display a button which switches the view into fullscreen mode.
                 The button is only available in the KNIME WebPortal.
             </option>
-            <option name="Fixed number of cards per row">
-                If checked, the specified number of cards will be displayed for each row. The width of these cards will
+            <option name="Fixed number of cards per row (1-100)">
+                If checked, the specified number of cards will be displayed for each row. The number of cards per row must be between 1 and 100, inclusive. The width of these cards will
                 change as the window size changes, unless "Fixed card width" is selected (see below).
             </option>
-            <option name="Fixed card width">
-                If checked, each card will have the specified width. The number of cards per row will vary with the
+            <option name="Fixed card width (30-5000px)">
+                If checked, each card will have the specified width. The specified width must be between 30px and 5000px, inclusive. The number of cards per row will vary with the
                 window size, unless "Fixed number of cards per row" is selected (see above).
             </option>
             <option name="Select text alignment">

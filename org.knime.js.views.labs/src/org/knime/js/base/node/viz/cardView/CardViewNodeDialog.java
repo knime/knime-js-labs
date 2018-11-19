@@ -172,8 +172,10 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_displayMissingValueAsQuestionMark = new JCheckBox("Display missing value as red question mark");
         // end
 
-        m_useNumColsCheckBox = new JCheckBox("Fixed number of cards per row");
-        m_useColWidthCheckBox = new JCheckBox("Fixed card width");
+        m_useNumColsCheckBox = new JCheckBox("Fixed number of cards per row (" + CardViewConfig.MIN_NUM_COLS + " - "
+            + CardViewConfig.MAX_NUM_COLS + ")");
+        m_useColWidthCheckBox = new JCheckBox(
+            "Fixed card width (" + CardViewConfig.MIN_COL_WIDTH + " - " + CardViewConfig.MAX_COL_WIDTH + "px)");
         m_numColsSpinner = new JSpinner(new SpinnerNumberModel(CardViewConfig.DEFAULT_NUM_COLS,
             CardViewConfig.MIN_NUM_COLS, CardViewConfig.MAX_NUM_COLS, 1));
         m_colWidthSpinner = new JSpinner(new SpinnerNumberModel(CardViewConfig.DEFAULT_COL_WIDTH,
