@@ -174,8 +174,10 @@ public class CardViewNodeDialog extends NodeDialogPane {
 
         m_useNumColsCheckBox = new JCheckBox("Fixed number of cards per row");
         m_useColWidthCheckBox = new JCheckBox("Fixed card width");
-        m_numColsSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
-        m_colWidthSpinner = new JSpinner(new SpinnerNumberModel(180, 30, 5000, 1));
+        m_numColsSpinner = new JSpinner(new SpinnerNumberModel(CardViewConfig.DEFAULT_NUM_COLS,
+            CardViewConfig.MIN_NUM_COLS, CardViewConfig.MAX_NUM_COLS, 1));
+        m_colWidthSpinner = new JSpinner(new SpinnerNumberModel(CardViewConfig.DEFAULT_COL_WIDTH,
+            CardViewConfig.MIN_COL_WIDTH, CardViewConfig.MAX_COL_WIDTH, 1));
         m_useNumColsCheckBox.addChangeListener(e -> enabledNumColMode());
         m_useColWidthCheckBox.addChangeListener(e -> enableColumnWidthMode());
 

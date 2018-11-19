@@ -69,15 +69,15 @@ public class CardViewConfig implements TableConfig {
     private boolean m_useColWidth = DEFAULT_USE_COL_WIDTH;
 
     static final String CFG_NUM_COLS = "numCols";
-    private static final int MIN_NUM_COLS = 1;
-    private static final int MAX_NUM_COLS = 100;
-    private static final int DEFAULT_NUM_COLS = 1;
+    static final int MIN_NUM_COLS = 1;
+    static final int MAX_NUM_COLS = 100;
+    static final int DEFAULT_NUM_COLS = 1;
     private int m_numCols = DEFAULT_NUM_COLS;
 
     static final String CFG_COL_WIDTH = "colWidth";
-    private static final int MIN_COL_WIDTH = 30;
-    private static final int MAX_COL_WIDTH = 5000;
-    private static final int DEFAULT_COL_WIDTH = 180;
+    static final int MIN_COL_WIDTH = 30;
+    static final int MAX_COL_WIDTH = 5000;
+    static final int DEFAULT_COL_WIDTH = 180;
     private int m_colWidth = DEFAULT_COL_WIDTH;
 
     static final String CFG_LABEL_COL = "labelCol";
