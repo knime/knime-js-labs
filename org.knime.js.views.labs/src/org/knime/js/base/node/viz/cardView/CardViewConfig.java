@@ -70,7 +70,7 @@ public class CardViewConfig implements TableConfig {
 
     static final String CFG_NUM_COLS = "numCols";
     private static final int MIN_NUM_COLS = 1;
-    private static final int MAX_NUM_COLS = 20;
+    private static final int MAX_NUM_COLS = 100;
     private static final int DEFAULT_NUM_COLS = 1;
     private int m_numCols = DEFAULT_NUM_COLS;
 
