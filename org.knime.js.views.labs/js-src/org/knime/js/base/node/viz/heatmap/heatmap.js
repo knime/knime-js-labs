@@ -20,6 +20,7 @@ window.heatmapNamespace = (function () {
         this._cellHighlighter = null;
         this._maxExtensionY = null;
         this._maxExtensionX = null;
+        this._axisMaskTopLeft = null;
 
         // Hardcoded Default Settings
         this._minCellSize = 12;
@@ -991,6 +992,13 @@ window.heatmapNamespace = (function () {
                 self._value.zoomY = t.y;
                 self._value.zoomK = t.k;
 
+                // update mask
+                if (self._axisMaskTopLeft) {
+                    self._axisMaskTopLeft
+                        .attr('width', self._margin.left + 2 * t.k)
+                        .attr('height', self._margin.top + 2 * t.k);
+                }
+
                 // hack: force canvas refresh as sometimes canvas gets not fully painted
                 self._transformer.node().style.opacity = 0.999;
                 setTimeout(function () {
@@ -1405,11 +1413,13 @@ window.heatmapNamespace = (function () {
 
     Heatmap.prototype.drawAxis = function (svg, rowLabelImages) {
         var self = this;
+
         // Append axis
         var maskAxis = svg
             .select('defs')
             .append('mask')
-            .attr('id', 'maskAxis');
+            .attr('id', 'maskAxis')
+            .attr('maskUnits', 'userSpaceOnUse');
         maskAxis
             .append('rect')
             .attr('y', 0)
@@ -1417,7 +1427,7 @@ window.heatmapNamespace = (function () {
             .attr('width', '100%')
             .attr('height', '100%')
             .attr('fill', 'white');
-        maskAxis
+        this._axisMaskTopLeft = maskAxis
             .append('rect')
             .attr('y', 0)
             .attr('x', 0)
