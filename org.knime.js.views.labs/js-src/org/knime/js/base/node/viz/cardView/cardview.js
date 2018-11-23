@@ -103,7 +103,7 @@ window.cards_namespace = (function () {
             if (column.hasOwnProperty('render')) {
                 column.render = (function (original) {
                     return function (data) {
-                        if (!data) {
+                        if (typeof data === 'undefined' || data === null) {
                             return null;
                         }
                         return titlePrefix + (original.call(self, data) || '');
@@ -111,7 +111,7 @@ window.cards_namespace = (function () {
                 })(column.render);
             } else {
                 column.render = function (data) {
-                    if (!data) {
+                    if (typeof data === 'undefined' || data === null) {
                         return null;
                     }
                     return titlePrefix + data;
