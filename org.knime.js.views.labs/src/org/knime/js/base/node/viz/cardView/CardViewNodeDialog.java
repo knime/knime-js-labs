@@ -48,6 +48,7 @@
  */
 package org.knime.js.base.node.viz.cardView;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -92,6 +93,9 @@ public class CardViewNodeDialog extends NodeDialogPane {
     private static final int TEXT_FIELD_SIZE = 20;
 
     private final CardViewConfig m_config;
+
+    private final JLabel m_warningLabelOptions;
+    private final JLabel m_warningLabelInteract;
 
     // Options
     private final JSpinner m_maxRowsSpinner;
@@ -191,6 +195,16 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_alignLeftRadioButton = new JRadioButton("Left");
         m_alignRightRadioButton = new JRadioButton("Right");
         m_alignCenterRadioButton = new JRadioButton("Center");
+
+        m_warningLabelOptions = new JLabel("");
+        m_warningLabelOptions.setForeground(Color.RED);
+        m_warningLabelOptions.setVisible(false);
+        m_warningLabelInteract = new JLabel("");
+        m_warningLabelInteract.setForeground(Color.RED);
+        m_warningLabelInteract.setVisible(false);
+
+        m_numColsSpinner.addChangeListener(e -> checkRowsAndPage());
+        m_initialPageSizeSpinner.addChangeListener(e -> checkRowsAndPage());
 
         addTab("Options", initOptions());
         addTab("Interactivity", initInteractivity());
@@ -333,6 +347,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
             m_useNumColsCheckBox.setSelected(true);
         }
         m_numColsSpinner.setEnabled(m_useNumColsCheckBox.isSelected());
+        checkRowsAndPage();
     }
 
     private void enableColumnWidthMode() {
@@ -396,6 +411,10 @@ public class CardViewNodeDialog extends NodeDialogPane {
         displayPanel.add(m_numColsSpinner, gbcD);
         gbcD.gridx = 0;
         gbcD.gridy++;
+        gbcD.gridwidth = 3;
+        displayPanel.add(m_warningLabelOptions, gbcD);
+        gbcD.gridx = 0;
+        gbcD.gridy++;
         gbcD.gridwidth = 1;
         displayPanel.add(m_useColWidthCheckBox, gbcD);
         gbcD.gridx++;
@@ -456,6 +475,11 @@ public class CardViewNodeDialog extends NodeDialogPane {
         pagingPanel.add(m_initialPageSizeSpinner, gbcP);
         gbcP.gridx = 0;
         gbcP.gridy++;
+        gbcP.gridwidth = 2;
+        pagingPanel.add(m_warningLabelInteract, gbcP);
+        gbcP.gridx = 0;
+        gbcP.gridy++;
+        gbcP.gridwidth = 1;
         pagingPanel.add(m_enablePageSizeChangeCheckBox, gbcP);
         gbcP.gridx = 0;
         gbcP.gridy++;
@@ -589,6 +613,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_allowedPageSizesField.setEnabled(enableGlobal && enableSizeChange);
         m_enableShowAllCheckBox.setEnabled(enableGlobal && enableSizeChange);
         m_enableJumpToPageCheckBox.setEnabled(enableGlobal);
+        checkRowsAndPage();
     }
 
     private void enableSelectionFields() {
@@ -605,5 +630,31 @@ public class CardViewNodeDialog extends NodeDialogPane {
     private void enableFormatterFields() {
         final boolean enableNumberFormat = m_enableGlobalNumberFormatCheckbox.isSelected();
         m_globalNumberFormatDecimalSpinner.setEnabled(enableNumberFormat);
+    }
+
+    private void checkRowsAndPage() {
+        if (!m_useNumColsCheckBox.isSelected() || !m_enablePagingCheckBox.isSelected()) {
+            m_warningLabelOptions.setText("");
+            m_warningLabelOptions.setVisible(false);
+            m_warningLabelInteract.setText("");
+            m_warningLabelInteract.setVisible(false);
+            return;
+        }
+        final int numCols = (int)m_numColsSpinner.getValue();
+        final int initPageSize = (int)m_initialPageSizeSpinner.getValue();
+        if (numCols > initPageSize) {
+            m_warningLabelOptions
+                .setText("<html>Number of cards per row (" + numCols + ") cannot be greater than the initial page size ("
+                    + initPageSize + ").<br /> Check the \"Interactivity\" tab.</html>");
+            m_warningLabelOptions.setVisible(true);
+            m_warningLabelInteract.setText("<html>Number of cards per row (" + numCols + ") cannot be greater than the initial page size ("
+                    + initPageSize + ").<br /> Check the \"Options\" tab.</html>");
+            m_warningLabelInteract.setVisible(true);
+        } else {
+            m_warningLabelOptions.setText("");
+            m_warningLabelOptions.setVisible(false);
+            m_warningLabelInteract.setText("");
+            m_warningLabelInteract.setVisible(false);
+        }
     }
 }

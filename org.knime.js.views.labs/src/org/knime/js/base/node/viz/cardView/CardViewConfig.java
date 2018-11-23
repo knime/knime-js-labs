@@ -291,6 +291,12 @@ public class CardViewConfig implements TableConfig {
             throw new InvalidSettingsException("Invalid card width, expected an integer between 3" + MIN_COL_WIDTH
                 + " and " + MAX_COL_WIDTH + " but received " + colWidth);
         }
+        final int initPageSize = settings.getInt("initialPageSize");
+        if (numCols > initPageSize) {
+            throw new InvalidSettingsException(
+                "The number of cards per row (" + numCols + ") cannot be greater than the initial page size ("
+                    + initPageSize + "). Check the \"Options\" and \"Interactivity\" tabs.");
+        }
         m_numCols = numCols;
         m_colWidth = colWidth;
     }
