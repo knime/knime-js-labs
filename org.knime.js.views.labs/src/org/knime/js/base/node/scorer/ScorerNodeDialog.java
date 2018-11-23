@@ -144,7 +144,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_ignoreMissingValuesCheckBox = new JCheckBox("Ignore missing values");
         m_titleTextField = new JTextField(DialogUtil.DEF_TEXTFIELD_WIDTH);
         m_subtitleTextField = new JTextField(DialogUtil.DEF_TEXTFIELD_WIDTH);
-        m_displayLabelsCheckBox = new JCheckBox("Display labels");
+        m_displayLabelsCheckBox = new JCheckBox("Display table headers");
         m_displayClassNatureCheckBox = new JCheckBox("Display class nature (Actual or Predicted)");
         m_displayTotalRowsCheckBox = new JCheckBox("Display number of rows");
         m_displayConfusionMatrixRatesCheckBox = new JCheckBox("Display confusion matrix rates");
@@ -181,7 +181,7 @@ public class ScorerNodeDialog extends NodeDialogPane {
         m_enableViewControlsCheckBox.addActionListener(action -> enableControlOptions());
         m_enableTitleEditingCheckBox = new JCheckBox("Enable title edit controls");
         m_enableSubtitleEditingCheckBox = new JCheckBox("Enable subtitle edit controls");
-        m_enableLabelsDisplayConfigCheckBox = new JCheckBox("Enable display labels toggle");
+        m_enableLabelsDisplayConfigCheckBox = new JCheckBox("Enable display table headers toggle");
         m_enableRowsNumberConfigCheckBox = new JCheckBox("Enable display rows number toggle");
         m_enableConfusionMatrixRatesCheckBox = new JCheckBox("Enable display confusion matrix rates toggle");
         m_enableClassStatisticsConfigCheckBox = new JCheckBox("Enable display class statistics table toggle");

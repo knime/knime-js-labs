@@ -72,8 +72,8 @@
 				Background color used for highlighting the values on the diagonal of the
 				confusion matrix (the correct predictions).
 			</option>
-			<option name="Display labels">
-				Check to display the "confusion matrix" and "overall statistics" labels.
+			<option name="Display table headers">
+				Check to display the "confusion matrix", "class statistics" and "overall statistics" labels.
 			</option>		
 			<option name="Display class nature">
 				Check to display the class nature (Actual or Predicted).
@@ -172,30 +172,30 @@
 			</option>
 		</tab>
 		<tab name="Control Options">
-			<option name="Enable view controls">
-				Check to enable controls in the chart.
+			<option name="Enable view edit controls">
+				Check to enable controls of the interactive menu in the chart.
 			</option>
-			<option name="Enable Title editing">
+			<option name="Enable title edit controls">
 				Check to enable the editing of the title within the view.
 			</option>
-			<option name="Enable Subtitle editing">
+			<option name="Enable subtitle edit controls">
 				Check to enable the editing of the subtitle within the view.
 			</option>
-			<option name="Enable Labels display">
-				Check to enable the display of the labels.
+			<option name="Enable display table headers toggle">
+				Check to enable the toggling of the display of the table headers.
 			</option>			
-			<option name="Enable Rows Number display">
-				Check to enable the display of the rows number.
+			<option name="Enable display rows number toggle">
+				Check to enable the toggling of the display of the rows number.
 			</option>
-			<option name="Enable Confusion Matrix rates display">
-				Check to enable the display of the Confusion Matrix's rows and columns
+			<option name="Enable display confusion matrix rates toggle">
+				Check to enable the toggling of the display of the Confusion Matrix's rows and columns
 				totals as rates.
 			</option>
-			<option name="Enable Class Statistics display">
-				Check to enable the display of the class statistics table.
+			<option name="Enable display class statistics table toggle">
+				Check to enable the toggling of the display of the class statistics table.
 			</option>
-			<option name="Enable Overall Statistics display">
-				Check to enable the display of the overall statistics table.
+			<option name="Enable display overall statistics table toggle">
+				Check to enable the toggling of the display of the overall statistics table.
 			</option>
 		</tab>
 

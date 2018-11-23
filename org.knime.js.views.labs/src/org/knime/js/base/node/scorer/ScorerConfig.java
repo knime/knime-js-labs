@@ -925,8 +925,6 @@ public class ScorerConfig {
         settings.addBoolean(CFG_IGNORE_MISSING_VALUES, m_ignoreMissingValues);
         settings.addString(CFG_TITLE, m_title);
         settings.addString(CFG_SUBTITLE, m_subtitle);
-        settings.addBoolean(CFG_DISPLAY_LABELS, m_displayLabels);
-        settings.addBoolean(CFG_DISPLAY_CLASS_NATURE, m_displayClassNature);
         settings.addBoolean(CFG_DISPLAY_TOTAL_ROWS, m_displayTotalRows);
         settings.addBoolean(CFG_DISPLAY_CONFUSION_MATRIX_RATES, m_displayConfusionMatrixRates);
         settings.addString(CFG_HEADER_COLOR, CSSUtils.cssHexStringFromColor(m_headerColor));
@@ -956,12 +954,16 @@ public class ScorerConfig {
         settings.addBoolean(CFG_ENABLE_VIEW_CONTROLS, m_enableViewControls);
         settings.addBoolean(CFG_ENABLE_TITLE_EDITING, m_enableTitleEditing);
         settings.addBoolean(CFG_ENABLE_SUBTITLE_EDITING, m_enableSubtitleEditing);
-        settings.addBoolean(CFG_ENABLE_LABELS_DISPLAY_CONFIG, m_enableLabelsDisplayConfig);
         settings.addBoolean(CFG_ENABLE_ROWS_NUMBER_CONFIG, m_enableRowsNumberConfig);
         settings.addBoolean(CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG, m_enableConfusionMatrixRatesConfig);
         settings.addBoolean(CFG_ENABLE_CLASS_STATISTICS_CONFIG, m_enableClassStatisticsConfig);
         settings.addBoolean(CFG_ENABLE_OVERALL_STATISTICS_CONFIG, m_enableOverallStatisticsConfig);
         settings.addString(CFG_CUSTOM_CSS, m_customCSS);
+
+        //added with 3.7
+        settings.addBoolean(CFG_DISPLAY_LABELS, m_displayLabels);
+        settings.addBoolean(CFG_DISPLAY_CLASS_NATURE, m_displayClassNature);
+        settings.addBoolean(CFG_ENABLE_LABELS_DISPLAY_CONFIG, m_enableLabelsDisplayConfig);
     }
 
     /**
@@ -981,8 +983,6 @@ public class ScorerConfig {
         m_ignoreMissingValues = settings.getBoolean(CFG_IGNORE_MISSING_VALUES);
         m_title = settings.getString(CFG_TITLE);
         m_subtitle = settings.getString(CFG_SUBTITLE);
-        m_displayLabels = settings.getBoolean(CFG_DISPLAY_LABELS);
-        m_displayClassNature = settings.getBoolean(CFG_DISPLAY_CLASS_NATURE);
         m_displayTotalRows = settings.getBoolean(CFG_DISPLAY_TOTAL_ROWS);
         m_displayConfusionMatrixRates = settings.getBoolean(CFG_DISPLAY_CONFUSION_MATRIX_RATES);
         m_headerColor = CSSUtils.colorFromCssHexString(settings.getString(CFG_HEADER_COLOR));
@@ -1012,12 +1012,17 @@ public class ScorerConfig {
         m_enableViewControls = settings.getBoolean(CFG_ENABLE_VIEW_CONTROLS);
         m_enableTitleEditing = settings.getBoolean(CFG_ENABLE_TITLE_EDITING);
         m_enableSubtitleEditing = settings.getBoolean(CFG_ENABLE_SUBTITLE_EDITING);
-        m_enableLabelsDisplayConfig = settings.getBoolean(CFG_ENABLE_LABELS_DISPLAY_CONFIG);
         m_enableRowsNumberConfig = settings.getBoolean(CFG_ENABLE_ROWS_NUMBER_CONFIG);
         m_enableConfusionMatrixRatesConfig = settings.getBoolean(CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG);
         m_enableClassStatisticsConfig = settings.getBoolean(CFG_ENABLE_CLASS_STATISTICS_CONFIG);
         m_enableOverallStatisticsConfig = settings.getBoolean(CFG_ENABLE_OVERALL_STATISTICS_CONFIG);
         m_customCSS = settings.getString(CFG_CUSTOM_CSS);
+
+        //added with 3.7
+        m_displayLabels = settings.getBoolean(CFG_DISPLAY_LABELS, DEFAULT_DISPLAY_LABELS);
+        m_displayClassNature = settings.getBoolean(CFG_DISPLAY_CLASS_NATURE, DEFAULT_DISPLAY_CLASS_NATURE);
+        m_enableLabelsDisplayConfig =
+                settings.getBoolean(CFG_ENABLE_LABELS_DISPLAY_CONFIG, DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG);
     }
 
     /**
@@ -1038,8 +1043,6 @@ public class ScorerConfig {
         m_ignoreMissingValues = settings.getBoolean(CFG_IGNORE_MISSING_VALUES, DEFAULT_IGNORE_MISSING_VALUES);
         m_title = settings.getString(CFG_TITLE, DEFAULT_TITLE);
         m_subtitle = settings.getString(CFG_SUBTITLE, DEFAULT_SUBTITLE);
-        m_displayLabels = settings.getBoolean(CFG_DISPLAY_LABELS, DEFAULT_DISPLAY_LABELS);
-        m_displayClassNature = settings.getBoolean(CFG_DISPLAY_CLASS_NATURE, DEFAULT_DISPLAY_CLASS_NATURE);
         m_displayTotalRows = settings.getBoolean(CFG_DISPLAY_TOTAL_ROWS, DEFAULT_DISPLAY_TOTAL_ROWS);
         m_displayConfusionMatrixRates =
             settings.getBoolean(CFG_DISPLAY_CONFUSION_MATRIX_RATES, DEFAULT_DISPLAY_CONFUSION_MATRIX_RATES);
@@ -1076,8 +1079,6 @@ public class ScorerConfig {
         m_enableViewControls = settings.getBoolean(CFG_ENABLE_VIEW_CONTROLS, DEFAULT_ENABLE_VIEW_CONTROLS);
         m_enableTitleEditing = settings.getBoolean(CFG_ENABLE_TITLE_EDITING, DEFAULT_ENABLE_TITLE_EDITING);
         m_enableSubtitleEditing = settings.getBoolean(CFG_ENABLE_SUBTITLE_EDITING, DEFAULT_ENABLE_SUBTITLE_EDITING);
-        m_enableLabelsDisplayConfig =
-                settings.getBoolean(CFG_ENABLE_LABELS_DISPLAY_CONFIG, DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG);
         m_enableRowsNumberConfig =
             settings.getBoolean(CFG_ENABLE_ROWS_NUMBER_CONFIG, DEFAULT_ENABLE_ROWS_NUMBER_CONFIG);
         m_enableConfusionMatrixRatesConfig =
@@ -1087,5 +1088,11 @@ public class ScorerConfig {
         m_enableOverallStatisticsConfig =
             settings.getBoolean(CFG_ENABLE_OVERALL_STATISTICS_CONFIG, DEFAULT_ENABLE_OVERALL_STATISTICS_CONFIG);
         m_customCSS = settings.getString(CFG_CUSTOM_CSS, DEFAULT_CUSTOM_CSS);
+
+        //added with 3.7
+        m_displayLabels = settings.getBoolean(CFG_DISPLAY_LABELS, DEFAULT_DISPLAY_LABELS);
+        m_displayClassNature = settings.getBoolean(CFG_DISPLAY_CLASS_NATURE, DEFAULT_DISPLAY_CLASS_NATURE);
+        m_enableLabelsDisplayConfig =
+                settings.getBoolean(CFG_ENABLE_LABELS_DISPLAY_CONFIG, DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG);
     }
 }
