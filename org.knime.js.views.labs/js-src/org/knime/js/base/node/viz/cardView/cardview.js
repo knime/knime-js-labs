@@ -48,9 +48,6 @@ window.cards_namespace = (function () {
     CardView.prototype._buildMenu = function () {
         this._representation.subscriptionFilterIds = this._knimeTable.getFilterIds();
         KnimeBaseTableViewer.prototype._buildMenu.apply(this);
-        if (!this._representation.title && !this._representation.subtitle) {
-            knimeService.floatingHeader(true);
-        }
     };
 
     // disallow selection of individual cells
