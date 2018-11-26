@@ -187,5 +187,4 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
             }
         }
     }
-
 }

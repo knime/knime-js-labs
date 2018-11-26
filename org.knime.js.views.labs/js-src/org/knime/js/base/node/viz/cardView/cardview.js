@@ -191,6 +191,7 @@ window.cards_namespace = (function () {
     CardView.prototype._dataTableDrawCallback = function () {
         KnimeBaseTableViewer.prototype._dataTableDrawCallback.apply(this);
         $("#knimePagedTable thead").remove();
+        CardView.prototype._resetTableLayout.apply(this);
         var infoColsCount = this._infoColsCount;
         var columns = this._dataTableConfig.columns;
         // for some reason, images are rendered with size 0x0 in Chromium at this point, hence the timeout
@@ -210,6 +211,47 @@ window.cards_namespace = (function () {
         }, 0);
     };
 
+    CardView.prototype._resetTableLayout = function () {
+        // use flex box in case when a single view is opened to always display the page selection
+        if (!knimeService.isInteractivityAvailable()) {
+            $('body').css({
+                'display': 'flex',
+                'flex-direction': 'column',
+                'position': 'absolute',
+                'top': '0',
+                'bottom': '0',
+                'left': '0',
+                'right': '0' 
+            });
+            $('#knimePagedTableContainer').css({
+                'margin': '0',
+                'padding': '0 10px 10px',
+                'overflow': 'hidden',                
+                'flex': '1',
+                'position': 'relative',
+                'display': 'flex',
+                'flex-direction': 'column'
+            });
+            $('#knimePagedTable_wrapper').css({
+                'flex': '1',
+                'display': 'flex',
+                'flex-direction': 'column'
+            });
+            $('#knimePagedTable_wrapper > .row:nth-child(2)').css({
+                'flex': '1',
+                'position': 'relative',
+                'overflow': 'auto'                
+            });
+            $('#knimePagedTable_wrapper > .row:nth-child(2) > .col-sm-12').css({
+                'position': 'absolute',
+                'top': '0',
+                'left': '0',
+                'right': '0',
+                'bottom': '0'
+            });
+        }
+    }
+    
     // reset cell heights
     CardView.prototype._dataTablePreDrawCallback = function () {
         KnimeBaseTableViewer.prototype._dataTablePreDrawCallback.apply(this);

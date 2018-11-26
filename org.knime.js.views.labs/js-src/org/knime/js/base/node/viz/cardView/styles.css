@@ -1,7 +1,5 @@
 #knimePagedTableContainer.knime-cards {
-    margin: 0;
-    padding: 10px;
-    overflow: hidden;
+    padding: 0 1px;
 }
 
 table#knimePagedTable,
@@ -87,39 +85,8 @@ table#knimePagedTable.align-right .knime-table-cell {
     text-align: right;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
-
-#knimePagedTableContainer {
-    flex: 1;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-}
-#knimePagedTable_wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
 #knimePagedTable_wrapper > .row:nth-child(2) {
-    flex: 1;
-    position: relative;
     box-shadow: 0 0 1px #7d7d7d;
-    overflow: auto;
-}
-#knimePagedTable_wrapper > .row:nth-child(2) > .col-sm-12 {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
 }
 
 #knimePagedTable_wrapper div.dataTables_wrapper div.dataTables_paginate ul.pagination {
