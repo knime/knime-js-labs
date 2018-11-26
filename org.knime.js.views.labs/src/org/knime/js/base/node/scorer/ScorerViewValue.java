@@ -204,13 +204,15 @@ public class ScorerViewValue extends JSONViewContent {
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         settings.addString(ScorerConfig.CFG_TITLE, m_title);
         settings.addString(ScorerConfig.CFG_SUBTITLE, m_subtitle);
-        settings.addBoolean(ScorerConfig.CFG_DISPLAY_LABELS, m_displayLabels);
-        settings.addBoolean(ScorerConfig.CFG_DISPLAY_CLASS_NATURE, m_displayClassNature);
         settings.addBoolean(ScorerConfig.CFG_DISPLAY_TOTAL_ROWS, m_displayTotalRows);
         settings.addBoolean(ScorerConfig.CFG_DISPLAY_CONFUSION_MATRIX_RATES, m_displayConfusionMatrixRates);
         settings.addBoolean(ScorerConfig.CFG_DISPLAY_FLOAT_AS_PERCENT, m_displayFloatAsPercent);
         settings.addBoolean(ScorerConfig.CFG_DISPLAY_CLASS_STATS_TABLE, m_displayClassStatsTable);
         settings.addBoolean(ScorerConfig.CFG_DISPLAY_OVERALL_STATS, m_displayOverallStats);
+
+        //added with 3.7
+        settings.addBoolean(ScorerConfig.CFG_DISPLAY_LABELS, m_displayLabels);
+        settings.addBoolean(ScorerConfig.CFG_DISPLAY_CLASS_NATURE, m_displayClassNature);
     }
 
     /**
@@ -220,13 +222,16 @@ public class ScorerViewValue extends JSONViewContent {
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_title = settings.getString(ScorerConfig.CFG_TITLE);
         m_subtitle = settings.getString(ScorerConfig.CFG_SUBTITLE);
-        m_displayLabels = settings.getBoolean(ScorerConfig.CFG_DISPLAY_LABELS);
-        m_displayClassNature = settings.getBoolean(ScorerConfig.CFG_DISPLAY_CLASS_NATURE);
         m_displayTotalRows = settings.getBoolean(ScorerConfig.CFG_DISPLAY_TOTAL_ROWS);
         m_displayConfusionMatrixRates = settings.getBoolean(ScorerConfig.CFG_DISPLAY_CONFUSION_MATRIX_RATES);
         m_displayFloatAsPercent = settings.getBoolean(ScorerConfig.CFG_DISPLAY_FLOAT_AS_PERCENT);
         m_displayClassStatsTable = settings.getBoolean(ScorerConfig.CFG_DISPLAY_CLASS_STATS_TABLE);
         m_displayOverallStats = settings.getBoolean(ScorerConfig.CFG_DISPLAY_OVERALL_STATS);
+
+        //added with 3.7
+        m_displayLabels = settings.getBoolean(ScorerConfig.CFG_DISPLAY_LABELS, ScorerConfig.DEFAULT_DISPLAY_LABELS);
+        m_displayClassNature =
+            settings.getBoolean(ScorerConfig.CFG_DISPLAY_CLASS_NATURE, ScorerConfig.DEFAULT_DISPLAY_CLASS_NATURE);
     }
 
     /**
@@ -244,17 +249,13 @@ public class ScorerViewValue extends JSONViewContent {
             return false;
         }
         ScorerViewValue other = (ScorerViewValue)obj;
-        return new EqualsBuilder()
-                .append(m_title, other.m_title)
-                .append(m_subtitle, other.m_subtitle)
-                .append(m_displayLabels, other.m_displayLabels)
-                .append(m_displayClassNature, other.m_displayClassNature)
-                .append(m_displayTotalRows, other.m_displayTotalRows)
-                .append(m_displayConfusionMatrixRates, other.m_displayConfusionMatrixRates)
-                .append(m_displayFloatAsPercent, other.m_displayFloatAsPercent)
-                .append(m_displayClassStatsTable, other.m_displayClassStatsTable)
-                .append(m_displayOverallStats, other.m_displayOverallStats)
-                .isEquals();
+        return new EqualsBuilder().append(m_title, other.m_title).append(m_subtitle, other.m_subtitle)
+            .append(m_displayLabels, other.m_displayLabels).append(m_displayClassNature, other.m_displayClassNature)
+            .append(m_displayTotalRows, other.m_displayTotalRows)
+            .append(m_displayConfusionMatrixRates, other.m_displayConfusionMatrixRates)
+            .append(m_displayFloatAsPercent, other.m_displayFloatAsPercent)
+            .append(m_displayClassStatsTable, other.m_displayClassStatsTable)
+            .append(m_displayOverallStats, other.m_displayOverallStats).isEquals();
     }
 
     /**
@@ -262,17 +263,10 @@ public class ScorerViewValue extends JSONViewContent {
      */
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(m_title)
-                .append(m_subtitle)
-                .append(m_displayLabels)
-                .append(m_displayClassNature)
-                .append(m_displayTotalRows)
-                .append(m_displayConfusionMatrixRates)
-                .append(m_displayFloatAsPercent)
-                .append(m_displayClassStatsTable)
-                .append(m_displayOverallStats)
-                .toHashCode();
+        return new HashCodeBuilder().append(m_title).append(m_subtitle).append(m_displayLabels)
+            .append(m_displayClassNature).append(m_displayTotalRows).append(m_displayConfusionMatrixRates)
+            .append(m_displayFloatAsPercent).append(m_displayClassStatsTable).append(m_displayOverallStats)
+            .toHashCode();
     }
 
 }

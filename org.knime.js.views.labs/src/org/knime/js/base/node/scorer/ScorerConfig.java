@@ -104,11 +104,11 @@ public class ScorerConfig {
     private String m_subtitle = DEFAULT_SUBTITLE;
 
     static final String CFG_DISPLAY_LABELS = "displayLabels";
-    private final static boolean DEFAULT_DISPLAY_LABELS = true;
+    final static boolean DEFAULT_DISPLAY_LABELS = true;
     private boolean m_displayLabels = DEFAULT_DISPLAY_LABELS;
 
     static final String CFG_DISPLAY_CLASS_NATURE = "displayClassNature";
-    private final static boolean DEFAULT_DISPLAY_CLASS_NATURE = true;
+    final static boolean DEFAULT_DISPLAY_CLASS_NATURE = true;
     private boolean m_displayClassNature = DEFAULT_DISPLAY_CLASS_NATURE;
 
     static final String CFG_DISPLAY_TOTAL_ROWS = "displayTotalRows";
@@ -228,7 +228,7 @@ public class ScorerConfig {
     private boolean m_enableSubtitleEditing = DEFAULT_ENABLE_SUBTITLE_EDITING;
 
     static final String CFG_ENABLE_LABELS_DISPLAY_CONFIG = "enableLabelsDisplayConfig";
-    private final static boolean DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG = true;
+    final static boolean DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG = true;
     private boolean m_enableLabelsDisplayConfig = DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG;
 
     static final String CFG_ENABLE_ROWS_NUMBER_CONFIG = "enableRowsNumberConfig";

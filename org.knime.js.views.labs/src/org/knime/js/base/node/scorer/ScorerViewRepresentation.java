@@ -352,11 +352,13 @@ public class ScorerViewRepresentation extends JSONViewContent {
         settings.addBoolean(ScorerConfig.CFG_ENABLE_VIEW_CONTROLS, m_enableViewControls);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_TITLE_EDITING, m_enableTitleEditing);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_SUBTITLE_EDITING, m_enableSubtitleEditing);
-        settings.addBoolean(ScorerConfig.CFG_ENABLE_LABELS_DISPLAY_CONFIG, m_enableLabelsDisplayConfig);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_ROWS_NUMBER_CONFIG, m_enableRowsNumberConfig);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG, m_enableConfusionMatrixRatesConfig);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_CLASS_STATISTICS_CONFIG, m_enableClassStatisticsConfig);
         settings.addBoolean(ScorerConfig.CFG_ENABLE_OVERALL_STATISTICS_CONFIG, m_enableOverallStatisticsConfig);
+
+        //added with 3.7
+        settings.addBoolean(ScorerConfig.CFG_ENABLE_LABELS_DISPLAY_CONFIG, m_enableLabelsDisplayConfig);
     }
 
     /**
@@ -385,12 +387,14 @@ public class ScorerViewRepresentation extends JSONViewContent {
         m_enableViewControls = settings.getBoolean(ScorerConfig.CFG_ENABLE_VIEW_CONTROLS);
         m_enableTitleEditing = settings.getBoolean(ScorerConfig.CFG_ENABLE_TITLE_EDITING);
         m_enableSubtitleEditing = settings.getBoolean(ScorerConfig.CFG_ENABLE_SUBTITLE_EDITING);
-        m_enableLabelsDisplayConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_LABELS_DISPLAY_CONFIG);
         m_enableRowsNumberConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_ROWS_NUMBER_CONFIG);
         m_enableConfusionMatrixRatesConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_CONFUSION_MATRIX_RATES_CONFIG);
         m_enableClassStatisticsConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_CLASS_STATISTICS_CONFIG);
         m_enableOverallStatisticsConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_OVERALL_STATISTICS_CONFIG);
 
+        //added with 3.7
+        m_enableLabelsDisplayConfig = settings.getBoolean(ScorerConfig.CFG_ENABLE_LABELS_DISPLAY_CONFIG,
+            ScorerConfig.DEFAULT_ENABLE_LABELS_DISPLAY_CONFIG);
     }
 
     /**
