@@ -51,6 +51,12 @@
     scorer.init = function(representation, value) {
         _representation = representation;
         _value = value;
+        
+        if (!_representation.confusionMatrix && !_representation.classStatisticsTable 
+                && !_representation.overallStatisticsTable) {
+            document.body.innerHTML = '<p>Error: No data available</p>';
+            return;
+        }
 
         if (_representation.warningMessage && _representation.showWarningsInView) {
             knimeService.setWarningMessage(_representation.warnMessage);
