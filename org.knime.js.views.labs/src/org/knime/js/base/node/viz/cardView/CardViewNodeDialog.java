@@ -49,12 +49,13 @@
 package org.knime.js.base.node.viz.cardView;
 
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -62,7 +63,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
@@ -74,6 +74,8 @@ import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
+import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
+import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.util.ColumnSelectionPanel;
 import org.knime.core.node.util.DataValueColumnFilter;
@@ -98,7 +100,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
     private final JLabel m_warningLabelInteract;
 
     // Options
-    private final JSpinner m_maxRowsSpinner;
+    private final DialogComponentNumber m_maxRowsSpinner;
     private final JCheckBox m_displayRowColorsCheckBox;
     private final JCheckBox m_displayColumnHeadersCheckBox;
     private final JCheckBox m_displayFullscreenButtonCheckBox;
@@ -107,16 +109,16 @@ public class CardViewNodeDialog extends NodeDialogPane {
     private final DataColumnSpecFilterPanel m_columnFilterPanel;
     private final JCheckBox m_useNumColsCheckBox;
     private final JCheckBox m_useColWidthCheckBox;
-    private final JSpinner m_numColsSpinner;
-    private final JSpinner m_colWidthSpinner;
+    private final DialogComponentNumber m_numColsSpinner;
+    private final DialogComponentNumber m_colWidthSpinner;
     private final ColumnSelectionPanel m_labelColColumnSelectionPanel;
     private final JRadioButton m_alignLeftRadioButton;
     private final JRadioButton m_alignRightRadioButton;
     private final JRadioButton m_alignCenterRadioButton;
 
-    // Interactivity, all but zoom/pan copied from table view dialog
+    // Interactivity copied from table view dialog
     private final JCheckBox m_enablePagingCheckBox;
-    private final JSpinner m_initialPageSizeSpinner;
+    private final DialogComponentNumber m_initialPageSizeSpinner;
     private final JCheckBox m_enablePageSizeChangeCheckBox;
     private final JTextField m_allowedPageSizesField;
     private final JCheckBox m_enableShowAllCheckBox;
@@ -134,18 +136,27 @@ public class CardViewNodeDialog extends NodeDialogPane {
     // Formatters, copied from table view dialog
     private final DialogComponentDateTimeOptions m_dateTimeFormats;
     private final JCheckBox m_enableGlobalNumberFormatCheckbox;
-    private final JSpinner m_globalNumberFormatDecimalSpinner;
+    private final DialogComponentNumber m_globalNumberFormatDecimalSpinner;
     private final JCheckBox m_displayMissingValueAsQuestionMark;
+
+    // warnings
+    private final Component m_whitespace;
+    private final JLabel m_numColWarning;
+    private final JLabel m_colWidthWarning;
+    private final JLabel m_maxWidthWarning;
 
     @SuppressWarnings("unchecked")
     CardViewNodeDialog() {
         m_config = new CardViewConfig();
 
         // copied from table view start
-        m_maxRowsSpinner = new JSpinner(new SpinnerNumberModel(0, 0, null, 1));
+        m_maxRowsSpinner = new DialogComponentNumber(
+            new SettingsModelIntegerBounded("maxRows", 0, 0, Integer.MAX_VALUE),
+            "No. of rows to display: ", 1, 20, null, true, "value cannot be negative.");
         m_enablePagingCheckBox = new JCheckBox("Enable pagination");
         m_enablePagingCheckBox.addChangeListener(e -> enablePagingFields());
-        m_initialPageSizeSpinner = new JSpinner(new SpinnerNumberModel(1, 1, null, 1));
+        m_initialPageSizeSpinner = new DialogComponentNumber(new SettingsModelIntegerBounded("initialPageSize",
+            1, 1, Integer.MAX_VALUE), "Initial page size: ", 1, 20, null, true, "value must be greater than 0.");
         m_enablePageSizeChangeCheckBox = new JCheckBox("Enable page size change control");
         m_enablePageSizeChangeCheckBox.addChangeListener(e -> enablePagingFields());
         m_allowedPageSizesField = new JTextField(TEXT_FIELD_SIZE);
@@ -174,7 +185,9 @@ public class CardViewNodeDialog extends NodeDialogPane {
             "Global Date Formatters", dateTimeFormatsConfig);
         m_enableGlobalNumberFormatCheckbox = new JCheckBox("Enable global number format (double cells)");
         m_enableGlobalNumberFormatCheckbox.addChangeListener(e -> enableFormatterFields());
-        m_globalNumberFormatDecimalSpinner = new JSpinner(new SpinnerNumberModel(2, 0, null, 1));
+        m_globalNumberFormatDecimalSpinner =
+            new DialogComponentNumber(new SettingsModelIntegerBounded("globalNumberFormatDecimals", 2, 0,
+                Integer.MAX_VALUE), "Decimal places: ", 1, 20, null, true, "value cannot be negative");
         m_displayMissingValueAsQuestionMark = new JCheckBox("Display missing value as red question mark");
         // end
 
@@ -182,10 +195,12 @@ public class CardViewNodeDialog extends NodeDialogPane {
             + CardViewConfig.MAX_NUM_COLS + ")");
         m_useColWidthCheckBox = new JCheckBox(
             "Fixed card width (" + CardViewConfig.MIN_COL_WIDTH + " - " + CardViewConfig.MAX_COL_WIDTH + "px)");
-        m_numColsSpinner = new JSpinner(new SpinnerNumberModel(CardViewConfig.DEFAULT_NUM_COLS,
-            CardViewConfig.MIN_NUM_COLS, CardViewConfig.MAX_NUM_COLS, 1));
-        m_colWidthSpinner = new JSpinner(new SpinnerNumberModel(CardViewConfig.DEFAULT_COL_WIDTH,
-            CardViewConfig.MIN_COL_WIDTH, CardViewConfig.MAX_COL_WIDTH, 1));
+        m_numColsSpinner =
+            new DialogComponentNumber(new SettingsModelIntegerBounded(CardViewConfig.CFG_NUM_COLS, CardViewConfig.DEFAULT_NUM_COLS,
+                CardViewConfig.MIN_NUM_COLS, CardViewConfig.MAX_NUM_COLS), "", 1, 35, null, true, null);
+        m_colWidthSpinner = new DialogComponentNumber(new SettingsModelIntegerBounded(CardViewConfig.CFG_COL_WIDTH,
+            CardViewConfig.DEFAULT_COL_WIDTH, CardViewConfig.MIN_COL_WIDTH, CardViewConfig.MAX_COL_WIDTH), "", 1,
+            35, null, true, null);
         m_useNumColsCheckBox.addChangeListener(e -> enabledNumColMode());
         m_useColWidthCheckBox.addChangeListener(e -> enableColumnWidthMode());
 
@@ -203,8 +218,19 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_warningLabelInteract.setForeground(Color.RED);
         m_warningLabelInteract.setVisible(false);
 
-        m_numColsSpinner.addChangeListener(e -> checkRowsAndPage());
-        m_initialPageSizeSpinner.addChangeListener(e -> checkRowsAndPage());
+        getSpinner(m_numColsSpinner).addChangeListener(e -> checkRowsAndPage());
+        getSpinner(m_initialPageSizeSpinner).addChangeListener(e -> checkRowsAndPage());
+
+        // ensure space for warnings without scroll bar
+        m_numColWarning = getWarning(m_numColsSpinner);
+        m_colWidthWarning = getWarning(m_colWidthSpinner);
+        m_maxWidthWarning = getWarning(m_maxRowsSpinner);
+        m_numColWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
+        m_colWidthWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
+        m_maxWidthWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
+        m_warningLabelOptions.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
+        m_whitespace = Box.createVerticalStrut(50);
+        m_whitespace.setVisible(true);
 
         addTab("Options", initOptions());
         addTab("Interactivity", initInteractivity());
@@ -216,52 +242,62 @@ public class CardViewNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
+        // use spinner values, since if the value is out of range it isn't propagated to the model
+        final int maxRows = (int)getSpinner(m_maxRowsSpinner).getValue();
+        final int numCols = (int)getSpinner(m_numColsSpinner).getValue();
+        final int colWidth = (int)getSpinner(m_colWidthSpinner).getValue();
+        final int initPageSize = (int)getSpinner(m_initialPageSizeSpinner).getValue();
+        final int decimalPlaces = (int)getSpinner(m_globalNumberFormatDecimalSpinner).getValue();
+
         // copied from table view start
         m_dateTimeFormats.validateSettings();
 
-        m_config.getSettings().getRepresentationSettings().setMaxRows((Integer)m_maxRowsSpinner.getValue());
+        m_config.getSettings().getRepresentationSettings().setMaxRows(maxRows);
         m_config.getSettings().getRepresentationSettings().setEnablePaging(m_enablePagingCheckBox.isSelected());
-        m_config.getSettings().getRepresentationSettings().setInitialPageSize((Integer)m_initialPageSizeSpinner.getValue());
-        m_config.getSettings().getRepresentationSettings().setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
+        m_config.getSettings().getRepresentationSettings().setInitialPageSize(initPageSize);
+        m_config.getSettings().getRepresentationSettings()
+            .setEnablePageSizeChange(m_enablePageSizeChangeCheckBox.isSelected());
         m_config.getSettings().getRepresentationSettings().setAllowedPageSizes(getAllowedPageSizes());
         m_config.getSettings().getRepresentationSettings().setPageSizeShowAll(m_enableShowAllCheckBox.isSelected());
         m_config.getSettings().getRepresentationSettings().setEnableJumpToPage(m_enableJumpToPageCheckBox.isSelected());
         m_config.getSettings().getRepresentationSettings().setDisplayRowColors(m_displayRowColorsCheckBox.isSelected());
-        m_config.getSettings().getRepresentationSettings().setDisplayColumnHeaders(m_displayColumnHeadersCheckBox.isSelected());
-        m_config.getSettings().getRepresentationSettings().setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
+        m_config.getSettings().getRepresentationSettings()
+            .setDisplayColumnHeaders(m_displayColumnHeadersCheckBox.isSelected());
+        m_config.getSettings().getRepresentationSettings()
+            .setDisplayFullscreenButton(m_displayFullscreenButtonCheckBox.isSelected());
         m_config.getSettings().getRepresentationSettings().setTitle(m_titleField.getText());
         m_config.getSettings().getRepresentationSettings().setSubtitle(m_subtitleField.getText());
-        final DataColumnSpecFilterConfiguration filterConfig = new DataColumnSpecFilterConfiguration(
-            TableSettings.CFG_COLUMN_FILTER);
+        final DataColumnSpecFilterConfiguration filterConfig =
+            new DataColumnSpecFilterConfiguration(TableSettings.CFG_COLUMN_FILTER);
         m_columnFilterPanel.saveConfiguration(filterConfig);
         m_config.getSettings().setColumnFilterConfig(filterConfig);
         m_config.getSettings().getRepresentationSettings().setEnableSelection(m_enableSelectionCheckbox.isSelected());
-        m_config.getSettings().getRepresentationSettings().setEnableClearSelectionButton(
-            m_enableClearSelectionButtonCheckbox.isSelected());
+        m_config.getSettings().getRepresentationSettings()
+            .setEnableClearSelectionButton(m_enableClearSelectionButtonCheckbox.isSelected());
         m_config.getSettings().setSelectionColumnName(m_selectionColumnNameField.getText());
         m_config.getSettings().getValueSettings().setHideUnselected(m_hideUnselectedCheckbox.isSelected());
-        m_config.getSettings().getRepresentationSettings().setEnableHideUnselected(m_enableHideUnselectedCheckbox.isSelected());
+        m_config.getSettings().getRepresentationSettings()
+            .setEnableHideUnselected(m_enableHideUnselectedCheckbox.isSelected());
         m_config.getSettings().getValueSettings().setPublishSelection(m_publishSelectionCheckBox.isSelected());
         m_config.getSettings().getValueSettings().setSubscribeSelection(m_subscribeSelectionCheckBox.isSelected());
         m_config.getSettings().getValueSettings().setPublishFilter(m_publishFilterCheckBox.isSelected());
         m_config.getSettings().getValueSettings().setSubscribeFilter(m_subscribeFilterCheckBox.isSelected());
-        m_config.getSettings().getRepresentationSettings().setDateTimeFormats(
-            (SettingsModelDateTimeOptions)m_dateTimeFormats.getModel());
-        m_config.getSettings().getRepresentationSettings().setEnableGlobalNumberFormat(
-            m_enableGlobalNumberFormatCheckbox.isSelected());
-        m_config.getSettings().getRepresentationSettings().setGlobalNumberFormatDecimals(
-            (Integer)m_globalNumberFormatDecimalSpinner.getValue());
-        m_config.getSettings().getRepresentationSettings().setDisplayMissingValueAsQuestionMark(
-            m_displayMissingValueAsQuestionMark.isSelected());
+        m_config.getSettings().getRepresentationSettings()
+            .setDateTimeFormats((SettingsModelDateTimeOptions)m_dateTimeFormats.getModel());
+        m_config.getSettings().getRepresentationSettings()
+            .setEnableGlobalNumberFormat(m_enableGlobalNumberFormatCheckbox.isSelected());
+        m_config.getSettings().getRepresentationSettings().setGlobalNumberFormatDecimals(decimalPlaces);
+        m_config.getSettings().getRepresentationSettings()
+            .setDisplayMissingValueAsQuestionMark(m_displayMissingValueAsQuestionMark.isSelected());
         // end
 
         m_config.setUseNumCols(m_useNumColsCheckBox.isSelected());
         if (m_useNumColsCheckBox.isSelected()) {
-            m_config.setNumCols((int)m_numColsSpinner.getValue());
+            m_config.setNumCols(numCols);
         }
         m_config.setUseColWidth(m_useColWidthCheckBox.isSelected());
         if (m_useColWidthCheckBox.isSelected()) {
-            m_config.setColWidth((int)m_colWidthSpinner.getValue());
+            m_config.setColWidth(colWidth);
         }
         m_config.setUseRowID(m_labelColColumnSelectionPanel.rowIDSelected());
         m_config.setLabelCol(m_labelColColumnSelectionPanel.getSelectedColumn());
@@ -281,41 +317,44 @@ public class CardViewNodeDialog extends NodeDialogPane {
         // copied from table view start
         final DataTableSpec inSpec = (DataTableSpec)specs[0];
         m_config.loadSettingsForDialog(settings, inSpec);
-        m_maxRowsSpinner.setValue(m_config.getSettings().getRepresentationSettings().getMaxRows());
+        // use loadSettingsFrom method to ensure listeners are notified to sync model and spinner
+        m_maxRowsSpinner.loadSettingsFrom(settings, specs);
         m_enablePagingCheckBox.setSelected(m_config.getSettings().getRepresentationSettings().getEnablePaging());
-        m_initialPageSizeSpinner.setValue(m_config.getSettings().getRepresentationSettings().getInitialPageSize());
-        m_enablePageSizeChangeCheckBox.setSelected(
-            m_config.getSettings().getRepresentationSettings().getEnablePageSizeChange());
+        m_initialPageSizeSpinner.loadSettingsFrom(settings, specs);
+        m_enablePageSizeChangeCheckBox
+            .setSelected(m_config.getSettings().getRepresentationSettings().getEnablePageSizeChange());
         m_allowedPageSizesField.setText(
             getAllowedPageSizesString(m_config.getSettings().getRepresentationSettings().getAllowedPageSizes()));
         m_enableShowAllCheckBox.setSelected(m_config.getSettings().getRepresentationSettings().getPageSizeShowAll());
-        m_enableJumpToPageCheckBox.setSelected(m_config.getSettings().getRepresentationSettings().getEnableJumpToPage());
-        m_displayRowColorsCheckBox.setSelected(m_config.getSettings().getRepresentationSettings().getDisplayRowColors());
-        m_displayColumnHeadersCheckBox.setSelected(
-            m_config.getSettings().getRepresentationSettings().getDisplayColumnHeaders());
-        m_displayFullscreenButtonCheckBox.setSelected(
-            m_config.getSettings().getRepresentationSettings().getDisplayFullscreenButton());
+        m_enableJumpToPageCheckBox
+            .setSelected(m_config.getSettings().getRepresentationSettings().getEnableJumpToPage());
+        m_displayRowColorsCheckBox
+            .setSelected(m_config.getSettings().getRepresentationSettings().getDisplayRowColors());
+        m_displayColumnHeadersCheckBox
+            .setSelected(m_config.getSettings().getRepresentationSettings().getDisplayColumnHeaders());
+        m_displayFullscreenButtonCheckBox
+            .setSelected(m_config.getSettings().getRepresentationSettings().getDisplayFullscreenButton());
         m_titleField.setText(m_config.getSettings().getRepresentationSettings().getTitle());
         m_subtitleField.setText(m_config.getSettings().getRepresentationSettings().getSubtitle());
         m_columnFilterPanel.loadConfiguration(m_config.getSettings().getColumnFilterConfig(), inSpec);
         m_enableSelectionCheckbox.setSelected(m_config.getSettings().getRepresentationSettings().getEnableSelection());
-        m_enableClearSelectionButtonCheckbox.setSelected(
-            m_config.getSettings().getRepresentationSettings().getEnableClearSelectionButton());
+        m_enableClearSelectionButtonCheckbox
+            .setSelected(m_config.getSettings().getRepresentationSettings().getEnableClearSelectionButton());
         m_selectionColumnNameField.setText(m_config.getSettings().getSelectionColumnName());
         m_hideUnselectedCheckbox.setSelected(m_config.getSettings().getValueSettings().getHideUnselected());
-        m_enableHideUnselectedCheckbox.setSelected(
-            m_config.getSettings().getRepresentationSettings().getEnableHideUnselected());
+        m_enableHideUnselectedCheckbox
+            .setSelected(m_config.getSettings().getRepresentationSettings().getEnableHideUnselected());
         m_publishSelectionCheckBox.setSelected(m_config.getSettings().getValueSettings().getPublishSelection());
         m_subscribeSelectionCheckBox.setSelected(m_config.getSettings().getValueSettings().getSubscribeSelection());
         m_publishFilterCheckBox.setSelected(m_config.getSettings().getValueSettings().getPublishFilter());
         m_subscribeFilterCheckBox.setSelected(m_config.getSettings().getValueSettings().getSubscribeFilter());
-        m_dateTimeFormats.loadSettingsFromModel(m_config.getSettings().getRepresentationSettings().getDateTimeFormats());
-        m_enableGlobalNumberFormatCheckbox.setSelected(
-            m_config.getSettings().getRepresentationSettings().getEnableGlobalNumberFormat());
-        m_globalNumberFormatDecimalSpinner.setValue(
-            m_config.getSettings().getRepresentationSettings().getGlobalNumberFormatDecimals());
-        m_displayMissingValueAsQuestionMark.setSelected(
-            m_config.getSettings().getRepresentationSettings().getDisplayMissingValueAsQuestionMark());
+        m_dateTimeFormats
+            .loadSettingsFromModel(m_config.getSettings().getRepresentationSettings().getDateTimeFormats());
+        m_enableGlobalNumberFormatCheckbox
+            .setSelected(m_config.getSettings().getRepresentationSettings().getEnableGlobalNumberFormat());
+        m_globalNumberFormatDecimalSpinner.loadSettingsFrom(settings, specs);
+        m_displayMissingValueAsQuestionMark
+            .setSelected(m_config.getSettings().getRepresentationSettings().getDisplayMissingValueAsQuestionMark());
         // end
 
         final boolean numColMode = m_config.getUseNumCols();
@@ -325,8 +364,8 @@ public class CardViewNodeDialog extends NodeDialogPane {
         if (!numColMode && !colWidthMode) {
             m_useNumColsCheckBox.setSelected(true);
         }
-        m_numColsSpinner.setValue(m_config.getNumCols());
-        m_colWidthSpinner.setValue(m_config.getColWidth());
+        m_numColsSpinner.loadSettingsFrom(settings, specs);
+        m_colWidthSpinner.loadSettingsFrom(settings, specs);
         m_labelColColumnSelectionPanel.update(inSpec, m_config.getLabelCol(), m_config.getUseRowID());
         m_alignLeftRadioButton.setSelected(m_config.getAlignLeft());
         m_alignRightRadioButton.setSelected(m_config.getAlignRight());
@@ -338,6 +377,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         enableSelectionFields();
         enableFormatterFields();
         setNumberOfFilters(inSpec);
+        m_whitespace.setVisible(true);
     }
 
     // -- Helper methods --
@@ -346,7 +386,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         if (!m_useNumColsCheckBox.isSelected() && !m_useColWidthCheckBox.isSelected()) {
             m_useNumColsCheckBox.setSelected(true);
         }
-        m_numColsSpinner.setEnabled(m_useNumColsCheckBox.isSelected());
+        m_numColsSpinner.getModel().setEnabled(m_useNumColsCheckBox.isSelected());
         checkRowsAndPage();
     }
 
@@ -354,7 +394,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         if (!m_useNumColsCheckBox.isSelected() && !m_useColWidthCheckBox.isSelected()) {
             m_useColWidthCheckBox.setSelected(true);
         }
-        m_colWidthSpinner.setEnabled(m_useColWidthCheckBox.isSelected());
+        m_colWidthSpinner.getModel().setEnabled(m_useColWidthCheckBox.isSelected());
     }
 
     private JPanel initOptions() {
@@ -369,10 +409,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         final GridBagConstraints gbcG = DialogUtil.defaultGridBagConstraints();
         gbcG.fill = GridBagConstraints.HORIZONTAL;
         gbcG.gridwidth = 1;
-        generalPanel.add(new JLabel("No. of rows to display: "), gbcG);
-        gbcG.gridx++;
-        m_maxRowsSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
-        generalPanel.add(m_maxRowsSpinner, gbcG);
+        generalPanel.add(m_maxRowsSpinner.getComponentPanel(), gbcG);
 
         final JPanel titlePanel = new JPanel(new GridBagLayout());
         titlePanel.setBorder(new TitledBorder("Titles"));
@@ -407,11 +444,10 @@ public class CardViewNodeDialog extends NodeDialogPane {
         displayPanel.add(m_useNumColsCheckBox, gbcD);
         gbcD.gridx++;
         gbcD.gridwidth = 2;
-        m_numColsSpinner.setPreferredSize(new Dimension(350, TEXT_FIELD_SIZE));
-        displayPanel.add(m_numColsSpinner, gbcD);
-        gbcD.gridx = 0;
+        displayPanel.add(m_numColsSpinner.getComponentPanel(), gbcD);
+        gbcD.gridx = 1;
         gbcD.gridy++;
-        gbcD.gridwidth = 3;
+        gbcD.gridwidth = 2;
         displayPanel.add(m_warningLabelOptions, gbcD);
         gbcD.gridx = 0;
         gbcD.gridy++;
@@ -419,8 +455,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         displayPanel.add(m_useColWidthCheckBox, gbcD);
         gbcD.gridx++;
         gbcD.gridwidth = 2;
-        m_colWidthSpinner.setPreferredSize(new Dimension(350, TEXT_FIELD_SIZE));
-        displayPanel.add(m_colWidthSpinner, gbcD);
+        displayPanel.add(m_colWidthSpinner.getComponentPanel(), gbcD);
         gbcD.gridx = 0;
         gbcD.gridy++;
         gbcD.gridwidth = 1;
@@ -454,6 +489,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         gbc.gridy++;
         panel.add(displayPanel, gbc);
         gbc.gridy++;
+        panel.add(m_whitespace, gbc);
         return panel;
         // end
     }
@@ -469,10 +505,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         pagingPanel.add(m_enablePagingCheckBox, gbcP);
         gbcP.gridy++;
         gbcP.gridwidth = 1;
-        pagingPanel.add(new JLabel("Initial page size: "), gbcP);
-        gbcP.gridx++;
-        m_initialPageSizeSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
-        pagingPanel.add(m_initialPageSizeSpinner, gbcP);
+        pagingPanel.add(m_initialPageSizeSpinner.getComponentPanel(), gbcP);
         gbcP.gridx = 0;
         gbcP.gridy++;
         gbcP.gridwidth = 2;
@@ -543,10 +576,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         numberPanel.add(m_enableGlobalNumberFormatCheckbox, gbcN);
         gbcN.gridy++;
         gbcN.gridwidth = 1;
-        numberPanel.add(new JLabel("Decimal places: "), gbcN);
-        gbcN.gridx++;
-        m_globalNumberFormatDecimalSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
-        numberPanel.add(m_globalNumberFormatDecimalSpinner, gbcN);
+        numberPanel.add(m_globalNumberFormatDecimalSpinner.getComponentPanel(), gbcN);
         gbcN.gridx = 0;
         gbcN.gridy++;
 
@@ -608,7 +638,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
     private void enablePagingFields() {
         final boolean enableGlobal = m_enablePagingCheckBox.isSelected();
         final boolean enableSizeChange = m_enablePageSizeChangeCheckBox.isSelected();
-        m_initialPageSizeSpinner.setEnabled(enableGlobal);
+        m_initialPageSizeSpinner.getModel().setEnabled(enableGlobal);
         m_enablePageSizeChangeCheckBox.setEnabled(enableGlobal);
         m_allowedPageSizesField.setEnabled(enableGlobal && enableSizeChange);
         m_enableShowAllCheckBox.setEnabled(enableGlobal && enableSizeChange);
@@ -629,7 +659,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
 
     private void enableFormatterFields() {
         final boolean enableNumberFormat = m_enableGlobalNumberFormatCheckbox.isSelected();
-        m_globalNumberFormatDecimalSpinner.setEnabled(enableNumberFormat);
+        m_globalNumberFormatDecimalSpinner.getModel().setEnabled(enableNumberFormat);
     }
 
     private void checkRowsAndPage() {
@@ -640,21 +670,52 @@ public class CardViewNodeDialog extends NodeDialogPane {
             m_warningLabelInteract.setVisible(false);
             return;
         }
-        final int numCols = (int)m_numColsSpinner.getValue();
-        final int initPageSize = (int)m_initialPageSizeSpinner.getValue();
+        // the value in the SettingsModel doesn't always match what is displayed in the dialog, use spinners directly
+        final int numCols = (int)getSpinner(m_numColsSpinner).getValue();
+        final int initPageSize = (int)getSpinner(m_initialPageSizeSpinner).getValue();
         if (numCols > initPageSize) {
-            m_warningLabelOptions
-                .setText("<html>Number of cards per row (" + numCols + ") cannot be greater than the initial page size ("
-                    + initPageSize + ").<br /> Check the \"Interactivity\" tab.</html>");
+            m_warningLabelOptions.setText(
+                "<html>Number of cards per row (" + numCols + ") cannot be greater than the <br />initial page size ("
+                    + initPageSize + "). Check the \"Interactivity\" tab.</html>");
             m_warningLabelOptions.setVisible(true);
-            m_warningLabelInteract.setText("<html>Number of cards per row (" + numCols + ") cannot be greater than the initial page size ("
-                    + initPageSize + ").<br /> Check the \"Options\" tab.</html>");
+            m_warningLabelInteract.setText(
+                "<html>Number of cards per row (" + numCols + ") cannot be greater than the <br />initial page size ("
+                    + initPageSize + "). Check the \"Options\" tab.</html>");
             m_warningLabelInteract.setVisible(true);
         } else {
             m_warningLabelOptions.setText("");
             m_warningLabelOptions.setVisible(false);
             m_warningLabelInteract.setText("");
             m_warningLabelInteract.setVisible(false);
+        }
+    }
+
+    private static JSpinner getSpinner(final DialogComponentNumber component) {
+        for (int i = 0; i < component.getComponentPanel().getComponentCount(); i++) {
+            final Component c = component.getComponentPanel().getComponent(i);
+            if (c instanceof JSpinner) {
+                return (JSpinner) c;
+            }
+        }
+        return null;
+    }
+
+    private static JLabel getWarning(final DialogComponentNumber component) {
+        for (int i = 0; i < component.getComponentPanel().getComponentCount(); i++) {
+            final Component c = component.getComponentPanel().getComponent(i);
+            if ((c instanceof JLabel) && ((JLabel)c).getForeground().equals(Color.RED)) {
+                return (JLabel)c;
+            }
+        }
+        return null;
+    }
+
+    private void changeWhiteSpaceVisibility() {
+        if (m_numColWarning.isVisible() || m_colWidthWarning.isVisible() || m_maxWidthWarning.isVisible()
+            || m_warningLabelOptions.isVisible()) {
+            m_whitespace.setVisible(false);
+        } else {
+            m_whitespace.setVisible(true);
         }
     }
 }

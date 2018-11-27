@@ -272,6 +272,18 @@ public class CardViewConfig implements TableConfig {
      */
     @Override
     public void loadSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        final int numCols = settings.getInt(CFG_NUM_COLS);
+        final int colWidth = settings.getInt(CFG_COL_WIDTH);
+        final int initPageSize = settings.getInt("initialPageSize");
+        final int maxRows = settings.getInt("maxRows");
+        final int decimalPlaces = settings.getInt("globalNumberFormatDecimals");
+        final boolean enableNumCols = settings.getBoolean(CFG_USE_NUM_COLS);
+        final boolean enableColWidth = settings.getBoolean(CFG_USE_COL_WIDTH);
+        final boolean enablePaging = settings.getBoolean("enablePaging");
+        final boolean enableDecimalPlaces = settings.getBoolean("enableGlobalNumberFormat");
+        validateConfig(numCols, colWidth, initPageSize, maxRows, decimalPlaces, enableNumCols, enableColWidth,
+            enablePaging, enableDecimalPlaces);
+
         m_settings.loadSettings(settings);
         m_useNumCols = settings.getBoolean(CFG_USE_NUM_COLS);
         m_useColWidth = settings.getBoolean(CFG_USE_COL_WIDTH);
@@ -280,23 +292,6 @@ public class CardViewConfig implements TableConfig {
         m_alignLeft = settings.getBoolean(CFG_ALIGN_LEFT);
         m_alignRight = settings.getBoolean(CFG_ALIGN_RIGHT);
         m_alignCenter = settings.getBoolean(CFG_ALIGN_CENTER);
-
-        final int numCols = settings.getInt(CFG_NUM_COLS);
-        final int colWidth = settings.getInt(CFG_COL_WIDTH);
-        if (numCols < MIN_NUM_COLS || numCols > MAX_NUM_COLS) {
-            throw new InvalidSettingsException("Invalid number of cards per row, expected an integer between "
-                + MIN_NUM_COLS + " and " + MAX_NUM_COLS + " but received " + numCols);
-        }
-        if (colWidth < MIN_COL_WIDTH || colWidth > MAX_COL_WIDTH) {
-            throw new InvalidSettingsException("Invalid card width, expected an integer between 3" + MIN_COL_WIDTH
-                + " and " + MAX_COL_WIDTH + " but received " + colWidth);
-        }
-        final int initPageSize = settings.getInt("initialPageSize");
-        if (numCols > initPageSize) {
-            throw new InvalidSettingsException(
-                "The number of cards per row (" + numCols + ") cannot be greater than the initial page size ("
-                    + initPageSize + "). Check the \"Options\" and \"Interactivity\" tabs.");
-        }
         m_numCols = numCols;
         m_colWidth = colWidth;
     }
@@ -316,6 +311,36 @@ public class CardViewConfig implements TableConfig {
         m_alignLeft = settings.getBoolean(CFG_ALIGN_LEFT, DEFAULT_ALIGN_LEFT);
         m_alignRight = settings.getBoolean(CFG_ALIGN_RIGHT, DEFAULT_ALIGN_RIGHT);
         m_alignCenter = settings.getBoolean(CFG_ALIGN_CENTER, DEFAULT_ALIGN_CENTER);
+    }
+
+    static void validateConfig(final int numCols, final int colWidth, final int initPageSize, final int maxRows,
+        final int decimalPlaces, final boolean enableNumCols, final boolean enableColWidth, final boolean enablePaging,
+        final boolean enableDecimalPlaces) throws InvalidSettingsException {
+        String errorMsg = "";
+        if (maxRows < 0) {
+            errorMsg += "No. of rows to display (" + maxRows + ") cannot be negative.\n";
+        }
+        if ((numCols < MIN_NUM_COLS || numCols > MAX_NUM_COLS) && enableNumCols) {
+            errorMsg += "Invalid number of cards per row, expected an integer between " + MIN_NUM_COLS + " and "
+                + MAX_NUM_COLS + " but received " + numCols + ".\n";
+        }
+        if ((colWidth < MIN_COL_WIDTH || colWidth > MAX_COL_WIDTH) && enableColWidth) {
+            errorMsg += "Invalid card width, expected an integer between 3" + MIN_COL_WIDTH + " and " + MAX_COL_WIDTH
+                + " but received " + colWidth + ".\n";
+        }
+        if (initPageSize < 1 && enablePaging) {
+            errorMsg += "Initial page size (" + initPageSize + ") cannot be less than 1.\n";
+        }
+        if (numCols > initPageSize && enablePaging && enableNumCols) {
+            errorMsg += "The number of cards per row (" + numCols + ") cannot be greater than the initial page size ("
+                + initPageSize + "). Check the \"Options\" and \"Interactivity\" tabs.\n";
+        }
+        if (decimalPlaces < 0 && enableDecimalPlaces) {
+            errorMsg += "Decimal places (" + decimalPlaces + ") cannot be negative.\n";
+        }
+        if (!errorMsg.isEmpty()) {
+            throw new InvalidSettingsException(errorMsg);
+        }
     }
 
 }
