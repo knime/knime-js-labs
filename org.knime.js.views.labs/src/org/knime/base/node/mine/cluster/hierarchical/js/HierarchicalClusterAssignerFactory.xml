@@ -12,7 +12,7 @@
 			<p>
 				This node takes a hierarchical cluster tree and the
 				<b>same input table</b>
-				that has been used for the creating
+				that has been used for creating
 				the clustering, and creates an
 				interactive dendrogram using JavaScript. The interactive view allows
 				for the selection of a threshold, which is used to define clusters
@@ -207,7 +207,7 @@
 	<ports>
 		<inPort name="Cluster Tree" index="0">
 			The hierarchical cluster tree
-			that has been created by the hierarchical clustering node (DistMatrix).
+			that has been created by the Hierarchical Clustering (DistMatrix) node.
 		</inPort>
 		<inPort name="Data to Cluster" index="1">
 			The
