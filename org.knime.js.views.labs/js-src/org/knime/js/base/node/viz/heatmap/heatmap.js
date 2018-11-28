@@ -1236,7 +1236,10 @@ window.heatmapNamespace = (function () {
         var maxWidth = this._labelsMargins
             ? this._labelsMargins.x
             : container.getBoundingClientRect().width * maxLabelPercentage;
-        var maxHeight = this._labelsMargins
+            
+        // When in meta node (iframe), we have to keep measuring the container height
+        // because the intial height is not final
+        var maxHeight = this._labelsMargins && !this.isInIframe()
             ? this._labelsMargins.y
             : container.getBoundingClientRect().height * maxLabelPercentage;
 
@@ -1872,6 +1875,14 @@ window.heatmapNamespace = (function () {
         return arr.sort(function (a, b) {
             return yDomain.indexOf(a) - yDomain.indexOf(b);
         });
+    };
+
+    Heatmap.prototype.isInIframe = function () {
+        try {
+            return window.self !== window.top;
+        } catch (e) {
+            return true;
+        }
     };
 
     /**
