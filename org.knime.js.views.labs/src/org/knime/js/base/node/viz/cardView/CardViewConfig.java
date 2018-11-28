@@ -321,21 +321,36 @@ public class CardViewConfig implements TableConfig {
             errorMsg += "No. of rows to display (" + maxRows + ") cannot be negative.\n";
         }
         if ((numCols < MIN_NUM_COLS || numCols > MAX_NUM_COLS) && enableNumCols) {
+            if (!errorMsg.isEmpty()) {
+                errorMsg+="\n";
+            }
             errorMsg += "Invalid number of cards per row, expected an integer between " + MIN_NUM_COLS + " and "
                 + MAX_NUM_COLS + " but received " + numCols + ".\n";
         }
         if ((colWidth < MIN_COL_WIDTH || colWidth > MAX_COL_WIDTH) && enableColWidth) {
+            if (!errorMsg.isEmpty()) {
+                errorMsg+="\n";
+            }
             errorMsg += "Invalid card width, expected an integer between 3" + MIN_COL_WIDTH + " and " + MAX_COL_WIDTH
                 + " but received " + colWidth + ".\n";
         }
         if (initPageSize < 1 && enablePaging) {
+            if (!errorMsg.isEmpty()) {
+                errorMsg+="\n";
+            }
             errorMsg += "Initial page size (" + initPageSize + ") cannot be less than 1.\n";
         }
         if (numCols > initPageSize && enablePaging && enableNumCols) {
+            if (!errorMsg.isEmpty()) {
+                errorMsg+="\n";
+            }
             errorMsg += "The number of cards per row (" + numCols + ") cannot be greater than the initial page size ("
                 + initPageSize + "). Check the \"Options\" and \"Interactivity\" tabs.\n";
         }
         if (decimalPlaces < 0 && enableDecimalPlaces) {
+            if (!errorMsg.isEmpty()) {
+                errorMsg+="\n";
+            }
             errorMsg += "Decimal places (" + decimalPlaces + ") cannot be negative.\n";
         }
         if (!errorMsg.isEmpty()) {

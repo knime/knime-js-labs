@@ -143,7 +143,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
     private final Component m_whitespace;
     private final JLabel m_numColWarning;
     private final JLabel m_colWidthWarning;
-    private final JLabel m_maxWidthWarning;
+    private final JLabel m_maxRowsWarning;
 
     @SuppressWarnings("unchecked")
     CardViewNodeDialog() {
@@ -152,11 +152,17 @@ public class CardViewNodeDialog extends NodeDialogPane {
         // copied from table view start
         m_maxRowsSpinner = new DialogComponentNumber(
             new SettingsModelIntegerBounded("maxRows", 0, 0, Integer.MAX_VALUE),
-            "No. of rows to display: ", 1, 20, null, true, "Value cannot be negative.");
+            "", 1, 20, null, true, "Value cannot be negative.");
+        for (int i = 0; i < m_maxRowsSpinner.getComponentPanel().getComponentCount(); i++) {
+            final Component c = m_maxRowsSpinner.getComponentPanel().getComponent(i);
+            if ((c instanceof JLabel) && !((JLabel) c).getForeground().equals(Color.RED)) {
+                c.setVisible(false);
+            }
+        }
         m_enablePagingCheckBox = new JCheckBox("Enable pagination");
         m_enablePagingCheckBox.addChangeListener(e -> enablePagingFields());
         m_initialPageSizeSpinner = new DialogComponentNumber(new SettingsModelIntegerBounded("initialPageSize",
-            1, 1, Integer.MAX_VALUE), "Initial page size: ", 1, 20, null, true, "Value must be greater than 0.");
+            1, 1, Integer.MAX_VALUE), "Initial page size: ", 1, 15, null, true, "Value must be greater than 0.");
         m_enablePageSizeChangeCheckBox = new JCheckBox("Enable page size change control");
         m_enablePageSizeChangeCheckBox.addChangeListener(e -> enablePagingFields());
         m_allowedPageSizesField = new JTextField(TEXT_FIELD_SIZE);
@@ -187,7 +193,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_enableGlobalNumberFormatCheckbox.addChangeListener(e -> enableFormatterFields());
         m_globalNumberFormatDecimalSpinner =
             new DialogComponentNumber(new SettingsModelIntegerBounded("globalNumberFormatDecimals", 2, 0,
-                Integer.MAX_VALUE), "Decimal places: ", 1, 20, null, true, "Value cannot be negative");
+                Integer.MAX_VALUE), "Decimal places: ", 1, 8, null, true, "Value cannot be negative");
         m_displayMissingValueAsQuestionMark = new JCheckBox("Display missing value as red question mark");
         // end
 
@@ -197,10 +203,10 @@ public class CardViewNodeDialog extends NodeDialogPane {
             "Fixed card width (" + CardViewConfig.MIN_COL_WIDTH + " - " + CardViewConfig.MAX_COL_WIDTH + "px)");
         m_numColsSpinner =
             new DialogComponentNumber(new SettingsModelIntegerBounded(CardViewConfig.CFG_NUM_COLS, CardViewConfig.DEFAULT_NUM_COLS,
-                CardViewConfig.MIN_NUM_COLS, CardViewConfig.MAX_NUM_COLS), "", 1, 35, null, true, null);
+                CardViewConfig.MIN_NUM_COLS, CardViewConfig.MAX_NUM_COLS), "", 1, 12, null, true, null);
         m_colWidthSpinner = new DialogComponentNumber(new SettingsModelIntegerBounded(CardViewConfig.CFG_COL_WIDTH,
             CardViewConfig.DEFAULT_COL_WIDTH, CardViewConfig.MIN_COL_WIDTH, CardViewConfig.MAX_COL_WIDTH), "", 1,
-            35, null, true, null);
+            12, null, true, null);
         m_useNumColsCheckBox.addChangeListener(e -> enabledNumColMode());
         m_useColWidthCheckBox.addChangeListener(e -> enableColumnWidthMode());
 
@@ -224,12 +230,12 @@ public class CardViewNodeDialog extends NodeDialogPane {
         // ensure space for warnings without scroll bar
         m_numColWarning = getWarning(m_numColsSpinner);
         m_colWidthWarning = getWarning(m_colWidthSpinner);
-        m_maxWidthWarning = getWarning(m_maxRowsSpinner);
+        m_maxRowsWarning = getWarning(m_maxRowsSpinner);
         m_numColWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
         m_colWidthWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
-        m_maxWidthWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
+        m_maxRowsWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
         m_warningLabelOptions.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
-        m_whitespace = Box.createVerticalStrut(50);
+        m_whitespace = Box.createVerticalStrut(10);
         m_whitespace.setVisible(true);
 
         addTab("Options", initOptions());
@@ -409,19 +415,19 @@ public class CardViewNodeDialog extends NodeDialogPane {
         final GridBagConstraints gbcG = DialogUtil.defaultGridBagConstraints();
         gbcG.fill = GridBagConstraints.HORIZONTAL;
         gbcG.gridwidth = 1;
+        gbcG.weightx = 1;
+        generalPanel.add(new JLabel("No. of rows to display:"), gbcG);
+        gbcG.gridx++;
+        generalPanel.add(new JLabel("Title:"), gbcG);
+        gbcG.gridx++;
+        generalPanel.add(new JLabel("Subtitle:"), gbcG);
+        gbcG.gridx = 0;
+        gbcG.gridy++;
         generalPanel.add(m_maxRowsSpinner.getComponentPanel(), gbcG);
-
-        final JPanel titlePanel = new JPanel(new GridBagLayout());
-        titlePanel.setBorder(new TitledBorder("Titles"));
-        final GridBagConstraints gbcT = DialogUtil.defaultGridBagConstraints();
-        titlePanel.add(new JLabel("Title: "), gbcT);
-        gbcT.gridx++;
-        titlePanel.add(m_titleField, gbcT);
-        gbcT.gridx = 0;
-        gbcT.gridy++;
-        titlePanel.add(new JLabel("Subtitle: "), gbcT);
-        gbcT.gridx++;
-        titlePanel.add(m_subtitleField, gbcT);
+        gbcG.gridx++;
+        generalPanel.add(m_titleField, gbcG);
+        gbcG.gridx++;
+        generalPanel.add(m_subtitleField, gbcG);
 
         final JPanel displayPanel = new JPanel(new GridBagLayout());
         displayPanel.setBorder(new TitledBorder("Display Options"));
@@ -429,7 +435,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         gbcD.fill = GridBagConstraints.HORIZONTAL;
         gbcD.weightx = 1;
         // end
-        gbcD.gridwidth = 3;
+        gbcD.gridwidth = 12;
         gbcD.gridx = 0;
         final JPanel displayRow = new JPanel(new GridLayout(1, 3));
         displayRow.add(m_displayRowColorsCheckBox);
@@ -438,31 +444,33 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_displayFullscreenButtonCheckBox.setHorizontalAlignment(SwingConstants.RIGHT);
         displayRow.add(m_displayFullscreenButtonCheckBox);
         displayPanel.add(displayRow, gbcD);
-        gbcD.gridwidth = 1;
-        gbcD.gridx = 0;
-        gbcD.gridy++;
-        displayPanel.add(m_useNumColsCheckBox, gbcD);
-        gbcD.gridx++;
-        gbcD.gridwidth = 2;
-        displayPanel.add(m_numColsSpinner.getComponentPanel(), gbcD);
-        gbcD.gridx = 1;
-        gbcD.gridy++;
-        gbcD.gridwidth = 2;
-        displayPanel.add(m_warningLabelOptions, gbcD);
-        gbcD.gridx = 0;
-        gbcD.gridy++;
-        gbcD.gridwidth = 1;
-        displayPanel.add(m_useColWidthCheckBox, gbcD);
-        gbcD.gridx++;
-        gbcD.gridwidth = 2;
-        displayPanel.add(m_colWidthSpinner.getComponentPanel(), gbcD);
-        gbcD.gridx = 0;
-        gbcD.gridy++;
-        gbcD.gridwidth = 1;
-        displayPanel.add(new JLabel("Select text alignment:"), gbcD);
         gbcD.gridx = 0;
         gbcD.gridy++;
         gbcD.gridwidth = 3;
+        displayPanel.add(m_useNumColsCheckBox, gbcD);
+        gbcD.gridx+=3;
+        displayPanel.add(m_numColsSpinner.getComponentPanel(), gbcD);
+        gbcD.gridx+=3;
+        displayPanel.add(m_useColWidthCheckBox, gbcD);
+        gbcD.gridx+=3;
+        displayPanel.add(m_colWidthSpinner.getComponentPanel(), gbcD);
+        gbcD.gridx=0;
+        gbcD.gridy++;
+        gbcD.gridwidth = 6;
+        // reposition out of range warnings
+        m_colWidthSpinner.getComponentPanel().remove(m_numColWarning);
+        displayPanel.add(m_numColWarning, gbcD);
+        displayPanel.add(m_warningLabelOptions, gbcD);
+        gbcD.gridx = 6;
+        m_colWidthSpinner.getComponentPanel().remove(m_colWidthWarning);
+        displayPanel.add(m_colWidthWarning, gbcD);
+        gbcD.gridx = 0;
+        gbcD.gridy++;
+        gbcD.gridwidth = 4;
+        displayPanel.add(new JLabel("Select text alignment:"), gbcD);
+        gbcD.gridx = 0;
+        gbcD.gridy++;
+        gbcD.gridwidth = 12;
         final JPanel alignmentButtons = new JPanel(new GridLayout(1, 3));
         alignmentButtons.add(m_alignLeftRadioButton);
         m_alignCenterRadioButton.setHorizontalAlignment(SwingConstants.CENTER);
@@ -472,7 +480,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         displayPanel.add(alignmentButtons, gbcD);
         gbcD.gridx = 0;
         gbcD.gridy++;
-        gbcD.gridwidth = 3;
+        gbcD.gridwidth = 12;
         displayPanel.add(m_labelColColumnSelectionPanel, gbcD);
         gbcD.gridy++;
         // copied from table view start
@@ -484,8 +492,6 @@ public class CardViewNodeDialog extends NodeDialogPane {
         final GridBagConstraints gbc = DialogUtil.defaultGridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(generalPanel, gbc);
-        gbc.gridy++;
-        panel.add(titlePanel, gbc);
         gbc.gridy++;
         panel.add(displayPanel, gbc);
         gbc.gridy++;
@@ -504,18 +510,16 @@ public class CardViewNodeDialog extends NodeDialogPane {
         gbcP.gridwidth = 2;
         pagingPanel.add(m_enablePagingCheckBox, gbcP);
         gbcP.gridy++;
-        gbcP.gridwidth = 1;
         pagingPanel.add(m_initialPageSizeSpinner.getComponentPanel(), gbcP);
         gbcP.gridx = 0;
         gbcP.gridy++;
-        gbcP.gridwidth = 2;
         pagingPanel.add(m_warningLabelInteract, gbcP);
         gbcP.gridx = 0;
         gbcP.gridy++;
-        gbcP.gridwidth = 1;
         pagingPanel.add(m_enablePageSizeChangeCheckBox, gbcP);
         gbcP.gridx = 0;
         gbcP.gridy++;
+        gbcP.gridwidth = 1;
         pagingPanel.add(new JLabel("Selectable page sizes: "), gbcP);
         gbcP.gridx++;
         pagingPanel.add(m_allowedPageSizesField, gbcP);
@@ -575,7 +579,6 @@ public class CardViewNodeDialog extends NodeDialogPane {
         gbcN.gridwidth = 2;
         numberPanel.add(m_enableGlobalNumberFormatCheckbox, gbcN);
         gbcN.gridy++;
-        gbcN.gridwidth = 1;
         numberPanel.add(m_globalNumberFormatDecimalSpinner.getComponentPanel(), gbcN);
         gbcN.gridx = 0;
         gbcN.gridy++;
@@ -720,7 +723,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
     }
 
     private void changeWhiteSpaceVisibility() {
-        if (m_numColWarning.isVisible() || m_colWidthWarning.isVisible() || m_maxWidthWarning.isVisible()
+        if (m_numColWarning.isVisible() || m_colWidthWarning.isVisible() || m_maxRowsWarning.isVisible()
             || m_warningLabelOptions.isVisible()) {
             m_whitespace.setVisible(false);
         } else {
