@@ -152,11 +152,11 @@ public class CardViewNodeDialog extends NodeDialogPane {
         // copied from table view start
         m_maxRowsSpinner = new DialogComponentNumber(
             new SettingsModelIntegerBounded("maxRows", 0, 0, Integer.MAX_VALUE),
-            "No. of rows to display: ", 1, 20, null, true, "value cannot be negative.");
+            "No. of rows to display: ", 1, 20, null, true, "Value cannot be negative.");
         m_enablePagingCheckBox = new JCheckBox("Enable pagination");
         m_enablePagingCheckBox.addChangeListener(e -> enablePagingFields());
         m_initialPageSizeSpinner = new DialogComponentNumber(new SettingsModelIntegerBounded("initialPageSize",
-            1, 1, Integer.MAX_VALUE), "Initial page size: ", 1, 20, null, true, "value must be greater than 0.");
+            1, 1, Integer.MAX_VALUE), "Initial page size: ", 1, 20, null, true, "Value must be greater than 0.");
         m_enablePageSizeChangeCheckBox = new JCheckBox("Enable page size change control");
         m_enablePageSizeChangeCheckBox.addChangeListener(e -> enablePagingFields());
         m_allowedPageSizesField = new JTextField(TEXT_FIELD_SIZE);
@@ -187,7 +187,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_enableGlobalNumberFormatCheckbox.addChangeListener(e -> enableFormatterFields());
         m_globalNumberFormatDecimalSpinner =
             new DialogComponentNumber(new SettingsModelIntegerBounded("globalNumberFormatDecimals", 2, 0,
-                Integer.MAX_VALUE), "Decimal places: ", 1, 20, null, true, "value cannot be negative");
+                Integer.MAX_VALUE), "Decimal places: ", 1, 20, null, true, "Value cannot be negative");
         m_displayMissingValueAsQuestionMark = new JCheckBox("Display missing value as red question mark");
         // end
 
@@ -673,21 +673,30 @@ public class CardViewNodeDialog extends NodeDialogPane {
         // the value in the SettingsModel doesn't always match what is displayed in the dialog, use spinners directly
         final int numCols = (int)getSpinner(m_numColsSpinner).getValue();
         final int initPageSize = (int)getSpinner(m_initialPageSizeSpinner).getValue();
+        String colText = "";
+        String pageText = "";
+        boolean colVis = false;
+        boolean pageVis = false;
         if (numCols > initPageSize) {
-            m_warningLabelOptions.setText(
-                "<html>Number of cards per row (" + numCols + ") cannot be greater than the <br />initial page size ("
-                    + initPageSize + "). Check the \"Interactivity\" tab.</html>");
-            m_warningLabelOptions.setVisible(true);
-            m_warningLabelInteract.setText(
-                "<html>Number of cards per row (" + numCols + ") cannot be greater than the <br />initial page size ("
-                    + initPageSize + "). Check the \"Options\" tab.</html>");
-            m_warningLabelInteract.setVisible(true);
-        } else {
-            m_warningLabelOptions.setText("");
-            m_warningLabelOptions.setVisible(false);
-            m_warningLabelInteract.setText("");
-            m_warningLabelInteract.setVisible(false);
+            // Don't check if the "out of range" label is displayed, check if the condition for it to be displayed is met.
+            // It is possible that the "out of range" label isn't displayed at this point but will be once its thread finishes
+            if (numCols <= CardViewConfig.MAX_NUM_COLS && numCols >= CardViewConfig.MIN_NUM_COLS) {
+                colText = "<html>Number of cards per row (" + numCols
+                    + ") cannot be greater than the <br />initial page size (" + initPageSize
+                    + "). Check the \"Interactivity\" tab.</html>";
+                colVis = true;
+            }
+            if (initPageSize > 0) {
+                pageText = "<html>Number of cards per row (" + numCols
+                    + ") cannot be greater than the <br />initial page size (" + initPageSize
+                    + "). Check the \"Options\" tab.</html>";
+                pageVis = true;
+            }
         }
+        m_warningLabelOptions.setText(colText);
+        m_warningLabelOptions.setVisible(colVis);
+        m_warningLabelInteract.setText(pageText);
+        m_warningLabelInteract.setVisible(pageVis);
     }
 
     private static JSpinner getSpinner(final DialogComponentNumber component) {
