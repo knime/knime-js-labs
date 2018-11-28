@@ -75,10 +75,6 @@ foreignObject,
     cursor: pointer;
 }
 
-text.knime-tick-label {
-    font-size: 10px;
-}
-
 text.active {
     fill: #003389;
 }
@@ -175,7 +171,8 @@ form {
     padding: 2px 10px;
 }
 
-text.knime-legend-label {
+text.knime-legend-label,
+text.knime-tick-label {
     font-size: 10px;
 }
 

@@ -30,7 +30,8 @@ window.heatmapNamespace = (function () {
         this._defaultZoomX = 0;
         this._defaultZoomY = 0;
         this._defaultZoomK = 1;
-        this._legendWidth = 140;
+        this._continousLegendWidth = 160;
+        this._discreteLegendWidth = 200;
         this._legendHeight = 50;
         this._legendColorRangeHeight = 20;
         this._legendStandardMargin = 5;
@@ -1522,8 +1523,64 @@ window.heatmapNamespace = (function () {
         }
     };
 
+    /**
+     * Calculate which ticks to hide,
+     * maximum and minimum should be always shown
+     * @return {Undefined}
+     */
+    Heatmap.prototype.removeLegendTickOverlap = function () {
+        var legend = document.querySelector('.knime-legend');
+        if (!legend) {
+            return;
+        }
+        var ticks =  legend.querySelectorAll('.tick');
+
+        for (var j = 1; j < ticks.length; j++) {
+            var currentTick = ticks[j];
+
+            // the number of previous ticks we check for overlapping
+            var lookBehind = 5;
+            var isLastTick = j === ticks.length - 1;
+
+            for (var g = 1; g <= lookBehind; g++) {
+                var prevTick = ticks[j - g];
+                if (prevTick) {
+                    this.removeTickOverlap(currentTick, prevTick, isLastTick);
+                }
+            }
+        
+        }
+    };
+
+    Heatmap.prototype.removeElementFromDOM = function (el) {
+        if (el.parentNode) {
+            el.parentNode.removeChild(el);
+        }
+    };
+
+    Heatmap.prototype.removeTickOverlap = function (currentTick, prevTick, isLastTick) {
+        var minimumSpacing = 2;
+        var curTickRect = currentTick.getBoundingClientRect();
+        var startPosition = curTickRect.left;
+        var prevTickRect = prevTick.getBoundingClientRect();
+        var prevEndposition = prevTickRect.left + prevTickRect.width + minimumSpacing;
+
+        if (prevEndposition > startPosition) {
+            if (isLastTick) {
+                // Last tick for showing maximum should not be removed,
+                // remove tick before that instead
+                this.removeElementFromDOM(prevTick);
+            } else {
+                // current tick has not yet been removed if parent element exists
+                this.removeElementFromDOM(currentTick);
+            }
+        }
+    };
+
     Heatmap.prototype.drawLegend = function (svg) {
         var legend;
+
+        var legendWidth = this._value.continuousGradient ? this._continousLegendWidth : this._discreteLegendWidth;
 
         if (this._representation.runningInView) {
             // append a separate svg
@@ -1531,7 +1588,7 @@ window.heatmapNamespace = (function () {
                 .select('.info-wrapper')
                 .append('svg')
                 .attr('class', 'knime-legend')
-                .attr('width', this._legendWidth + 2 * this._legendStandardMargin)
+                .attr('width', legendWidth + 2 * this._legendStandardMargin)
                 .attr('height', this._legendHeight);
         } else {
             // append in existing svg
@@ -1542,7 +1599,7 @@ window.heatmapNamespace = (function () {
             legend = svg
                 .append('g')
                 .attr('class', 'knime-legend')
-                .attr('width', this._legendWidth + 2 * this._legendStandardMargin)
+                .attr('width', legendWidth + 2 * this._legendStandardMargin)
                 .attr('height', this._legendHeight)
                 .attr('transform', transform);
         }
@@ -1552,20 +1609,28 @@ window.heatmapNamespace = (function () {
 
         var colorDomain = this.getLinearColorDomain(this._representation.minValue, this._representation.maxValue);
 
-        // append a single rect to display a gradient
-        legend
-            .append('rect')
-            .attr('y', 0)
-            .attr('x', this._legendStandardMargin)
-            .attr('class', 'knime-legend-symbol')
-            .attr('width', this._legendWidth)
-            .attr('height', this._legendColorRangeHeight)
-            .attr('right', this._legendStandardMargin)
-            .attr('fill', 'url(#legendGradient)');
+        var legendSymbolContainer =
+            legend
+                .append('svg')
+                .attr('y', 0)
+                .attr('x', this._legendStandardMargin)
+                .attr('class', 'knime-legend-symbol')
+                .attr('width', legendWidth)
+                .attr('height', this._legendColorRangeHeight)
+                .attr('right', this._legendStandardMargin);
 
         // set gradient stops
         var tickValues;
         if (this._value.continuousGradient) {
+            // append a single rect to display a gradient
+            legendSymbolContainer
+                .append('rect')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', '100%')
+                .attr('height', '100%')
+                .attr('fill', 'url(#legendGradient)');
+
             for (var i = 0; i < colorDomain.length; i++) {
                 var percentage = 100 / (colorDomain.length - 1) * i;
                 legendGradient
@@ -1577,30 +1642,42 @@ window.heatmapNamespace = (function () {
             var legendCellPercentage = 100 / colorDomain.length;
             var previousPercentage = 0;
             var interpolator = d3.interpolateNumber(this._representation.minValue, this._representation.maxValue);
-            tickValues = [];
-            tickValues.push(this._representation.minValue, this._representation.maxValue);
+
+            tickValues = [this._representation.minValue];
 
             for (var j = 0; j < colorDomain.length; j++) {
                 var currentPercentage = legendCellPercentage * (j + 1);
 
                 tickValues.push(interpolator(currentPercentage / 100));
+                
+                var color = this._scales.colorScale(colorDomain[j]);
+                var colorCell = legendSymbolContainer
+                    .append('g');
 
-                legendGradient
-                    .append('stop')
-                    .attr('offset', previousPercentage + '%')
-                    .attr('style', 'stop-opacity:1; stop-color:' + this._scales.colorScale(colorDomain[j]));
-                legendGradient
-                    .append('stop')
-                    .attr('offset', currentPercentage + '%')
-                    .attr('style', 'stop-opacity:1; stop-color:' + this._scales.colorScale(colorDomain[j]));
+                colorCell.append('rect')
+                    .attr('x', previousPercentage  + '%')
+                    .attr('y', 0)
+                    .attr('style', 'position: absolute; top: 0; left: ' + previousPercentage + '%')
+                    .attr('width', currentPercentage - previousPercentage + '%')
+                    .attr('height', '100%')
+                    .attr('fill', color);
+
+                colorCell.append('svg:title')
+                    .text(
+                        Math.round(interpolator(previousPercentage / 100) * 100) / 100 +
+                        ' | ' +
+                        Math.round(interpolator(currentPercentage / 100) * 100) / 100
+                    );
+
                 previousPercentage = currentPercentage;
             }
+
         }
 
         var legendScale = d3
             .scaleLinear()
             .domain([this._representation.minValue, this._representation.maxValue])
-            .range([0, this._legendWidth]);
+            .range([0, legendWidth]);
 
         var legendAxis = d3
             .axisBottom(legendScale)
@@ -1620,10 +1697,12 @@ window.heatmapNamespace = (function () {
             .attr('class', 'knime-legend-label')
             .attr('font-weight', 'normal');
 
-        if (axis && axis.node().getBoundingClientRect().width > this._legendWidth) {
+        if (axis && axis.node().getBoundingClientRect().width > legendWidth) {
             // make legend svg wider if axis is wider, for example if tick values are too long
             legend.attr('width', axis.node().getBoundingClientRect().width);
         }
+        this.removeLegendTickOverlap();
+
     };
 
     /**
