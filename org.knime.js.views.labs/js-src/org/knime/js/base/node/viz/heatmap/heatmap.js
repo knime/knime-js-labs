@@ -249,7 +249,7 @@ window.heatmapNamespace = (function () {
 
         var existingImages = document.querySelectorAll('.imagewrapper');
         for (var i = 0; i < existingImages.length; i++) {
-            existingImages[i].parentNode.removeChild(existingImages[i]);
+            this.removeElementFromDOM(existingImages[i]);
         }
 
         for (var key in this._canvases) {
@@ -275,7 +275,7 @@ window.heatmapNamespace = (function () {
         }
         var preview = document.querySelector('.preview');
         if (preview) {
-            preview.parentNode.removeChild(preview);
+            this.removeElementFromDOM(preview);
         }
     };
 
@@ -1805,7 +1805,7 @@ window.heatmapNamespace = (function () {
         var rowHighlighters = document.querySelectorAll('.row-highlighter');
         if (rowHighlighters.length) {
             for (var i = 0; i < rowHighlighters.length; i++) {
-                rowHighlighters[i].parentNode.removeChild(rowHighlighters[i]); // IE11 compatible remove
+                this.removeElementFromDOM(rowHighlighters[i]);
             }
         }
 
