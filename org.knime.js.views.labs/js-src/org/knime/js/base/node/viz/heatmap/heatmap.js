@@ -86,8 +86,10 @@ window.heatmapNamespace = (function () {
         var container = document.createElementNS(xhtmlNS, 'div');
         container.classList.add('knime-layout-container');
         document.body.appendChild(container);
-
+        
         this.drawChart();
+        
+        this.registerOneTimeEvents();
     };
 
     Heatmap.prototype.getComponentValue = function () {
@@ -103,6 +105,15 @@ window.heatmapNamespace = (function () {
         knimeService.inlineSvgStyles(svgElement);
         return new XMLSerializer().serializeToString(svgElement);
     };
+
+
+    Heatmap.prototype.reset = function () {
+        this._cellHeight = 0;
+        this._cellWidth = 0;
+        this._canvases = [];
+        this._labelsMargins = false;
+    };
+
 
     Heatmap.prototype.toggleSubscribeSelection = function () {
         if (this._value.subscribeSelection) {
@@ -226,15 +237,15 @@ window.heatmapNamespace = (function () {
             }
             var percentageComplete = finishedPercentage -
                 self._drawCellQueue.remaining() / totalRowsCount * finishedPercentage;
-            if (percentageComplete < this.showProgressBarMaxPercentage) { // only display progress bar if initial rendered percentage is low
+            if (percentageComplete < self.showProgressBarMaxPercentage) { // only display progress bar if initial rendered percentage is low
                 progressBar.style.opacity = 1;
             }
             percentageComplete = Math.min(finishedPercentage, percentageComplete);
             progressIndicator.style.width = percentageComplete + '%';
             if (percentageComplete >= finishedPercentage) {
-                progressBar.style.opacity = 0;
                 interval.clear();
                 self.createImagesFromCanvases();
+                progressBar.style.opacity = 0;
             }
         }, this.intervalTime);
     };
@@ -666,6 +677,16 @@ window.heatmapNamespace = (function () {
                 self.selectSingleRow(data.y, e.ctrlKey || e.metaKey);
             }
         });
+
+    };
+
+    Heatmap.prototype.registerOneTimeEvents = function () {
+        var self = this;
+        window.addEventListener('resize', function () {
+            self.reset();
+            self.drawChart();
+        });
+
     };
 
     /**
@@ -1237,9 +1258,7 @@ window.heatmapNamespace = (function () {
             ? this._labelsMargins.x
             : container.getBoundingClientRect().width * maxLabelPercentage;
             
-        // When in meta node (iframe), we have to keep measuring the container height
-        // because the intial height is not final
-        var maxHeight = this._labelsMargins && !knimeService.isInteractivityAvailable()
+        var maxHeight = this._labelsMargins
             ? this._labelsMargins.y
             : container.getBoundingClientRect().height * maxLabelPercentage;
 
