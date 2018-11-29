@@ -50,6 +50,7 @@ package org.knime.js.base.node.viz.cardView;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -92,7 +93,7 @@ import org.knime.js.core.settings.table.TableSettings;
  */
 public class CardViewNodeDialog extends NodeDialogPane {
 
-    private static final int TEXT_FIELD_SIZE = 20;
+    private static final int TEXT_FIELD_SIZE = DialogUtil.DEF_TEXTFIELD_WIDTH;
 
     private final CardViewConfig m_config;
 
@@ -150,15 +151,9 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_config = new CardViewConfig();
 
         // copied from table view start
-        m_maxRowsSpinner = new DialogComponentNumber(
-            new SettingsModelIntegerBounded("maxRows", 0, 0, Integer.MAX_VALUE),
-            "", 1, 20, null, true, "Value cannot be negative.");
-        for (int i = 0; i < m_maxRowsSpinner.getComponentPanel().getComponentCount(); i++) {
-            final Component c = m_maxRowsSpinner.getComponentPanel().getComponent(i);
-            if ((c instanceof JLabel) && !((JLabel) c).getForeground().equals(Color.RED)) {
-                c.setVisible(false);
-            }
-        }
+        m_maxRowsSpinner =
+            new DialogComponentNumber(new SettingsModelIntegerBounded("maxRows", 0, 0, Integer.MAX_VALUE),
+                "", 1, 1, null, true, "Value cannot be negative.");
         m_enablePagingCheckBox = new JCheckBox("Enable pagination");
         m_enablePagingCheckBox.addChangeListener(e -> enablePagingFields());
         m_initialPageSizeSpinner = new DialogComponentNumber(new SettingsModelIntegerBounded("initialPageSize",
@@ -203,10 +198,10 @@ public class CardViewNodeDialog extends NodeDialogPane {
             "Fixed card width (" + CardViewConfig.MIN_COL_WIDTH + " - " + CardViewConfig.MAX_COL_WIDTH + "px)");
         m_numColsSpinner =
             new DialogComponentNumber(new SettingsModelIntegerBounded(CardViewConfig.CFG_NUM_COLS, CardViewConfig.DEFAULT_NUM_COLS,
-                CardViewConfig.MIN_NUM_COLS, CardViewConfig.MAX_NUM_COLS), "", 1, 12, null, true, null);
+                CardViewConfig.MIN_NUM_COLS, CardViewConfig.MAX_NUM_COLS), "", 1, TEXT_FIELD_SIZE, null, true, null);
         m_colWidthSpinner = new DialogComponentNumber(new SettingsModelIntegerBounded(CardViewConfig.CFG_COL_WIDTH,
             CardViewConfig.DEFAULT_COL_WIDTH, CardViewConfig.MIN_COL_WIDTH, CardViewConfig.MAX_COL_WIDTH), "", 1,
-            12, null, true, null);
+            TEXT_FIELD_SIZE, null, true, null);
         m_useNumColsCheckBox.addChangeListener(e -> enabledNumColMode());
         m_useColWidthCheckBox.addChangeListener(e -> enableColumnWidthMode());
 
@@ -224,8 +219,11 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_warningLabelInteract.setForeground(Color.RED);
         m_warningLabelInteract.setVisible(false);
 
+        final JSpinner initSpin =  getSpinner(m_initialPageSizeSpinner);
+        final Dimension spinnerDim = new Dimension(TEXT_FIELD_SIZE, 20);
+        initSpin.setPreferredSize(spinnerDim);
         getSpinner(m_numColsSpinner).addChangeListener(e -> checkRowsAndPage());
-        getSpinner(m_initialPageSizeSpinner).addChangeListener(e -> checkRowsAndPage());
+        initSpin.addChangeListener(e -> checkRowsAndPage());
 
         // ensure space for warnings without scroll bar
         m_numColWarning = getWarning(m_numColsSpinner);
@@ -235,7 +233,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_colWidthWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
         m_maxRowsWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
         m_warningLabelOptions.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
-        m_whitespace = Box.createVerticalStrut(10);
+        m_whitespace = Box.createVerticalStrut(20);
         m_whitespace.setVisible(true);
 
         addTab("Options", initOptions());
@@ -415,25 +413,34 @@ public class CardViewNodeDialog extends NodeDialogPane {
         final GridBagConstraints gbcG = DialogUtil.defaultGridBagConstraints();
         gbcG.fill = GridBagConstraints.HORIZONTAL;
         gbcG.gridwidth = 1;
-        gbcG.weightx = 1;
-        generalPanel.add(new JLabel("No. of rows to display:"), gbcG);
+        gbcG.gridx = 0;
+        gbcG.gridy = 0;
+        final JSpinner spin = getSpinner(m_maxRowsSpinner);
+        final JLabel l = new JLabel("No. of rows to display: ");
+        generalPanel.add(l, gbcG);
         gbcG.gridx++;
-        generalPanel.add(new JLabel("Title:"), gbcG);
-        gbcG.gridx++;
-        generalPanel.add(new JLabel("Subtitle:"), gbcG);
+        generalPanel.add(spin, gbcG);
+        gbcG.gridwidth = 2;
         gbcG.gridx = 0;
         gbcG.gridy++;
-        generalPanel.add(m_maxRowsSpinner.getComponentPanel(), gbcG);
+        generalPanel.add(m_maxRowsWarning, gbcG);
+        gbcG.gridwidth = 1;
+        gbcG.gridx = 0;
+        gbcG.gridy++;
+        generalPanel.add(new JLabel("Title:"), gbcG);
         gbcG.gridx++;
         generalPanel.add(m_titleField, gbcG);
+        gbcG.gridx = 0;
+        gbcG.gridy++;
+        generalPanel.add(new JLabel("Subtitle:"), gbcG);
         gbcG.gridx++;
         generalPanel.add(m_subtitleField, gbcG);
 
         final JPanel displayPanel = new JPanel(new GridBagLayout());
         displayPanel.setBorder(new TitledBorder("Display Options"));
         final GridBagConstraints gbcD = DialogUtil.defaultGridBagConstraints();
-        gbcD.fill = GridBagConstraints.HORIZONTAL;
         gbcD.weightx = 1;
+        gbcD.fill = GridBagConstraints.HORIZONTAL;
         // end
         gbcD.gridwidth = 12;
         gbcD.gridx = 0;
@@ -444,33 +451,41 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_displayFullscreenButtonCheckBox.setHorizontalAlignment(SwingConstants.RIGHT);
         displayRow.add(m_displayFullscreenButtonCheckBox);
         displayPanel.add(displayRow, gbcD);
+        gbcD.fill = GridBagConstraints.NONE;
         gbcD.gridx = 0;
         gbcD.gridy++;
-        gbcD.gridwidth = 3;
-        displayPanel.add(m_useNumColsCheckBox, gbcD);
-        gbcD.gridx+=3;
-        displayPanel.add(m_numColsSpinner.getComponentPanel(), gbcD);
-        gbcD.gridx+=3;
-        displayPanel.add(m_useColWidthCheckBox, gbcD);
-        gbcD.gridx+=3;
-        displayPanel.add(m_colWidthSpinner.getComponentPanel(), gbcD);
-        gbcD.gridx=0;
-        gbcD.gridy++;
         gbcD.gridwidth = 6;
+        displayPanel.add(m_useNumColsCheckBox, gbcD);
+        gbcD.gridx+=6;
+        gbcD.anchor = GridBagConstraints.NORTHEAST;
+        displayPanel.add(getSpinner(m_numColsSpinner), gbcD);
+        gbcD.gridx = 0;
+        gbcD.gridy++;
+        gbcD.gridwidth = 12;
+        gbcD.anchor = GridBagConstraints.NORTHWEST;
         // reposition out of range warnings
         m_colWidthSpinner.getComponentPanel().remove(m_numColWarning);
         displayPanel.add(m_numColWarning, gbcD);
         displayPanel.add(m_warningLabelOptions, gbcD);
-        gbcD.gridx = 6;
+        gbcD.gridx = 0;
+        gbcD.gridy++;
+        gbcD.gridwidth = 6;
+        displayPanel.add(m_useColWidthCheckBox, gbcD);
+        gbcD.gridx+=6;
+        gbcD.anchor = GridBagConstraints.NORTHEAST;
+        displayPanel.add(getSpinner(m_colWidthSpinner), gbcD);
+        gbcD.gridx=0;
+        gbcD.gridy++;
+        gbcD.gridwidth = 12;
+        gbcD.anchor = GridBagConstraints.NORTHWEST;
         m_colWidthSpinner.getComponentPanel().remove(m_colWidthWarning);
         displayPanel.add(m_colWidthWarning, gbcD);
         gbcD.gridx = 0;
         gbcD.gridy++;
-        gbcD.gridwidth = 4;
-        displayPanel.add(new JLabel("Select text alignment:"), gbcD);
-        gbcD.gridx = 0;
-        gbcD.gridy++;
-        gbcD.gridwidth = 12;
+        gbcD.gridwidth = 6;
+        displayPanel.add(new JLabel("Select text alignment: "), gbcD);
+        gbcD.gridx = 6;
+        gbcD.anchor = GridBagConstraints.NORTHEAST;
         final JPanel alignmentButtons = new JPanel(new GridLayout(1, 3));
         alignmentButtons.add(m_alignLeftRadioButton);
         m_alignCenterRadioButton.setHorizontalAlignment(SwingConstants.CENTER);
@@ -478,13 +493,18 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_alignRightRadioButton.setHorizontalAlignment(SwingConstants.RIGHT);
         alignmentButtons.add(m_alignRightRadioButton);
         displayPanel.add(alignmentButtons, gbcD);
+        gbcD.fill = GridBagConstraints.HORIZONTAL;
+        gbcD.anchor = GridBagConstraints.NORTHWEST;
+        gbcD.gridx = 0;
+        gbcD.gridy++;
+        gbcD.gridwidth = 6;
+        displayPanel.add(m_labelColColumnSelectionPanel, gbcD);
         gbcD.gridx = 0;
         gbcD.gridy++;
         gbcD.gridwidth = 12;
-        displayPanel.add(m_labelColColumnSelectionPanel, gbcD);
-        gbcD.gridy++;
         // copied from table view start
         displayPanel.add(new JLabel("Columns to display: "), gbcD);
+        gbcD.gridx = 0;
         gbcD.gridy++;
         displayPanel.add(m_columnFilterPanel, gbcD);
 
@@ -684,15 +704,13 @@ public class CardViewNodeDialog extends NodeDialogPane {
             // Don't check if the "out of range" label is displayed, check if the condition for it to be displayed is met.
             // It is possible that the "out of range" label isn't displayed at this point but will be once its thread finishes
             if (numCols <= CardViewConfig.MAX_NUM_COLS && numCols >= CardViewConfig.MIN_NUM_COLS) {
-                colText = "<html>Number of cards per row (" + numCols
-                    + ") cannot be greater than the <br />initial page size (" + initPageSize
-                    + "). Check the \"Interactivity\" tab.</html>";
+                colText = "Number of cards per row (" + numCols + ") cannot exceed the initial page size ("
+                    + initPageSize + "). Check the \"Interactivity\" tab.";
                 colVis = true;
             }
             if (initPageSize > 0) {
-                pageText = "<html>Number of cards per row (" + numCols
-                    + ") cannot be greater than the <br />initial page size (" + initPageSize
-                    + "). Check the \"Options\" tab.</html>";
+                pageText = "Number of cards per row (" + numCols + ") cannot exceed the initial page size ("
+                    + initPageSize + "). Check the \"Options\" tab.";
                 pageVis = true;
             }
         }
