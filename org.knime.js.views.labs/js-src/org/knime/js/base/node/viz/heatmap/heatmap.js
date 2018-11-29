@@ -30,7 +30,7 @@ window.heatmapNamespace = (function () {
         this._defaultZoomX = 0;
         this._defaultZoomY = 0;
         this._defaultZoomK = 1;
-        this._continousLegendWidth = 160;
+        this._continousLegendWidth = 200;
         this._discreteLegendWidth = 200;
         this._legendHeight = 50;
         this._legendColorRangeHeight = 20;
@@ -1239,7 +1239,7 @@ window.heatmapNamespace = (function () {
             
         // When in meta node (iframe), we have to keep measuring the container height
         // because the intial height is not final
-        var maxHeight = this._labelsMargins && !this.isInIframe()
+        var maxHeight = this._labelsMargins && !knimeService.isInteractivityAvailable()
             ? this._labelsMargins.y
             : container.getBoundingClientRect().height * maxLabelPercentage;
 
@@ -1875,14 +1875,6 @@ window.heatmapNamespace = (function () {
         return arr.sort(function (a, b) {
             return yDomain.indexOf(a) - yDomain.indexOf(b);
         });
-    };
-
-    Heatmap.prototype.isInIframe = function () {
-        try {
-            return window.self !== window.top;
-        } catch (e) {
-            return true;
-        }
     };
 
     /**
