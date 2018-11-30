@@ -219,21 +219,21 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_warningLabelInteract.setForeground(Color.RED);
         m_warningLabelInteract.setVisible(false);
 
-        final JSpinner initSpin =  getSpinner(m_initialPageSizeSpinner);
+        final JSpinner initSpin =  m_initialPageSizeSpinner.getSpinner();
         final Dimension spinnerDim = new Dimension(TEXT_FIELD_SIZE, 20);
         initSpin.setPreferredSize(spinnerDim);
-        getSpinner(m_numColsSpinner).addChangeListener(e -> checkRowsAndPage());
+        m_numColsSpinner.getSpinner().addChangeListener(e -> checkRowsAndPage());
         initSpin.addChangeListener(e -> checkRowsAndPage());
 
         // ensure space for warnings without scroll bar
-        m_numColWarning = getWarning(m_numColsSpinner);
-        m_colWidthWarning = getWarning(m_colWidthSpinner);
-        m_maxRowsWarning = getWarning(m_maxRowsSpinner);
+        m_numColWarning = m_numColsSpinner.getWarningLabel().orElse(null);
+        m_colWidthWarning = m_colWidthSpinner.getWarningLabel().orElse(null);
+        m_maxRowsWarning = m_maxRowsSpinner.getWarningLabel().orElse(null);
         m_numColWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
         m_colWidthWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
         m_maxRowsWarning.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
         m_warningLabelOptions.addPropertyChangeListener(e -> changeWhiteSpaceVisibility());
-        m_whitespace = Box.createVerticalStrut(20);
+        m_whitespace = Box.createVerticalStrut(25);
         m_whitespace.setVisible(true);
 
         addTab("Options", initOptions());
@@ -247,11 +247,11 @@ public class CardViewNodeDialog extends NodeDialogPane {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         // use spinner values, since if the value is out of range it isn't propagated to the model
-        final int maxRows = (int)getSpinner(m_maxRowsSpinner).getValue();
-        final int numCols = (int)getSpinner(m_numColsSpinner).getValue();
-        final int colWidth = (int)getSpinner(m_colWidthSpinner).getValue();
-        final int initPageSize = (int)getSpinner(m_initialPageSizeSpinner).getValue();
-        final int decimalPlaces = (int)getSpinner(m_globalNumberFormatDecimalSpinner).getValue();
+        final int maxRows = (int)m_maxRowsSpinner.getSpinner().getValue();
+        final int numCols = (int)m_numColsSpinner.getSpinner().getValue();
+        final int colWidth = (int)m_colWidthSpinner.getSpinner().getValue();
+        final int initPageSize = (int)m_initialPageSizeSpinner.getSpinner().getValue();
+        final int decimalPlaces = (int)m_globalNumberFormatDecimalSpinner.getSpinner().getValue();
 
         // copied from table view start
         m_dateTimeFormats.validateSettings();
@@ -415,7 +415,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         gbcG.gridwidth = 1;
         gbcG.gridx = 0;
         gbcG.gridy = 0;
-        final JSpinner spin = getSpinner(m_maxRowsSpinner);
+        final JSpinner spin = m_maxRowsSpinner.getSpinner();
         final JLabel l = new JLabel("No. of rows to display: ");
         generalPanel.add(l, gbcG);
         gbcG.gridx++;
@@ -458,7 +458,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         displayPanel.add(m_useNumColsCheckBox, gbcD);
         gbcD.gridx+=6;
         gbcD.anchor = GridBagConstraints.NORTHEAST;
-        displayPanel.add(getSpinner(m_numColsSpinner), gbcD);
+        displayPanel.add(m_numColsSpinner.getSpinner(), gbcD);
         gbcD.gridx = 0;
         gbcD.gridy++;
         gbcD.gridwidth = 12;
@@ -473,7 +473,7 @@ public class CardViewNodeDialog extends NodeDialogPane {
         displayPanel.add(m_useColWidthCheckBox, gbcD);
         gbcD.gridx+=6;
         gbcD.anchor = GridBagConstraints.NORTHEAST;
-        displayPanel.add(getSpinner(m_colWidthSpinner), gbcD);
+        displayPanel.add(m_colWidthSpinner.getSpinner(), gbcD);
         gbcD.gridx=0;
         gbcD.gridy++;
         gbcD.gridwidth = 12;
@@ -694,8 +694,8 @@ public class CardViewNodeDialog extends NodeDialogPane {
             return;
         }
         // the value in the SettingsModel doesn't always match what is displayed in the dialog, use spinners directly
-        final int numCols = (int)getSpinner(m_numColsSpinner).getValue();
-        final int initPageSize = (int)getSpinner(m_initialPageSizeSpinner).getValue();
+        final int numCols = (int) m_numColsSpinner.getSpinner().getValue();
+        final int initPageSize = (int)m_initialPageSizeSpinner.getSpinner().getValue();
         String colText = "";
         String pageText = "";
         boolean colVis = false;
@@ -718,26 +718,6 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_warningLabelOptions.setVisible(colVis);
         m_warningLabelInteract.setText(pageText);
         m_warningLabelInteract.setVisible(pageVis);
-    }
-
-    private static JSpinner getSpinner(final DialogComponentNumber component) {
-        for (int i = 0; i < component.getComponentPanel().getComponentCount(); i++) {
-            final Component c = component.getComponentPanel().getComponent(i);
-            if (c instanceof JSpinner) {
-                return (JSpinner) c;
-            }
-        }
-        return null;
-    }
-
-    private static JLabel getWarning(final DialogComponentNumber component) {
-        for (int i = 0; i < component.getComponentPanel().getComponentCount(); i++) {
-            final Component c = component.getComponentPanel().getComponent(i);
-            if ((c instanceof JLabel) && ((JLabel)c).getForeground().equals(Color.RED)) {
-                return (JLabel)c;
-            }
-        }
-        return null;
     }
 
     private void changeWhiteSpaceVisibility() {
