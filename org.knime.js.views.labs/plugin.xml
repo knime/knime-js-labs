@@ -206,20 +206,20 @@
       </webResourceBundle>
       <webResourceBundle
             debug="true"
-            name="Card View"
+            name="Tile View"
             usesDefine="false"
             version="1.0.0"
             webResourceBundleID="org.knime.js.base.node.viz.tileView.bundle">
          <webResource
-               relativePathSource="js-src/org/knime/js/base/node/viz/cardView/"
-               relativePathTarget="/org/knime/js/base/node/viz/cardView/">
+               relativePathSource="js-src/org/knime/js/base/node/viz/tileView/"
+               relativePathTarget="/org/knime/js/base/node/viz/tileView/">
          </webResource>
          <importResource
-               relativePath="/org/knime/js/base/node/viz/cardView/cardview.js"
+               relativePath="/org/knime/js/base/node/viz/tileView/tileview.js"
                type="JAVASCRIPT">
          </importResource>
          <importResource
-               relativePath="/org/knime/js/base/node/viz/cardView/styles.css"
+               relativePath="/org/knime/js/base/node/viz/tileView/styles.css"
                type="CSS">
          </importResource>
          <webDependency
@@ -326,8 +326,8 @@
             implementationBundleID="org.knime.js.base.node.viz.tileView.bundle"
             init-method-name="init"
             javascriptComponentID="org.knime.js.base.node.viz.tileView"
-            name="Card View"
-            namespace="cards_namespace"
+            name="Tile View"
+            namespace="tiles_namespace"
             setValidationError-method-name="setValidationError"
             validate-method-name="validate">
       </javascriptComponent>
