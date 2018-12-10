@@ -46,7 +46,7 @@
  * History
  *   Aug 22, 2018 (awalter): created
  */
-package org.knime.js.base.node.viz.cardView;
+package org.knime.js.base.node.viz.tileView;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -91,11 +91,11 @@ import org.knime.js.core.settings.table.TableSettings;
 /**
  * @author Alison Walter, KNIME GmbH, Konstanz, Germany
  */
-public class CardViewNodeDialog extends NodeDialogPane {
+public class TileViewNodeDialog extends NodeDialogPane {
 
     private static final int TEXT_FIELD_SIZE = DialogUtil.DEF_TEXTFIELD_WIDTH;
 
-    private final CardViewConfig m_config;
+    private final TileViewConfig m_config;
 
     private final JLabel m_warningLabelOptions;
     private final JLabel m_warningLabelInteract;
@@ -147,8 +147,8 @@ public class CardViewNodeDialog extends NodeDialogPane {
     private final JLabel m_maxRowsWarning;
 
     @SuppressWarnings("unchecked")
-    CardViewNodeDialog() {
-        m_config = new CardViewConfig();
+    TileViewNodeDialog() {
+        m_config = new TileViewConfig();
 
         // copied from table view start
         m_maxRowsSpinner =
@@ -192,15 +192,15 @@ public class CardViewNodeDialog extends NodeDialogPane {
         m_displayMissingValueAsQuestionMark = new JCheckBox("Display missing value as red question mark");
         // end
 
-        m_useNumColsCheckBox = new JCheckBox("Fixed number of cards per row (" + CardViewConfig.MIN_NUM_COLS + " - "
-            + CardViewConfig.MAX_NUM_COLS + ")");
+        m_useNumColsCheckBox = new JCheckBox("Fixed number of tiles per row (" + TileViewConfig.MIN_NUM_COLS + " - "
+            + TileViewConfig.MAX_NUM_COLS + ")");
         m_useColWidthCheckBox = new JCheckBox(
-            "Fixed card width (" + CardViewConfig.MIN_COL_WIDTH + " - " + CardViewConfig.MAX_COL_WIDTH + "px)");
+            "Fixed tile width (" + TileViewConfig.MIN_COL_WIDTH + " - " + TileViewConfig.MAX_COL_WIDTH + "px)");
         m_numColsSpinner =
-            new DialogComponentNumber(new SettingsModelIntegerBounded(CardViewConfig.CFG_NUM_COLS, CardViewConfig.DEFAULT_NUM_COLS,
-                CardViewConfig.MIN_NUM_COLS, CardViewConfig.MAX_NUM_COLS), "", 1, TEXT_FIELD_SIZE, null, true, null);
-        m_colWidthSpinner = new DialogComponentNumber(new SettingsModelIntegerBounded(CardViewConfig.CFG_COL_WIDTH,
-            CardViewConfig.DEFAULT_COL_WIDTH, CardViewConfig.MIN_COL_WIDTH, CardViewConfig.MAX_COL_WIDTH), "", 1,
+            new DialogComponentNumber(new SettingsModelIntegerBounded(TileViewConfig.CFG_NUM_COLS, TileViewConfig.DEFAULT_NUM_COLS,
+                TileViewConfig.MIN_NUM_COLS, TileViewConfig.MAX_NUM_COLS), "", 1, TEXT_FIELD_SIZE, null, true, null);
+        m_colWidthSpinner = new DialogComponentNumber(new SettingsModelIntegerBounded(TileViewConfig.CFG_COL_WIDTH,
+            TileViewConfig.DEFAULT_COL_WIDTH, TileViewConfig.MIN_COL_WIDTH, TileViewConfig.MAX_COL_WIDTH), "", 1,
             TEXT_FIELD_SIZE, null, true, null);
         m_useNumColsCheckBox.addChangeListener(e -> enabledNumColMode());
         m_useColWidthCheckBox.addChangeListener(e -> enableColumnWidthMode());
@@ -703,13 +703,13 @@ public class CardViewNodeDialog extends NodeDialogPane {
         if (numCols > initPageSize) {
             // Don't check if the "out of range" label is displayed, check if the condition for it to be displayed is met.
             // It is possible that the "out of range" label isn't displayed at this point but will be once its thread finishes
-            if (numCols <= CardViewConfig.MAX_NUM_COLS && numCols >= CardViewConfig.MIN_NUM_COLS) {
-                colText = "Number of cards per row (" + numCols + ") cannot exceed the initial page size ("
+            if (numCols <= TileViewConfig.MAX_NUM_COLS && numCols >= TileViewConfig.MIN_NUM_COLS) {
+                colText = "Number of tiles per row (" + numCols + ") cannot exceed the initial page size ("
                     + initPageSize + "). Check the \"Interactivity\" tab.";
                 colVis = true;
             }
             if (initPageSize > 0) {
-                pageText = "Number of cards per row (" + numCols + ") cannot exceed the initial page size ("
+                pageText = "Number of tiles per row (" + numCols + ") cannot exceed the initial page size ("
                     + initPageSize + "). Check the \"Options\" tab.";
                 pageVis = true;
             }

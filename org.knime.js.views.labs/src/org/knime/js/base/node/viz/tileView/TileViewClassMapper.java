@@ -44,59 +44,30 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Aug 22, 2018 (awalter): created
+ *   10 Dec 2018 (albrecht): created
  */
-package org.knime.js.base.node.viz.cardView;
+package org.knime.js.base.node.viz.tileView;
 
-import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
-import org.knime.core.node.wizard.WizardNodeFactoryExtension;
+import org.knime.core.node.NodeFactoryClassMapper;
+import org.knime.core.node.NodeModel;
 
 /**
- * @author Alison Walter, KNIME GmbH, Konstanz, Germany
+ *
+ * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
-public class CardViewNodeFactory extends NodeFactory<CardViewNodeModel> implements
-WizardNodeFactoryExtension<CardViewNodeModel, CardViewRepresentation, CardViewValue> {
+public class TileViewClassMapper extends NodeFactoryClassMapper {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public CardViewNodeModel createNodeModel() {
-        return new CardViewNodeModel((getInteractiveViewName()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected int getNrNodeViews() {
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeView<CardViewNodeModel> createNodeView(final int viewIndex, final CardViewNodeModel nodeModel) {
+    public NodeFactory<? extends NodeModel> mapFactoryClassName(final String factoryClassName) {
+        // Renamed card view to tile view because ™ held by 3rd party
+        if ("org.knime.js.base.node.viz.cardView.CardViewNodeFactory".equals(factoryClassName)) {
+            return new TileViewNodeFactory();
+        }
         return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean hasDialog() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected NodeDialogPane createNodeDialogPane() {
-        return new CardViewNodeDialog();
     }
 
 }

@@ -46,7 +46,7 @@
  * History
  *   Aug 22, 2018 (awalter): created
  */
-package org.knime.js.base.node.viz.cardView;
+package org.knime.js.base.node.viz.tileView;
 
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
@@ -58,7 +58,7 @@ import org.knime.js.core.settings.table.TableSettings;
 /**
  * @author Alison Walter, KNIME GmbH, Konstanz, Germany
  */
-public class CardViewConfig implements TableConfig {
+public class TileViewConfig implements TableConfig {
 
     static final String CFG_USE_NUM_COLS = "useNumCols";
     private static final boolean DEFAULT_USE_NUM_COLS = true;
@@ -103,9 +103,9 @@ public class CardViewConfig implements TableConfig {
     private TableSettings m_settings = new TableSettings();
 
     @SuppressWarnings("javadoc")
-    public CardViewConfig() {
+    public TileViewConfig() {
         super();
-        m_settings.setSelectionColumnName("Selected (Card View)");
+        m_settings.setSelectionColumnName("Selected (Tile View)");
     }
 
     /**
@@ -324,14 +324,14 @@ public class CardViewConfig implements TableConfig {
             if (!errorMsg.isEmpty()) {
                 errorMsg+="\n";
             }
-            errorMsg += "Invalid number of cards per row, expected an integer between " + MIN_NUM_COLS + " and "
+            errorMsg += "Invalid number of tiles per row, expected an integer between " + MIN_NUM_COLS + " and "
                 + MAX_NUM_COLS + " but received " + numCols + ".\n";
         }
         if ((colWidth < MIN_COL_WIDTH || colWidth > MAX_COL_WIDTH) && enableColWidth) {
             if (!errorMsg.isEmpty()) {
                 errorMsg+="\n";
             }
-            errorMsg += "Invalid card width, expected an integer between 3" + MIN_COL_WIDTH + " and " + MAX_COL_WIDTH
+            errorMsg += "Invalid tile width, expected an integer between 3" + MIN_COL_WIDTH + " and " + MAX_COL_WIDTH
                 + " but received " + colWidth + ".\n";
         }
         if (initPageSize < 1 && enablePaging) {
@@ -344,7 +344,7 @@ public class CardViewConfig implements TableConfig {
             if (!errorMsg.isEmpty()) {
                 errorMsg+="\n";
             }
-            errorMsg += "The number of cards per row (" + numCols + ") cannot be greater than the initial page size ("
+            errorMsg += "The number of tiles per row (" + numCols + ") cannot be greater than the initial page size ("
                 + initPageSize + "). Check the \"Options\" and \"Interactivity\" tabs.\n";
         }
         if (decimalPlaces < 0 && enableDecimalPlaces) {
