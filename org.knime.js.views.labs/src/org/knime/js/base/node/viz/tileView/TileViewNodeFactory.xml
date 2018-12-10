@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<knimeNode type="Visualizer" icon="./card4portrait_content.png"
+<knimeNode type="Visualizer" icon="./tile4portrait_content.png"
     xmlns="http://knime.org/node/v3.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://knime.org/node/v3.1 https://www.knime.org/node/Node_v3.1.xsd">
-    <name>Card View (JavaScript)</name>
-    <shortDescription>This node provides a card view where each data row is displayed as one card.</shortDescription>
+    <name>Tile View (JavaScript)</name>
+    <shortDescription>This node provides a tile view where each data row is displayed as a tile.</shortDescription>
     <fullDescription>
         <intro>
             <p>
-                This node provides a card view where each data row is displayed as one card. The view offers several
+                This node provides a tile view where each data row is displayed as one tile. The view offers several
                 interactive features, as well as the possibility to select rows.
             </p>
             <p>
@@ -26,44 +26,46 @@
                 Use this numerical value to restrict the number of rows used for this visualization.
             </option>
             <option name="Title" optional="true">
-                An optional title to be displayed above the cards. Leave blank if no title is desired.
+                An optional title to be displayed above the tiles. Leave blank if no title is desired.
             </option>
             <option name="Subtitle" optional="true">
-                An optional subtitle to be displayed above the cards. Leave blank if no subtitle is desired.
+                An optional subtitle to be displayed above the tilees. Leave blank if no subtitle is desired.
             </option>
             <option name="Display row colors">
                 Enable or disable the display of row colors. Colors can be assigned e.g. with the Color Manager node and
-                will be rendered as a colored stripe at the top of the respective card.
+                will be rendered as a colored stripe at the top of the respective tile.
             </option>
             <option name="Display column headers">
                 Enable or disable the display of column headers. The column headers will be shown along with the cell
-                entries in each card. Note that column headers are not rendered for images.
+                entries in each tile. Note that column headers are not rendered for images.
             </option>
             <option name="Display full screen button">
                 Check to display a button which switches the view into fullscreen mode.
                 The button is only available in the KNIME WebPortal.
             </option>
-            <option name="Fixed number of cards per row (1-100)">
-                If checked, the specified number of cards will be displayed for each row. The number of cards per row must be between 1 and 100, inclusive. The width of these cards will
-                change as the window size changes, unless "Fixed card width" is selected (see below).
+            <option name="Fixed number of tiles per row (1-100)">
+                If checked, the specified number of tiles will be displayed for each row. The number of tiles per row 
+                must be between 1 and 100, inclusive. The width of these tiles will change as the window size changes, 
+                unless "Fixed tile width" is selected (see below).
             </option>
-            <option name="Fixed card width (30-5000px)">
-                If checked, each card will have the specified width. The specified width must be between 30px and 5000px, inclusive. The number of cards per row will vary with the
-                window size, unless "Fixed number of cards per row" is selected (see above).
+            <option name="Fixed tile width (30-5000px)">
+                If checked, each tile will have the specified width. The specified width must be between 30px and 
+                5000px, inclusive. The number of tiles per row will vary with the window size, unless "Fixed number 
+                of tiles per row" is selected (see above).
             </option>
             <option name="Select text alignment">
-                The alignment of the text within each card.
+                The alignment of the text within each tile.
             </option>
             <option name="Choose title column">
-                The column to use for the card title.
+                The column to use for the tile title.
             </option>
             <option name="Columns to display">
-                Select the columns whose contents should be included in the cards’ contents.
+                Select the columns whose contents should be included in the tile’s contents.
             </option>
         </tab>
         <tab name="Interactivity">
             <description>
-                The JavaScript Card View allows for several ways of interactivity. Please use the options below to
+                The JavaScript Tile View allows for several ways of interactivity. Please use the options below to
                 configure which features will be activated on the view and further configuration of interactive
                 properties.
             </description>
@@ -72,7 +74,7 @@
                 page. When enabled use the options below to further refine the pagination settings.
             </option>
             <option name="Initial page size">
-                Set the page size to be used on initial layout. A page size is defined as the number of cards the view
+                Set the page size to be used on initial layout. A page size is defined as the number of tiles the view
                 displays on one page. If the page size change control is enabled the page length can be changed in the
                 view.
             </option>
@@ -86,22 +88,22 @@
                 When checked, an additional 'All' option will be available in the page size control.
             </option>
             <option name="Enable selection">
-                If checked a checkbox is rendered in the bottom left corner of each card. The selection, when applied,
+                If checked a checkbox is rendered in the bottom left corner of each tile. The selection, when applied,
                 will be represented in the output table as a new boolean column.
             </option>
             <option name="Subscribe to filter events">
                 If checked, the view reacts when applied filters have been changed.
             </option>
             <option name="Enable 'Clear Selection' button">
-                If checked a button is displayed above the cards, to clear any selection that is applied, regardless of
+                If checked a button is displayed above the tiles, to clear any selection that is applied, regardless of
                 current search and/or filter settings.
             </option>
-            <option name="Show selected rows only">
-                If checked, only rows which are selected are displayed.
+            <option name="Show selected tiles only">
+                If checked, only tiles which are selected are displayed.
             </option>
-            <option name="Enable 'Show selected rows only' option">
-                If checked, a checkbox to switch on and off the mode of displaying only selected rows is rendered in the
-                view.
+            <option name="Enable 'Show selected tiles only' option">
+                If checked, a checkbox to switch on and off the mode of displaying only selected tiles is rendered in 
+                the view.
             </option>
             <option name="Publish selection events">
                 If checked, notifies other interactive views when user changes the selection in the current view. See
@@ -117,7 +119,7 @@
         </tab>
         <tab name="Formatters">
             <description>
-                The JavaScript Card View maps the KNIME table data types to types in JavaScript. The types that can be
+                The JavaScript Tile View maps the KNIME table data types to types in JavaScript. The types that can be
                 displayed are:
                 <ul>
                     <li>Boolean</li>
@@ -220,23 +222,23 @@
             </option>
             <option name="Decimal places">
                 If number format is enabled use this value to restrict the display of decimal places for double columns
-                in the card view.
+                in the tile view.
             </option>
             <option name="Display missing value as red question mark">
-                If checked, a missing value in the card view is represented by a red question mark. Otherwise, an empty
+                If checked, a missing value in the tile view is represented by a red question mark. Otherwise, an empty
                 cell is shown.
             </option>
         </tab>
     </fullDescription>
-    <interactiveView name="JavaScript Card View">
-        Card view
+    <interactiveView name="JavaScript Tile View">
+        Tile view
     </interactiveView>
     <ports>
         <inPort index="0" name="Input to display">
             Input table to display.
         </inPort>
         <outPort index="0" name="Input data and view selection">
-            Data table containing the input data appended with a column, that represents the selection made in the card
+            Data table containing the input data appended with a column, that represents the selection made in the tile
             view.
         </outPort>
     </ports>

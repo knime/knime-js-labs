@@ -46,7 +46,7 @@
  * History
  *   Aug 22, 2018 (awalter): created
  */
-package org.knime.js.base.node.viz.cardView;
+package org.knime.js.base.node.viz.tileView;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -67,7 +67,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  */
 @JsonAutoDetect
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public class CardViewRepresentation extends AbstractTableRepresentation {
+public class TileViewRepresentation extends AbstractTableRepresentation {
 
     private boolean m_useNumCols;
     private boolean m_useColWidth;
@@ -83,7 +83,7 @@ public class CardViewRepresentation extends AbstractTableRepresentation {
     private TableRepresentationSettings m_settings = new TableRepresentationSettings();
 
     /** Serialization constructor. Don't use. */
-    public CardViewRepresentation() { }
+    public TileViewRepresentation() { }
 
     /**
      * @return the useNumCols
@@ -246,15 +246,15 @@ public class CardViewRepresentation extends AbstractTableRepresentation {
     @JsonIgnore
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         m_settings.saveSettings(settings);
-        settings.addBoolean(CardViewConfig.CFG_USE_NUM_COLS, m_useNumCols);
-        settings.addBoolean(CardViewConfig.CFG_USE_COL_WIDTH, m_useColWidth);
-        settings.addInt(CardViewConfig.CFG_NUM_COLS, m_numCols);
-        settings.addInt(CardViewConfig.CFG_COL_WIDTH, m_colWidth);
-        settings.addString(CardViewConfig.CFG_LABEL_COL, m_labelCol);
-        settings.addBoolean(CardViewConfig.CFG_USE_ROW_ID, m_useRowID);
-        settings.addBoolean(CardViewConfig.CFG_ALIGN_LEFT, m_alignLeft);
-        settings.addBoolean(CardViewConfig.CFG_ALIGN_RIGHT, m_alignRight);
-        settings.addBoolean(CardViewConfig.CFG_ALIGN_CENTER, m_alignCenter);
+        settings.addBoolean(TileViewConfig.CFG_USE_NUM_COLS, m_useNumCols);
+        settings.addBoolean(TileViewConfig.CFG_USE_COL_WIDTH, m_useColWidth);
+        settings.addInt(TileViewConfig.CFG_NUM_COLS, m_numCols);
+        settings.addInt(TileViewConfig.CFG_COL_WIDTH, m_colWidth);
+        settings.addString(TileViewConfig.CFG_LABEL_COL, m_labelCol);
+        settings.addBoolean(TileViewConfig.CFG_USE_ROW_ID, m_useRowID);
+        settings.addBoolean(TileViewConfig.CFG_ALIGN_LEFT, m_alignLeft);
+        settings.addBoolean(TileViewConfig.CFG_ALIGN_RIGHT, m_alignRight);
+        settings.addBoolean(TileViewConfig.CFG_ALIGN_CENTER, m_alignCenter);
     }
 
     /**
@@ -264,15 +264,15 @@ public class CardViewRepresentation extends AbstractTableRepresentation {
     @JsonIgnore
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_settings.loadSettings(settings);
-        m_useNumCols = settings.getBoolean(CardViewConfig.CFG_USE_NUM_COLS);
-        m_useColWidth = settings.getBoolean(CardViewConfig.CFG_USE_COL_WIDTH);
-        m_numCols = settings.getInt(CardViewConfig.CFG_NUM_COLS);
-        m_colWidth = settings.getInt(CardViewConfig.CFG_COL_WIDTH);
-        m_labelCol = settings.getString(CardViewConfig.CFG_LABEL_COL);
-        m_useRowID = settings.getBoolean(CardViewConfig.CFG_USE_ROW_ID);
-        m_alignLeft = settings.getBoolean(CardViewConfig.CFG_ALIGN_LEFT);
-        m_alignRight = settings.getBoolean(CardViewConfig.CFG_ALIGN_RIGHT);
-        m_alignCenter = settings.getBoolean(CardViewConfig.CFG_ALIGN_CENTER);
+        m_useNumCols = settings.getBoolean(TileViewConfig.CFG_USE_NUM_COLS);
+        m_useColWidth = settings.getBoolean(TileViewConfig.CFG_USE_COL_WIDTH);
+        m_numCols = settings.getInt(TileViewConfig.CFG_NUM_COLS);
+        m_colWidth = settings.getInt(TileViewConfig.CFG_COL_WIDTH);
+        m_labelCol = settings.getString(TileViewConfig.CFG_LABEL_COL);
+        m_useRowID = settings.getBoolean(TileViewConfig.CFG_USE_ROW_ID);
+        m_alignLeft = settings.getBoolean(TileViewConfig.CFG_ALIGN_LEFT);
+        m_alignRight = settings.getBoolean(TileViewConfig.CFG_ALIGN_RIGHT);
+        m_alignCenter = settings.getBoolean(TileViewConfig.CFG_ALIGN_CENTER);
     }
 
     /**
@@ -289,7 +289,7 @@ public class CardViewRepresentation extends AbstractTableRepresentation {
         if (obj.getClass() != getClass()) {
             return false;
         }
-        final CardViewRepresentation other = (CardViewRepresentation)obj;
+        final TileViewRepresentation other = (TileViewRepresentation)obj;
         return new EqualsBuilder()
                 .append(m_settings, other.m_settings)
                 .append(m_useNumCols, other.getUseNumCols())

@@ -46,7 +46,7 @@
  * History
  *   Aug 22, 2018 (awalter): created
  */
-package org.knime.js.base.node.viz.cardView;
+package org.knime.js.base.node.viz.tileView;
 
 import java.util.Arrays;
 import java.util.List;
@@ -65,29 +65,29 @@ import org.knime.js.core.node.table.AbstractTableNodeModel;
 /**
  * @author Alison Walter, KNIME GmbH, Konstanz, Germany
  */
-public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresentation, CardViewValue> {
+public class TileViewNodeModel extends AbstractTableNodeModel<TileViewRepresentation, TileViewValue> {
 
     /**
      * @param viewName The name of the interactive view
      */
-    protected CardViewNodeModel(final String viewName) {
-        super(viewName, new CardViewConfig());
+    protected TileViewNodeModel(final String viewName) {
+        super(viewName, new TileViewConfig());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public CardViewRepresentation createEmptyViewRepresentation() {
-        return new CardViewRepresentation();
+    public TileViewRepresentation createEmptyViewRepresentation() {
+        return new TileViewRepresentation();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public CardViewValue createEmptyViewValue() {
-        return new CardViewValue();
+    public TileViewValue createEmptyViewValue() {
+        return new TileViewValue();
     }
 
     /**
@@ -95,7 +95,7 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
      */
     @Override
     public String getJavascriptObjectID() {
-        return "org.knime.js.base.node.viz.cardView";
+        return "org.knime.js.base.node.viz.tileView";
     }
 
     /**
@@ -106,7 +106,7 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
         // Duplicate code from PagedTable
         BufferedDataTable out = (BufferedDataTable)inObjects[0];
         synchronized (getLock()) {
-            final CardViewRepresentation viewRepresentation = getViewRepresentation();
+            final TileViewRepresentation viewRepresentation = getViewRepresentation();
             if (viewRepresentation.getSettings().getTable() == null) {
                 m_table = (BufferedDataTable)inObjects[0];
                 final JSONDataTable jsonTable = createJSONTableFromBufferedDataTable(m_table,
@@ -116,7 +116,7 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
             }
 
             if (m_config.getSettings().getRepresentationSettings().getEnableSelection()) {
-                final CardViewValue viewValue = getViewValue();
+                final TileViewValue viewValue = getViewValue();
                 List<String> selectionList = null;
                 if (viewValue != null) {
                     if (viewValue.getSettings().getSelection() != null) {
@@ -145,7 +145,7 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
     protected ColumnRearranger createColumnAppender(final DataTableSpec spec, final List<String> selectionList) {
         final String newColName = m_config.getSettings().getSelectionColumnName();
         if ((newColName == null) || newColName.trim().isEmpty()) {
-            m_config.getSettings().setSelectionColumnName("Selected (Card View)");
+            m_config.getSettings().setSelectionColumnName("Selected (Tile View)");
         }
         return super.createColumnAppender(spec, selectionList);
     }
@@ -153,7 +153,7 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
     @Override
     protected String[] determineExcludedColumns(final BufferedDataTable table) {
         String[] excluded = super.determineExcludedColumns(table);
-        String labelColumn = ((CardViewConfig)m_config).getLabelCol();
+        String labelColumn = ((TileViewConfig)m_config).getLabelCol();
         if (labelColumn == null) {
             return excluded;
         }
@@ -167,8 +167,8 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
     @Override
     protected void copyConfigToRepresentation() {
         synchronized (getLock()) {
-            final CardViewConfig conf = (CardViewConfig)m_config;
-            final CardViewRepresentation viewRepresentation = getViewRepresentation();
+            final TileViewConfig conf = (TileViewConfig)m_config;
+            final TileViewRepresentation viewRepresentation = getViewRepresentation();
             // Use setSettingsFromDialog, it ensures the table that got set on the representation settings is preserved
             viewRepresentation.setSettingsFromDialog(m_config.getSettings().getRepresentationSettings());
             viewRepresentation.setUseNumCols(conf.getUseNumCols());
@@ -181,7 +181,7 @@ public class CardViewNodeModel extends AbstractTableNodeModel<CardViewRepresenta
             viewRepresentation.setAlignRight(conf.getAlignRight());
             viewRepresentation.setAlignCenter(conf.getAlignCenter());
 
-            final CardViewValue viewValue = getViewValue();
+            final TileViewValue viewValue = getViewValue();
             if (isViewValueEmpty()) {
                 viewValue.setSettings(m_config.getSettings().getValueSettings());
             }
