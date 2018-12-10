@@ -1,4 +1,4 @@
-#knimePagedTableContainer.knime-cards {
+#knimePagedTableContainer.knime-tiles {
     padding: 0 1px;
 }
 
@@ -50,12 +50,12 @@ table#knimePagedTable .knime-table-cell.selection-cell input[type="checkbox"] {
     cursor: pointer;
 }
 
-table#knimePagedTable .knime-table-cell.knime-card-title {
+table#knimePagedTable .knime-table-cell.knime-tile-title {
     font-weight: bold;
     font-size: 120%;
 }
 
-table#knimePagedTable .knime-table-cell.knime-card-title.knime-row-id {
+table#knimePagedTable .knime-table-cell.knime-tile-title.knime-row-id {
     padding-top: 24px;
 }
 
@@ -93,6 +93,6 @@ table#knimePagedTable.align-right .knime-table-cell {
 	margin-bottom: 0;
 }
 
-.knime-cards-rowtitle {
+.knime-tiles-rowtitle {
     font-weight: bold;
 }

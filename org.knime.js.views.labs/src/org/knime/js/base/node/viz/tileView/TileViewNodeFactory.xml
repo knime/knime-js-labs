@@ -29,7 +29,7 @@
                 An optional title to be displayed above the tiles. Leave blank if no title is desired.
             </option>
             <option name="Subtitle" optional="true">
-                An optional subtitle to be displayed above the tilees. Leave blank if no subtitle is desired.
+                An optional subtitle to be displayed above the tiles. Leave blank if no subtitle is desired.
             </option>
             <option name="Display row colors">
                 Enable or disable the display of row colors. Colors can be assigned e.g. with the Color Manager node and

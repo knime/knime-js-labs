@@ -1,11 +1,11 @@
-window.cards_namespace = (function () {
+window.tiles_namespace = (function () {
 
     var htmlEncode = function (x) {
         return x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
     };
 
-    var CardView = function () {
+    var TileView = function () {
         this._representation = null;
         this._value = null;
         this._knimeTable = null;
@@ -21,10 +21,10 @@ window.cards_namespace = (function () {
         this._nonHiddenDataIndexes = [];
     };
 
-    CardView.prototype = Object.create(KnimeBaseTableViewer.prototype);
-    CardView.prototype.constructor = CardView;
+    TileView.prototype = Object.create(KnimeBaseTableViewer.prototype);
+    TileView.prototype.constructor = TileView;
 
-    CardView.prototype.init = function (representation, value) {
+    TileView.prototype.init = function (representation, value) {
         var textAlignment = representation.alignRight ? 'right' : representation.alignCenter ? 'center' : 'left';
 
         var overrides = {
@@ -45,15 +45,15 @@ window.cards_namespace = (function () {
     };
 
     // filtering
-    CardView.prototype._buildMenu = function () {
+    TileView.prototype._buildMenu = function () {
         this._representation.subscriptionFilterIds = this._knimeTable.getFilterIds();
         KnimeBaseTableViewer.prototype._buildMenu.apply(this);
     };
 
     // disallow selection of individual cells
-    CardView.prototype._cellMouseDownHandler = function () {};
+    TileView.prototype._cellMouseDownHandler = function () {};
 
-    CardView.prototype._buildColumnDefinitions = function () {
+    TileView.prototype._buildColumnDefinitions = function () {
         KnimeBaseTableViewer.prototype._buildColumnDefinitions.call(this);
         var colDefs = this._dataTableConfig.columns;
         var labelCol = this._representation.labelCol;
@@ -63,7 +63,7 @@ window.cards_namespace = (function () {
                 if ((colDefs[i].title === labelCol) || (useRowID && i === this._rowIdColInd)) {
                     this._labelColIndex = i;
                     var colDef = colDefs[i];
-                    colDef.className += ' knime-card-title';
+                    colDef.className += ' knime-tile-title';
                     if (useRowID) {
                         // title column is in front already
                         colDef.className += ' knime-row-id';
@@ -90,13 +90,13 @@ window.cards_namespace = (function () {
     };
 
     // render columns along with cell entries
-    CardView.prototype._addColumnTitles = function () {
+    TileView.prototype._addColumnTitles = function () {
         var self = this;
         this._dataTableConfig.columns.forEach(function (column) {
             if (!self._shouldShowTitleOnColumn(column)) {
                 return;
             }
-            var titlePrefix = '<span class="knime-cards-rowtitle">' + column.title + ':</span> ';
+            var titlePrefix = '<span class="knime-tiles-rowtitle">' + column.title + ':</span> ';
             if (column.hasOwnProperty('render')) {
                 column.render = (function (original) {
                     return function (data) {
@@ -119,8 +119,8 @@ window.cards_namespace = (function () {
     };
 
     // helper for _addColumnTitles()
-    CardView.prototype._shouldShowTitleOnColumn = function (column) {
-        if (/\b(selection-cell|knime-card-title|knime-svg|knime-png)\b/.test(column.className)) {
+    TileView.prototype._shouldShowTitleOnColumn = function (column) {
+        if (/\b(selection-cell|knime-tile-title|knime-svg|knime-png)\b/.test(column.className)) {
             return false;
         }
         if (!column.hasOwnProperty('title') || !column.title || column.title === 'RowID') {
@@ -130,7 +130,7 @@ window.cards_namespace = (function () {
     };
 
     // push title column data to top
-    CardView.prototype._getDataSlice = function (start, end) {
+    TileView.prototype._getDataSlice = function (start, end) {
         var data = KnimeBaseTableViewer.prototype._getDataSlice.apply(this, arguments);
         if (this._representation.labelCol && this._labelColIndex) {
             var sourceIndex = this._labelColIndex;
@@ -146,7 +146,7 @@ window.cards_namespace = (function () {
     };
 
     // selection on click
-    CardView.prototype._setSelectionHandlers = function () {
+    TileView.prototype._setSelectionHandlers = function () {
         KnimeBaseTableViewer.prototype._setSelectionHandlers.apply(this);
         if (!this._representation.enableSelection) {
             return;
@@ -159,12 +159,12 @@ window.cards_namespace = (function () {
         });
     };
 
-    // card width
-    CardView.prototype._prepare = function () {
+    // tile width
+    TileView.prototype._prepare = function () {
         KnimeBaseTableViewer.prototype._prepare.apply(this);
-        var cardWidth;
+        var tileWidth;
         if (this._representation.useColWidth) {
-            cardWidth = this._representation.colWidth + 'px';
+            tileWidth = this._representation.colWidth + 'px';
             if (this._representation.useNumCols) {
                 var tableWidth = (this._representation.numCols * (this._representation.colWidth + 2 * 5)) + 'px';
                 var tableStyle = document.createElement('style');
@@ -173,25 +173,25 @@ window.cards_namespace = (function () {
             }
         } else {
             // this._representation.numCols must be set here (ensured by settings dialog)
-            cardWidth = 'calc(100% / ' + this._representation.numCols + ' - 2 * 5px)';
+            tileWidth = 'calc(100% / ' + this._representation.numCols + ' - 2 * 5px)';
         }
         var style = document.createElement('style');
-        style.textContent = 'table#knimePagedTable tr { width: ' + cardWidth + ';}';
+        style.textContent = 'table#knimePagedTable tr { width: ' + tileWidth + ';}';
         document.head.appendChild(style);
     };
 
     // text alignment support
-    CardView.prototype._createHtmlTableContainer = function () {
+    TileView.prototype._createHtmlTableContainer = function () {
         KnimeBaseTableViewer.prototype._createHtmlTableContainer.apply(this);
-        $('#knimePagedTableContainer').addClass('knime-cards');
+        $('#knimePagedTableContainer').addClass('knime-tiles');
         $('#knimePagedTable').removeClass('table-striped').addClass('align-' + this._representation.textAlignment);
     };
 
     // auto-size cell heights
-    CardView.prototype._dataTableDrawCallback = function () {
+    TileView.prototype._dataTableDrawCallback = function () {
         KnimeBaseTableViewer.prototype._dataTableDrawCallback.apply(this);
         $("#knimePagedTable thead").remove();
-        CardView.prototype._resetTableLayout.apply(this);
+        TileView.prototype._resetTableLayout.apply(this);
         var infoColsCount = this._infoColsCount;
         var columns = this._dataTableConfig.columns;
         // for some reason, images are rendered with size 0x0 in Chromium at this point, hence the timeout
@@ -211,7 +211,7 @@ window.cards_namespace = (function () {
         }, 0);
     };
 
-    CardView.prototype._resetTableLayout = function () {
+    TileView.prototype._resetTableLayout = function () {
         // use flex box in case when a single view is opened to always display the page selection
         if (!knimeService.isInteractivityAvailable()) {
             $('body').css({
@@ -253,7 +253,7 @@ window.cards_namespace = (function () {
     }
     
     // reset cell heights
-    CardView.prototype._dataTablePreDrawCallback = function () {
+    TileView.prototype._dataTablePreDrawCallback = function () {
         KnimeBaseTableViewer.prototype._dataTablePreDrawCallback.apply(this);
         var cells = Array.prototype.slice.call(document.querySelectorAll('#knimePagedTable .knime-table-cell'));
         cells.forEach(function (cell) {
@@ -261,5 +261,5 @@ window.cards_namespace = (function () {
         });
     };
 
-    return new CardView();
+    return new TileView();
 })();
