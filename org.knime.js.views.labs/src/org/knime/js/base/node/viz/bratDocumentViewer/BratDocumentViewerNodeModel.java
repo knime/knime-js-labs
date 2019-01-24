@@ -50,7 +50,6 @@ package org.knime.js.base.node.viz.bratDocumentViewer;
 
 import java.util.List;
 
-import org.knime.base.data.xml.SvgCell;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.RowIterator;
@@ -62,11 +61,6 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObject;
-import org.knime.core.node.port.PortObjectSpec;
-import org.knime.core.node.port.PortType;
-import org.knime.core.node.port.image.ImagePortObject;
-import org.knime.core.node.port.image.ImagePortObjectSpec;
-import org.knime.core.node.port.inactive.InactiveBranchPortObjectSpec;
 import org.knime.core.node.web.ValidationError;
 import org.knime.ext.textprocessing.data.Document;
 import org.knime.ext.textprocessing.data.DocumentValue;
@@ -74,7 +68,7 @@ import org.knime.ext.textprocessing.data.IndexedTerm;
 import org.knime.ext.textprocessing.util.ColumnSelectionVerifier;
 import org.knime.ext.textprocessing.util.DataTableSpecVerifier;
 import org.knime.ext.textprocessing.util.DocumentUtil;
-import org.knime.js.core.node.AbstractSVGWizardNodeModel;
+import org.knime.js.core.node.table.AbstractTableNodeModel;
 
 /**
  * The {@link NodeModel} for the Brat Document Viewer. This node visualizes only the first document.
@@ -82,7 +76,7 @@ import org.knime.js.core.node.AbstractSVGWizardNodeModel;
  * @author Andisa Dewi, KNIME AG, Berlin, Germany
  */
 final class BratDocumentViewerNodeModel
-    extends AbstractSVGWizardNodeModel<BratDocumentViewerRepresentation, BratDocumentViewerValue> {
+    extends AbstractTableNodeModel<BratDocumentViewerRepresentation, BratDocumentViewerValue> {
 
     /**
      * The SettingsModelString for the document column.
@@ -95,24 +89,7 @@ final class BratDocumentViewerNodeModel
      * @param viewName the name for the interactive view
      */
     BratDocumentViewerNodeModel(final String viewName) {
-        super(new PortType[]{BufferedDataTable.TYPE}, new PortType[]{ImagePortObject.TYPE, BufferedDataTable.TYPE},
-            viewName);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        checkDataTableSpec((DataTableSpec)inSpecs[0]);
-
-        PortObjectSpec imageSpec;
-        if (generateImage()) {
-            imageSpec = new ImagePortObjectSpec(SvgCell.TYPE);
-        } else {
-            imageSpec = InactiveBranchPortObjectSpec.INSTANCE;
-        }
-        return new PortObjectSpec[]{imageSpec, (DataTableSpec)inSpecs[0]};
+        super(viewName, new BratDocumentViewerConfig());
     }
 
     /**
@@ -217,8 +194,23 @@ final class BratDocumentViewerNodeModel
      * {@inheritDoc}
      */
     @Override
-    protected void performExecuteCreateView(final PortObject[] inObjects, final ExecutionContext exec)
-        throws Exception {
+    protected void performReset() {
+        // nothing to do
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void useCurrentValueAsDefault() {
+        // nothing to do
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected PortObject[] performExecute(final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
         synchronized (getLock()) {
             BufferedDataTable in = (BufferedDataTable)inObjects[0];
             checkDataTableSpec(in.getDataTableSpec());
@@ -248,41 +240,8 @@ final class BratDocumentViewerNodeModel
                 setWarningMessage("Input table is empty.");
             }
         }
+        return new PortObject[]{inObjects[0]};
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void performReset() {
-        // nothing to do
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void useCurrentValueAsDefault() {
-        // nothing to do
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected PortObject[] performExecuteCreatePortObjects(final PortObject svgImageFromView,
-        final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
-        exec.setProgress(1);
-        return new PortObject[]{svgImageFromView, inObjects[0]};
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean generateImage() {
-        // TODO Auto-generated method stub
-        return true;
-    }
 
 }

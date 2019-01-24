@@ -48,12 +48,19 @@
  */
 package org.knime.js.base.node.viz.bratDocumentViewer;
 
+import org.knime.core.data.DataTableSpec;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeSettingsRO;
+import org.knime.core.node.NodeSettingsWO;
+import org.knime.js.core.node.table.TableConfig;
+import org.knime.js.core.settings.table.TableSettings;
+
 /**
  * The configuration keys for the Brat Document Viewer node.
  *
  * @author Andisa Dewi, KNIME AG, Berlin, Germany
  */
-public class BratDocumentViewerConfigKeys {
+public class BratDocumentViewerConfig implements TableConfig {
 
     static final String DOC_COLNAME = "DocColName";
 
@@ -70,4 +77,50 @@ public class BratDocumentViewerConfigKeys {
     static final String DOC_START_IDX = "documentStartIndexes";
 
     static final String DOC_STOP_IDX = "documentStopIndexes";
+
+    private TableSettings m_settings = new TableSettings();
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TableSettings getSettings() {
+        return m_settings;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSettings(final TableSettings settings) {
+        m_settings = settings;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void saveSettings(final NodeSettingsWO settings) {
+        m_settings.saveSettings(settings);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void loadSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_settings.loadSettings(settings);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void loadSettingsForDialog(final NodeSettingsRO settings, final DataTableSpec spec) {
+        m_settings.loadSettingsForDialog(settings, spec);
+
+    }
 }

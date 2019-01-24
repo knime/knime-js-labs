@@ -53,7 +53,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.js.core.JSONViewContent;
+import org.knime.js.core.node.table.AbstractTableValue;
+import org.knime.js.core.settings.table.TableValueSettings;
 
 /**
  * The Value class for the Brat Document Viewer node. The values can be changed in the view. Currently this class is
@@ -61,8 +62,10 @@ import org.knime.js.core.JSONViewContent;
  *
  * @author Andisa Dewi, KNIME AG, Berlin, Germany
  */
-public final class BratDocumentViewerValue extends JSONViewContent {
+public final class BratDocumentViewerValue extends AbstractTableValue {
 
+
+    private TableValueSettings m_settings = new TableValueSettings();
     /**
      * {@inheritDoc}
      */
@@ -100,8 +103,26 @@ public final class BratDocumentViewerValue extends JSONViewContent {
      * {@inheritDoc}
      */
     @Override
+    public TableValueSettings getSettings() {
+        return m_settings;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSettings(final TableValueSettings settings) {
+        m_settings = settings;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int hashCode() {
-        return new HashCodeBuilder().toHashCode();
+        return new HashCodeBuilder()
+                .append(m_settings)
+                .toHashCode();
     }
 
 }

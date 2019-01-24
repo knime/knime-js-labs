@@ -48,18 +48,32 @@
  */
 package org.knime.js.base.node.viz.bratDocumentViewer;
 
+import org.knime.core.data.DataTableSpec;
+import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialog;
-import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
-import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
+import org.knime.core.node.NodeSettingsRO;
+import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
-import org.knime.ext.textprocessing.data.DocumentValue;
+import org.knime.core.node.port.PortObjectSpec;
+import org.knime.js.base.node.viz.tileView.TileViewNodeDialog;
 
 /**
  * The {@link NodeDialog} for the Brat Document Viewer node.
  *
  * @author Andisa Dewi, KNIME AG, Berlin, Germany
  */
-final class BratDocumentViewerNodeDialog extends DefaultNodeSettingsPane {
+public class BratDocumentViewerNodeDialog extends TileViewNodeDialog {
+
+    private final BratDocumentViewerConfig m_config;
+    /**
+     *
+     */
+    BratDocumentViewerNodeDialog() {
+        super();
+        m_config = new BratDocumentViewerConfig();
+    }
+
 
     /**
      * The configuration key for the column name of the doc column.
@@ -76,11 +90,23 @@ final class BratDocumentViewerNodeDialog extends DefaultNodeSettingsPane {
     }
 
     /**
-     * The node dialog for Brat Document Viewer. It contains a column name selection to choose a document column.
+     * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
-    public BratDocumentViewerNodeDialog() {
-        addDialogComponent(
-            new DialogComponentColumnNameSelection(getDocColModel(), "Document column", 0, DocumentValue.class));
+    @Override
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
+        throws NotConfigurableException {
+        // copied from table view start
+        final DataTableSpec inSpec = (DataTableSpec)specs[0];
+        m_config.loadSettingsForDialog(settings, inSpec);
+
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
+        m_config.saveSettings(settings);
+    }
+
 }

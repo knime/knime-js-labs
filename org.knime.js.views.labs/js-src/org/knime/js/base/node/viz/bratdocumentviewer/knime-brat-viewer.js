@@ -27,6 +27,7 @@ window.bratDocViewer = (function () {
         try {
             _representation = representation;
 
+            debugger;
             var tags = _representation.tags;
             var title = _representation.documentTitle;
             var text = _representation.documentText;
@@ -74,7 +75,7 @@ window.bratDocViewer = (function () {
             div.id = VIZ_ID;
             body.appendChild(div);
 
-            //Util.embed(VIZ_ID, $.extend({}, collData), $.extend({}, docData));
+            Util.embed(VIZ_ID, $.extend({}, collData), $.extend({}, docData));
             
             var overrides = {
                 displayRowIds: representation.useRowID,

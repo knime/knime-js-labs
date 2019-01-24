@@ -62,7 +62,9 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.ext.textprocessing.data.Document;
 import org.knime.ext.textprocessing.data.IndexedTerm;
-import org.knime.js.core.JSONViewContent;
+import org.knime.js.core.JSONDataTable;
+import org.knime.js.core.node.table.AbstractTableRepresentation;
+import org.knime.js.core.settings.table.TableRepresentationSettings;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -75,7 +77,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  */
 @JsonAutoDetect
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public final class BratDocumentViewerRepresentation extends JSONViewContent {
+public final class BratDocumentViewerRepresentation extends AbstractTableRepresentation {
 
     /**
      * The configuration key to store the document text.
@@ -132,6 +134,8 @@ public final class BratDocumentViewerRepresentation extends JSONViewContent {
     private List<String> m_stopIndexes;
 
     private List<String> m_colors;
+
+    private TableRepresentationSettings m_settings = new TableRepresentationSettings();
 
     /**
      * Initialize the lists with terms and tags.
@@ -302,6 +306,7 @@ public final class BratDocumentViewerRepresentation extends JSONViewContent {
      */
     @Override
     public void saveToNodeSettings(final NodeSettingsWO settings) {
+        m_settings.saveSettings(settings);
         if (m_docText != null && m_terms != null) {
             settings.addString(CFG_DOC_TEXT, m_docText);
             settings.addString(CFG_DOC_TITLE, m_docTitle);
@@ -319,6 +324,7 @@ public final class BratDocumentViewerRepresentation extends JSONViewContent {
      */
     @Override
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_settings.loadSettings(settings);
         setDocumentText(settings.getString(CFG_DOC_TEXT));
         setDocumentTitle(settings.getString(CFG_DOC_TITLE));
         setTermIds(Arrays.asList(settings.getStringArray(CFG_DOC_TERM_IDS)));
@@ -345,10 +351,17 @@ public final class BratDocumentViewerRepresentation extends JSONViewContent {
         }
 
         BratDocumentViewerRepresentation other = (BratDocumentViewerRepresentation)obj;
-        return new EqualsBuilder().append(m_docText, other.m_docText).append(m_docTitle, other.m_docTitle)
-            .append(m_termIds, other.m_termIds).append(m_terms, other.m_terms).append(m_tags, other.m_tags)
-            .append(m_startIndexes, other.m_startIndexes).append(m_stopIndexes, other.m_stopIndexes)
-            .append(m_colors, other.m_colors).isEquals();
+        return new EqualsBuilder()
+                .append(m_settings, other.getSettings())
+                .append(m_docText, other.getDocumentText())
+                .append(m_docTitle, other.getDocumentTitle())
+                .append(m_termIds, other.getTermIds())
+                .append(m_terms, other.getTerms())
+                .append(m_tags, other.getTags())
+                .append(m_startIndexes, other.getStartIndexes())
+                .append(m_stopIndexes, other.getStopIndexes())
+                .append(m_colors, other.getColors())
+                .isEquals();
     }
 
     /**
@@ -356,8 +369,43 @@ public final class BratDocumentViewerRepresentation extends JSONViewContent {
      */
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(m_docText).append(m_docTitle).append(m_termIds).append(m_terms)
-            .append(m_tags).append(m_startIndexes).append(m_stopIndexes).append(m_colors).toHashCode();
+        return new HashCodeBuilder()
+                .append(m_settings)
+                .append(m_docText)
+                .append(m_docTitle)
+                .append(m_termIds)
+                .append(m_terms)
+                .append(m_tags)
+                .append(m_startIndexes)
+                .append(m_stopIndexes)
+                .append(m_colors)
+                .toHashCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TableRepresentationSettings getSettings() {
+        return m_settings;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSettings(final TableRepresentationSettings settings) {
+        m_settings = settings;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSettingsFromDialog(final TableRepresentationSettings settings) {
+        final JSONDataTable table = settings.getTable();
+        m_settings = settings;
+        m_settings.setTable(table);
     }
 
 }
