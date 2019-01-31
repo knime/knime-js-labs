@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<knimeNode icon="./TextProcDocumentView.png"
+	type="Visualizer" xmlns="http://knime.org/node/v2.8"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+	<name>Brat Document Viewer</name>
+	<shortDescription>
+		Visualizes document terms and tags using the Brat JS library.
+	</shortDescription>
+	<fullDescription>
+		<intro>
+			This node visualizes terms and tags of a document using
+			<a href="http://brat.nlplab.org/embed.html">the Brat JS library</a>. 
+			Each term will be highlighted and its corresponding tags will be
+			displayed above it. The highlighting colors are static depending on
+			the tags.
+			<br />
+			<br />
+			<i>Note</i>: Only the document in the first row will be displayed.
+		</intro>
+		<option name="Document Column">
+			The column containing the documents to show.
+		</option>
+
+	</fullDescription>
+	<interactiveView name="Brat Document View">
+		Displays the visualization of the
+		document terms and tags.
+	</interactiveView>
+	<ports>
+		<inPort name="Documents input table" index="0">
+			The input table containing the documents.
+		</inPort>
+		<outPort name="Image port" index="0">
+			An SVG image representation of the view.
+		</outPort>
+		<outPort name="Output table" index="1">
+			Data table containing the input data.
+		</outPort>
+	</ports>
+
+</knimeNode>
