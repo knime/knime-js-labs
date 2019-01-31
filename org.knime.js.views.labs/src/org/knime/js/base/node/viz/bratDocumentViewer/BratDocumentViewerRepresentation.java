@@ -50,7 +50,6 @@ package org.knime.js.base.node.viz.bratDocumentViewer;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -119,23 +118,19 @@ public final class BratDocumentViewerRepresentation extends AbstractTableReprese
      */
     private static final String CFG_DOC_COLORS = "documentTagColors";
 
-    private String m_docText;
-
-    private String m_docTitle;
-
-    private List<String> m_termIds;
-
-    private List<String> m_tags;
-
-    private List<String> m_terms;
-
-    private List<String> m_startIndexes;
-
-    private List<String> m_stopIndexes;
-
-    private List<String> m_colors;
-
     private TableRepresentationSettings m_settings = new TableRepresentationSettings();
+
+    private boolean m_useNumCols;
+    private boolean m_useColWidth;
+    private int m_numCols;
+    private int m_colWidth;
+    private String m_labelCol;
+    private boolean m_useRowID;
+
+    private boolean m_alignLeft;
+    private boolean m_alignRight;
+    private boolean m_alignCenter;
+    private ArrayList<BratDocument> m_bratDocuments = new ArrayList<>();
 
     /**
      * Initialize the lists with terms and tags.
@@ -143,17 +138,13 @@ public final class BratDocumentViewerRepresentation extends AbstractTableReprese
      * @param doc the document
      * @param terms the indexed terms of the document
      */
-    public void init(final Document doc, final List<IndexedTerm> terms) {
-        m_termIds = new ArrayList<String>();
-        m_tags = new ArrayList<String>();
-        m_terms = new ArrayList<String>();
-        m_startIndexes = new ArrayList<String>();
-        m_stopIndexes = new ArrayList<String>();
+    public void add(final Document doc, final List<IndexedTerm> terms) {
+        BratDocument bratDocument = new BratDocument();
 
-        m_docText = doc.getDocumentBodyText();
-        m_docTitle = doc.getTitle();
+        bratDocument.setDocText(doc.getDocumentBodyText());
+        bratDocument.setDocTitle(doc.getTitle());
         // we don't want to include the title in the body text
-        int titleLength = m_docTitle.length();
+        int titleLength = bratDocument.getDocTitle().length();
 
         // index used for term ID
         int idx = 1;
@@ -163,142 +154,151 @@ public final class BratDocumentViewerRepresentation extends AbstractTableReprese
                 int lastPos = term.getStopIndex() - titleLength;
                 // if firstPos < 0, it means the current term is the title, which we don't want, so skip it
                 if (firstPos >= 0) {
-                    m_termIds.add("T" + idx++);
-                    m_tags.add(tag);
-                    m_terms.add(term.getTermValue());
-                    m_startIndexes.add(Integer.toString(firstPos));
-                    m_stopIndexes.add(Integer.toString(lastPos));
+                    bratDocument.getTermIds().add("T" + idx++);
+                    bratDocument.getTags().add(tag);
+                    bratDocument.getTerms().add(term.getTermValue());
+                    bratDocument.getStartIndexes().add(Integer.toString(firstPos));
+                    bratDocument.getStopIndexes().add(Integer.toString(lastPos));
                 }
             }
         }
         // generate colors for tags
-        setRandColorToTags();
+        bratDocument.setRandColorToTags();
+        m_bratDocuments.add(bratDocument);
     }
 
     /**
-     * Generate random static color for each tag.
+     * @return the useNumCols
      */
-    private void setRandColorToTags() {
-        m_colors = new ArrayList<String>();
-        // get unique tags
-        List<String> tags = m_tags.stream().distinct().collect(Collectors.toList());
-        // set random color
-        for (String tag : tags) {
-            Color randColor = new Color((int)(new Random(tag.hashCode()).nextDouble() * 0x1000000)).brighter();
-            m_colors.add(String.format("#%02x%02x%02x", randColor.getRed(), randColor.getGreen(), randColor.getBlue()));
-        }
+    public boolean getUseNumCols() {
+        return m_useNumCols;
     }
 
     /**
-     * @return the documentText
+     * @param useNumCols the useNumCols to set
      */
-    public String getDocumentText() {
-        return m_docText;
+    public void setUseNumCols(final boolean useNumCols) {
+        m_useNumCols = useNumCols;
     }
 
     /**
-     * @param docText the documentText to set
+     * @return the useColWidth
      */
-    public void setDocumentText(final String docText) {
-        m_docText = docText;
+    public boolean getUseColWidth() {
+        return m_useColWidth;
     }
 
     /**
-     * @return the documentTitle
+     * @param useColWidth the useColWidth to set
      */
-    public String getDocumentTitle() {
-        return m_docTitle;
+    public void setUseColWidth(final boolean useColWidth) {
+        m_useColWidth = useColWidth;
     }
 
     /**
-     * @param docTitle the documentTitle to set
+     * @return the numCols
      */
-    public void setDocumentTitle(final String docTitle) {
-        m_docTitle = docTitle;
+    public int getNumCols() {
+        return m_numCols;
     }
 
     /**
-     * @return the termIds
+     * @param numCols the numCols to set
      */
-    public List<String> getTermIds() {
-        return m_termIds;
+    public void setNumCols(final int numCols) {
+        m_numCols = numCols;
     }
 
     /**
-     * @param termIds the termIds to set
+     * @return the colWidth
      */
-    public void setTermIds(final List<String> termIds) {
-        m_termIds = termIds;
+    public int getColWidth() {
+        return m_colWidth;
     }
 
     /**
-     * @return the tags
+     * @param colWidth the colWidth to set
      */
-    public List<String> getTags() {
-        return m_tags;
+    public void setColWidth(final int colWidth) {
+        m_colWidth = colWidth;
     }
 
     /**
-     * @param tags the tags to set
+     * @return the labelCol
      */
-    public void setTags(final List<String> tags) {
-        m_tags = tags;
+    public String getLabelCol() {
+        return m_labelCol;
     }
 
     /**
-     * @return the terms
+     * @param labelCol the labelCol to set
      */
-    public List<String> getTerms() {
-        return m_terms;
+    public void setLabelCol(final String labelCol) {
+        m_labelCol = labelCol;
     }
 
     /**
-     * @param terms the terms to set
+     * @return the useRowID
      */
-    public void setTerms(final List<String> terms) {
-        m_terms = terms;
+    public boolean getUseRowID() {
+        return m_useRowID;
     }
 
     /**
-     * @return the startIndexes
+     * @param useRowID the useRowID to set
      */
-    public List<String> getStartIndexes() {
-        return m_startIndexes;
+    public void setUseRowID(final boolean useRowID) {
+        m_useRowID = useRowID;
     }
 
     /**
-     * @param startIndexes the startIndexes to set
+     * @return the alignLeft
      */
-    public void setStartIndexes(final List<String> startIndexes) {
-        m_startIndexes = startIndexes;
+    public boolean getAlignLeft() {
+        return m_alignLeft;
     }
 
     /**
-     * @return the stopIndexes
+     * @param alignLeft the alignLeft to set
      */
-    public List<String> getStopIndexes() {
-        return m_stopIndexes;
+    public void setAlignLeft(final boolean alignLeft) {
+        m_alignLeft = alignLeft;
     }
 
     /**
-     * @param stopIndexes the stopIndexes to set
+     * @return the alignRight
      */
-    public void setStopIndexes(final List<String> stopIndexes) {
-        m_stopIndexes = stopIndexes;
+    public boolean getAlignRight() {
+        return m_alignRight;
     }
 
     /**
-     * @return the colors
+     * @param alignRight the alignRight to set
      */
-    public List<String> getColors() {
-        return m_colors;
+    public void setAlignRight(final boolean alignRight) {
+        m_alignRight = alignRight;
     }
 
     /**
-     * @param colors the colors to set
+     * @return the alignCenter
      */
-    public void setColors(final List<String> colors) {
-        m_colors = colors;
+    public boolean getAlignCenter() {
+        return m_alignCenter;
+    }
+
+    /**
+     * @param alignCenter the alignCenter to set
+     */
+    public void setAlignCenter(final boolean alignCenter) {
+        m_alignCenter = alignCenter;
+    }
+
+    public ArrayList<BratDocument> getBratDocuments() {
+        return m_bratDocuments;
+    }
+
+    public void setBratDocuments(final ArrayList<BratDocument> bratDocument) {
+        m_bratDocuments = bratDocument;
     }
 
     /**
@@ -307,16 +307,25 @@ public final class BratDocumentViewerRepresentation extends AbstractTableReprese
     @Override
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         m_settings.saveSettings(settings);
-        if (m_docText != null && m_terms != null) {
-            settings.addString(CFG_DOC_TEXT, m_docText);
-            settings.addString(CFG_DOC_TITLE, m_docTitle);
-            settings.addStringArray(CFG_DOC_TERM_IDS, m_termIds.toArray(new String[]{}));
-            settings.addStringArray(CFG_DOC_TERMS, m_terms.toArray(new String[]{}));
-            settings.addStringArray(CFG_DOC_TAGS, m_tags.toArray(new String[]{}));
-            settings.addStringArray(CFG_DOC_START_IDX, m_startIndexes.toArray(new String[]{}));
-            settings.addStringArray(CFG_DOC_STOP_IDX, m_stopIndexes.toArray(new String[]{}));
-            settings.addStringArray(CFG_DOC_COLORS, m_colors.toArray(new String[]{}));
-        }
+//        if (m_docText != null && m_terms != null) {
+//            settings.addString(CFG_DOC_TEXT, m_docText);
+//            settings.addString(CFG_DOC_TITLE, m_docTitle);
+//            settings.addStringArray(CFG_DOC_TERM_IDS, m_termIds.toArray(new String[]{}));
+//            settings.addStringArray(CFG_DOC_TERMS, m_terms.toArray(new String[]{}));
+//            settings.addStringArray(CFG_DOC_TAGS, m_tags.toArray(new String[]{}));
+//            settings.addStringArray(CFG_DOC_START_IDX, m_startIndexes.toArray(new String[]{}));
+//            settings.addStringArray(CFG_DOC_STOP_IDX, m_stopIndexes.toArray(new String[]{}));
+//            settings.addStringArray(CFG_DOC_COLORS, m_colors.toArray(new String[]{}));
+            settings.addBoolean(BratDocumentViewerConfig.CFG_USE_NUM_COLS, m_useNumCols);
+            settings.addBoolean(BratDocumentViewerConfig.CFG_USE_COL_WIDTH, m_useColWidth);
+            settings.addInt(BratDocumentViewerConfig.CFG_NUM_COLS, m_numCols);
+            settings.addInt(BratDocumentViewerConfig.CFG_COL_WIDTH, m_colWidth);
+            settings.addString(BratDocumentViewerConfig.CFG_LABEL_COL, m_labelCol);
+            settings.addBoolean(BratDocumentViewerConfig.CFG_USE_ROW_ID, m_useRowID);
+            settings.addBoolean(BratDocumentViewerConfig.CFG_ALIGN_LEFT, m_alignLeft);
+            settings.addBoolean(BratDocumentViewerConfig.CFG_ALIGN_RIGHT, m_alignRight);
+            settings.addBoolean(BratDocumentViewerConfig.CFG_ALIGN_CENTER, m_alignCenter);
+//        }
     }
 
     /**
@@ -325,14 +334,24 @@ public final class BratDocumentViewerRepresentation extends AbstractTableReprese
     @Override
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_settings.loadSettings(settings);
-        setDocumentText(settings.getString(CFG_DOC_TEXT));
-        setDocumentTitle(settings.getString(CFG_DOC_TITLE));
-        setTermIds(Arrays.asList(settings.getStringArray(CFG_DOC_TERM_IDS)));
-        setTerms(Arrays.asList(settings.getStringArray(CFG_DOC_TERMS)));
-        setTags(Arrays.asList(settings.getStringArray(CFG_DOC_TAGS)));
-        setStartIndexes(Arrays.asList(settings.getStringArray(CFG_DOC_START_IDX)));
-        setStopIndexes(Arrays.asList(settings.getStringArray(CFG_DOC_STOP_IDX)));
-        setColors(Arrays.asList(settings.getStringArray(CFG_DOC_COLORS)));
+        m_useNumCols = settings.getBoolean(BratDocumentViewerConfig.CFG_USE_NUM_COLS);
+        m_useColWidth = settings.getBoolean(BratDocumentViewerConfig.CFG_USE_COL_WIDTH);
+        m_numCols = settings.getInt(BratDocumentViewerConfig.CFG_NUM_COLS);
+        m_colWidth = settings.getInt(BratDocumentViewerConfig.CFG_COL_WIDTH);
+        m_labelCol = settings.getString(BratDocumentViewerConfig.CFG_LABEL_COL);
+        m_useRowID = settings.getBoolean(BratDocumentViewerConfig.CFG_USE_ROW_ID);
+        m_alignLeft = settings.getBoolean(BratDocumentViewerConfig.CFG_ALIGN_LEFT);
+        m_alignRight = settings.getBoolean(BratDocumentViewerConfig.CFG_ALIGN_RIGHT);
+        m_alignCenter = settings.getBoolean(BratDocumentViewerConfig.CFG_ALIGN_CENTER);
+
+//        setDocumentText(settings.getString(CFG_DOC_TEXT));
+//        setDocumentTitle(settings.getString(CFG_DOC_TITLE));
+//        setTermIds(Arrays.asList(settings.getStringArray(CFG_DOC_TERM_IDS)));
+//        setTerms(Arrays.asList(settings.getStringArray(CFG_DOC_TERMS)));
+//        setTags(Arrays.asList(settings.getStringArray(CFG_DOC_TAGS)));
+//        setStartIndexes(Arrays.asList(settings.getStringArray(CFG_DOC_START_IDX)));
+//        setStopIndexes(Arrays.asList(settings.getStringArray(CFG_DOC_STOP_IDX)));
+//        setColors(Arrays.asList(settings.getStringArray(CFG_DOC_COLORS)));
     }
 
     /**
@@ -353,14 +372,7 @@ public final class BratDocumentViewerRepresentation extends AbstractTableReprese
         BratDocumentViewerRepresentation other = (BratDocumentViewerRepresentation)obj;
         return new EqualsBuilder()
                 .append(m_settings, other.getSettings())
-                .append(m_docText, other.getDocumentText())
-                .append(m_docTitle, other.getDocumentTitle())
-                .append(m_termIds, other.getTermIds())
-                .append(m_terms, other.getTerms())
-                .append(m_tags, other.getTags())
-                .append(m_startIndexes, other.getStartIndexes())
-                .append(m_stopIndexes, other.getStopIndexes())
-                .append(m_colors, other.getColors())
+                .append(m_bratDocuments, other.getBratDocuments())
                 .isEquals();
     }
 
@@ -371,14 +383,7 @@ public final class BratDocumentViewerRepresentation extends AbstractTableReprese
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(m_settings)
-                .append(m_docText)
-                .append(m_docTitle)
-                .append(m_termIds)
-                .append(m_terms)
-                .append(m_tags)
-                .append(m_startIndexes)
-                .append(m_stopIndexes)
-                .append(m_colors)
+                .append(m_bratDocuments)
                 .toHashCode();
     }
 
@@ -408,4 +413,158 @@ public final class BratDocumentViewerRepresentation extends AbstractTableReprese
         m_settings.setTable(table);
     }
 
+    /**
+     *
+     * @author Daniel Bogenrieder
+     */
+    @JsonAutoDetect
+    public static final class BratDocument {
+
+        private String m_docText;
+
+        private String m_docTitle;
+
+        private List<String> m_termIds;
+
+        private List<String> m_tags;
+
+        private List<String> m_terms;
+
+        private List<String> m_startIndexes;
+
+        private List<String> m_stopIndexes;
+
+        private List<String> m_colors;
+
+        BratDocument() {
+            m_termIds = new ArrayList<String>();
+            m_tags = new ArrayList<String>();
+            m_terms = new ArrayList<String>();
+            m_startIndexes = new ArrayList<String>();
+            m_stopIndexes = new ArrayList<String>();
+        }
+
+        public String getDocText() {
+            return m_docText;
+        }
+
+        /**
+         * @param docText
+         */
+        public void setDocText(final String docText) {
+            m_docText = docText;
+        }
+
+        /**
+         * @return
+         */
+        public String getDocTitle() {
+            return m_docTitle;
+        }
+
+        /**
+         * @param docTitle
+         */
+        public void setDocTitle(final String docTitle) {
+            m_docTitle = docTitle;
+        }
+
+        /**
+         * @return
+         */
+        public List<String> getTermIds() {
+            return m_termIds;
+        }
+
+        /**
+         * @param getTermIds
+         */
+        public void setTermIds(final List<String> getTermIds) {
+            m_termIds = getTermIds;
+        }
+
+        /**
+         * @return
+         */
+        public List<String> getTags() {
+            return m_tags;
+        }
+
+        /**
+         * @param tags
+         */
+        public void setTags(final List<String> tags) {
+            m_tags = tags;
+        }
+
+        /**
+         * @return
+         */
+        public List<String> getTerms() {
+            return m_terms;
+        }
+
+        /**
+         * @param terms
+         */
+        public void setTerms(final List<String> terms) {
+            m_terms = terms;
+        }
+
+        /**
+         * @return
+         */
+        public List<String> getStartIndexes() {
+            return m_startIndexes;
+        }
+
+        /**
+         * @param startIndexes
+         */
+        public void setStartIndexes(final List<String> startIndexes) {
+            m_startIndexes = startIndexes;
+        }
+
+        /**
+         * @return
+         */
+        public List<String> getStopIndexes() {
+            return m_stopIndexes;
+        }
+
+        /**
+         * @param stopIndexes
+         */
+        public void setStopIndexes(final List<String> stopIndexes) {
+            m_stopIndexes = stopIndexes;
+        }
+
+        /**
+         * @return
+         */
+        public List<String> getColors() {
+            return m_colors;
+        }
+
+        /**
+         * @param colors
+         */
+        public void setColors(final List<String> colors) {
+            m_colors = colors;
+        }
+
+        /**
+         * Generate random static color for each tag.
+         */
+        public void setRandColorToTags() {
+            m_colors = new ArrayList<String>();
+            // get unique tags
+            List<String> tags = m_tags.stream().distinct().collect(Collectors.toList());
+            // set random color
+            for (String tag : tags) {
+                Color randColor = new Color((int)(new Random(tag.hashCode()).nextDouble() * 0x1000000)).brighter();
+                m_colors.add(String.format("#%02x%02x%02x", randColor.getRed(), randColor.getGreen(), randColor.getBlue()));
+            }
+        }
+    }
 }

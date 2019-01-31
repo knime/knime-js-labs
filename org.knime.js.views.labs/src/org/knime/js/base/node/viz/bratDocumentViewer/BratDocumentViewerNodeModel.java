@@ -48,11 +48,13 @@
  */
 package org.knime.js.base.node.viz.bratDocumentViewer;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.RowIterator;
+import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
@@ -68,6 +70,7 @@ import org.knime.ext.textprocessing.data.IndexedTerm;
 import org.knime.ext.textprocessing.util.ColumnSelectionVerifier;
 import org.knime.ext.textprocessing.util.DataTableSpecVerifier;
 import org.knime.ext.textprocessing.util.DocumentUtil;
+import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.node.table.AbstractTableNodeModel;
 
 /**
@@ -82,6 +85,7 @@ final class BratDocumentViewerNodeModel
      * The SettingsModelString for the document column.
      */
     private final SettingsModelString m_docColModel = BratDocumentViewerNodeDialog.getDocColModel();
+
 
     /**
      * The constructor of the Brat Document Viewer node. The node has one input port and no output port.
@@ -121,6 +125,7 @@ final class BratDocumentViewerNodeModel
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_docColModel.validateSettings(settings);
+        m_config.loadSettings(settings);
     }
 
     /**
@@ -211,37 +216,88 @@ final class BratDocumentViewerNodeModel
      */
     @Override
     protected PortObject[] performExecute(final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
+        BufferedDataTable out = (BufferedDataTable)inObjects[0];
         synchronized (getLock()) {
+            final BratDocumentViewerRepresentation viewRepresentation = getViewRepresentation();
+            if (viewRepresentation.getSettings().getTable() == null) {
+                m_table = (BufferedDataTable)inObjects[0];
+                final JSONDataTable jsonTable = createJSONTableFromBufferedDataTable(m_table,
+                    exec.createSubExecutionContext(0.5));
+                viewRepresentation.getSettings().setTable(jsonTable);
+                copyConfigToRepresentation();
+            }
+
+            if (m_config.getSettings().getRepresentationSettings().getEnableSelection()) {
+                final BratDocumentViewerValue viewValue = getViewValue();
+                List<String> selectionList = null;
+                if (viewValue != null) {
+                    if (viewValue.getSettings().getSelection() != null) {
+                        selectionList = Arrays.asList(viewValue.getSettings().getSelection());
+                    }
+                }
+                final ColumnRearranger rearranger = createColumnAppender(m_table.getDataTableSpec(), selectionList);
+                out = exec.createColumnRearrangeTable(m_table, rearranger, exec.createSubExecutionContext(0.5));
+            }
+            viewRepresentation.getSettings().setSubscriptionFilterIds(
+                getSubscriptionFilterIds(m_table.getDataTableSpec()));
             BufferedDataTable in = (BufferedDataTable)inObjects[0];
             checkDataTableSpec(in.getDataTableSpec());
             final int docColIndex = in.getDataTableSpec().findColumnIndex(m_docColModel.getStringValue());
 
             final RowIterator it = in.iterator();
             if (it.hasNext()) {
-                // take only the first row
-                final DataCell docCell = it.next().getCell(docColIndex);
-                if (!docCell.isMissing()) {
-                    // get the document
-                    final Document doc = ((DocumentValue)docCell).getDocument();
-                    // get the indexed terms from the doc
-                    final List<IndexedTerm> terms = DocumentUtil.getIndexedTerms(doc);
-                    final BratDocumentViewerRepresentation rep = getViewRepresentation();
-                    // set the values in the representation class
-                    rep.init(doc, terms);
-                    if (it.hasNext()) {
-                        setWarningMessage("Only document in the first row is visualized in the view.");
+                while (it.hasNext()) {
+                    // take only the first row
+                    final DataCell docCell = it.next().getCell(docColIndex);
+                    if (!docCell.isMissing()) {
+                        // get the document
+                        final Document doc = ((DocumentValue)docCell).getDocument();
+                        // get the indexed terms from the doc
+                        final List<IndexedTerm> terms = DocumentUtil.getIndexedTerms(doc);
+                        final BratDocumentViewerRepresentation rep = getViewRepresentation();
+                        // set the values in the representation class
+                        rep.add(doc, terms);
+//                        if (it.hasNext()) {
+//                            setWarningMessage("Only document in the first row is visualized in the view.");
+//                        }
+                    } else {
+                        // If there is no document in the first row
+                        // set warning message
+                        setWarningMessage("There is no document in the first row.");
                     }
-                } else {
-                    // If there is no document in the first row
-                    // set warning message
-                    setWarningMessage("There is no document in the first row.");
                 }
             } else {
                 setWarningMessage("Input table is empty.");
             }
         }
-        return new PortObject[]{inObjects[0]};
+        return new PortObject[]{out};
     }
 
+    /**
+     * Copies the settings from dialog into representation and values objects.
+     */
+    @Override
+    protected void copyConfigToRepresentation() {
+        synchronized (getLock()) {
+            final BratDocumentViewerConfig conf = (BratDocumentViewerConfig)m_config;
+            final BratDocumentViewerRepresentation viewRepresentation = getViewRepresentation();
+            // Use setSettingsFromDialog, it ensures the table that got set on the representation settings is preserved
+            viewRepresentation.setSettingsFromDialog(m_config.getSettings().getRepresentationSettings());
+            viewRepresentation.setUseNumCols(conf.getUseNumCols());
+            viewRepresentation.setUseColWidth(conf.getUseColWidth());
+            viewRepresentation.setNumCols(conf.getNumCols());
+            viewRepresentation.setColWidth(conf.getColWidth());
+            viewRepresentation.setLabelCol(conf.getLabelCol());
+            viewRepresentation.setUseRowID(conf.getUseRowID());
+            viewRepresentation.setAlignLeft(conf.getAlignLeft());
+            viewRepresentation.setAlignRight(conf.getAlignRight());
+            viewRepresentation.setAlignCenter(conf.getAlignCenter());
+
+            final BratDocumentViewerValue viewValue = getViewValue();
+            if (isViewValueEmpty()) {
+                viewValue.setSettings(m_config.getSettings().getValueSettings());
+            }
+        }
+    }
 
 }

@@ -1,11 +1,8 @@
+/* global KnimeBaseTableViewer:false, Util:false, $:false*/
 window.bratDocViewer = (function () {
-    var view = {};
     var _representation = null;
-    var VIZ_ID = 'viz';
     var minWidth = 100;
     var minHeight = 100;
-    var layoutContainerID = "layoutContainer";
-    var containerID = "documentContainer";
 
     var BratDocumentViewer = function () {
         this._representation = null;
@@ -17,7 +14,16 @@ window.bratDocViewer = (function () {
         this._currentFilter = null;
         this._initialized = false;
         this._dataTableConfig = null;
-    }
+        this._infoColsCount = 0;
+        this._nonSelectableColsCount = 0;
+        this._rowIdColInd = null;
+        this._nonHiddenDataIndexes = [];
+    };
+    
+    var htmlEncode = function (x) {
+        return x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    };
     
     BratDocumentViewer.prototype = Object.create(KnimeBaseTableViewer.prototype);
     BratDocumentViewer.prototype.constructor = BratDocumentViewer;
@@ -25,58 +31,10 @@ window.bratDocViewer = (function () {
     
     BratDocumentViewer.prototype.init = function (representation, value) {
         try {
-            _representation = representation;
-
-            debugger;
-            var tags = _representation.tags;
-            var title = _representation.documentTitle;
-            var text = _representation.documentText;
-            var ids = _representation.termIds;
-            var terms = _representation.terms;
-            var startIdx = _representation.startIndexes;
-            var stopIdx = _representation.stopIndexes;
-            var colors = _representation.colors;
-
-            var tagsUnique = tags.filter(function (item, i, ar) {
-                return ar.indexOf(item) === i;
-            });
-            var collData = {
-                entityTypes: []
-            };
-            for (var j = 0; j < tagsUnique.length; j++) {
-                var obj = {};
-                obj.type = tagsUnique[j];
-                obj.labels = [tagsUnique[j]];
-                obj.bgColor = colors[j];
-                obj.borderColor = 'darken';
-                collData.entityTypes.push(obj);
-            }
-
-            var docData = {
-                text: text,
-                entities: []
-            };
-            for (var i = 0; i < terms.length; i++) {
-                var obj = [ids[i], tags[i]];
-                var idx = [[startIdx[i], stopIdx[i]]];
-                obj.push(idx);
-                docData.entities.push(obj);
-            }
-
-            var prefixTitle = 'Document Title: ';
-            if (!title) {
-                title = 'Untitled';
-            }
-
-            var body = document.getElementsByTagName('body')[0];
-            body.innerHTML = '<h1>' + prefixTitle + title + '</h1>';
-
-            var div = document.createElement('div');
-            div.id = VIZ_ID;
-            body.appendChild(div);
-
-            Util.embed(VIZ_ID, $.extend({}, collData), $.extend({}, docData));
             
+            _representation = representation;
+            var title = _representation.documentTitle;
+            representation = representation.settings;
             var overrides = {
                 displayRowIds: representation.useRowID,
                 displayRowIndex: false,
@@ -84,8 +42,16 @@ window.bratDocViewer = (function () {
                 enableColumnSearching: false,
                 enableSearching: false,
                 enableSorting: false,
-                singleSelection: false,
+                singleSelection: false
             };
+            
+            var prefixTitle = 'Document Title: ';
+            if (!title) {
+                title = 'Untitled';
+            }
+
+            var body = document.getElementsByTagName('body')[0];
+            body.innerHTML = '<h1>' + prefixTitle + title + '</h1>';
             
             var options = Object.assign({}, representation, overrides);
             
@@ -98,6 +64,70 @@ window.bratDocViewer = (function () {
             } else {
                 alert(err);
             }
+        }
+    };
+    
+    BratDocumentViewer.prototype._renderBratDocument = function (id) {
+        debugger;
+        if(parseInt(id) < 10) {
+        var tags = _representation.bratDocuments[id].tags;
+        var text = _representation.bratDocuments[id].docText;
+        var ids = _representation.bratDocuments[id].termIds;
+        var terms = _representation.bratDocuments[id].terms;
+        var startIdx = _representation.bratDocuments[id].startIndexes;
+        var stopIdx = _representation.bratDocuments[id].stopIndexes;
+        var colors = _representation.bratDocuments[id].colors;
+
+        var tagsUnique = tags.filter(function (item, i, ar) {
+            return ar.indexOf(item) === i;
+        });
+        var collData = {
+            entityTypes: []
+        };
+        var obj;
+        for (var j = 0; j < tagsUnique.length; j++) {
+            obj = {};
+            obj.type = tagsUnique[j];
+            obj.labels = [tagsUnique[j]];
+            obj.bgColor = colors[j];
+            obj.borderColor = 'darken';
+            collData.entityTypes.push(obj);
+        }
+
+        var docData = {
+            text: text,
+            entities: []
+        };
+        for (var i = 0; i < terms.length; i++) {
+            obj = [ids[i], tags[i]];
+            var idx = [[startIdx[i], stopIdx[i]]];
+            obj.push(idx);
+            docData.entities.push(obj);
+        }
+        debugger;
+        if ($('#' + id + 'temp').length === 0) {
+            var div = document.createElement('div');
+            div.id = id + 'temp';
+            var body = document.getElementsByTagName('body')[0];
+    //        div.style.display = "none";
+            body.appendChild(div);
+        }
+        var dispatcher = Util.embed(id.toString() + 'temp', $.extend({}, collData), $.extend({}, docData));
+        dispatcher.on('doneRendering', function (event) {
+            $('#' + id)[0].innerHTML = div.innerHTML;
+            debugger;
+            $('#' + id + 'temp').remove();
+        });
+        
+        dispatcher.on('resize', function (event) {
+            console.log(event);
+        });
+            
+        
+        
+        return div;
+        } else {
+            return null;
         }
     };
     
@@ -152,6 +182,7 @@ window.bratDocViewer = (function () {
             }
             var titlePrefix = '<span class="knime-tiles-rowtitle">' + column.title + ':</span> ';
             if (column.hasOwnProperty('render')) {
+                debugger;
                 column.render = (function (original) {
                     return function (data) {
                         if (typeof data === 'undefined' || data === null) {
@@ -161,11 +192,13 @@ window.bratDocViewer = (function () {
                     };
                 })(column.render);
             } else {
-                column.render = function (data) {
+                column.render = function (name, display, data, position) {
                     if (typeof data === 'undefined' || data === null) {
                         return null;
                     }
-                    return titlePrefix + data;
+//                    data = data.replace(/"/g, '');
+                    self._renderBratDocument(position.row);
+                    return '<div id=' + position.row + ' width="100px"></div>';
                 };
             }
             column.defaultContent = titlePrefix + (column.defaultContent || '');

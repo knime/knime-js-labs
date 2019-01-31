@@ -281,35 +281,35 @@
              version="1.3"
              webResourceBundleID="brat_1.3">
           <webResource
-                relativePathSource="lib/js-lib/brat_1.3/"
-                relativePathTarget="lib/js-lib/brat_1.3/">
+                relativePathSource="js-lib/brat_1.3/"
+                relativePathTarget="js-lib/brat_1.3/">
           </webResource>
           <importResource
-                relativePath="lib/js-lib/brat_1.3/style-vis.css"
+                relativePath="js-lib/brat_1.3/style-vis.css"
                 type="CSS">
           </importResource>
           <importResource
-                relativePath="lib/js-lib/brat_1.3/client/src/annotation_log.js"
+                relativePath="js-lib/brat_1.3/client/src/annotation_log.js"
                 type="JAVASCRIPT">
           </importResource>
           <importResource
-                relativePath="lib/js-lib/brat_1.3/client/src/configuration.js"
+                relativePath="js-lib/brat_1.3/client/src/configuration.js"
                 type="JAVASCRIPT">
           </importResource>
           <importResource
-                relativePath="lib/js-lib/brat_1.3/client/src/dispatcher.js"
+                relativePath="js-lib/brat_1.3/client/src/dispatcher.js"
                 type="JAVASCRIPT">
           </importResource>
           <importResource
-                relativePath="lib/js-lib/brat_1.3/client/src/url_monitor.js"
+                relativePath="js-lib/brat_1.3/client/src/url_monitor.js"
                 type="JAVASCRIPT">
           </importResource>
           <importResource
-                relativePath="lib/js-lib/brat_1.3/client/src/util.js"
+                relativePath="js-lib/brat_1.3/client/src/util.js"
                 type="JAVASCRIPT">
           </importResource>
           <importResource
-                relativePath="lib/js-lib/brat_1.3/client/src/visualizer.js"
+                relativePath="js-lib/brat_1.3/client/src/visualizer.js"
                 type="JAVASCRIPT">
           </importResource>
           <webDependency
@@ -329,11 +329,11 @@
              version="1.4.3"
              webResourceBundleID="jQuery_svg_1.4.3">
           <webResource
-                relativePathSource="lib/js-lib/brat_1.3/client/lib/"
-                relativePathTarget="lib/js-lib/brat_1.3/client/lib/">
+                relativePathSource="js-lib/brat_1.3/client/lib/"
+                relativePathTarget="js-lib/brat_1.3/client/lib/">
           </webResource>
           <importResource
-                relativePath="lib/js-lib/brat_1.3/client/lib/jquery.svg.min.js"
+                relativePath="js-lib/brat_1.3/client/lib/jquery.svg.min.js"
                 type="JAVASCRIPT">
           </importResource>
        </webResourceBundle>
@@ -344,11 +344,11 @@
              version="1.4.3"
              webResourceBundleID="jQuery_svgdom_1.4.3">
           <webResource
-                relativePathSource="lib/js-lib/brat_1.3/client/lib/"
-                relativePathTarget="lib/js-lib/brat_1.3/client/lib/">
+                relativePathSource="js-lib/brat_1.3/client/lib/"
+                relativePathTarget="js-lib/brat_1.3/client/lib/">
           </webResource>
           <importResource
-                relativePath="lib/js-lib/brat_1.3/client/lib/jquery.svgdom.min.js"
+                relativePath="js-lib/brat_1.3/client/lib/jquery.svgdom.min.js"
                 type="JAVASCRIPT">
           </importResource>
        </webResourceBundle>
@@ -371,6 +371,12 @@
           </webDependency>
           <webDependency
                 webResourceBundleID="knimeBaseTableViewer_1.0.0">
+          </webDependency>
+          <webDependency
+                webResourceBundleID="dataTables_1_10_11_bootstrap">
+          </webDependency>
+          <webDependency
+                webResourceBundleID="KnimeTable_1.0.0">
           </webDependency>
        </webResourceBundle>
    </extension>
