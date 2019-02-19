@@ -45,7 +45,7 @@
       <node
             category-path="/labs/js-views"
             deprecated="false"
-            factory-class="org.knime.js.base.node.viz.bratDocumentViewer.BratDocumentViewerNodeFactory">
+            factory-class="org.knime.js.base.node.viz.DocumentViewer.DocumentViewerNodeFactory">
       </node>
    </extension>
    <extension
@@ -354,17 +354,21 @@
        </webResourceBundle>
        <webResourceBundle
              debug="true"
-             name="Brat Document Viewer"
+             name="Document Viewer (JavaScript)"
              usesDefine="false"
              version="1.0.0"
-             webResourceBundleID="org.knime.js.base.node.viz.bratDocumentViewer.bundle">
+             webResourceBundleID="org.knime.js.base.node.viz.DocumentViewer.bundle">
           <webResource
-                relativePathSource="js-src/org/knime/js/base/node/viz/bratdocumentviewer/"
-                relativePathTarget="/org/knime/js/base/node/viz/bratdocumentviewer/">
+                relativePathSource="js-src/org/knime/js/base/node/viz/documentviewer/"
+                relativePathTarget="/org/knime/js/base/node/viz/documentviewer/">
           </webResource>
           <importResource
-                relativePath="/org/knime/js/base/node/viz/bratdocumentviewer/knime-brat-viewer.js"
+                relativePath="/org/knime/js/base/node/viz/documentviewer/knime-document-viewer.js"
                 type="JAVASCRIPT">
+          </importResource>
+          <importResource
+                relativePath="/org/knime/js/base/node/viz/documentviewer/styles.css"
+                type="CSS">
           </importResource>
           <webDependency
                 webResourceBundleID="brat_1.3">
@@ -453,11 +457,11 @@
       </javascriptComponent>
             <javascriptComponent
                   getComponentValue-method-name="getComponentValue"
-                  implementationBundleID="org.knime.js.base.node.viz.bratDocumentViewer.bundle"
+                  implementationBundleID="org.knime.js.base.node.viz.DocumentViewer.bundle"
                   init-method-name="init"
-                  javascriptComponentID="org.knime.js.base.node.viz.bratdocumentviewer"
-                  name="Brat Document Viewer"
-                  namespace="bratDocViewer"
+                  javascriptComponentID="org.knime.js.base.node.viz.documentviewer"
+                  name="Document Viewer (JavaScript)"
+                  namespace="docViewer"
                   setValidationError-method-name="setValidationError"
                   validate-method-name="validate">
             </javascriptComponent>

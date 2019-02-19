@@ -46,7 +46,7 @@
  * History
  *   Oct 25, 2018 (dewi): created
  */
-package org.knime.js.base.node.viz.bratDocumentViewer;
+package org.knime.js.base.node.viz.DocumentViewer;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -56,30 +56,57 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.js.core.node.table.AbstractTableValue;
 import org.knime.js.core.settings.table.TableValueSettings;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 /**
  * The Value class for the Brat Document Viewer node. The values can be changed in the view. Currently this class is
  * empty.
  *
  * @author Andisa Dewi, KNIME AG, Berlin, Germany
  */
-public final class BratDocumentViewerValue extends AbstractTableValue {
+@JsonAutoDetect
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+public final class DocumentViewerValue extends AbstractTableValue {
 
 
     private TableValueSettings m_settings = new TableValueSettings();
     /**
-     * {@inheritDoc}
+     * @return the settings
      */
     @Override
-    public void saveToNodeSettings(final NodeSettingsWO settings) {
-        // nothing to do
+    @JsonUnwrapped
+    public TableValueSettings getSettings() {
+        return m_settings;
+    }
+
+    /**
+     * @param settings the settings to set
+     */
+    @Override
+    @JsonUnwrapped
+    public void setSettings(final TableValueSettings settings) {
+        m_settings = settings;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @JsonIgnore
+    public void saveToNodeSettings(final NodeSettingsWO settings) {
+        m_settings.saveSettings(settings);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @JsonIgnore
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        // nothing to do
+        m_settings.loadSettings(settings);
     }
 
     /**
@@ -96,24 +123,12 @@ public final class BratDocumentViewerValue extends AbstractTableValue {
         if (obj.getClass() != getClass()) {
             return false;
         }
-        return new EqualsBuilder().isEquals();
+        final DocumentViewerValue other = (DocumentViewerValue)obj;
+        return new EqualsBuilder()
+                .append(m_settings, other.m_settings)
+                .isEquals();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public TableValueSettings getSettings() {
-        return m_settings;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setSettings(final TableValueSettings settings) {
-        m_settings = settings;
-    }
 
     /**
      * {@inheritDoc}

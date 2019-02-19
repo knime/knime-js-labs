@@ -46,7 +46,7 @@
  * History
  *   Oct 25, 2018 (dewi): created
  */
-package org.knime.js.base.node.viz.bratDocumentViewer;
+package org.knime.js.base.node.viz.DocumentViewer;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
@@ -58,15 +58,15 @@ import org.knime.core.node.wizard.WizardNodeFactoryExtension;
  *
  * @author Andisa Dewi, KNIME AG, Berlin, Germany
  */
-public final class BratDocumentViewerNodeFactory extends NodeFactory<BratDocumentViewerNodeModel> implements
-    WizardNodeFactoryExtension<BratDocumentViewerNodeModel, BratDocumentViewerRepresentation, BratDocumentViewerValue> {
+public final class DocumentViewerNodeFactory extends NodeFactory<DocumentViewerNodeModel> implements
+    WizardNodeFactoryExtension<DocumentViewerNodeModel, DocumentViewerRepresentation, DocumentViewerValue> {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public BratDocumentViewerNodeModel createNodeModel() {
-        return new BratDocumentViewerNodeModel(getInteractiveViewName());
+    public DocumentViewerNodeModel createNodeModel() {
+        return new DocumentViewerNodeModel(getInteractiveViewName());
     }
 
     /**
@@ -81,8 +81,8 @@ public final class BratDocumentViewerNodeFactory extends NodeFactory<BratDocumen
      * {@inheritDoc}
      */
     @Override
-    public NodeView<BratDocumentViewerNodeModel> createNodeView(final int viewIndex,
-        final BratDocumentViewerNodeModel nodeModel) {
+    public NodeView<DocumentViewerNodeModel> createNodeView(final int viewIndex,
+        final DocumentViewerNodeModel nodeModel) {
         return null;
     }
 
@@ -99,7 +99,7 @@ public final class BratDocumentViewerNodeFactory extends NodeFactory<BratDocumen
      */
     @Override
     protected NodeDialogPane createNodeDialogPane() {
-        return new BratDocumentViewerNodeDialog();
+        return new DocumentViewerNodeDialog();
     }
 
 }
