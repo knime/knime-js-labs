@@ -31,11 +31,9 @@
 		<inPort name="Documents input table" index="0">
 			The input table containing the documents.
 		</inPort>
-		<outPort name="Image port" index="0">
-			An SVG image representation of the view.
-		</outPort>
-		<outPort name="Output table" index="1">
-			Data table containing the input data.
+		<outPort name="Input data and view selection" index="0">
+			Data table containing the input data appended with a column, that
+			represents the selection made in the document viewer.
 		</outPort>
 	</ports>
 
