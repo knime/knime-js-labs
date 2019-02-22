@@ -10,7 +10,7 @@
 	    <intro>
 		    <p>The implementation of the OPTICS algorithm in KNIME consists of two nodes: the OPTICS Cluster Compute node and the OPTICS Cluster Assigner node.  Here you will find a brief description of the algorithm, followed by a description of the OPTICS Cluster Assigner node.</p>
 		<p><a href="https://en.wikipedia.org/wiki/OPTICS_algorithm">OPTICS</a> is an algorithm for finding clusters in spatial data.  It was
-first described in <a href="http://fogo.dbs.ifi.lmu.de/Publikationen/Papers/OPTICS.pdf">Mihael Ankerst, Markus M. Breunig, Hans-Peter Kriegel, Jörg Sander (1999). "OPTICS: Ordering Points To Identify the Clustering Structure". 
+first described in <a href="http://www.dbs.ifi.lmu.de/Publikationen/Papers/OPTICS.pdf">Mihael Ankerst, Markus M. Breunig, Hans-Peter Kriegel, Jörg Sander (1999). "OPTICS: Ordering Points To Identify the Clustering Structure". 
         ACM SIGMOD international conference on Management of data. ACM Press. pp. 49–60</a> and is based on DBSCAN.  Like DBSCAN,
 it is a <i>density-based</i> clustering algorithm, that is, it groups data points that are densely packed together in some
 contiguous region of the data space into clusters. Unlike DBSCAN, it can detect
