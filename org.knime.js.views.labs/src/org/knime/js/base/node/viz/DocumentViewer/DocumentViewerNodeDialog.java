@@ -257,6 +257,7 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         m_documentColumnSelectionPanel.update(inSpec, m_config.getDocumentCol());
 
         enableSelectionFields();
+        setNumberOfFilters(inSpec);
         m_whitespace.setVisible(true);
     }
 
@@ -394,6 +395,21 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
             builder.append(sizes[i]);
         }
         return builder.toString();
+    }
+    
+    private void setNumberOfFilters(final DataTableSpec spec) {
+        int numFilters = 0;
+        for (int i = 0; i < spec.getNumColumns(); i++) {
+            if (spec.getColumnSpec(i).getFilterHandler().isPresent()) {
+                numFilters++;
+            }
+        }
+        final StringBuilder builder = new StringBuilder("Subscribe to filter events");
+        builder.append(" (");
+        builder.append(numFilters == 0 ? "no" : numFilters);
+        builder.append(numFilters == 1 ? " filter" : " filters");
+        builder.append(" available)");
+        m_subscribeFilterCheckBox.setText(builder.toString());
     }
 
     private int[] getAllowedPageSizes() throws InvalidSettingsException {

@@ -40,9 +40,9 @@ window.docViewer = (function () {
         };
 
         var options = Object.assign({}, representation, overrides);
-
         // super call
         KnimeBaseTableViewer.prototype.init.call(this, options, value);
+
     };
 
     // filtering
@@ -88,12 +88,6 @@ window.docViewer = (function () {
         }
         var dispatcher = Util.embed(id.toString(), $.extend({}, collData), $.extend({}, docData));
         return dispatcher;
-    };
-
-    // filtering
-    BratDocumentViewer.prototype._buildMenu = function () {
-        this._representation.subscriptionFilterIds = this._knimeTable.getFilterIds();
-        KnimeBaseTableViewer.prototype._buildMenu.apply(this);
     };
 
     BratDocumentViewer.prototype._buildColumnDefinitions = function () {
@@ -155,7 +149,7 @@ window.docViewer = (function () {
                         return null;
                     }
                     return '<div class="knime-document-title knime-table-cell">' +
-                        _representation.bratDocuments[position.row].docTitle + '</div><div style="width:99%" id=' +
+                        _representation.bratDocuments[position.row].docTitle + '</div><div id=' +
                         position.row + '></div>';
                 };
             }
@@ -196,9 +190,9 @@ window.docViewer = (function () {
         $('.dt-body-center.knime-table-cell').css('border-top', '0px');
         $('.knime-table-cell.knime-string').css('border-top', '0px');
     };
-    
+
     BratDocumentViewer.prototype._cellMouseDownHandler = function () {
-        // blocks the cell_mouse_down event so that the cell is not beeing selected
+    // blocks the cell_mouse_down event so that the cell is not being selected
     };
 
     return new BratDocumentViewer();
