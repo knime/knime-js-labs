@@ -1,4 +1,5 @@
-/* global KnimeBaseTableViewer:false, Util:false, $:false*/
+/* eslint-env jquery */
+/* global KnimeBaseTableViewer:false, Util:false */
 window.docViewer = (function () {
     var _representation = null;
 

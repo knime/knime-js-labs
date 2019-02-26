@@ -65,7 +65,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  * The Value class for the Brat Document Viewer node. The values can be changed in the view. Currently this class is
  * empty.
  *
- * @author Andisa Dewi, KNIME AG, Berlin, Germany
+ * @author Daniel Bogenrieder, KNIME GmbH, Konstanz, Germany
  */
 @JsonAutoDetect
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")

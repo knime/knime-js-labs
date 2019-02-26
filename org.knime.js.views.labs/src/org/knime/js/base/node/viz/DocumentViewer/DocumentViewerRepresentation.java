@@ -73,7 +73,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  * Representation class for Brat Document Viewer node. It contains the values needed for the visualization. The values
  * stay unchanged throughout the view.
  *
- * @author Andisa Dewi, KNIME AG, Berlin, Germany
+ * @author Daniel Bogenrieder, KNIME GmbH, Konstanz, Germany
  */
 @JsonAutoDetect
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
@@ -373,7 +373,8 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
             // set random color
             for (String tag : tags) {
                 Color randColor = new Color((int)(new Random(tag.hashCode()).nextDouble() * 0x1000000)).brighter();
-                m_colors.add(String.format("#%02x%02x%02x", randColor.getRed(), randColor.getGreen(), randColor.getBlue()));
+                m_colors
+                    .add(String.format("#%02x%02x%02x", randColor.getRed(), randColor.getGreen(), randColor.getBlue()));
             }
         }
     }

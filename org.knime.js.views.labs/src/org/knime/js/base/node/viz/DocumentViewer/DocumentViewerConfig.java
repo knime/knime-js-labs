@@ -58,7 +58,7 @@ import org.knime.js.core.settings.table.TableSettings;
 /**
  * The configuration keys for the Brat Document Viewer node.
  *
- * @author Andisa Dewi, KNIME AG, Berlin, Germany
+ * @author Daniel Bogenrieder, KNIME GmbH, Konstanz, Germany
  */
 public class DocumentViewerConfig implements TableConfig {
 

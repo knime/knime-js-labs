@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<knimeNode icon="./TextProcDocumentView.png"
-	type="Visualizer" xmlns="http://knime.org/node/v2.8"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+<knimeNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://knime.org/node/v3.1" 
+	xsi:schemaLocation="http://knime.org/node/v3.1 http://knime.org/node/v3.1.xsd"
+	icon="./document_viewer.png" type="Visualizer">
 	<name>Document Viewer (JavaScript)</name>
 	<shortDescription>
 		Visualizes document terms and tags using the Brat JS library.

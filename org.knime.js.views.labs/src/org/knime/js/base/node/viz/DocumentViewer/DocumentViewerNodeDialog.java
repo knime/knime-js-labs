@@ -66,8 +66,6 @@ import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.DoubleValue;
-import org.knime.core.data.NominalValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialog;
 import org.knime.core.node.NodeDialogPane;
@@ -85,7 +83,7 @@ import org.knime.js.core.settings.DialogUtil;
 /**
  * The {@link NodeDialog} for the Brat Document Viewer node.
  *
- * @author Andisa Dewi, KNIME AG, Berlin, Germany
+ * @author Daniel Bogenrieder, KNIME GmbH, Konstanz, Germany
  */
 public class DocumentViewerNodeDialog extends NodeDialogPane {
 
@@ -101,8 +99,6 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
     private JTextField m_titleField;
     private JTextField m_subtitleField;
     private ColumnSelectionPanel m_documentColumnSelectionPanel;
-    private DialogComponentNumber m_numColsSpinner;
-    private ColumnSelectionPanel m_labelColColumnSelectionPanel;
     private JRadioButton m_alignLeftRadioButton;
     private JRadioButton m_alignRightRadioButton;
     private JRadioButton m_alignCenterRadioButton;
@@ -158,11 +154,6 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         m_publishFilterCheckBox = new JCheckBox("Publish filter events");
         m_subscribeFilterCheckBox = new JCheckBox("Subscribe to filter events");
         // end
-
-
-        m_labelColColumnSelectionPanel = new ColumnSelectionPanel(
-            BorderFactory.createTitledBorder("Choose a title column: "),
-            new DataValueColumnFilter(NominalValue.class, DoubleValue.class), true, true);
 
         m_warningLabelOptions = new JLabel("");
         m_warningLabelOptions.setForeground(Color.RED);
@@ -396,7 +387,7 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         }
         return builder.toString();
     }
-    
+
     private void setNumberOfFilters(final DataTableSpec spec) {
         int numFilters = 0;
         for (int i = 0; i < spec.getNumColumns(); i++) {

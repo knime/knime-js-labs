@@ -56,7 +56,7 @@ import org.knime.core.node.wizard.WizardNodeFactoryExtension;
 /**
  * The {@link NodeFactory} for the Brat Document Viewer node.
  *
- * @author Andisa Dewi, KNIME AG, Berlin, Germany
+ * @author Daniel Bogenrieder, KNIME GmbH, Konstanz, Germany
  */
 public final class DocumentViewerNodeFactory extends NodeFactory<DocumentViewerNodeModel> implements
     WizardNodeFactoryExtension<DocumentViewerNodeModel, DocumentViewerRepresentation, DocumentViewerValue> {
