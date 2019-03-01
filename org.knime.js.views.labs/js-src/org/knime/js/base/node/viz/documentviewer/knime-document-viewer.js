@@ -2,6 +2,15 @@
 /* global KnimeBaseTableViewer:false, Util:false */
 window.docViewer = (function () {
     var _representation = null;
+    var updateTimer;
+    var lastWidthWhenUpdating = 0;
+    // need an initial value which takes the scroll bar into consideration. The problem is, that when the table is
+    // created, the height of the table is small enough to not have a vertical scroll bar. But when the Brad documents
+    // are injected it might happen, that the scroll bar appears end therefore some space is reserved.
+    var usedWidth = window.innerWidth - 45;
+    // time after which the resizing should happen.
+    var updateInterval = 200;
+//    var changedPage = false;
 
     var BratDocumentViewer = function () {
         this._representation = null;
@@ -26,6 +35,30 @@ window.docViewer = (function () {
 
     BratDocumentViewer.prototype = Object.create(KnimeBaseTableViewer.prototype);
     BratDocumentViewer.prototype.constructor = BratDocumentViewer;
+    
+    function doneResizing() {
+        if (Math.abs(lastWidthWhenUpdating - window.innerWidth) > 10) {
+            var tempHeights = [];
+            // save all of the heights from each visible document
+            $('.knime-table-row').each(function (index, element) {
+                tempHeights.push(element.children[1].children[1].children[0].style.height);
+            });
+            // invalidate data to clear all the documents
+            $('#knimePagedTable').DataTable().rows().invalidate('data');
+            // measure the width of the unoccupied document to detect the width which should be used by the brat
+            // Document
+            usedWidth = $('.knime-table-row')[0].children[1].children[1].clientWidth - 10;
+            // create the documents
+            $('#knimePagedTable').DataTable().rows().draw(false);
+            // set each of the rows to the previous saved height to make the transition smooth
+            $('.knime-table-row').each(function (index, element) {
+                element.children[1].children[1].style.height = tempHeights[index];
+                element.children[1].children[1].children[0].style.height = tempHeights[index];
+            });
+
+            lastWidthWhenUpdating = window.innerWidth;
+        }
+    }
 
     BratDocumentViewer.prototype.init = function (representation, value) {
         _representation = representation;
@@ -43,15 +76,33 @@ window.docViewer = (function () {
         var options = Object.assign({}, representation, overrides);
         // super call
         KnimeBaseTableViewer.prototype.init.call(this, options, value);
+        
+        $('#knimePagedTable').DataTable().on('page.dt', function () {
+//            changedPage = true;
+            doneResizing();
+        });
 
     };
+    
+    
+    // Need to find a way to check weather this event is triggered by changing the size of the container,
+    // or by user input.
+//    $(window).scroll(function () {
+//        changedPage = false;
+//    });
+
+    $(window).resize(function (event) {
+//        changedPage = false;
+        clearTimeout(updateTimer);
+        updateTimer = setTimeout(doneResizing, updateInterval);
+    });
 
     // filtering
     BratDocumentViewer.prototype._buildMenu = function () {
         this._representation.subscriptionFilterIds = this._knimeTable.getFilterIds();
         KnimeBaseTableViewer.prototype._buildMenu.apply(this);
     };
-
+    
     BratDocumentViewer.prototype._renderBratDocument = function (id) {
         var tags = _representation.bratDocuments[id].tags;
         var text = _representation.bratDocuments[id].docText;
@@ -60,6 +111,9 @@ window.docViewer = (function () {
         var startIdx = _representation.bratDocuments[id].startIndexes;
         var stopIdx = _representation.bratDocuments[id].stopIndexes;
         var colors = _representation.bratDocuments[id].colors;
+        
+        // Translates escaped newline signs into actual newline signs
+        text = text.replace(new RegExp(/\\n/g), '\n');
 
         var tagsUnique = tags.filter(function (item, i, ar) {
             return ar.indexOf(item) === i;
@@ -87,7 +141,24 @@ window.docViewer = (function () {
             obj.push(idx);
             docData.entities.push(obj);
         }
-        var dispatcher = Util.embed(id.toString(), $.extend({}, collData), $.extend({}, docData));
+        
+        var dispatcher = Util.embed(id, $.extend({}, collData), $.extend({}, docData));
+        // Delete the loading text and show the svg when the svg creation is finished.
+        dispatcher.on('doneRendering', function () {
+            if ($('#' + id)[0].childNodes[0].nodeType === Node.TEXT_NODE) {
+                $('#' + id)[0].childNodes[1].style.visibility = 'block';
+                $('#' + id)[0].removeChild($('#' + id)[0].childNodes[0]);
+//                if (changedPage) {
+//                    $(window).scrollTop($('#knimePagedTableContainer')[0].scrollHeight);
+//                }
+            }
+        });
+        
+        // Set the visibility to hidden until the svg creation is finished
+        if ($('#' + id)[0].childNodes[1]) {
+            $('#' + id)[0].childNodes[1].style.visibility = 'hidden';
+        }
+        dispatcher.post('svgWidth', [usedWidth]);
         return dispatcher;
     };
 
@@ -149,9 +220,10 @@ window.docViewer = (function () {
                     if (typeof data === 'undefined' || data === null) {
                         return null;
                     }
-                    return '<div class="knime-document-title knime-table-cell">' +
-                        _representation.bratDocuments[position.row].docTitle + '</div><div id=' +
-                        position.row + '></div>';
+
+                    return '<div class="knime-document-title knime-table-cell" style="min-height:20px">' +
+                        _representation.bratDocuments[position.row].docTitle + '</div><div style="width:100%" id=' +
+                        position.row + '>Loading...</div>';
                 };
             }
             column.defaultContent = titlePrefix + (column.defaultContent || '');
@@ -193,7 +265,7 @@ window.docViewer = (function () {
     };
 
     BratDocumentViewer.prototype._cellMouseDownHandler = function () {
-    // blocks the cell_mouse_down event so that the cell is not being selected
+        // blocks the cell_mouse_down event so that the cell is not being selected
     };
 
     return new BratDocumentViewer();

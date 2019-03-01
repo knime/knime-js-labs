@@ -76,8 +76,7 @@ import org.knime.js.core.node.table.AbstractTableNodeModel;
  *
  * @author Daniel Bogenrieder, KNIME GmbH, Konstanz, Germany
  */
-final class DocumentViewerNodeModel
-    extends AbstractTableNodeModel<DocumentViewerRepresentation, DocumentViewerValue> {
+final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewerRepresentation, DocumentViewerValue> {
 
     /**
      * The constructor of the Brat Document Viewer node. The node has one input port and no output port.
@@ -141,12 +140,20 @@ final class DocumentViewerNodeModel
             }
             viewRepresentation.getSettings()
                 .setSubscriptionFilterIds(getSubscriptionFilterIds(m_table.getDataTableSpec()));
-
-            createDocuments(exec, m_table, viewRepresentation);
-
+            if ((viewRepresentation.getBratDocuments() == null || viewRepresentation.getBratDocuments().size() == 0)
+                && m_table != null) {
+                createDocuments(exec, m_table, viewRepresentation);
+            }
         }
         exec.setProgress(1);
         return new PortObject[]{out};
+    }
+
+    @Override
+    protected JSONDataTable.Builder getJsonDataTableBuilder(final BufferedDataTable table) {
+        JSONDataTable.Builder builder = super.getJsonDataTableBuilder(table);
+        builder.excludeRowsWithMissingValues(true);
+        return builder;
     }
 
     /**
@@ -158,7 +165,7 @@ final class DocumentViewerNodeModel
         synchronized (getLock()) {
             if ((rep.getBratDocuments() == null || rep.getBratDocuments().size() == 0) && m_table != null) {
                 // set internal table
-                    createDocuments(null, m_table, rep);
+                createDocuments(null, m_table, rep);
             }
         }
         return rep;
@@ -167,6 +174,10 @@ final class DocumentViewerNodeModel
     public void createDocuments(final ExecutionContext exec, final BufferedDataTable in,
         final DocumentViewerRepresentation viewRepresentation) {
         String documentCol = ((DocumentViewerConfig)m_config).getDocumentCol();
+        if (documentCol == null || documentCol == "") {
+            throw new IllegalArgumentException("No column selected for the document column.");
+        }
+
         final int docColIndex = in.getDataTableSpec().findColumnIndex(documentCol);
         ExecutionContext docContext = null;
         int counter = 0;
@@ -175,39 +186,33 @@ final class DocumentViewerNodeModel
         builder.filterColumns(documentCol);
         @SuppressWarnings("resource")
         final RowIterator it = builder.build();
-        try {
-            if(exec != null) {
-                docContext = exec.createSubExecutionContext(0.33);
-                docContext.setMessage("Extracting documents...");
-            }
-            while (it.hasNext()) {
-                counter++;
-                if(docContext != null) {
-                    try {
-                        docContext.checkCanceled();
-                        docContext.setProgress((double)in.size()/counter);
-                    } catch (CanceledExecutionException e) {
-                        break;
-                    }
-                }
-                // take only the first row
-                final DataCell docCell = it.next().getCell(docColIndex);
-                if (!docCell.isMissing()) {
-                    // get the document
-                    final Document doc = ((DocumentValue)docCell).getDocument();
-                    // get the indexed terms from the doc
-                    final List<IndexedTerm> terms = DocumentUtil.getIndexedTerms(doc, false, "\n");
-                    // set the values in the representation class
-                    viewRepresentation.add(doc, terms);
-                } else {
-                    // If there is no document in the first row
-                    // set warning message
-                    setWarningMessage("There is no document in the first row.");
+        if (exec != null) {
+            docContext = exec.createSubExecutionContext(0.33);
+            docContext.setMessage("Extracting documents...");
+        }
+        while (it.hasNext()) {
+            counter++;
+            if (docContext != null) {
+                try {
+                    docContext.checkCanceled();
+                    docContext.setProgress((double)in.size() / counter);
+                } catch (CanceledExecutionException e) {
+                    break;
                 }
             }
-        } finally {
-            if (it instanceof CloseableRowIterator) {
-                ((CloseableRowIterator)it).close();
+            // take only the first row
+            final DataCell docCell = it.next().getCell(docColIndex);
+            if (!docCell.isMissing()) {
+                // get the document
+                final Document doc = ((DocumentValue)docCell).getDocument();
+                // get the indexed terms from the doc
+                final List<IndexedTerm> terms = DocumentUtil.getIndexedTerms(doc, false, "\n");
+                // set the values in the representation class
+                viewRepresentation.add(doc, terms);
+            } else {
+                // If there is no document in the first row
+                // set warning message
+                setWarningMessage("There are missing values in the Document Column");
             }
         }
     }

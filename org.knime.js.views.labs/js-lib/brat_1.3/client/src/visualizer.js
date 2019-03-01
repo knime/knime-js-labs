@@ -343,13 +343,6 @@ var Visualizer = (function($, window, undefined) {
 
       this.arcDragOrigin = null; // TODO
 
-      // due to silly Chrome bug, I have to make it pay attention
-      var forceRedraw = function() {
-        // if (!$.browser.chrome) return; // not needed
-        $svg.css('margin-bottom', 1);
-        setTimeout(function() { $svg.css('margin-bottom', 0); }, 0);
-      }
-
       var rowBBox = function(span) {
         var box = $.extend({}, span.rectBox); // clone
         var chunkTranslation = span.chunk.translation;
@@ -2770,7 +2763,9 @@ Util.profileStart('before render');
         if (id = target.attr('data-span-id')) {
           commentId = id;
          
-          var span = data.spans[id];
+          if(data){
+              var span = data.spans[id];
+          }
           if(span){
             dispatcher.post('displaySpanComment', [
                 evt, target, id, span.type, span.attributeText,
@@ -2818,7 +2813,6 @@ Util.profileStart('before render');
                   addClass('highlight');
             }
           }
-          forceRedraw();
         } else if (!that.arcDragOrigin && (id = target.attr('data-arc-role'))) {
           var originSpanId = target.attr('data-arc-origin');
           var targetSpanId = target.attr('data-arc-target');
@@ -2886,7 +2880,6 @@ Util.profileStart('before render');
           highlightSpans.removeClass('highlight');
           highlightSpans = undefined;
         }
-        forceRedraw();
       };
 
       var setAbbrevs = function(_abbrevsOn) {
