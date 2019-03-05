@@ -5,12 +5,12 @@ window.docViewer = (function () {
     var updateTimer;
     var lastWidthWhenUpdating = 0;
     // need an initial value which takes the scroll bar into consideration. The problem is, that when the table is
-    // created, the height of the table is small enough to not have a vertical scroll bar. But when the Brad documents
+    // created, the height of the table is small enough to not have a vertical scroll bar. But when the Brat documents
     // are injected it might happen, that the scroll bar appears end therefore some space is reserved.
-    var usedWidth = window.innerWidth - 45;
+    var scrollBarWidth = 45;
+    var usedWidth = window.innerWidth - scrollBarWidth;
     // time after which the resizing should happen.
     var updateInterval = 200;
-//    var changedPage = false;
 
     var BratDocumentViewer = function () {
         this._representation = null;
@@ -43,13 +43,14 @@ window.docViewer = (function () {
             $('.knime-table-row').each(function (index, element) {
                 tempHeights.push(element.children[1].children[1].children[0].style.height);
             });
+            var rows = $('#knimePagedTable').DataTable().rows(); // eslint-disable-line new-cap
             // invalidate data to clear all the documents
-            $('#knimePagedTable').DataTable().rows().invalidate('data');
+            rows.invalidate('data');
             // measure the width of the unoccupied document to detect the width which should be used by the brat
             // Document
             usedWidth = $('.knime-table-row')[0].children[1].children[1].clientWidth - 10;
             // create the documents
-            $('#knimePagedTable').DataTable().rows().draw(false);
+            rows.draw(false);
             // set each of the rows to the previous saved height to make the transition smooth
             $('.knime-table-row').each(function (index, element) {
                 element.children[1].children[1].style.height = tempHeights[index];
@@ -77,22 +78,15 @@ window.docViewer = (function () {
         // super call
         KnimeBaseTableViewer.prototype.init.call(this, options, value);
         
+        // eslint-disable-next-line new-cap
         $('#knimePagedTable').DataTable().on('page.dt', function () {
-//            changedPage = true;
             doneResizing();
         });
 
     };
     
     
-    // Need to find a way to check weather this event is triggered by changing the size of the container,
-    // or by user input.
-//    $(window).scroll(function () {
-//        changedPage = false;
-//    });
-
     $(window).resize(function (event) {
-//        changedPage = false;
         clearTimeout(updateTimer);
         updateTimer = setTimeout(doneResizing, updateInterval);
     });
@@ -119,7 +113,7 @@ window.docViewer = (function () {
             return ar.indexOf(item) === i;
         });
         var collData = {
-            entity_types: []
+            entity_types: [] // eslint-disable-line camelcase
         };
         var obj;
         for (var j = 0; j < tagsUnique.length; j++) {
@@ -148,9 +142,6 @@ window.docViewer = (function () {
             if ($('#' + id)[0].childNodes[0].nodeType === Node.TEXT_NODE) {
                 $('#' + id)[0].childNodes[1].style.visibility = 'block';
                 $('#' + id)[0].removeChild($('#' + id)[0].childNodes[0]);
-//                if (changedPage) {
-//                    $(window).scrollTop($('#knimePagedTableContainer')[0].scrollHeight);
-//                }
             }
         });
         
@@ -169,7 +160,7 @@ window.docViewer = (function () {
         var useRowID = this._representation.useRowID;
         if (labelCol || useRowID) {
             for (var i = 0; i < colDefs.length; i++) {
-                if ((colDefs[i].title === labelCol) || (useRowID && i === this._rowIdColInd)) {
+                if (colDefs[i].title === labelCol || useRowID && i === this._rowIdColInd) {
                     this._labelColIndex = i;
                     var colDef = colDefs[i];
                     colDef.className += ' knime-document-title';

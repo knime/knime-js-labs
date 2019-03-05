@@ -72,7 +72,7 @@ import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.node.table.AbstractTableNodeModel;
 
 /**
- * The {@link NodeModel} for the Brat Document Viewer. This node visualizes only the first document.
+ * The {@link NodeModel} for the JS Document Viewer. This node is based on the table view.
  *
  * @author Daniel Bogenrieder, KNIME GmbH, Konstanz, Germany
  */
@@ -182,37 +182,42 @@ final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewe
         ExecutionContext docContext = null;
         int counter = 0;
 
-        RowIteratorBuilder<? extends CloseableRowIterator> builder = in.iteratorBuilder();
-        builder.filterColumns(documentCol);
-        @SuppressWarnings("resource")
-        final RowIterator it = builder.build();
         if (exec != null) {
             docContext = exec.createSubExecutionContext(0.33);
             docContext.setMessage("Extracting documents...");
         }
-        while (it.hasNext()) {
-            counter++;
-            if (docContext != null) {
-                try {
-                    docContext.checkCanceled();
-                    docContext.setProgress((double)in.size() / counter);
-                } catch (CanceledExecutionException e) {
-                    break;
+        RowIteratorBuilder<? extends CloseableRowIterator> builder = in.iteratorBuilder();
+        builder.filterColumns(documentCol);
+        @SuppressWarnings("resource")
+        final RowIterator it = builder.build();
+        try {
+            while (it.hasNext()) {
+                counter++;
+                if (docContext != null) {
+                    try {
+                        docContext.checkCanceled();
+                        docContext.setProgress((double)in.size() / counter);
+                    } catch (CanceledExecutionException e) {
+                        break;
+                    }
+                }
+                // take only the first row
+                final DataCell docCell = it.next().getCell(docColIndex);
+                if (!docCell.isMissing()) {
+                    // get the document
+                    final Document doc = ((DocumentValue)docCell).getDocument();
+                    // get the indexed terms from the doc
+                    final List<IndexedTerm> terms = DocumentUtil.getIndexedTerms(doc, false, "\n");
+                    // set the values in the representation class
+                    viewRepresentation.add(doc, terms);
+                } else {
+                    // If there is no document in the first row set warning message
+                    setWarningMessage("Missing values in document column. These rows will be ignored in the view.");
                 }
             }
-            // take only the first row
-            final DataCell docCell = it.next().getCell(docColIndex);
-            if (!docCell.isMissing()) {
-                // get the document
-                final Document doc = ((DocumentValue)docCell).getDocument();
-                // get the indexed terms from the doc
-                final List<IndexedTerm> terms = DocumentUtil.getIndexedTerms(doc, false, "\n");
-                // set the values in the representation class
-                viewRepresentation.add(doc, terms);
-            } else {
-                // If there is no document in the first row
-                // set warning message
-                setWarningMessage("There are missing values in the Document Column");
+        } finally {
+            if (it instanceof CloseableRowIterator) {
+                ((CloseableRowIterator)it).close();
             }
         }
     }
