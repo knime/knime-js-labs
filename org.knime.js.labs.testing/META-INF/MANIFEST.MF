@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Test cases for JS Labs views
+Bundle-SymbolicName: org.knime.js.labs.testing;singleton:=true
+Bundle-Version: 3.8.0.qualifier
+Bundle-Vendor: KNIME AG, Zurich, Switzerland
+Require-Bundle: org.knime.testing;bundle-version="[3.2.0,4.0.0)",
+ org.junit;bundle-version="[4.12.0,5.0.0)",
+ org.knime.js.views.labs;bundle-version="[3.8.0,4.0.0)",
+ org.knime.js.core;bundle-version="[3.8.0,4.0.0)",
+ org.knime.core;bundle-version="[3.8.0,4.0.0)"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
