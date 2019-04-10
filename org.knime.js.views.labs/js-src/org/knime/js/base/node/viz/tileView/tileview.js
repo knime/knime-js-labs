@@ -1,8 +1,8 @@
 window.tiles_namespace = (function () {
 
     var htmlEncode = function (x) {
-        return x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+        return x.replace(/&/g, '%26').replace(/</g, '%3C').replace(/>/g, '%3E')
+            .replace(/"/g, '%22').replace(/'/g, '%27').replace(/#/g, '%23');
     };
 
     var TileView = function () {
