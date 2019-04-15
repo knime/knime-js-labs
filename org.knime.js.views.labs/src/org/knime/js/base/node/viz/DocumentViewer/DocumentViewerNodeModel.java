@@ -54,10 +54,9 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.knime.core.data.DataCell;
-import org.knime.core.data.RowIterator;
-import org.knime.core.data.RowIteratorBuilder;
-import org.knime.core.data.container.CloseableRowIterator;
+import org.knime.core.data.DataRow;
 import org.knime.core.data.container.ColumnRearranger;
+import org.knime.core.data.container.filter.TableFilter;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -182,49 +181,37 @@ final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewe
 
         final int docColIndex = in.getDataTableSpec().findColumnIndex(documentCol);
         ExecutionContext docContext = null;
-        int counter = 0;
 
         if (exec != null) {
             docContext = exec.createSubExecutionContext(0.33);
             docContext.setMessage("Extracting documents...");
         }
-        RowIteratorBuilder<? extends CloseableRowIterator> builder = in.iteratorBuilder();
-        builder.filterColumns(documentCol);
-        @SuppressWarnings("resource")
-        final RowIterator it = builder.build();
-        try {
-            while (it.hasNext()) {
-                counter++;
-                if (docContext != null) {
-                    try {
-                        docContext.checkCanceled();
-                        docContext.setProgress((double)in.size() / counter);
-                    } catch (CanceledExecutionException e) {
-                        break;
-                    }
-                }
-                // take only the first row
-                final DataCell docCell = it.next().getCell(docColIndex);
-                if (!docCell.isMissing()) {
-                    // get the document
-                    final Document doc = ((DocumentValue)docCell).getDocument();
-                    // get the indexed terms from the doc
-                    List<IndexedTerm> terms;
-                    if(showDocumentTags) {
-                        terms = DocumentUtil.getIndexedTerms(doc, false, "\n");
-                    } else {
-                        terms = new ArrayList<>();
-                    }
-                    // set the values in the representation class
-                    viewRepresentation.add(doc, terms);
-                } else {
-                    // If there is no document in the first row set warning message
-                    setWarningMessage("Missing values in document column. These rows will be ignored in the view.");
+
+        for (final DataRow row : in.filter(TableFilter.materializeCols(in.getSpec(), documentCol), docContext)) {
+            if (docContext != null) {
+                try {
+                    docContext.checkCanceled();
+                } catch (CanceledExecutionException e) {
+                    break;
                 }
             }
-        } finally {
-            if (it instanceof CloseableRowIterator) {
-                ((CloseableRowIterator)it).close();
+            // take only the first row
+            final DataCell docCell = row.getCell(docColIndex);
+            if (!docCell.isMissing()) {
+                // get the document
+                final Document doc = ((DocumentValue)docCell).getDocument();
+                // get the indexed terms from the doc
+                List<IndexedTerm> terms;
+                if (showDocumentTags) {
+                    terms = DocumentUtil.getIndexedTerms(doc, false, "\n");
+                } else {
+                    terms = new ArrayList<>();
+                }
+                // set the values in the representation class
+                viewRepresentation.add(doc, terms);
+            } else {
+                // If there is no document in the first row set warning message
+                setWarningMessage("Missing values in document column. These rows will be ignored in the view.");
             }
         }
     }
