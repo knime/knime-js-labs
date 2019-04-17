@@ -102,6 +102,7 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
     private JRadioButton m_alignLeftRadioButton;
     private JRadioButton m_alignRightRadioButton;
     private JRadioButton m_alignCenterRadioButton;
+    private JCheckBox m_showLineNumbers;
 
     // Interactivity copied from table view dialog
     private JCheckBox m_enablePagingCheckBox;
@@ -162,6 +163,8 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         m_warningLabelInteract.setForeground(Color.RED);
         m_warningLabelInteract.setVisible(false);
 
+        m_showLineNumbers = new JCheckBox("Show line numbers");
+
         final JSpinner initSpin =  m_initialPageSizeSpinner.getSpinner();
         final Dimension spinnerDim = new Dimension(TEXT_FIELD_SIZE, 20);
         initSpin.setPreferredSize(spinnerDim);
@@ -208,6 +211,7 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         m_config.getSettings().getValueSettings().setPublishFilter(m_publishFilterCheckBox.isSelected());
         m_config.getSettings().getValueSettings().setSubscribeFilter(m_subscribeFilterCheckBox.isSelected());
         m_config.setDocumentCol(m_documentColumnSelectionPanel.getSelectedColumn());
+        m_config.setShowLineNumbers(m_showLineNumbers.isSelected());
         // end
 
         m_config.saveSettings(settings);
@@ -247,6 +251,8 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         // end
         m_documentColumnSelectionPanel.update(inSpec, m_config.getDocumentCol());
 
+        m_showLineNumbers.setSelected(m_config.getShowLineNumbers());
+
         enableSelectionFields();
         setNumberOfFilters(inSpec);
         m_whitespace.setVisible(true);
@@ -255,6 +261,13 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
     // -- Helper methods --
 
     private JPanel initOptions() {
+        final JPanel displayPanel = new JPanel(new GridBagLayout());
+        displayPanel.setBorder(new TitledBorder("Columns to display: "));
+        final GridBagConstraints gbcD = DialogUtil.defaultGridBagConstraints();
+        gbcD.weightx = 1;
+        gbcD.fill = GridBagConstraints.HORIZONTAL;
+        displayPanel.add(m_documentColumnSelectionPanel, gbcD);
+
         // copied from table view start
         final JPanel pagingPanel = new JPanel(new GridBagLayout());
         pagingPanel.setBorder(new TitledBorder("Paging"));
@@ -314,27 +327,26 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         generalPanel.add(new JLabel("Subtitle:"), gbcG);
         gbcG.gridx++;
         generalPanel.add(m_subtitleField, gbcG);
+        gbcG.gridx = 0;
+        gbcG.gridy++;
+        generalPanel.add(m_showLineNumbers, gbcG);
 
-        final JPanel displayPanel = new JPanel(new GridBagLayout());
-        displayPanel.setBorder(new TitledBorder("Columns to display: "));
-        final GridBagConstraints gbcD = DialogUtil.defaultGridBagConstraints();
-        gbcD.weightx = 1;
-        gbcD.fill = GridBagConstraints.HORIZONTAL;
+
         // end
-        displayPanel.add(m_documentColumnSelectionPanel, gbcD);
 
         final JPanel panel = new JPanel(new GridBagLayout());
         final GridBagConstraints gbc = DialogUtil.defaultGridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(displayPanel, gbc);
+        gbc.gridy++;
         panel.add(pagingPanel, gbc);
         gbc.gridy++;
         panel.add(generalPanel, gbc);
         gbc.gridy++;
-        panel.add(displayPanel, gbc);
-        gbc.gridy++;
         panel.add(m_whitespace, gbc);
         return panel;
         // end
+
     }
 
     private JPanel initInteractivity() {

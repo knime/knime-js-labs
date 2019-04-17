@@ -247,9 +247,11 @@ final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewe
     @Override
     protected void copyConfigToRepresentation() {
         synchronized (getLock()) {
+            final DocumentViewerConfig conf = (DocumentViewerConfig)m_config;
             final DocumentViewerRepresentation viewRepresentation = getViewRepresentation();
             // Use setSettingsFromDialog, it ensures the table that got set on the representation settings is preserved
             viewRepresentation.setSettingsFromDialog(m_config.getSettings().getRepresentationSettings());
+            viewRepresentation.setShowLineNumbers(conf.getShowLineNumbers());
 
             final DocumentViewerValue viewValue = getViewValue();
             if (isViewValueEmpty()) {

@@ -72,6 +72,10 @@ public class DocumentViewerConfig implements TableConfig {
 
     private TableSettings m_settings = new TableSettings();
 
+    static final String CFG_SHOW_LINE_NUMBERS = "showLineNumber";
+    private static final Boolean DEFAULT_SHOW_LINE_NUMBERS = false;
+    private Boolean m_showLineNumbers = DEFAULT_SHOW_LINE_NUMBERS;
+
     @SuppressWarnings("javadoc")
     public DocumentViewerConfig() {
         super();
@@ -92,6 +96,14 @@ public class DocumentViewerConfig implements TableConfig {
      */
     public void setDocumentCol(final String documentCol) {
         m_documentCol = documentCol;
+    }
+
+    public Boolean getShowLineNumbers() {
+        return m_showLineNumbers;
+    }
+
+    public void setShowLineNumbers(final Boolean showLineNumbers) {
+        m_showLineNumbers = showLineNumbers;
     }
 
     /**
@@ -117,6 +129,7 @@ public class DocumentViewerConfig implements TableConfig {
     public void saveSettings(final NodeSettingsWO settings) {
         m_settings.saveSettings(settings);
         settings.addString(CFG_DOCUMENT_COL, m_documentCol);
+        settings.addBoolean(CFG_SHOW_LINE_NUMBERS, m_showLineNumbers);
     }
 
     /**
@@ -132,6 +145,7 @@ public class DocumentViewerConfig implements TableConfig {
 
         m_settings.loadSettings(settings);
         m_documentCol = settings.getString(CFG_DOCUMENT_COL);
+        m_showLineNumbers = settings.getBoolean(CFG_SHOW_LINE_NUMBERS);
     }
 
     /**
@@ -141,6 +155,7 @@ public class DocumentViewerConfig implements TableConfig {
     public void loadSettingsForDialog(final NodeSettingsRO settings, final DataTableSpec spec) {
     	m_settings.loadSettingsForDialog(settings, spec);
         m_documentCol = settings.getString(CFG_DOCUMENT_COL, DEFAULT_DOCUMENT_COL);
+        m_showLineNumbers = settings.getBoolean(CFG_SHOW_LINE_NUMBERS, DEFAULT_SHOW_LINE_NUMBERS);
     }
 
     static void validateConfig(final int initPageSize, final int maxRows,

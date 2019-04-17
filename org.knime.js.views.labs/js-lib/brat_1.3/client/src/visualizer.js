@@ -261,7 +261,8 @@ var Visualizer = (function($, window, undefined) {
       });
     };
 
-    var Visualizer = function(dispatcher, svgId, webFontURLs) {
+    var Visualizer = function(dispatcher, svgId, webFontURLs, showLineNumber) {
+      var showLineNumber = showLineNumber;
       var $svgDiv = $('#' + svgId);
       if (!$svgDiv.length) {
         throw Error('Could not find container with id="' + svgId + '"');
@@ -1740,15 +1741,15 @@ Util.profileStart('chunks');
           var lastRow = row;
 
           if (chunk.sentence) {
-            while (sentenceNumber < chunk.sentence) {
-              sentenceNumber++;
-              row.arcs = svg.group(row.group, { 'class': 'arcs' });
-              rows.push(row);
-              row = new Row(svg);
-              sentenceToggle = 1 - sentenceToggle;
-              row.backgroundIndex = sentenceToggle;
-              row.index = ++rowIndex;
-            }
+	            while (sentenceNumber < chunk.sentence) {
+	              sentenceNumber++;
+	              row.arcs = svg.group(row.group, { 'class': 'arcs' });
+	              rows.push(row);
+	              row = new Row(svg);
+	              sentenceToggle = 1 - sentenceToggle;
+	              row.backgroundIndex = sentenceToggle;
+	              row.index = ++rowIndex;
+	            }
             sentenceToggle = 1 - sentenceToggle;
           }
 
@@ -2367,7 +2368,9 @@ Util.profileStart('rows');
 
         // position the rows
         var y = Configuration.visual.margin.y;
-        var sentNumGroup = svg.group({'class': 'sentnum'});
+        if(showLineNumber) {
+        	var sentNumGroup = svg.group({'class': 'sentnum'});
+        }
         var currentSent;
         $.each(rows, function(rowId, row) {
           $.each(row.chunks, function(chunkId, chunk) {
@@ -2418,30 +2421,32 @@ Util.profileStart('rows');
           y += rowBoxHeight;
           y += sizes.texts.height;
           row.textY = y - rowPadding;
-          if (row.sentence) {
-            var sentence_hash = new URLHash(coll, doc, { focus: [[ 'sent', row.sentence ]] } );
-            var link = svg.link(sentNumGroup, sentence_hash.getHash());
-            var text = svg.text(link, sentNumMargin - Configuration.visual.margin.x, y - rowPadding,
-                '' + row.sentence, { 'data-sent': row.sentence });
-            var sentComment = data.sentComment[row.sentence];
-            if (sentComment) {
-              var box = text.getBBox();
-              svg.remove(text);
-              // TODO: using rectShadowSize, but this shadow should
-              // probably have its own setting for shadow size
-              shadowRect = svg.rect(sentNumGroup,
-                  box.x - rectShadowSize, box.y - rectShadowSize,
-                  box.width + 2 * rectShadowSize, box.height + 2 * rectShadowSize, {
-
-                  'class': 'shadow_' + sentComment.type,
-                  filter: 'url(#Gaussian_Blur)',
-                  rx: rectShadowRounding,
-                  ry: rectShadowRounding,
-                  'data-sent': row.sentence,
-              });
-              var text = svg.text(sentNumGroup, sentNumMargin - Configuration.visual.margin.x, y - rowPadding,
-                  '' + row.sentence, { 'data-sent': row.sentence });
-            }
+          if(showLineNumber) {
+	          if (row.sentence) {
+	            var sentence_hash = new URLHash(coll, doc, { focus: [[ 'sent', row.sentence ]] } );
+	            var link = svg.link(sentNumGroup, sentence_hash.getHash());
+	            var text = svg.text(link, sentNumMargin - Configuration.visual.margin.x, y - rowPadding,
+	                '' + row.sentence, { 'data-sent': row.sentence });
+	            var sentComment = data.sentComment[row.sentence];
+	            if (sentComment) {
+	              var box = text.getBBox();
+	              svg.remove(text);
+	              // TODO: using rectShadowSize, but this shadow should
+	              // probably have its own setting for shadow size
+	              shadowRect = svg.rect(sentNumGroup,
+	                  box.x - rectShadowSize, box.y - rectShadowSize,
+	                  box.width + 2 * rectShadowSize, box.height + 2 * rectShadowSize, {
+	
+	                  'class': 'shadow_' + sentComment.type,
+	                  filter: 'url(#Gaussian_Blur)',
+	                  rx: rectShadowRounding,
+	                  ry: rectShadowRounding,
+	                  'data-sent': row.sentence,
+	              });
+	              var text = svg.text(sentNumGroup, sentNumMargin - Configuration.visual.margin.x, y - rowPadding,
+	                  '' + row.sentence, { 'data-sent': row.sentence });
+	            }
+	          }
           }
 
           var rowY = y - rowPadding;

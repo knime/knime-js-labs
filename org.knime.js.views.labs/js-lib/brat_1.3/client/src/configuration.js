@@ -14,7 +14,8 @@ var Configuration = (function(window, undefined) {
       boxSpacing: 1,
       curlyHeight: 4,
       arcSpacing: 9, //10;
-      arcStartHeight: 19, //23; //25;
+      arcStartHeight: 19, //23; //25;,
+      showLineNumber: false,
     }
 
     return {

@@ -83,6 +83,8 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
     private String m_documentCol;
     private ArrayList<BratDocument> m_bratDocuments = new ArrayList<>();
 
+    private Boolean m_showLineNumbers;
+
     private TableRepresentationSettings m_settings = new TableRepresentationSettings();
 
     /** Serialization constructor. Don't use. */
@@ -126,12 +128,25 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
         m_documentCol = documentCol;
     }
 
-
     /**
      * @return the brat documents
      */
     public ArrayList<BratDocument> getBratDocuments() {
         return m_bratDocuments;
+    }
+
+    /**
+     * @param showLineNumbers the boolean if line numbers should be shown
+     */
+    public void setShowLineNumbers(final Boolean showLineNumbers) {
+        m_showLineNumbers = showLineNumbers;
+    }
+
+    /**
+     * @return if line numbers should be displayed
+     */
+    public Boolean getShowLineNumbers() {
+        return m_showLineNumbers;
     }
 
     /**
@@ -175,6 +190,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         m_settings.saveSettings(settings);
         settings.addString(DocumentViewerConfig.CFG_DOCUMENT_COL, m_documentCol);
+        settings.addBoolean(DocumentViewerConfig.CFG_SHOW_LINE_NUMBERS, m_showLineNumbers);
     }
 
     /**
@@ -184,6 +200,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_settings.loadSettings(settings);
         m_documentCol = settings.getString(DocumentViewerConfig.CFG_DOCUMENT_COL);
+        m_showLineNumbers = settings.getBoolean(DocumentViewerConfig.CFG_SHOW_LINE_NUMBERS);
     }
 
     /**
@@ -205,6 +222,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
         return new EqualsBuilder()
                 .append(m_settings, other.getSettings())
                 .append(m_bratDocuments, other.getBratDocuments())
+                .append(m_showLineNumbers, other.getShowLineNumbers())
                 .isEquals();
     }
 
@@ -216,6 +234,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
         return new HashCodeBuilder()
                 .append(m_settings)
                 .append(m_bratDocuments)
+                .append(m_showLineNumbers)
                 .toHashCode();
     }
 
