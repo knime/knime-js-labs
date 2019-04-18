@@ -269,37 +269,6 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         displayPanel.add(m_documentColumnSelectionPanel, gbcD);
 
         // copied from table view start
-        final JPanel pagingPanel = new JPanel(new GridBagLayout());
-        pagingPanel.setBorder(new TitledBorder("Paging"));
-        final GridBagConstraints gbcP = DialogUtil.defaultGridBagConstraints();
-        gbcP.fill = GridBagConstraints.HORIZONTAL;
-        gbcP.weightx = 1;
-        gbcP.gridwidth = 2;
-        pagingPanel.add(m_enablePagingCheckBox, gbcP);
-        gbcP.gridy++;
-        pagingPanel.add(m_initialPageSizeSpinner.getComponentPanel(), gbcP);
-        gbcP.gridx = 0;
-        gbcP.gridy++;
-        pagingPanel.add(m_warningLabelInteract, gbcP);
-        gbcP.gridx = 0;
-        gbcP.gridy++;
-        pagingPanel.add(m_enablePageSizeChangeCheckBox, gbcP);
-        gbcP.gridx = 0;
-        gbcP.gridy++;
-        gbcP.gridwidth = 1;
-        pagingPanel.add(new JLabel("Selectable page sizes: "), gbcP);
-        gbcP.gridx++;
-        pagingPanel.add(m_allowedPageSizesField, gbcP);
-        gbcP.gridx = 0;
-        gbcP.gridy++;
-        gbcP.gridwidth = 2;
-
-        final ButtonGroup alignment = new ButtonGroup();
-        alignment.add(m_alignCenterRadioButton);
-        alignment.add(m_alignLeftRadioButton);
-        alignment.add(m_alignRightRadioButton);
-
-        // copied from table view start
         final JPanel generalPanel = new JPanel(new GridBagLayout());
         generalPanel.setBorder(new TitledBorder("General Options"));
         final GridBagConstraints gbcG = DialogUtil.defaultGridBagConstraints();
@@ -339,8 +308,6 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(displayPanel, gbc);
         gbc.gridy++;
-        panel.add(pagingPanel, gbc);
-        gbc.gridy++;
         panel.add(generalPanel, gbc);
         gbc.gridy++;
         panel.add(m_whitespace, gbc);
@@ -350,6 +317,37 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
     }
 
     private JPanel initInteractivity() {
+    	// copied from table view start
+        final JPanel pagingPanel = new JPanel(new GridBagLayout());
+        pagingPanel.setBorder(new TitledBorder("Paging"));
+        final GridBagConstraints gbcP = DialogUtil.defaultGridBagConstraints();
+        gbcP.fill = GridBagConstraints.HORIZONTAL;
+        gbcP.weightx = 1;
+        gbcP.gridwidth = 2;
+        pagingPanel.add(m_enablePagingCheckBox, gbcP);
+        gbcP.gridy++;
+        pagingPanel.add(m_initialPageSizeSpinner.getComponentPanel(), gbcP);
+        gbcP.gridx = 0;
+        gbcP.gridy++;
+        pagingPanel.add(m_warningLabelInteract, gbcP);
+        gbcP.gridx = 0;
+        gbcP.gridy++;
+        pagingPanel.add(m_enablePageSizeChangeCheckBox, gbcP);
+        gbcP.gridx = 0;
+        gbcP.gridy++;
+        gbcP.gridwidth = 1;
+        pagingPanel.add(new JLabel("Selectable page sizes: "), gbcP);
+        gbcP.gridx++;
+        pagingPanel.add(m_allowedPageSizesField, gbcP);
+        gbcP.gridx = 0;
+        gbcP.gridy++;
+        gbcP.gridwidth = 2;
+
+        final ButtonGroup alignment = new ButtonGroup();
+        alignment.add(m_alignCenterRadioButton);
+        alignment.add(m_alignLeftRadioButton);
+        alignment.add(m_alignRightRadioButton);
+    	
         final JPanel selectionPanel = new JPanel(new GridBagLayout());
         // section name change not in table view
         selectionPanel.setBorder(new TitledBorder("Selection & Filtering"));
@@ -383,6 +381,8 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         final JPanel panel = new JPanel(new GridBagLayout());
         final GridBagConstraints gbc = DialogUtil.defaultGridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(pagingPanel, gbc);
+        gbc.gridy++;
         panel.add(selectionPanel, gbc);
         gbc.gridy++;
         return panel;

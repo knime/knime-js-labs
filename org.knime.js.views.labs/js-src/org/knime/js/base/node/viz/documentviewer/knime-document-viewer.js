@@ -8,8 +8,7 @@ window.docViewer = (function () {
     // need an initial value which takes the scroll bar into consideration. The problem is, that when the table is
     // created, the height of the table is small enough to not have a vertical scroll bar. But when the Brat documents
     // are injected it might happen, that the scroll bar appears end therefore some space is reserved.
-    var scrollBarWidth = 45;
-    var usedWidth = window.innerWidth - scrollBarWidth;
+    var svgOffset = $(window).width() - 51;
     var dispatchCounter = 0;
     
     // time after which the resizing should happen.
@@ -53,7 +52,7 @@ window.docViewer = (function () {
             rows.invalidate('data');
             // measure the width of the unoccupied document to detect the width which should be used by the brat
             // Document
-            usedWidth = $('.knime-table-row')[0].children[1].children[1].clientWidth - 10;
+            svgOffset = $('.knime-table-row')[0].children[1].children[1].clientWidth - 10;
             // create the documents
             rows.draw(false);
             // set each of the rows to the previous saved height to make the transition smooth
@@ -78,7 +77,6 @@ window.docViewer = (function () {
             singleSelection: false,
             displayRowColors: false
         };
-
         var options = Object.assign({}, representation, overrides);
         // super call
         KnimeBaseTableViewer.prototype.init.call(this, options, value);
@@ -112,7 +110,7 @@ window.docViewer = (function () {
         	$(window).scrollTop(scrollRatio * ($(document).height() - $(window).height())) ;
         }
     }
-    
+
     BratDocumentViewer.prototype._renderBratDocument = function (id) {
         var tags = _representation.bratDocuments[id].tags;
         var text = _representation.bratDocuments[id].docText;
@@ -170,7 +168,7 @@ window.docViewer = (function () {
         if ($('#' + id)[0].childNodes[1]) {
             $('#' + id)[0].childNodes[1].style.visibility = 'hidden';
         }
-        dispatcher.post('svgWidth', [usedWidth]);
+        dispatcher.post('svgWidth', [svgOffset]);
         return dispatcher;
     };
 

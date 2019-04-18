@@ -4,7 +4,7 @@
 	icon="./document_viewer.png" type="Visualizer">
 	<name>Document Viewer (JavaScript)</name>
 	<shortDescription>
-		Visualizes document terms and tags using the Brat JS library.
+		Visualizes documents.
 	</shortDescription>
 	<fullDescription>
 		<intro>
@@ -13,18 +13,83 @@
 			Each term will be highlighted and its corresponding tags will be
 			displayed above it. The highlighting colors are static depending on
 			the tags.
-			<br />
-			<br />
-			<i>Note</i>: Only the document in the first row will be displayed.
 		</intro>
-		<option name="Document Column">
-			The column containing the documents to show.
-		</option>
-
+		<tab name="Options">
+			<description>
+			General view and display options
+			</description>
+			<option name="Document Column">
+				The column containing the documents to show.
+			</option>
+			<option name="Enable pagination">
+				Enable or disable the pagination feature globally. When disabled the table is rendered whole on one
+                page. When enabled use the options below to further refine the pagination settings.
+			</option>
+			<option name="Initial page size">
+				Set the page size to be used on initial layout. A page size is defined as the number of documents the view
+                displays on one page. If the page size change control is enabled the page length can be changed in the
+                view.
+			</option>
+			<option name="Enable page size change control">
+				Enable or disable the control to change the page size interactively in the view.
+			</option>
+			<option name="Selectable page sizes">
+				Define a comma-separated list of allowed page sizes for the page size control.
+			</option>
+			<option name="No. of rows to display">
+				Use this numerical value to restrict the number of rows used for this visualization.
+			</option>
+			<option name="Title" optional="true">
+				An optional title to be displayed above the tiles. Leave blank if no title is desired.
+			</option>
+			<option name="Subtitle" optional="true">
+				 An optional subtitle to be displayed above the tiles. Leave blank if no subtitle is desired.
+			</option>
+			<option name="Show line numbers">
+				If checked line numbers are shown next to the document.
+			</option>
+		</tab>
+		<tab name="Interactivity">
+			<description>
+				The JavaScript Document Viewer allows for several ways of interactivity. Please use the options below to
+                configure which features will be activated on the view and further configuration of interactive
+                properties.
+			</description>
+			<option name="Enable selection">
+                If checked a checkbox is rendered in the top left corner of each document. The selection, when applied,
+                will be represented in the output table as a new boolean column.
+            </option>
+            <option name="Subscribe to filter events">
+                If checked, the view reacts when applied filters have been changed.
+            </option>
+            <option name="Enable 'Clear Selection' button">
+                If checked a button is displayed above the documents, to clear any selection that is applied, regardless of
+                current search and/or filter settings.
+            </option>
+            <option name="Show selected documents only">
+                If checked, only documents which are selected are displayed.
+            </option>
+            <option name="Enable 'Show selected documents only' option">
+                If checked, a checkbox to switch on and off the mode of displaying only selected documents is rendered in 
+                the view.
+            </option>
+            <option name="Publish selection events">
+                If checked, notifies other interactive views when user changes the selection in the current view. See
+                also "Subscribe to selection events".
+            </option>
+            <option name="Subscribe to selection events">
+                If checked, the view reacts on notifications from other interactive views that the selection has been
+                changed. See also "Publish selection events".
+            </option>
+            <option name="Selection column name">
+                The name of the boolean column containing the selection.
+            </option>
+		</tab>
+			
 	</fullDescription>
 	<interactiveView name="Document View">
 		Displays the visualization of the
-		document terms and tags.
+		documents.
 	</interactiveView>
 	<ports>
 		<inPort name="Documents input table" index="0">
