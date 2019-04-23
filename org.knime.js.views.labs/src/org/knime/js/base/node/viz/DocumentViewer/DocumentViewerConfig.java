@@ -74,7 +74,7 @@ public class DocumentViewerConfig implements TableConfig {
 
     static final String CFG_SHOW_LINE_NUMBERS = "showLineNumber";
     private static final Boolean DEFAULT_SHOW_LINE_NUMBERS = false;
-    private Boolean m_showLineNumbers = DEFAULT_SHOW_LINE_NUMBERS;
+    private boolean m_showLineNumbers = DEFAULT_SHOW_LINE_NUMBERS;
 
     @SuppressWarnings("javadoc")
     public DocumentViewerConfig() {
@@ -98,11 +98,11 @@ public class DocumentViewerConfig implements TableConfig {
         m_documentCol = documentCol;
     }
 
-    public Boolean getShowLineNumbers() {
+    public boolean getShowLineNumbers() {
         return m_showLineNumbers;
     }
 
-    public void setShowLineNumbers(final Boolean showLineNumbers) {
+    public void setShowLineNumbers(final boolean showLineNumbers) {
         m_showLineNumbers = showLineNumbers;
     }
 

@@ -83,7 +83,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
     private String m_documentCol;
     private ArrayList<BratDocument> m_bratDocuments = new ArrayList<>();
 
-    private Boolean m_showLineNumbers;
+    private boolean m_showLineNumbers;
 
     private TableRepresentationSettings m_settings = new TableRepresentationSettings();
 
@@ -138,14 +138,14 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
     /**
      * @param showLineNumbers the boolean if line numbers should be shown
      */
-    public void setShowLineNumbers(final Boolean showLineNumbers) {
+    public void setShowLineNumbers(final boolean showLineNumbers) {
         m_showLineNumbers = showLineNumbers;
     }
 
     /**
      * @return if line numbers should be displayed
      */
-    public Boolean getShowLineNumbers() {
+    public boolean getShowLineNumbers() {
         return m_showLineNumbers;
     }
 
