@@ -2,13 +2,14 @@
 /* global KnimeBaseTableViewer:false, Util:false */
 window.docViewer = (function () {
     var _representation = null;
-    var updateTimer;
-    var tempScrollTop, tempScrollHeight;
+    var updateTimer,
+        tempScrollTop, tempScrollHeight;
     var lastWidthWhenUpdating = 0;
     // need an initial value which takes the scroll bar into consideration. The problem is, that when the table is
     // created, the height of the table is small enough to not have a vertical scroll bar. But when the Brat documents
     // are injected it might happen, that the scroll bar appears end therefore some space is reserved.
-    var svgOffset = $(window).width() - 51;
+    var scrollBarWidth = 51;
+    var svgOffset = $(window).width() - scrollBarWidth;
     var dispatchCounter = 0;
     
     // time after which the resizing should happen.
@@ -40,8 +41,8 @@ window.docViewer = (function () {
     
     function doneResizing() {
         if (Math.abs(lastWidthWhenUpdating - window.innerWidth) > 10) {
-        	tempScrollTop = $(window).scrollTop();
-        	tempScrollHeight = $(document).height() - $(window).height();
+            tempScrollTop = $(window).scrollTop();
+            tempScrollHeight = $(document).height() - $(window).height();
             var tempHeights = [];
             // save all of the heights from each visible document
             $('.knime-table-row').each(function (index, element) {
@@ -101,13 +102,12 @@ window.docViewer = (function () {
     
     function checkScrollPosition() {
         var scrollRatio = tempScrollTop / tempScrollHeight;
-        console.log(tempScrollHeight);
-        console.log(tempScrollTop);
-        if(tempScrollHeight - tempScrollTop < 50) {
-        	console.log(true);
-        	$(window).scrollTop($(document).outerHeight() - $(window).outerHeight()) ;
+        // amount of pixels to allow moving and still scrolling to the bottom when resizing.
+        var scrollOffset = 50;
+        if (tempScrollHeight - tempScrollTop < scrollOffset) {
+            $(window).scrollTop($(document).outerHeight() - $(window).outerHeight());
         } else {
-        	$(window).scrollTop(scrollRatio * ($(document).height() - $(window).height())) ;
+            $(window).scrollTop(scrollRatio * ($(document).height() - $(window).height()));
         }
     }
 
@@ -150,17 +150,17 @@ window.docViewer = (function () {
             obj.push(idx);
             docData.entities.push(obj);
         }
-        var dispatcher = Util.embed(id, $.extend({}, collData), $.extend({}, docData), undefined, showLineNumbers);
+        var dispatcher = Util.embed(id, $.extend({}, collData), $.extend({}, docData), showLineNumbers);
         // Delete the loading text and show the svg when the svg creation is finished.
         dispatcher.on('doneRendering', function () {
             if ($('#' + id)[0].childNodes[0].nodeType === Node.TEXT_NODE) {
                 $('#' + id)[0].childNodes[1].style.visibility = 'block';
                 $('#' + id)[0].removeChild($('#' + id)[0].childNodes[0]);
             }
-            dispatchCounter ++;
-            if(dispatchCounter === $("#knimePagedTable")[0].childNodes[0].childNodes.length) {
-            	checkScrollPosition();
-            	dispatchCounter = 0;
+            dispatchCounter++;
+            if (dispatchCounter === $('#knimePagedTable')[0].childNodes[0].childNodes.length) {
+                checkScrollPosition();
+                dispatchCounter = 0;
             }
         });
         

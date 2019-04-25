@@ -1,6 +1,9 @@
 // -*- Mode: JavaScript; tab-width: 2; indent-tabs-mode: nil; -*-
 // vim:set ft=javascript ts=2 sw=2 sts=2 cindent:
 
+// 25.04.19 author Daniel Bogenrieder
+// Added an additional parameter in the Visualizer function to make it possible to enable/disable line numbers
+
 var Visualizer = (function($, window, undefined) {
     var fontLoadTimeout = 5000; // 5 seconds
   
@@ -1741,15 +1744,15 @@ Util.profileStart('chunks');
           var lastRow = row;
 
           if (chunk.sentence) {
-	            while (sentenceNumber < chunk.sentence) {
-	              sentenceNumber++;
-	              row.arcs = svg.group(row.group, { 'class': 'arcs' });
-	              rows.push(row);
-	              row = new Row(svg);
-	              sentenceToggle = 1 - sentenceToggle;
-	              row.backgroundIndex = sentenceToggle;
-	              row.index = ++rowIndex;
-	            }
+	          while (sentenceNumber < chunk.sentence) {
+	            sentenceNumber++;
+	            row.arcs = svg.group(row.group, { 'class': 'arcs' });
+	            rows.push(row);
+	            row = new Row(svg);
+	            sentenceToggle = 1 - sentenceToggle;
+	            row.backgroundIndex = sentenceToggle;
+	            row.index = ++rowIndex;
+	          }
             sentenceToggle = 1 - sentenceToggle;
           }
 
@@ -2368,7 +2371,7 @@ Util.profileStart('rows');
 
         // position the rows
         var y = Configuration.visual.margin.y;
-        if(showLineNumber) {
+        if (showLineNumber) {
         	var sentNumGroup = svg.group({'class': 'sentnum'});
         }
         var currentSent;
@@ -2421,7 +2424,7 @@ Util.profileStart('rows');
           y += rowBoxHeight;
           y += sizes.texts.height;
           row.textY = y - rowPadding;
-          if(showLineNumber) {
+          if (showLineNumber) {
 	          if (row.sentence) {
 	            var sentence_hash = new URLHash(coll, doc, { focus: [[ 'sent', row.sentence ]] } );
 	            var link = svg.link(sentNumGroup, sentence_hash.getHash());
@@ -2434,15 +2437,16 @@ Util.profileStart('rows');
 	              // TODO: using rectShadowSize, but this shadow should
 	              // probably have its own setting for shadow size
 	              shadowRect = svg.rect(sentNumGroup,
-	                  box.x - rectShadowSize, box.y - rectShadowSize,
-	                  box.width + 2 * rectShadowSize, box.height + 2 * rectShadowSize, {
-	
+	                box.x - rectShadowSize, box.y - rectShadowSize,
+	                box.width + 2 * rectShadowSize, box.height + 2 * rectShadowSize, 
+	                {
 	                  'class': 'shadow_' + sentComment.type,
 	                  filter: 'url(#Gaussian_Blur)',
 	                  rx: rectShadowRounding,
 	                  ry: rectShadowRounding,
 	                  'data-sent': row.sentence,
-	              });
+	                }
+	              );
 	              var text = svg.text(sentNumGroup, sentNumMargin - Configuration.visual.margin.x, y - rowPadding,
 	                  '' + row.sentence, { 'data-sent': row.sentence });
 	            }

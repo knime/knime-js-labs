@@ -1,5 +1,9 @@
 // -*- Mode: JavaScript; tab-width: 2; indent-tabs-mode: nil; -*-
 // vim:set ft=javascript ts=2 sw=2 sts=2 cindent:
+
+// 25.04.19 author Daniel Bogenrieder
+// Changed the embed function to make it possible to enable/disable line numbers
+
 var Util = (function(window, undefined) {
 
     var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -544,7 +548,7 @@ var Util = (function(window, undefined) {
     // docData: the document data (in the format of the result of
     //   http://.../brat/ajax.cgi?action=getDocument&collection=...&document=...
     // returns the embedded visualizer's dispatcher object
-    var embed = function(container, collData, docData, webFontURLs, showLineNumber) {
+    var embed = function(container, collData, docData, showLineNumber, webFontURLs) {
       var dispatcher = new Dispatcher();
       var visualizer = new Visualizer(dispatcher, container, webFontURLs, showLineNumber);
       docData.collection = null;
