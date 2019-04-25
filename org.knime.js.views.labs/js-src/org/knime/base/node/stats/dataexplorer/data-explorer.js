@@ -284,7 +284,7 @@ dataExplorerNamespace = function() {
             yScale = d3.scale.linear();
             
             var colDef = {
-                'title' :"Histogram",
+                'title': 'Frequency Bar Chart',
                 'orderable': false, 
                 'searchable': false,
                 'className': 'knime-table-cell knime-image knime-svg'
