@@ -1243,7 +1243,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Show PDP:',
-                'chart-line',
+                'line-chart',
                 showPDPCheckBox
             );
 
@@ -1266,7 +1266,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'PDP Line Weight:',
-                'dumbbell',
+                'line-chart',
                 pdpLineWeightMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1291,10 +1291,8 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Show PDP Margin:',
-                'chart-line',
+                'area-chart',
                 showPDPMarginCheckBox,
-                null,
-                knimeService.SMALL_ICON
             );
 
             var pdpMarginTypeSelection = knimeService.createMenuSelect(
@@ -1336,7 +1334,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'PDP Margin Opacity:',
-                'ghost',
+                'area-chart',
                 pdpMarginOpacityMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1360,7 +1358,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'PDP Margin Mult:',
-                'arrows-alt-v',
+                'area-chart',
                 pdpMarginMultiplierMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1386,7 +1384,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Show ICE:',
-                'chart-line',
+                'snowflake-o',
                 showICECheckBox
             );
 
@@ -1409,7 +1407,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'ICE Line Weight:',
-                'dumbbell',
+                'snowflake-o',
                 iceLineWeightMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1433,7 +1431,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'ICE Opacity:',
-                'ghost',
+                'snowflake-o',
                 iceMarginOpacityMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1457,7 +1455,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Show Static Line:',
-                'arrows-alt-h',
+                'arrows-h',
                 showStaticLineCheckBox
             );
 
@@ -1479,7 +1477,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Static Line Weight:',
-                'dumbbell',
+                'arrows-h',
                 staticLineWeightMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1502,7 +1500,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Static Line Y-Value:',
-                'microscope',
+                'arrows-h',
                 staticLineYValMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1527,7 +1525,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Show Data Points',
-                'check',
+                'dot-circle-o',
                 showDataPointsCheckbox
             );
 
@@ -1549,7 +1547,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Data Point Weight',
-                'dumbbell',
+                'dot-circle-o',
                 dataPointWeightMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1573,7 +1571,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Data Point Opacity',
-                'ghost',
+                'dot-circle-o',
                 dataPointOpacityMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1601,7 +1599,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Y-Axis % Margin',
-                'arrows-alt-v',
+                'arrows-v',
                 yAxisMarginMenuItem,
                 null,
                 knimeService.SMALL_ICON
@@ -1678,7 +1676,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Subscribe to Selection',
-                'signature',
+                'list',
                 subscribeToSelectionCheckbox,
                 null,
                 knimeService.SMALL_ICON

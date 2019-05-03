@@ -253,11 +253,11 @@ public final class PartialDependenceICEPlotConfig {
 
     static final double DEFAULT_PDP_LINE_WEIGHT = 3;
 
-    static final boolean DEFAULT_SHOW_PDP_MARGIN = true;
+    static final boolean DEFAULT_SHOW_PDP_MARGIN = false;
 
     static final String DEFAULT_PDP_MARGIN_TYPE = "Standard Deviation";
 
-    static final double DEFAULT_PDP_MARGIN_MULTIPLIER = .5;
+    static final double DEFAULT_PDP_MARGIN_MULTIPLIER = .2;
 
     static final double DEFAULT_PDP_MARGIN_ALPHA_VAL = .5;
 
@@ -296,7 +296,7 @@ public final class PartialDependenceICEPlotConfig {
 
     static final String DEFAULT_CHART_SUBTITLE = "";
 
-    static final double DEFAULT_Y_AXIS_MARGIN = 0.01;
+    static final double DEFAULT_Y_AXIS_MARGIN = 0.02;
 
     static final int DEFAULT_VIEW_WIDTH = 800;
 
@@ -350,13 +350,13 @@ public final class PartialDependenceICEPlotConfig {
     /*
      * JS Menu Default Values
     */
-    static final boolean DEFAULT_ENABLE_TITLE_CONTROLS = true;
+    static final boolean DEFAULT_ENABLE_TITLE_CONTROLS = false;
 
-    static final boolean DEFAULT_ENABLE_AXIS_LABEL_CONTROLS = true;
+    static final boolean DEFAULT_ENABLE_AXIS_LABEL_CONTROLS = false;
 
     static final boolean DEFAULT_ENABLE_PDP_CONTROLS = true;
 
-    static final boolean DEFAULT_ENABLE_PDP_MARGIN_CONTROLS = true;
+    static final boolean DEFAULT_ENABLE_PDP_MARGIN_CONTROLS = false;
 
     static final boolean DEFAULT_ENABLE_ICE_CONTROLS = true;
 
@@ -374,7 +374,7 @@ public final class PartialDependenceICEPlotConfig {
 
     static final boolean DEFAULT_ENABLE_GRID_CONTROLS = true;
 
-    static final boolean DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS = true;
+    static final boolean DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS = false;
 
 
     /*
