@@ -19,6 +19,7 @@ Require-Bundle: org.knime.base;bundle-version="[3.5.0,4.0.0)",
  org.knime.core.pmml;bundle-version="3.3.0",
  org.knime.distmatrix;bundle-version="[3.5.0,4.0.0)",
  org.knime.ext.textprocessing;bundle-version="[3.5.0,4.0.0)";resolution:=optional,
- org.knime.stats;bundle-version="[3.5.0,4.0.0)"
+ org.knime.stats;bundle-version="[3.5.0,4.0.0)",
+ org.knime.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
