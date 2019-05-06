@@ -96,3 +96,9 @@ table#knimePagedTable.align-right .knime-table-cell {
 .knime-tiles-rowtitle {
     font-weight: bold;
 }
+
+
+/* Collapse header table of dataTable which is created when it is allowed to handle scrolling */
+.dataTables_scrollBody thead tr[role="row"]{
+   visibility: collapse !important;
+}
