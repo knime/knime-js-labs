@@ -610,7 +610,7 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         constraints5.gridx = 0;
         constraints5.gridy = 0;
         constraints5.anchor = GridBagConstraints.NORTHWEST;
-        sizeOptionsPanel.add(new JLabel("Y-Axis % margin: "), constraints5);
+        sizeOptionsPanel.add(new JLabel("Y-Axis +/- (%): "), constraints5);
         constraints5.anchor = GridBagConstraints.NORTHEAST;
         constraints5.gridx++;
         m_yAxisMarginSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
@@ -1008,7 +1008,7 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_config.setYAxisLabel(m_yAxisLabelTextField.getText() == null ? "" : m_yAxisLabelTextField.getText());
         m_config.setChartTitle(m_chartTitleTextField.getText() == null ? "" : m_chartTitleTextField.getText());
         m_config.setChartSubtitle(m_chartSubtitleTextField.getText() == null ? "" : m_chartSubtitleTextField.getText());
-        m_config.setViewWidth((int)m_viewHeightSpinner.getValue());
+        m_config.setViewWidth((int)m_viewWidthSpinner.getValue());
         m_config.setViewHeight((int)m_viewHeightSpinner.getValue());
         m_config.setYAxisMargin((double)m_yAxisMarginSpinner.getValue() * .01);
         m_config.setResizeToFill(m_resizeToFillCheckBox.isSelected());

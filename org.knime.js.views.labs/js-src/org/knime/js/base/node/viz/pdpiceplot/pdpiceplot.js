@@ -75,11 +75,6 @@ window.pdpiceplotNamespace = (function () {
         this.iceRows = [];
         this.tempSelected = [];
         this.dataPoints = [];
-        this._zoomDimensions = {
-            xAxisWidth: null,
-            yAxisHeight: null,
-            minimalZoomLevel: null
-        };
         this.mouseLocationData = [];
         this.k = 1;
         this.adjYMax = 0;
@@ -92,6 +87,8 @@ window.pdpiceplotNamespace = (function () {
 
         // view only settings
         this.mouseMode = false;
+        this.showExpandedOptions = false;
+        this.counter = 0;
     };
 
     /**
@@ -141,14 +138,14 @@ window.pdpiceplotNamespace = (function () {
         this.dataPoints = [];
     };
 
-
     /**
      * @return {String} SVG for KNIME
      */
     PDPICEPlot.prototype.getSVG = function () {
         var svgElem = d3.select('.pdpiceplot').node();
         knimeService.inlineSvgStyles(svgElem);
-        return new XMLSerializer().serializeToString(svgElem);
+        var svgImg = new XMLSerializer().serializeToString(svgElem);
+        return svgImg;
     };
 
     /**
@@ -161,6 +158,7 @@ window.pdpiceplotNamespace = (function () {
             axis: {}
         };
     };
+
     /**
      * creates elements upon initialization and in
      * some select re-render scenarios.
@@ -193,6 +191,7 @@ window.pdpiceplotNamespace = (function () {
         this.drawStaticLine();
         this.mountEvents();
     };
+
     /**
      * Most often method for updating chart.
      * Used with zoom, selection, filters, etc.
@@ -218,36 +217,54 @@ window.pdpiceplotNamespace = (function () {
         var self = this;
         if (this.showOnlySelected) {
             return data.filter(function (row) {
-                return self._value.selected.indexOf(row.rowKey) > -1;
+                if (self._value.selected) {
+                    return self._value.selected.indexOf(row.rowKey) > -1;
+                } else {
+                    return false;
+                }
             });
         }
         return data;
     };
+
     /**
      * Draws high-level elements upon init()
      * @return {null}
      */
     PDPICEPlot.prototype.drawSVG = function () {
         var self = this;
+        var width = self._representation.viewWidth;
+        var height = self._representation.viewHeight;
+
+        if (this._representation.runningInView) {
+            width = self._representation.resizeToFill ? '100%' : self._representation.viewWidth;
+            height = self._representation.resizeToFill ? '100%' : self._representation.viewHeight;
+        }
+
+        console.log(width)
+        console.log(height)
+
         d3.select('html')
             .style('width', '100%')
             .style('height', '100%');
         d3.select('body')
-            .style('width', '100%')
-            .style('height', '100%')
-            .style('background-color', d3.color(this._value.backgroundColor).toString());
+            .style('background-color', d3.color(this._value.backgroundColor).toString())
+            .style('width', width)
+            .style('height', height);
         this.d3Elem.svg = d3.select('body')
             .insert('div')
             .attr('class', 'knime-layout-container')
             .insert('div')
+            .style('width', width)
+            .style('height', height)
             .attr('class', 'knime-svg-container')
             .attr('id', 'svg-cont')
-            .style('width', '100%')
-            .style('height', '100%')
+            .style('width', width)
+            .style('height', height)
             .insert('svg:svg')
             .attr('class', 'pdpiceplot')
-            .attr('width', self._representation.resizeToFill ? '100%' : self._representation.viewWidth)
-            .attr('height', self._representation.resizeToFill ? '100%' : self._representation.viewHeight);
+            .attr('width', width)
+            .attr('height', height);
 
         this.setDimensions();
 
@@ -255,30 +272,31 @@ window.pdpiceplotNamespace = (function () {
         this.d3Elem.viewportClip = this.d3Elem.defs.append('clipPath')
             .attr('id', 'viewportClip')
             .append('rect')
-            .attr('x', this.totalLeftWidth - 1)
-            .attr('y', this.totalTopHeight - 1)
-            .attr('width', this.viewportWidth + 2)
+            .attr('x', this.totalLeftWidth)
+            .attr('y', this.totalTopHeight)
+            .attr('width', this.viewportWidth)
             .attr('height', this.viewportHeight);
         this.d3Elem.wrapper = this.d3Elem.svg.append('g')
             .attr('class', 'wrapper')
-            .attr('x', this.default.marginLeft + this.yAxisWidth + 1)
-            .attr('y', this.default.marginTop * 3 + this.titleHeight + 1)
+            .attr('x', this.default.marginLeft + this.yAxisWidth)
+            .attr('y', this.default.marginTop * 3 + this.titleHeight)
             .attr('width', this.viewportWidth)
-            .attr('height', this.viewportHeight - this.default.marginTop)
-            .attr('clip-path', 'url(#viewportClip)');
+            .attr('height', this.viewportHeight)
+            // .attr('clip-path', 'url(#viewportClip)');
         this.d3Elem.viewport = this.d3Elem.wrapper.append('g')
             .attr('class', 'viewport')
-            .attr('x', this.default.marginLeft + this.yAxisWidth + 1)
-            .attr('y', this.default.marginTop * 3 + this.titleHeight + 1)
+            .attr('x', this.default.marginLeft + this.yAxisWidth)
+            .attr('y', this.default.marginTop * 3 + this.titleHeight)
             .attr('width', this.viewportWidth)
-            .attr('height', this.viewportHeight - this.default.marginTop);
+            .attr('height', this.viewportHeight);
         this.d3Elem.dataContainer = this.d3Elem.viewport.append('g')
             .attr('class', 'dataContainer')
-            .attr('x', this.default.marginLeft + this.yAxisWidth + 1)
-            .attr('y', this.default.marginTop * 3 + this.titleHeight + 1)
+            .attr('x', this.default.marginLeft + this.yAxisWidth)
+            .attr('y', this.default.marginTop * 3 + this.titleHeight)
             .attr('width', this.viewportWidth)
-            .attr('height', this.viewportHeight - this.default.marginTop);
+            .attr('height', this.viewportHeight);
     };
+
     /**
      * calculates dimensions when drawSVG via render is called
      * @return {null}
@@ -298,7 +316,7 @@ window.pdpiceplotNamespace = (function () {
         } else {
             this.xLabelHeight = 0;
         }
-        this.titleHeight = 0;
+        this.titleHeight = this.default.marginTop;
         if (tit.length) {
             this.titleHeight += this.default.titleHeight;
         }
@@ -320,8 +338,8 @@ window.pdpiceplotNamespace = (function () {
         this.svgWidth = svgDim.width;
         this.svgHeight = svgDim.height;
         this.xAxisHeight = this.default.xAxisHeight;
-        this.totalTopHeight = this.titleHeight + this.default.marginTop;
-        this.totalLeftWidth = this.yLabelWidth + this.yAxisWidth + this.default.marginLeft;
+        this.totalTopHeight = this.titleHeight;
+        this.totalLeftWidth = this.yLabelWidth + this.yAxisWidth + this.default.marginLeft - 2;
         this.viewportWidth = this.svgWidth - this.totalLeftWidth - this.default.marginRight;
         this.viewportHeight = this.svgHeight - this.totalTopHeight - this.xAxisHeight - this.xLabelHeight;
     };
@@ -345,6 +363,7 @@ window.pdpiceplotNamespace = (function () {
         // .clamp(true).nice();
 
     };
+
     /**
      * creates a colored data-background based on user preferences
      * @return {null}
@@ -415,17 +434,21 @@ window.pdpiceplotNamespace = (function () {
             .select('defs')
             .append('mask')
             .attr('id', 'maskAxis')
+            .attr('width', this.viewportWidth + this.totalLeftWidth + 3)
+            .attr('height', this.svgHeight)
             .attr('maskUnits', 'userSpaceOnUse')
             .append('rect')
             .attr('x', 0)
             .attr('y', 0)
             .attr('width', this.viewportWidth + this.totalLeftWidth + 3)
-            .attr('height', '100%')
+            .attr('height', this.svgHeight)
             .attr('fill', 'white');
         this.d3Elem.axisWrapper = this.d3Elem.svg
             .append('g')
             .attr('class', 'axis-wrapper')
-            .attr('mask', 'url(#maskAxis)');
+            .attr('width', this.viewportWidth + this.totalLeftWidth + 3)
+            .attr('height', this.svgHeight)
+            // .attr('mask', 'url(#maskAxis)');
 
     };
 
@@ -488,7 +511,7 @@ window.pdpiceplotNamespace = (function () {
             .selectAll('.tick')
             .attr('class', 'knime-tick x-tick x')
             .select('text')
-            .attr('class', 'knime-label knime-tick-label');
+            .attr('class', 'knime-label knime-tick-label data-iframe-height');
     };
 
     /**
@@ -524,6 +547,7 @@ window.pdpiceplotNamespace = (function () {
             .select('text')
             .attr('class', 'knime-label knime-tick-label');
     };
+
     /**
      * draws and re-draws axis labels
      * @return {null}
@@ -568,6 +592,85 @@ window.pdpiceplotNamespace = (function () {
                 this.d3Elem.yAxisLabel = null;
             }
         }
+    };
+
+    /**
+     * updates the d3 elements functional svg output to match new scale
+     * @param  {d3.scale} xScale
+     * @param  {d3.scale} yScale
+     * @param  {double} k
+     * @return {null}
+     */
+    PDPICEPlot.prototype.createD3Lines = function (xScale, yScale, k) {
+        var self = this;
+        if (yScale === null) {
+            yScale = this.d3Elem.yScale;
+        }
+        this.d3Elem.pdpLine = d3.line()
+            .x(function (d) {
+                return xScale(d[0]);
+            })
+            .y(function (d) {
+                return yScale(d[1]);
+            });
+        // .curve(d3.curveCatmullRom.alpha(0.0));
+
+        this.d3Elem.pdpLineTop = d3.area()
+            .x(function (d) {
+                return xScale(d[0]);
+            })
+            .y1(function (d) {
+                return yScale(d[1]);
+            })
+            .y0(function (d) {
+                return yScale(d[2]);
+            });
+        // .curve(d3.curveCatmullRom.alpha(0.0));
+
+        this.d3Elem.pdpLineBottom = d3.area()
+            .x(function (d) {
+                return xScale(d[0]);
+            })
+            .y1(function (d) {
+                return yScale(d[2]);
+            })
+            .y0(function (d) {
+                return yScale(d[1]);
+            });
+        // .curve(d3.curveCatmullRom.alpha(0.0));
+
+        this.d3Elem.iceLineTemplate = d3.line()
+            .x(function (d) {
+                return xScale(d[0]);
+            })
+            .y(function (d) {
+                return yScale(d[1]);
+            });
+        // .curve(d3.curveCatmullRom.alpha(0.0));
+
+        this.d3Elem.staticLine = d3.line()
+            .x(function (d) {
+                return xScale(d);
+            })
+            .y(function (d) {
+                return yScale(self._value.staticLineYValue);
+            });
+
+        this.d3Elem.cx = function (d) {
+            return xScale(d.data[0]);
+        };
+
+        this.d3Elem.cy = function (d) {
+            return yScale(d.data[1]);
+        };
+
+        this.d3Elem.r = function (radius) {
+            if (k) {
+                return k * radius;
+            } else {
+                return radius;
+            }
+        };
     };
 
     /**
@@ -659,6 +762,7 @@ window.pdpiceplotNamespace = (function () {
             iceRows[ind] = rowData;
         });
     };
+
     /**
      * draws ICE lines based on most recently calculated data
      * also produces the new data for points, regardless of whether
@@ -705,7 +809,11 @@ window.pdpiceplotNamespace = (function () {
             if (self._value.selected && self._value.selected.indexOf(row.rowKey) > -1) {
                 selectedClassValue = self.default.iceClassSelected;
             }
-            dataPoints.push([actualXVal, actualYVal]);
+            var dataPoint = {
+                data: [actualXVal, actualYVal],
+                color: row.color
+            };
+            dataPoints.push(dataPoint);
             if (self._value.showICE) {
                 self.d3Elem.viewport
                     .append('path')
@@ -773,6 +881,7 @@ window.pdpiceplotNamespace = (function () {
             this.drawDataPoints();
         }
     };
+
     /**
      * draws data points based on most recently calculated data
      * @return {null}
@@ -792,7 +901,9 @@ window.pdpiceplotNamespace = (function () {
                 .data(dataPoints)
                 .enter()
                 .append('circle')
-                .attr('fill', d3.color(this._value.dataPointColor).toString())
+                .attr('fill', function (d) {
+                    return d3.color(d.color || this._value.dataPointColor).darker().toString();
+                })
                 .attr('fill-opacity', this._value.dataPointAlphaVal)
                 .attr('stroke', 'none')
                 .attr('class', 'point')
@@ -800,85 +911,6 @@ window.pdpiceplotNamespace = (function () {
                 .attr('cy', this.d3Elem.cy)
                 .attr('r', this.d3Elem.r(this._value.dataPointWeight));
         }
-    };
-
-    /**
-     * updates the d3 elements functional svg output to match new scale
-     * @param  {d3.scale} xScale
-     * @param  {d3.scale} yScale
-     * @param  {double} k
-     * @return {null}
-     */
-    PDPICEPlot.prototype.createD3Lines = function (xScale, yScale, k) {
-        var self = this;
-        if (yScale === null) {
-            yScale = this.d3Elem.yScale;
-        }
-        this.d3Elem.pdpLine = d3.line()
-            .x(function (d) {
-                return xScale(d[0]);
-            })
-            .y(function (d) {
-                return yScale(d[1]);
-            });
-        // .curve(d3.curveCatmullRom.alpha(0.0));
-
-        this.d3Elem.pdpLineTop = d3.area()
-            .x(function (d) {
-                return xScale(d[0]);
-            })
-            .y1(function (d) {
-                return yScale(d[1]);
-            })
-            .y0(function (d) {
-                return yScale(d[2]);
-            });
-        // .curve(d3.curveCatmullRom.alpha(0.0));
-
-        this.d3Elem.pdpLineBottom = d3.area()
-            .x(function (d) {
-                return xScale(d[0]);
-            })
-            .y1(function (d) {
-                return yScale(d[2]);
-            })
-            .y0(function (d) {
-                return yScale(d[1]);
-            });
-        // .curve(d3.curveCatmullRom.alpha(0.0));
-
-        this.d3Elem.iceLineTemplate = d3.line()
-            .x(function (d) {
-                return xScale(d[0]);
-            })
-            .y(function (d) {
-                return yScale(d[1]);
-            });
-        // .curve(d3.curveCatmullRom.alpha(0.0));
-
-        this.d3Elem.staticLine = d3.line()
-            .x(function (d) {
-                return xScale(d);
-            })
-            .y(function (d) {
-                return yScale(self._value.staticLineYValue);
-            });
-
-        this.d3Elem.cx = function (d) {
-            return xScale(d[0]);
-        };
-
-        this.d3Elem.cy = function (d) {
-            return yScale(d[1]);
-        };
-
-        this.d3Elem.r = function (radius) {
-            if (k) {
-                return k * radius;
-            } else {
-                return radius;
-            }
-        };
     };
 
     /**
@@ -1054,19 +1086,21 @@ window.pdpiceplotNamespace = (function () {
                 }
             );
 
-            if (this._value.subscribeToFilters && this._representation.enableSelectionFilterControls) {
+            // eslint-disable-next-line no-warning-comments
+            // TODO: IMPLEMENT FILTER CREATION
+            // if (this._value.subscribeToFilters && this._representation.enableSelectionFilterControls) {
 
-                knimeService.addButton(
-                    'pdpice-create-filter-button',
-                    'plus-square',
-                    'Create Filter from Selected',
-                    function () {
-                        if (self._value.selected.length > 0) {
-                            self.createFilterFromSelected();
-                        }
-                    }
-                );
-            }
+            //     knimeService.addButton(
+            //         'pdpice-create-filter-button',
+            //         'plus-square',
+            //         'Create Filter from Selected',
+            //         function () {
+            //             if (self._value.selected.length > 0) {
+            //                 self.createFilterFromSelected();
+            //             }
+            //         }
+            //     );
+            // }
 
             knimeService.addNavSpacer();
         }
@@ -1116,7 +1150,7 @@ window.pdpiceplotNamespace = (function () {
 
             if (self._value.enableMouseCrosshair) {
                 var crossHairButton = document.getElementById('mouse-crosshair-button');
-                crossHairButton.classList.toggle('active');
+                crossHairButton.setAttribute('class', 'service-button active');
             }
         }
 
@@ -1135,7 +1169,7 @@ window.pdpiceplotNamespace = (function () {
 
             if (self._value.showGrid) {
                 var gridButton = document.getElementById('show-grid-button');
-                gridButton.classList.toggle('active');
+                gridButton.setAttribute('class', 'service-button active');
             }
         }
 
@@ -1247,30 +1281,33 @@ window.pdpiceplotNamespace = (function () {
                 showPDPCheckBox
             );
 
+            if (this.showExpandedOptions) {
 
-            var pdpLineWeightMenuItem = knimeService.createMenuNumberField(
-                'pdp-line-weight-menu-item',
-                this._value.pdplineWeight,
-                this.default.minLineWeight,
-                this.default.maxLineWeight,
-                this.default.lineWeightStep,
-                function () {
-                    if (self._value.pdplineWeight !== this.value) {
-                        self._value.pdplineWeight = this.value;
-                        d3.selectAll('.pdp-line')
-                            .attr('stroke-width', self._value.pdplineWeight);
-                    }
-                },
-                true
-            );
+                var pdpLineWeightMenuItem = knimeService.createMenuNumberField(
+                    'pdp-line-weight-menu-item',
+                    this._value.pdplineWeight,
+                    this.default.minLineWeight,
+                    this.default.maxLineWeight,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.pdplineWeight !== this.value) {
+                            self._value.pdplineWeight = this.value;
+                            d3.selectAll('.pdp-line')
+                                .attr('stroke-width', self._value.pdplineWeight);
+                        }
+                    },
+                    true
+                );
 
-            knimeService.addMenuItem(
-                'PDP Line Weight:',
-                'line-chart',
-                pdpLineWeightMenuItem,
-                null,
-                knimeService.SMALL_ICON
-            );
+                knimeService.addMenuItem(
+                    'PDP Line Weight:',
+                    'line-chart',
+                    pdpLineWeightMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
+
+            }
 
             knimeService.addMenuDivider();
         }
@@ -1292,77 +1329,81 @@ window.pdpiceplotNamespace = (function () {
             knimeService.addMenuItem(
                 'Show PDP Margin:',
                 'area-chart',
-                showPDPMarginCheckBox,
+                showPDPMarginCheckBox
             );
 
-            var pdpMarginTypeSelection = knimeService.createMenuSelect(
-                'pdp-margin-type-selection-menu-item',
-                0,
-                ['standard deviation', 'variance'],
-                function () {
-                    if (self._value.pdpmarginType !== this.value) {
-                        self._value.pdpmarginType = this.value;
-                        self.redrawData();
-                        self.styleSelected();
+            if (this.showExpandedOptions) {
+
+                var pdpMarginTypeSelection = knimeService.createMenuSelect(
+                    'pdp-margin-type-selection-menu-item',
+                    0,
+                    ['standard deviation', 'variance'],
+                    function () {
+                        if (self._value.pdpmarginType !== this.value) {
+                            self._value.pdpmarginType = this.value;
+                            self.redrawData();
+                            self.styleSelected();
+                        }
                     }
-                }
-            );
+                );
 
-            knimeService.addMenuItem(
-                'Margin Calculation',
-                'calculator',
-                pdpMarginTypeSelection,
-                'null',
-                knimeService.SMALL_ICON
-            );
+                knimeService.addMenuItem(
+                    'Margin Calculation',
+                    'calculator',
+                    pdpMarginTypeSelection,
+                    'null',
+                    knimeService.SMALL_ICON
+                );
 
-            var pdpMarginOpacityMenuItem = knimeService.createMenuNumberField(
-                'pdp-margin-opacity-menu-item',
-                this._value.pdpmarginAlphaVal,
-                0,
-                1,
-                this.default.lineWeightStep,
-                function () {
-                    if (self._value.pdpmarginAlphaVal !== this.value) {
-                        self._value.pdpmarginAlphaVal = this.value;
-                        d3.selectAll('.pdp-margin')
-                            .attr('fill-opacity', this.value);
-                    }
-                },
-                true
-            );
+                var pdpMarginOpacityMenuItem = knimeService.createMenuNumberField(
+                    'pdp-margin-opacity-menu-item',
+                    this._value.pdpmarginAlphaVal,
+                    0,
+                    1,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.pdpmarginAlphaVal !== this.value) {
+                            self._value.pdpmarginAlphaVal = this.value;
+                            d3.selectAll('.pdp-margin')
+                                .attr('fill-opacity', this.value);
+                        }
+                    },
+                    true
+                );
 
-            knimeService.addMenuItem(
-                'PDP Margin Opacity:',
-                'area-chart',
-                pdpMarginOpacityMenuItem,
-                null,
-                knimeService.SMALL_ICON
-            );
+                knimeService.addMenuItem(
+                    'PDP Margin Opacity:',
+                    'area-chart',
+                    pdpMarginOpacityMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
 
-            var pdpMarginMultiplierMenuItem = knimeService.createMenuNumberField(
-                'pdp-margin-multiplier-menu-item',
-                this._value.pdpmarginMultiplier,
-                0,
-                10,
-                this.default.lineWeightStep,
-                function () {
-                    if (self._value.pdpmarginMultiplier !== this.value) {
-                        self._value.pdpmarginMultiplier = this.value;
-                        self.redrawData();
-                        self.styleSelected();
-                    }
-                },
-                true
-            );
+                var pdpMarginMultiplierMenuItem = knimeService.createMenuNumberField(
+                    'pdp-margin-multiplier-menu-item',
+                    this._value.pdpmarginMultiplier,
+                    0,
+                    10,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.pdpmarginMultiplier !== this.value) {
+                            self._value.pdpmarginMultiplier = this.value;
+                            self.redrawData();
+                            self.styleSelected();
+                        }
+                    },
+                    true
+                );
 
-            knimeService.addMenuItem(
-                'PDP Margin Mult:',
-                'area-chart',
-                pdpMarginMultiplierMenuItem,
-                null,
-                knimeService.SMALL_ICON
-            );
+                knimeService.addMenuItem(
+                    'PDP Margin Mult:',
+                    'area-chart',
+                    pdpMarginMultiplierMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
+
+            }
 
             knimeService.addMenuDivider();
         }
@@ -1388,55 +1429,57 @@ window.pdpiceplotNamespace = (function () {
                 showICECheckBox
             );
 
-            var iceLineWeightMenuItem = knimeService.createMenuNumberField(
-                'ice-line-weight-menu-item',
-                this._value.iceweight,
-                this.default.minLineWeight,
-                this.default.maxLineWeight,
-                this.default.lineWeightStep,
-                function () {
-                    if (self._value.iceweight !== this.value) {
-                        self._value.iceweight = this.value;
-                        d3.selectAll('.ice-line')
-                            .attr('stroke-width', self._value.iceweight);
-                        self.styleSelected();
-                    }
-                },
-                true
-            );
+            if (this.showExpandedOptions) {
 
-            knimeService.addMenuItem(
-                'ICE Line Weight:',
-                'snowflake-o',
-                iceLineWeightMenuItem,
-                null,
-                knimeService.SMALL_ICON
-            );
+                var iceLineWeightMenuItem = knimeService.createMenuNumberField(
+                    'ice-line-weight-menu-item',
+                    this._value.iceweight,
+                    this.default.minLineWeight,
+                    this.default.maxLineWeight,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.iceweight !== this.value) {
+                            self._value.iceweight = this.value;
+                            d3.selectAll('.ice-line')
+                                .attr('stroke-width', self._value.iceweight);
+                            self.styleSelected();
+                        }
+                    },
+                    true
+                );
 
-            var iceMarginOpacityMenuItem = knimeService.createMenuNumberField(
-                'ice-margin-opacity-menu-item',
-                this._value.icealphaVal,
-                0,
-                1,
-                this.default.lineWeightStep,
-                function () {
-                    if (self._value.icealphaVal !== this.value) {
-                        self._value.icealphaVal = this.value;
-                        d3.selectAll('.ice-line')
-                            .attr('stroke-opacity', self._value.icealphaVal);
-                    }
-                },
-                true
-            );
+                knimeService.addMenuItem(
+                    'ICE Line Weight:',
+                    'snowflake-o',
+                    iceLineWeightMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
 
-            knimeService.addMenuItem(
-                'ICE Opacity:',
-                'snowflake-o',
-                iceMarginOpacityMenuItem,
-                null,
-                knimeService.SMALL_ICON
-            );
+                var iceMarginOpacityMenuItem = knimeService.createMenuNumberField(
+                    'ice-margin-opacity-menu-item',
+                    this._value.icealphaVal,
+                    0,
+                    1,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.icealphaVal !== this.value) {
+                            self._value.icealphaVal = this.value;
+                            d3.selectAll('.ice-line')
+                                .attr('stroke-opacity', self._value.icealphaVal);
+                        }
+                    },
+                    true
+                );
 
+                knimeService.addMenuItem(
+                    'ICE Opacity:',
+                    'snowflake-o',
+                    iceMarginOpacityMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
+            }
             knimeService.addMenuDivider();
         }
 
@@ -1459,32 +1502,36 @@ window.pdpiceplotNamespace = (function () {
                 showStaticLineCheckBox
             );
 
-            var staticLineWeightMenuItem = knimeService.createMenuNumberField(
-                'static-line-weight-menu-item',
-                this._value.staticLineWeight,
-                this.default.minLineWeight,
-                this.default.maxLineWeight,
-                this.default.lineWeightStep,
-                function () {
-                    if (self._value.staticLineWeight !== this.value) {
-                        self._value.staticLineWeight = this.value;
-                        d3.selectAll('#static-line')
-                            .attr('stroke-width', self._value.staticLineWeight);
-                    }
-                },
-                true
-            );
+            if (this.showExpandedOptions) {
 
-            knimeService.addMenuItem(
-                'Static Line Weight:',
-                'arrows-h',
-                staticLineWeightMenuItem,
-                null,
-                knimeService.SMALL_ICON
-            );
+                var staticLineWeightMenuItem = knimeService.createMenuNumberField(
+                    'static-line-weight-menu-item',
+                    this._value.staticLineWeight,
+                    this.default.minLineWeight,
+                    this.default.maxLineWeight,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.staticLineWeight !== this.value) {
+                            self._value.staticLineWeight = this.value;
+                            d3.selectAll('#static-line')
+                                .attr('stroke-width', self._value.staticLineWeight);
+                        }
+                    },
+                    true
+                );
+
+                knimeService.addMenuItem(
+                    'Static Line Weight:',
+                    'arrows-h',
+                    staticLineWeightMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
+
+            }
 
             var staticLineYValMenuItem = knimeService.createMenuNumberField(
-                'static-line-weight-menu-item',
+                'static-line-y-val-menu-item',
                 this._value.staticLineYValue,
                 this._value.yaxisMin,
                 this._value.yaxisMax,
@@ -1505,9 +1552,8 @@ window.pdpiceplotNamespace = (function () {
                 null,
                 knimeService.SMALL_ICON
             );
-
-            knimeService.addMenuDivider();
         }
+        knimeService.addMenuDivider();
 
         if (this._representation.enableDataPointControls) {
 
@@ -1529,55 +1575,58 @@ window.pdpiceplotNamespace = (function () {
                 showDataPointsCheckbox
             );
 
-            var dataPointWeightMenuItem = knimeService.createMenuNumberField(
-                'data-point-weight-menu-item',
-                this._value.dataPointWeight,
-                this.default.minLineWeight,
-                this.default.maxLineWeight,
-                this.default.lineWeightStep,
-                function () {
-                    if (self._value.dataPointWeight !== this.value) {
-                        self._value.dataPointWeight = this.value;
-                        d3.selectAll('.point')
-                            .attr('r', self._value.dataPointWeight);
-                    }
-                },
-                true
-            );
+            if (this.showExpandedOptions) {
 
-            knimeService.addMenuItem(
-                'Data Point Weight',
-                'dot-circle-o',
-                dataPointWeightMenuItem,
-                null,
-                knimeService.SMALL_ICON
-            );
+                var dataPointWeightMenuItem = knimeService.createMenuNumberField(
+                    'data-point-weight-menu-item',
+                    this._value.dataPointWeight,
+                    this.default.minLineWeight,
+                    this.default.maxLineWeight,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.dataPointWeight !== this.value) {
+                            self._value.dataPointWeight = this.value;
+                            d3.selectAll('.point')
+                                .attr('r', self._value.dataPointWeight);
+                        }
+                    },
+                    true
+                );
 
-            var dataPointOpacityMenuItem = knimeService.createMenuNumberField(
-                'data-point-opacity-menu-item',
-                this._value.dataPointAlphaVal,
-                0,
-                1,
-                this.default.lineWeightStep,
-                function () {
-                    if (self._value.dataPointAlphaVal !== this.value) {
-                        self._value.dataPointAlphaVal = this.value;
-                        d3.selectAll('.point')
-                            .attr('fill-opacity', self._value.dataPointAlphaVal);
-                    }
-                },
-                true
-            );
+                knimeService.addMenuItem(
+                    'Data Point Weight',
+                    'dot-circle-o',
+                    dataPointWeightMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
 
-            knimeService.addMenuItem(
-                'Data Point Opacity',
-                'dot-circle-o',
-                dataPointOpacityMenuItem,
-                null,
-                knimeService.SMALL_ICON
-            );
+                var dataPointOpacityMenuItem = knimeService.createMenuNumberField(
+                    'data-point-opacity-menu-item',
+                    this._value.dataPointAlphaVal,
+                    0,
+                    1,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.dataPointAlphaVal !== this.value) {
+                            self._value.dataPointAlphaVal = this.value;
+                            d3.selectAll('.point')
+                                .attr('fill-opacity', self._value.dataPointAlphaVal);
+                        }
+                    },
+                    true
+                );
 
-            knimeService.addMenuDivider();
+                knimeService.addMenuItem(
+                    'Data Point Opacity',
+                    'dot-circle-o',
+                    dataPointOpacityMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
+
+                knimeService.addMenuDivider();
+            }
         }
 
         if (this._representation.enableYAxisMarginControls) {
@@ -1598,7 +1647,7 @@ window.pdpiceplotNamespace = (function () {
             );
 
             knimeService.addMenuItem(
-                'Y-Axis % Margin',
+                'Y-Axis +/- (%)',
                 'arrows-v',
                 yAxisMarginMenuItem,
                 null,
@@ -1627,7 +1676,7 @@ window.pdpiceplotNamespace = (function () {
 
                 knimeService.addMenuItem(
                     'Show Only Selected',
-                    'check',
+                    'filter',
                     showOnlySelectedCheckbox,
                     null,
                     knimeService.SMALL_ICON
@@ -1654,7 +1703,7 @@ window.pdpiceplotNamespace = (function () {
 
                 knimeService.addMenuItem(
                     'Publish Selection',
-                    'print',
+                    knimeService.createStackedIcon('check-square-o', 'angle-right', 'faded left sm', 'right bold'),
                     publishSelectionCheckbox,
                     null,
                     knimeService.SMALL_ICON
@@ -1676,7 +1725,7 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Subscribe to Selection',
-                'list',
+                knimeService.createStackedIcon('check-square-o', 'angle-double-right', 'faded right sm', 'left bold'),
                 subscribeToSelectionCheckbox,
                 null,
                 knimeService.SMALL_ICON
@@ -1696,11 +1745,39 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Subscribe to Filter',
-                'filter',
+                knimeService.createStackedIcon('filter', 'angle-double-right', 'faded right sm', 'left bold'),
                 subscribeToFilterCheckbox,
                 null,
                 knimeService.SMALL_ICON
             );
+        }
+
+        if (this._representation.enableICEControls || this._representation.enablePDPControls ||
+            this._representation.enableDataPointControls || this._representation.enablePDPMarginControls) {
+            var text = this.showExpandedOptions ? 'Show advanced options' : 'Show advanced options';
+            var icon = this.showExpandedOptions ? 'minus' : 'plus';
+
+            var extendedOptionsCheckbox = knimeService.createMenuCheckbox(
+                'extended-options-checkbox',
+                this.showExpandedOptions,
+                function () {
+                    if (self.showExpandedOptions !== this.checked) {
+                        self.showExpandedOptions = this.checked;
+                        self.redrawKnimeControls();
+                    }
+                },
+                true
+            );
+
+            knimeService.addMenuItem(
+                text,
+                icon,
+                extendedOptionsCheckbox,
+                null,
+                knimeService.SMALL_ICON
+            );
+
+            knimeService.addMenuDivider();
         }
     };
 
@@ -1789,18 +1866,17 @@ window.pdpiceplotNamespace = (function () {
     };
 
     /**
+     * TODO: IMPLEMENT FILTER CREATION
      * attempts to create a filter from currently selected items
      * @todo
      * @return {null}
      */
     PDPICEPlot.prototype.createFilterFromSelected = function () {
-        // eslint-disable-next-line no-warning-comments
-        // TODO: implement this function properly
-        knimeService.setFilteredRows(
-            this._table.getTableId(),
-            this._value.selected
-        );
-        knimeService.subscribeToFilter(this._table.getTableId(), this.onFilterChange);
+        // knimeService.setFilteredRows(
+        //     this._table.getTableId(),
+        //     this._value.selected
+        // );
+        // knimeService.subscribeToFilter(this._table.getTableId(), this.onFilterChange);
     };
 
     /**
@@ -1808,15 +1884,28 @@ window.pdpiceplotNamespace = (function () {
      * @return {array} data update, colored, filtered rows
      */
     PDPICEPlot.prototype.getColoredRows = function () {
+        var self = this;
         var rows = this._table.getRows();
         var colors = this._table.getRowColors();
+        var booleanMissingColors = false;
         if (colors.length && rows.length && colors.length === rows.length) {
             rows.forEach(function (row, ind) {
-                row.color = colors[ind];
+                var color = colors[ind];
+                if (color === "#404040") {
+                    color = self._value.icecolor;
+                    booleanMissingColors = true;
+                }
+                row.color = color;
             });
+        }
+        if (booleanMissingColors) {
+            knimeService.setWarningMessage("Some color values were " +
+                "missing from the data table you provided. Please be aware the displayed colors " +
+                "may not accurately represent the color assignments intended.");
         }
         return rows;
     };
+
     /**
      * mounts window/one time events on init
      * @return {null}
@@ -1833,9 +1922,11 @@ window.pdpiceplotNamespace = (function () {
         window.addEventListener('resize', function () {
             clearTimeout(resizeDebouncer);
             resizeDebouncer = setTimeout(function () {
-                self.reset();
-                self.render(true);
-                self.styleSelected();
+                if (self._representation.resizeToFill) {
+                    self.reset();
+                    self.render(true);
+                    self.styleSelected();
+                }
             }, 250);
         });
     };
@@ -1854,7 +1945,7 @@ window.pdpiceplotNamespace = (function () {
                 .attr('class', self.default.iceClassDef)
                 .attr('stroke', node.getAttribute('alt-stroke'));
         });
-        if (this._value.selected && this._value.selected.length) {
+        if (this._value.selected && this._value.selected.length && this._value.showICE) {
             this._value.selected.forEach(function (rowKey) {
                 var lineWeight = self._value.iceweight > .5 ? self._value.iceweight * 1.5 : 1;
                 var selectedNode = d3.select('#' + rowKey).node();
@@ -1878,6 +1969,18 @@ window.pdpiceplotNamespace = (function () {
     };
 
     /**
+     * used to redraw controls when expanding additional options
+     * @return {null}
+     */
+    PDPICEPlot.prototype.redrawKnimeControls = function () {
+        var menuContainer = document.getElementById('knime-service-menu').firstChild;
+        while (menuContainer.firstChild) {
+            menuContainer.removeChild(menuContainer.firstChild);
+        }
+        this.drawControls();
+    };
+
+    /**
      * creates d3.zoom event to be mounted
      * @return {null}
      */
@@ -1885,11 +1988,8 @@ window.pdpiceplotNamespace = (function () {
         var self = this;
         this.d3Elem.zoom = d3.zoom().scaleExtent([1, 5])
             .translateExtent([
-                [self.totalLeftWidth, self.totalTopHeight],
-                [
-                    self.viewportWidth + self.totalLeftWidth - self.default.marginRight,
-                    self.totalTopHeight + self.viewportHeight
-                ]
+                [this.totalLeftWidth - this.default.marginRight + 6, this.totalTopHeight],
+                [this.totalLeftWidth + this.viewportWidth, this.viewportHeight + this.totalTopHeight + this.default.marginTop * 3 + 6]
             ])
             // eslint-disable-next-line no-empty-function
             .on('start', function () {

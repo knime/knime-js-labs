@@ -11,16 +11,33 @@
 	<fullDescription>
 		<intro>
 			<p>
-				This node displays trained model output across the domain of a selected feature and
-				 overlays the original data points from the training set.
+				This node is able to visualize how the prediction at the output of a model reacts as a single column is changed in a defined range.
+				Such visualization can help you interpret how any model is using a single column locally, that is visualizing the prediction change instance by instance, and globally, visualizing an overall behavior valid for the majority of the instances but not the outliers.
+			</p>
+			<p>
+				The Individual Conditional Expectation (ICE) visualizes the prediction change locally to a single instance in a simple line plot. You can visualize many ICE plots by having multiple lines in the same charts. Use the markers in the shape of dots to keep track the original column value and the original prediction each instance has. To visualize colors for different groups/category/clusters add a Color Manager node before this node.		
+			</p>
+			<p>
+				The Partial Dependence Plot (PDP) visualizes the global average prediction change over a number of instances in a line plot.
+				By default you can also visualize how widely the single instances predictions variegates from the average by means of a colored area around the line plot.
+			</p>
+			<p>
+				The generated view is highly interactive and custom to your needs.
+				Change the opacity and sizes of the visual elements to your needs from the node dialogue.
+				From the view itself you can toggle between displaying both ICEs and PDP or just one of them.
+			</p>
+			<p>
+				ICE is useful to assess the exact prediction change an a single instance or on a small group of instances. When visualizing a global behavior of the model for many instances PDP can be useful, even if it could simplify too much the complexity behind such predictions.
+			</p>
+			<p>
+				The best way to use this node is in a <a href="https://www.knime.com/knime-introductory-course/chapter5/section3/composite-views">Composite View</a> by interactively filtering and selecting groups of similar instances.
 			</p>
 			<p>
 				The node supports custom CSS styling. You can simply put CSS rules
 				into a single string and set it as a flow variable 'customCSS' in
 				the node configuration dialog. You will find the list of available
 				classes and their description on our
-				<a href="https://knime.com/css-styling">documentation page</a>
-				.
+				<a href="https://knime.com/css-styling">documentation page</a>.
 			</p>
 		</intro>
 		<tab name="Options">

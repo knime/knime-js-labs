@@ -76,6 +76,8 @@ public final class PartialDependenceICEPlotConfig {
 
     static final String CFG_CSS_CUSTOM = "customCSS";
 
+    static final String CFG_RUNNING_IN_VIEW = "runningInView";
+
     /*
      * Execution Static CFG Keys
      */
@@ -249,33 +251,33 @@ public final class PartialDependenceICEPlotConfig {
      */
     static final boolean DEFAULT_SHOW_PDP = true;
 
-    static final Color DEFAULT_PDP_COLOR = new Color(255, 0, 0);
+    static final Color DEFAULT_PDP_COLOR = new Color(0, 0, 255);
 
     static final double DEFAULT_PDP_LINE_WEIGHT = 3;
 
-    static final boolean DEFAULT_SHOW_PDP_MARGIN = false;
+    static final boolean DEFAULT_SHOW_PDP_MARGIN = true;
 
     static final String DEFAULT_PDP_MARGIN_TYPE = "Standard Deviation";
 
-    static final double DEFAULT_PDP_MARGIN_MULTIPLIER = .2;
+    static final double DEFAULT_PDP_MARGIN_MULTIPLIER = .5;
 
     static final double DEFAULT_PDP_MARGIN_ALPHA_VAL = .5;
 
-    static final boolean DEFAULT_SHOW_ICE = true;
+    static final boolean DEFAULT_SHOW_ICE = false;
 
-    static final Color DEFAULT_ICE_COLOR = new Color(0, 0, 255);
+    static final Color DEFAULT_ICE_COLOR = new Color(255, 0, 0);
 
     static final double DEFAULT_ICE_WEIGHT = 2;
 
     static final double DEFAULT_ICE_ALPHA_VAL = .5;
 
-    static final boolean DEFAULT_SHOW_DATA_POINTS = true;
+    static final boolean DEFAULT_SHOW_DATA_POINTS = false;
 
-    static final Color DEFAULT_DATA_POINT_COLOR = new Color(0, 255, 0);
+    static final Color DEFAULT_DATA_POINT_COLOR = new Color(0, 0, 0);
 
-    static final double DEFAULT_DATA_POINT_WEIGHT = 2;
+    static final double DEFAULT_DATA_POINT_WEIGHT = 3;
 
-    static final double DEFAULT_DATA_POINT_ALPHA_VAL = .5;
+    static final double DEFAULT_DATA_POINT_ALPHA_VAL = 1;
 
     /*
      * General View Default Values
@@ -288,11 +290,11 @@ public final class PartialDependenceICEPlotConfig {
 
     static final Double DEFAULT_Y_AXIS_MAX = 0.0;
 
-    static final String DEFAULT_X_AXIS_LABEL = "";
+    static final String DEFAULT_X_AXIS_LABEL = "Feature";
 
-    static final String DEFAULT_Y_AXIS_LABEL = "";
+    static final String DEFAULT_Y_AXIS_LABEL = "Prediction";
 
-    static final String DEFAULT_CHART_TITLE = "";
+    static final String DEFAULT_CHART_TITLE = "Partial Dependence Plot";
 
     static final String DEFAULT_CHART_SUBTITLE = "";
 
@@ -356,7 +358,7 @@ public final class PartialDependenceICEPlotConfig {
 
     static final boolean DEFAULT_ENABLE_PDP_CONTROLS = true;
 
-    static final boolean DEFAULT_ENABLE_PDP_MARGIN_CONTROLS = false;
+    static final boolean DEFAULT_ENABLE_PDP_MARGIN_CONTROLS = true;
 
     static final boolean DEFAULT_ENABLE_ICE_CONTROLS = true;
 
@@ -364,7 +366,7 @@ public final class PartialDependenceICEPlotConfig {
 
     static final boolean DEFAULT_ENABLE_DATA_POINT_CONTROLS = true;
 
-    static final boolean DEFAULT_ENABLE_SELECTION_FILTER_CONTROLS = true;
+    static final boolean DEFAULT_ENABLE_SELECTION_FILTER_CONTROLS = false;
 
     static final boolean DEFAULT_ENABLE_SELECTION_CONTROLS = true;
 
@@ -389,6 +391,8 @@ public final class PartialDependenceICEPlotConfig {
     static final int COLOR_TABLE_INPORT = 2;
 
     static final String COLOR_STRING_PREFIX = "rgba(";
+
+    static final Boolean DEFAULT_RUNNING_IN_VIEW = false;
 
     /*
      * INTERNAL FIELDS
@@ -574,6 +578,8 @@ public final class PartialDependenceICEPlotConfig {
             new SettingsModelBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS);
 
     private SettingsModelString m_customCSS = new SettingsModelString(CFG_CSS_CUSTOM, DEFAULT_CUSTOM_CSS);
+
+    private SettingsModelBoolean m_runningInView = new SettingsModelBoolean(CFG_RUNNING_IN_VIEW, DEFAULT_RUNNING_IN_VIEW);
 
     /**
      * @return HideInWizard
@@ -1528,6 +1534,20 @@ public final class PartialDependenceICEPlotConfig {
     }
 
     /**
+     * @return runningInView
+     */
+    public boolean getRunningInView() {
+        return m_runningInView.getBooleanValue();
+    }
+
+    /**
+     * @param runningInView
+     */
+    public void setRunningInView(final boolean runningInView) {
+        this.m_runningInView.setBooleanValue(runningInView);
+    }
+
+    /**
      * @param color
      * @return RGBAString
      */
@@ -1652,6 +1672,7 @@ public final class PartialDependenceICEPlotConfig {
         m_enableGridControls.saveSettingsTo(settings);
         m_enableMouseCrosshairControls.saveSettingsTo(settings);
         m_customCSS.saveSettingsTo(settings);
+        m_runningInView.saveSettingsTo(settings);
     }
 
     /**
@@ -1727,6 +1748,7 @@ public final class PartialDependenceICEPlotConfig {
         setEnableGridControls(settings.getBoolean(CFG_ENABLE_GRID_CONTROLS));
         setEnableMouseCrosshairControls(settings.getBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS));
         setCustomCSS(settings.getString(CFG_CSS_CUSTOM));
+        setRunningInView(settings.getBoolean(CFG_RUNNING_IN_VIEW));
     }
 
     /**
@@ -1805,5 +1827,6 @@ public final class PartialDependenceICEPlotConfig {
         setEnableGridControls(settings.getBoolean(CFG_ENABLE_GRID_CONTROLS, DEFAULT_ENABLE_GRID_CONTROLS));
         setEnableMouseCrosshairControls(settings.getBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS));
         setCustomCSS(settings.getString(CFG_CSS_CUSTOM, DEFAULT_CUSTOM_CSS));
+        setRunningInView(settings.getBoolean(CFG_RUNNING_IN_VIEW, DEFAULT_RUNNING_IN_VIEW));
     }
 }

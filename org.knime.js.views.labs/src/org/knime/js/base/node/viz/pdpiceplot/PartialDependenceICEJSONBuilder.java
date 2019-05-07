@@ -169,8 +169,9 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
      * @param exec
      * @return JSONDataTable
      * @throws CanceledExecutionException
+     * @throws Exception
      */
-    public JSONDataTable build(final ExecutionContext exec) throws CanceledExecutionException {
+    public JSONDataTable build(final ExecutionContext exec) throws CanceledExecutionException, Exception {
         // check for excluded column, only include original feature column
         DataTableSpec originalTableSpec = m_originalDataTable.getDataTableSpec();
         ArrayList<String> m_excludedColumns = new ArrayList<String>();
@@ -205,6 +206,7 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
 
         m_isContiguous = checkIfContiguous();
         m_isOrdered = checkIfOrdered();
+
         if (m_hasCorrectColumns && m_isContiguous && m_isOrdered && m_totalSamplesPerRow > 0 && !m_failedExec) {
             /*
              * more performant implementation avoiding map IFF : a) its verified that the data is
@@ -222,8 +224,9 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
                 int totalRowCount = 0;
                 Double[][] modelValues = new Double[m_totalSamplesPerRow][2];
                 Set<String> keySet = new HashSet<String>();
+                Set<String> missingFeatureValues = new HashSet<String>();
                 for (DataRow row : m_modelTable) {
-                    subMonitor.setProgress(totalRowCount/m_maxRows);
+                    subMonitor.setProgress(totalRowCount / m_maxRows);
                     DataCell featureCell = row.getCell(m_modelFeatureColInd);
                     DataCell predictionCell = row.getCell(m_predictionColInd);
                     String currentKeyString = ((StringCell)row.getCell(m_rowIDColInd)).getStringValue();
@@ -239,8 +242,7 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
                         JSONDataTableRow currRow = tableRows[totalRowCount];
                         if (keySet.size() == 1 && keySet.contains(currRow.getRowKey())) {
                             if ((currRow.getData()[jsonFeatureInd]) == null) {
-                                addWarningMessage("Row: " + currentKeyString + " is missing an original feature value. "
-                                    + "The model output is displayed as an ICE line on the plot, but the data point will not be included.");
+                                missingFeatureValues.add(currentKeyString);
                             }
                             Object[] rowData = new Object[]{currRow.getData()[0], modelValues};
                             currRow.setData(rowData);
@@ -259,8 +261,13 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
                 }
                 JSONDataTableRow currRow = tableRows[totalRowCount];
                 if ((currRow.getData()[jsonFeatureInd]) == null) {
-                    addWarningMessage("Row: " + currRow.getRowKey() + " is missing an original feature value. "
-                        + "The model output is displayed as an ICE line on the plot, but the data point will not be included.");
+                    missingFeatureValues.add(currRow.getRowKey());
+                }
+                int numMissing = missingFeatureValues.size();
+                if (numMissing > 0) {
+                    addWarningMessage(String.valueOf(numMissing) + " rows are missing an original feature value. "
+                        + "The model output is displayed as an ICE line on the plot, but the data points for this "
+                        + String.valueOf(numMissing) + " will not be included.");
                 }
                 Object[] rowAsList = new Object[]{currRow.getData()[0], modelValues};
                 currRow.setData(rowAsList);
@@ -274,7 +281,7 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
             ExecutionMonitor firstIterationMonitor = subMonitor.createSubProgress(.25);
             // for each row in the original data table, we map its key to a coordinate array
             for (int rowInd = 0; rowInd < tableRows.length; rowInd++) {
-                firstIterationMonitor.setProgress(rowInd/tableRows.length);
+                firstIterationMonitor.setProgress(rowInd / tableRows.length);
                 JSONDataTableRow currRow = tableRows[rowInd];
                 originalDataTableMap.put(currRow.getRowKey(), new ArrayList<Double[]>());
             }
@@ -282,22 +289,22 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
             int count = 0;
             int totalRows = ((Long)m_modelTable.size()).intValue();
             for (DataRow row : m_modelTable) {
-                secondIterationMonitor.setProgress(count/totalRows);
+                secondIterationMonitor.setProgress(count / totalRows);
                 String ownerRowID = ((StringCell)row.getCell(m_rowIDColInd)).getStringValue();
                 DataCell featureCell = row.getCell(m_modelFeatureColInd);
                 DataCell predictionCell = row.getCell(m_predictionColInd);
                 originalDataTableMap.getOrDefault(ownerRowID, new ArrayList<Double[]>())
                     .add(new Double[]{getDoubleFromCell(featureCell), getDoubleFromCell(predictionCell)});
-                count ++;
+                count++;
             }
             count = 0;
             ExecutionMonitor thirdIterationMonitor = subMonitor.createSubProgress(.25);
             for (JSONDataTableRow jsonRow : tableRows) {
-                thirdIterationMonitor.setProgress(count/ tableRows.length);
+                thirdIterationMonitor.setProgress(count / tableRows.length);
                 Object[] rowData =
                     new Object[]{jsonRow.getData()[0], originalDataTableMap.get(jsonRow.getRowKey()).toArray()};
                 jsonRow.setData(rowData);
-                count ++;
+                count++;
             }
             return jsonDataTable;
         }
@@ -332,7 +339,7 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
                     return true;
                 }
                 double currRowValue = getDoubleFromCell(row.getCell(m_modelFeatureColInd));
-                if (currRowValue > previousValue) {
+                if (currRowValue >= previousValue) {
                     previousValue = currRowValue;
                     iter++;
                 } else {
@@ -347,8 +354,9 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
     /**
      * @return boolean if the model output table is contiguous and, therefore, can be processed more efficiently
      */
-    private boolean checkIfContiguous() {
+    private boolean checkIfContiguous() throws Exception {
 
+        int previousRowNumber = -1;
         int previousSampleNumber = -1;
         int currentSamplesPerRow = 0;
         int masterSamplesPerRow = 0;
@@ -360,8 +368,15 @@ public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder 
             }
             try {
                 int rowSampleNumber = Integer.valueOf(rowKey[1].substring(3));
+                int origRowNumber = Integer.valueOf(rowKey[0].substring(3));
+                //this will only happen if the model output has been intentionally shuffled
+                if (origRowNumber < previousRowNumber && rowSampleNumber > previousSampleNumber) {
+                    throw new Exception("The model output table has been illegally modified prior to execution."
+                        + " Please see KNIME Log for more details.");
+                }
                 if (rowSampleNumber > previousSampleNumber) {
                     previousSampleNumber = rowSampleNumber;
+                    previousRowNumber = Integer.valueOf(rowKey[0].substring(3));
                     currentSamplesPerRow++;
                 } else {
                     if (masterSamplesPerRow == 0) {

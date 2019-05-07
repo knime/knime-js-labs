@@ -102,6 +102,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
     private Boolean m_enableMouseCrosshairControls;
     private Boolean m_showWarnings;
     private JSONWarnings m_JSONwarnings = new JSONWarnings();
+    private Boolean m_runningInView;
 
     /**
      * @return the JSONDataTable
@@ -551,6 +552,20 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
         m_JSONwarnings = warnings;
     }
 
+    /**
+     * @return the runningInView
+     */
+    public Boolean getRunningInView() {
+        return m_runningInView;
+    }
+
+    /**
+     * @param runningInView the runningInView to set
+     */
+    public void setRunningInView(final Boolean runningInView) {
+        this.m_runningInView = runningInView;
+    }
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -586,6 +601,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_GRID_CONTROLS, getEnableGridControls());
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, getEnableMouseCrosshairControls());
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_SHOW_WARNINGS, getShowWarnings());
+		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_RUNNING_IN_VIEW, getRunningInView());
 		m_table.saveJSONToNodeSettings(settings);
 		m_JSONwarnings.saveToNodeSettings(settings);
 	}
@@ -627,6 +643,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 		setShowWarnings(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_SHOW_WARNINGS));
 		setDataTable(JSONDataTable.loadFromNodeSettings(settings));
 		m_JSONwarnings.loadFromNodeSettings(settings);
+		setRunningInView(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_RUNNING_IN_VIEW));
 	}
 
 	/**
@@ -676,6 +693,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
         		.append(m_enableMouseCrosshairControls, other.m_enableMouseCrosshairControls)
                 .append(m_showWarnings, other.m_showWarnings)
         		.append(m_JSONwarnings, other.m_JSONwarnings)
+        		.append(m_runningInView, other.m_runningInView)
         		.isEquals();
 	}
 
@@ -716,6 +734,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
                 .append(m_enableMouseCrosshairControls)
                 .append(m_showWarnings)
 				.append(m_JSONwarnings)
+				.append(m_runningInView)
 				.toHashCode();
 	}
 }

@@ -69,6 +69,7 @@ import org.knime.core.node.BufferedDataTableHolder;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
@@ -92,6 +93,8 @@ import org.knime.js.core.node.AbstractSVGWizardNodeModel;
 public class PartialDependenceICEPlotNodeModel extends
     AbstractSVGWizardNodeModel<PartialDependenceICEPlotNodeViewRepresentation, PartialDependenceICEPlotViewValue>
     implements CSSModifiable, BufferedDataTableHolder, LayoutTemplateProvider {
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(PartialDependenceICEPlotNodeModel.class);
 
     private static final String ROW_LIMITATION_WARNING_ID_STRING = "rowLimit";
 
@@ -233,6 +236,8 @@ public class PartialDependenceICEPlotNodeModel extends
         return new PortObjectSpec[]{imageSpec, outTableSpec};
     }
 
+
+
     /**
      * called if selection is enabled to create the "Selected" column
      * @param spec
@@ -322,7 +327,7 @@ public class PartialDependenceICEPlotNodeModel extends
         synchronized (getLock()) {
             PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
 
-            viewRepresentation.setResizeToFill(m_config.getResizeToFill());
+            viewRepresentation.setRunningInView(true);
             PartialDependenceICEPlotViewValue viewValue = getViewValue();
             if (m_config.getEnableSelection()) {
                 Collection<String> selectedList = null;
@@ -365,6 +370,13 @@ public class PartialDependenceICEPlotNodeModel extends
             }
         }catch (CanceledExecutionException e){
             throw new CanceledExecutionException("An error occurred while converting this table to JSON: " + e.getMessage());
+        } catch (Exception e) {
+            LOGGER.info("The table provided from the model was altered before being passed to the Partial Dependence/ICE plot node."
+                    + " Please ensure that the sampled output is ordered by RowID and by sample RowID. If you altered the order of the data"
+                    + " output by the model, this is likely the cause of this failed execution. Please try re-ordering the Data Table or "
+                    + "providing the original output from the model.");
+            throw new CanceledExecutionException("The model output table has been illegally modified prior to execution."
+                    + " Please see KNIME Log for more details.");
         }
         return jsonDataTable;
     }
@@ -535,6 +547,7 @@ public class PartialDependenceICEPlotNodeModel extends
         viewRepresentation.setEnableSmartZoomControls(m_config.getEnableSmartZoomControls());
         viewRepresentation.setEnableGridControls(m_config.getEnableGridControls());
         viewRepresentation.setEnableMouseCrosshairControls(m_config.getEnableMouseCrosshairControls());
+        viewRepresentation.setRunningInView(m_config.getRunningInView());
 
         PartialDependenceICEPlotViewValue viewValue = getViewValue();
         if (isViewValueEmpty()) {
@@ -577,6 +590,7 @@ public class PartialDependenceICEPlotNodeModel extends
             viewValue.setYAxisMin(getMinFromCol(spec, m_config.getPredictionCol()));
             viewValue.setYAxisMax(getMaxFromCol(spec, m_config.getPredictionCol()));
             viewValue.setYAxisMargin(m_config.getYAxisMargin());
+            viewValue.setSelected(new String[0]);
         }
     }
 
@@ -641,7 +655,7 @@ public class PartialDependenceICEPlotNodeModel extends
         if (m_config.getResizeToFill()) {
             template.setResizeMethod(ResizeMethod.ASPECT_RATIO_16by9);
         } else {
-            template.setResizeMethod(ResizeMethod.VIEW_LOWEST_ELEMENT);
+            template.setResizeMethod(ResizeMethod.VIEW_TAGGED_ELEMENT);
         }
         return template;
     }
