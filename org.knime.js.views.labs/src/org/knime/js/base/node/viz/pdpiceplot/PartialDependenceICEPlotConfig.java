@@ -253,7 +253,7 @@ public final class PartialDependenceICEPlotConfig {
 
     static final Color DEFAULT_PDP_COLOR = new Color(0, 0, 255);
 
-    static final double DEFAULT_PDP_LINE_WEIGHT = 3;
+    static final double DEFAULT_PDP_LINE_WEIGHT = 2;
 
     static final boolean DEFAULT_SHOW_PDP_MARGIN = true;
 
@@ -261,7 +261,7 @@ public final class PartialDependenceICEPlotConfig {
 
     static final double DEFAULT_PDP_MARGIN_MULTIPLIER = .5;
 
-    static final double DEFAULT_PDP_MARGIN_ALPHA_VAL = .5;
+    static final double DEFAULT_PDP_MARGIN_ALPHA_VAL = .3;
 
     static final boolean DEFAULT_SHOW_ICE = false;
 

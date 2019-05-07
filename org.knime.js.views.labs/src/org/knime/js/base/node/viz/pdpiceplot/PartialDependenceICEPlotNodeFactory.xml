@@ -255,9 +255,10 @@
 			<option name="Enable grid controls">
 				Enables controls to toggle on and off the grid from the interactive view.
 			</option>
-			<option name="Enable mouse-crosshairs controls">
-				Enables controls to toggle on and off the mouse-crosshair from the interactive
-				view.
+			<option name="Enable advanced options">
+				Enables an option in the interactive KNIME menu to display visualization options
+				for the partial dependence line, margin, individual conditional expectation lines,
+				and data points (if their respective controls are enabled).
 			</option>
 			<option name="Enable panning in view">
 				Enables horizontal zooming in the view.
