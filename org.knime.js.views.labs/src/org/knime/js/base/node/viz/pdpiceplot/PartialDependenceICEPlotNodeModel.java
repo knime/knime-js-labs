@@ -547,6 +547,7 @@ public class PartialDependenceICEPlotNodeModel extends
         viewRepresentation.setEnableSmartZoomControls(m_config.getEnableSmartZoomControls());
         viewRepresentation.setEnableGridControls(m_config.getEnableGridControls());
         viewRepresentation.setEnableMouseCrosshairControls(m_config.getEnableMouseCrosshairControls());
+        viewRepresentation.setEnableAdvancedOptionsControls(m_config.getEnableAdvancedOptionsControls());
         viewRepresentation.setRunningInView(m_config.getRunningInView());
 
         PartialDependenceICEPlotViewValue viewValue = getViewValue();

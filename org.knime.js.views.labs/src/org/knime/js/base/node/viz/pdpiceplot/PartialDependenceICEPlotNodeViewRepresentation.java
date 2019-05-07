@@ -100,6 +100,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
     private Boolean m_enableSmartZoomControls;
     private Boolean m_enableGridControls;
     private Boolean m_enableMouseCrosshairControls;
+    private Boolean m_enableAdvancedOptionsControls;
     private Boolean m_showWarnings;
     private JSONWarnings m_JSONwarnings = new JSONWarnings();
     private Boolean m_runningInView;
@@ -524,6 +525,20 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
         this.m_enableMouseCrosshairControls = enableMouseCrosshairControls;
     }
 
+    /**
+     * @return enableAdvancedOptionsControls
+     */
+    public boolean getEnableAdvancedOptionsControls() {
+        return m_enableAdvancedOptionsControls;
+    }
+
+    /**
+     * @param enableAdvancedOptionsControls
+     */
+    public void setEnableAdvancedOptionsControls(final boolean enableAdvancedOptionsControls) {
+        this.m_enableAdvancedOptionsControls = enableAdvancedOptionsControls;
+    }
+
 	/**
 	 * @return the showWarnings
 	 */
@@ -600,6 +615,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_SMART_ZOOM_CONTROLS, getEnableSmartZoomControls());
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_GRID_CONTROLS, getEnableGridControls());
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, getEnableMouseCrosshairControls());
+		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS, getEnableAdvancedOptionsControls());
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_SHOW_WARNINGS, getShowWarnings());
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_RUNNING_IN_VIEW, getRunningInView());
 		m_table.saveJSONToNodeSettings(settings);
@@ -640,6 +656,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
         setEnableSmartZoomControls(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_SMART_ZOOM_CONTROLS));
         setEnableGridControls(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_GRID_CONTROLS));
         setEnableMouseCrosshairControls(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS));
+        setEnableAdvancedOptionsControls(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS));
 		setShowWarnings(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_SHOW_WARNINGS));
 		setDataTable(JSONDataTable.loadFromNodeSettings(settings));
 		m_JSONwarnings.loadFromNodeSettings(settings);
@@ -691,6 +708,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
         		.append(m_enableSmartZoomControls, other.m_enableSmartZoomControls)
         		.append(m_enableGridControls, other.m_enableGridControls)
         		.append(m_enableMouseCrosshairControls, other.m_enableMouseCrosshairControls)
+        		.append(m_enableAdvancedOptionsControls, other.m_enableAdvancedOptionsControls)
                 .append(m_showWarnings, other.m_showWarnings)
         		.append(m_JSONwarnings, other.m_JSONwarnings)
         		.append(m_runningInView, other.m_runningInView)
@@ -732,6 +750,7 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
                 .append(m_enableSmartZoomControls)
                 .append(m_enableGridControls)
                 .append(m_enableMouseCrosshairControls)
+                .append(m_enableAdvancedOptionsControls)
                 .append(m_showWarnings)
 				.append(m_JSONwarnings)
 				.append(m_runningInView)

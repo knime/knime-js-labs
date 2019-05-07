@@ -216,6 +216,8 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
 
     private final JCheckBox m_enableMouseCrosshairControlsCheckBox;
 
+    private final JCheckBox m_enableAdvancedOptionsCheckBox;
+
     /**
      * Creates a new dialog pane.
      */
@@ -328,6 +330,7 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_enableSmartZoomControlsCheckBox = new JCheckBox("Enable smart zoom controls");
         m_enableGridControlsCheckBox = new JCheckBox("Enable grid controls");
         m_enableMouseCrosshairControlsCheckBox = new JCheckBox("Enable mouse-crosshairs controls");
+        m_enableAdvancedOptionsCheckBox = new JCheckBox("Enable advanced view options");
 
         m_showPDPCheckBox.addChangeListener(new ChangeListener() {
 
@@ -382,6 +385,39 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
             @Override
             public void stateChanged(final ChangeEvent e) {
                 toggleInteractiveControls();
+                toggleAdvancedOptionControls();
+            }
+        });
+
+        m_enablePDPControlsCheckBox.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                toggleAdvancedOptionControls();
+            }
+        });
+
+        m_enablePDPMarginControlsCheckBox.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                toggleAdvancedOptionControls();
+            }
+        });
+
+        m_enableICEControlsCheckBox.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                toggleAdvancedOptionControls();
+            }
+        });
+
+        m_enableDataPointControlsCheckBox.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                toggleAdvancedOptionControls();
             }
         });
 
@@ -715,7 +751,7 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         constraints2.gridy++;
         viewControlsPanel.add(m_enableGridControlsCheckBox, constraints2);
         constraints2.gridx++;
-        viewControlsPanel.add(m_enableMouseCrosshairControlsCheckBox, constraints2);
+        viewControlsPanel.add(m_enableAdvancedOptionsCheckBox, constraints2);
 
         constraints.gridy++;
 
@@ -793,7 +829,6 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_PDPLineWeightSpinner.setEnabled(isEnabled);
         togglePDPMarginControls();
         m_showPDPMarginCheckBox.setEnabled(isEnabled);
-
     }
 
     /**
@@ -867,6 +902,7 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_enableSmartZoomControlsCheckBox.setEnabled(isEnabled);
         m_enableGridControlsCheckBox.setEnabled(isEnabled);
         m_enableMouseCrosshairControlsCheckBox.setEnabled(isEnabled);
+        toggleAdvancedOptionControls();
     }
 
     /**
@@ -886,6 +922,26 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
     private void toggleSelectionControls() {
         boolean isEnabled = m_enableSelectionCheckBox.isSelected();
         m_enableSelectionControlsCheckBox.setEnabled(isEnabled);
+    }
+
+    /**
+     * toggle enabled Selection swing components
+     */
+    private void toggleAdvancedOptionControls() {
+        boolean pdpEnabled = m_enablePDPControlsCheckBox.isSelected();
+        boolean iceEnabled = m_enableICEControlsCheckBox.isSelected();
+        boolean pdpMarginEnabled = m_enablePDPMarginControlsCheckBox.isSelected();
+        boolean dataPointsEnabled = m_enableDataPointControlsCheckBox.isSelected();
+        boolean interactiveControlsEnabled = m_enableInteractiveCtrlsCheckBox.isSelected();
+        boolean enableAdvancedOptions = true;
+        if(!interactiveControlsEnabled) {
+            enableAdvancedOptions = false;
+        }else {
+            if(!pdpEnabled && !iceEnabled && !dataPointsEnabled && !pdpMarginEnabled) {
+                enableAdvancedOptions = false;
+            }
+        }
+        m_enableAdvancedOptionsCheckBox.setEnabled(enableAdvancedOptions);
     }
 
     /**
@@ -965,6 +1021,7 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_enableSmartZoomControlsCheckBox.setSelected(m_config.getEnableSmartZoomControls());
         m_enableGridControlsCheckBox.setSelected(m_config.getEnableGridControls());
         m_enableMouseCrosshairControlsCheckBox.setSelected(m_config.getEnableMouseCrosshairControls());
+        m_enableAdvancedOptionsCheckBox.setSelected(m_config.getEnableAdvancedOptionsControls());
 
         togglePDPControls();
         togglePDPMarginControls();
@@ -1045,6 +1102,7 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_config.setEnableSmartZoomControls(m_enableSmartZoomControlsCheckBox.isSelected());
         m_config.setEnableGridControls(m_enableGridControlsCheckBox.isSelected());
         m_config.setEnableMouseCrosshairControls(m_enableMouseCrosshairControlsCheckBox.isSelected());
+        m_config.setEnableAdvancedOptionsControls(m_enableAdvancedOptionsCheckBox.isSelected());
         m_config.saveSettings(settings);
     }
 }

@@ -198,8 +198,6 @@ public final class PartialDependenceICEPlotConfig {
 
     static final String CFG_STATIC_LINE_Y_VALUE = "staticLineYValue";
 
-
-
     /*
      * JS Menu CFG Keys
     */
@@ -228,6 +226,8 @@ public final class PartialDependenceICEPlotConfig {
     static final String CFG_ENABLE_GRID_CONTROLS = "enableGridControls";
 
     static final String CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS = "enableMouseCrosshairControls";
+
+    static final String CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS = "enableAdvancedOptionsControls";
 
     /*
      * Execution Default Values
@@ -370,13 +370,15 @@ public final class PartialDependenceICEPlotConfig {
 
     static final boolean DEFAULT_ENABLE_SELECTION_CONTROLS = true;
 
-    static final boolean DEFAULT_ENABLE_Y_AXIS_MARGIN_CONTROLS = true;
+    static final boolean DEFAULT_ENABLE_Y_AXIS_MARGIN_CONTROLS = false;
 
     static final boolean DEFAULT_ENABLE_SMART_ZOOM_CONTROLS = true;
 
-    static final boolean DEFAULT_ENABLE_GRID_CONTROLS = true;
+    static final boolean DEFAULT_ENABLE_GRID_CONTROLS = false;
 
     static final boolean DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS = false;
+
+    static final boolean DEFAULT_ENABLE_ADVANCED_OPTIONS_CONTROLS = false;
 
 
     /*
@@ -577,9 +579,13 @@ public final class PartialDependenceICEPlotConfig {
     private SettingsModelBoolean m_enableMouseCrosshairControls =
             new SettingsModelBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS);
 
+    private SettingsModelBoolean m_enableAdvancedOptionsControls =
+            new SettingsModelBoolean(CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS, DEFAULT_ENABLE_ADVANCED_OPTIONS_CONTROLS);
+
     private SettingsModelString m_customCSS = new SettingsModelString(CFG_CSS_CUSTOM, DEFAULT_CUSTOM_CSS);
 
     private SettingsModelBoolean m_runningInView = new SettingsModelBoolean(CFG_RUNNING_IN_VIEW, DEFAULT_RUNNING_IN_VIEW);
+
 
     /**
      * @return HideInWizard
@@ -1520,6 +1526,20 @@ public final class PartialDependenceICEPlotConfig {
     }
 
     /**
+     * @return enableAdvancedOptionsControls
+     */
+    public boolean getEnableAdvancedOptionsControls() {
+        return m_enableAdvancedOptionsControls.getBooleanValue();
+    }
+
+    /**
+     * @param enableAdvancedOptionsControls
+     */
+    public void setEnableAdvancedOptionsControls(final boolean enableAdvancedOptionsControls) {
+        this.m_enableAdvancedOptionsControls.setBooleanValue(enableAdvancedOptionsControls);
+    }
+
+    /**
      * @return Custom CSS String
      */
     public String getCustomCSS() {
@@ -1671,6 +1691,7 @@ public final class PartialDependenceICEPlotConfig {
         m_enableSmartZoomControls.saveSettingsTo(settings);
         m_enableGridControls.saveSettingsTo(settings);
         m_enableMouseCrosshairControls.saveSettingsTo(settings);
+        m_enableAdvancedOptionsControls.saveSettingsTo(settings);
         m_customCSS.saveSettingsTo(settings);
         m_runningInView.saveSettingsTo(settings);
     }
@@ -1747,6 +1768,7 @@ public final class PartialDependenceICEPlotConfig {
         setEnableSmartZoomControls(settings.getBoolean(CFG_ENABLE_SMART_ZOOM_CONTROLS));
         setEnableGridControls(settings.getBoolean(CFG_ENABLE_GRID_CONTROLS));
         setEnableMouseCrosshairControls(settings.getBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS));
+        setEnableAdvancedOptionsControls(settings.getBoolean(CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS));
         setCustomCSS(settings.getString(CFG_CSS_CUSTOM));
         setRunningInView(settings.getBoolean(CFG_RUNNING_IN_VIEW));
     }
@@ -1826,6 +1848,7 @@ public final class PartialDependenceICEPlotConfig {
         setEnableSmartZoomControls(settings.getBoolean(CFG_ENABLE_SMART_ZOOM_CONTROLS, DEFAULT_ENABLE_SMART_ZOOM_CONTROLS));
         setEnableGridControls(settings.getBoolean(CFG_ENABLE_GRID_CONTROLS, DEFAULT_ENABLE_GRID_CONTROLS));
         setEnableMouseCrosshairControls(settings.getBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS));
+        setEnableAdvancedOptionsControls(settings.getBoolean(CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS, DEFAULT_ENABLE_ADVANCED_OPTIONS_CONTROLS));
         setCustomCSS(settings.getString(CFG_CSS_CUSTOM, DEFAULT_CUSTOM_CSS));
         setRunningInView(settings.getBoolean(CFG_RUNNING_IN_VIEW, DEFAULT_RUNNING_IN_VIEW));
     }

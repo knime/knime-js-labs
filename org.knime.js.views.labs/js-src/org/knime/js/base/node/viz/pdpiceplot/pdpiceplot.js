@@ -282,7 +282,7 @@ window.pdpiceplotNamespace = (function () {
             .attr('y', this.default.marginTop * 3 + this.titleHeight)
             .attr('width', this.viewportWidth)
             .attr('height', this.viewportHeight)
-            // .attr('clip-path', 'url(#viewportClip)');
+        // .attr('clip-path', 'url(#viewportClip)');
         this.d3Elem.viewport = this.d3Elem.wrapper.append('g')
             .attr('class', 'viewport')
             .attr('x', this.default.marginLeft + this.yAxisWidth)
@@ -448,7 +448,7 @@ window.pdpiceplotNamespace = (function () {
             .attr('class', 'axis-wrapper')
             .attr('width', this.viewportWidth + this.totalLeftWidth + 3)
             .attr('height', this.svgHeight)
-            // .attr('mask', 'url(#maskAxis)');
+        // .attr('mask', 'url(#maskAxis)');
 
     };
 
@@ -1483,6 +1483,79 @@ window.pdpiceplotNamespace = (function () {
             knimeService.addMenuDivider();
         }
 
+        if (this._representation.enableDataPointControls) {
+
+            var showDataPointsCheckbox = knimeService.createMenuCheckbox(
+                'show-data-points-checkbox',
+                this._value.showDataPoints,
+                function () {
+                    if (self._value.showDataPoints !== this.checked) {
+                        self._value.showDataPoints = this.checked;
+                        self.drawDataPoints();
+                    }
+                },
+                true
+            );
+
+            knimeService.addMenuItem(
+                'Show Data Points',
+                'dot-circle-o',
+                showDataPointsCheckbox
+            );
+
+            if (this.showExpandedOptions) {
+
+                var dataPointWeightMenuItem = knimeService.createMenuNumberField(
+                    'data-point-weight-menu-item',
+                    this._value.dataPointWeight,
+                    this.default.minLineWeight,
+                    this.default.maxLineWeight,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.dataPointWeight !== this.value) {
+                            self._value.dataPointWeight = this.value;
+                            d3.selectAll('.point')
+                                .attr('r', self._value.dataPointWeight);
+                        }
+                    },
+                    true
+                );
+
+                knimeService.addMenuItem(
+                    'Data Point Weight',
+                    'dot-circle-o',
+                    dataPointWeightMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
+
+                var dataPointOpacityMenuItem = knimeService.createMenuNumberField(
+                    'data-point-opacity-menu-item',
+                    this._value.dataPointAlphaVal,
+                    0,
+                    1,
+                    this.default.lineWeightStep,
+                    function () {
+                        if (self._value.dataPointAlphaVal !== this.value) {
+                            self._value.dataPointAlphaVal = this.value;
+                            d3.selectAll('.point')
+                                .attr('fill-opacity', self._value.dataPointAlphaVal);
+                        }
+                    },
+                    true
+                );
+
+                knimeService.addMenuItem(
+                    'Data Point Opacity',
+                    'dot-circle-o',
+                    dataPointOpacityMenuItem,
+                    null,
+                    knimeService.SMALL_ICON
+                );
+            }
+            knimeService.addMenuDivider();
+        }
+
         if (this._representation.enableStaticLineControls) {
             var showStaticLineCheckBox = knimeService.createMenuCheckbox(
                 'show-static-line-checkbox',
@@ -1554,80 +1627,6 @@ window.pdpiceplotNamespace = (function () {
             );
         }
         knimeService.addMenuDivider();
-
-        if (this._representation.enableDataPointControls) {
-
-            var showDataPointsCheckbox = knimeService.createMenuCheckbox(
-                'show-data-points-checkbox',
-                this._value.showDataPoints,
-                function () {
-                    if (self._value.showDataPoints !== this.checked) {
-                        self._value.showDataPoints = this.checked;
-                        self.drawDataPoints();
-                    }
-                },
-                true
-            );
-
-            knimeService.addMenuItem(
-                'Show Data Points',
-                'dot-circle-o',
-                showDataPointsCheckbox
-            );
-
-            if (this.showExpandedOptions) {
-
-                var dataPointWeightMenuItem = knimeService.createMenuNumberField(
-                    'data-point-weight-menu-item',
-                    this._value.dataPointWeight,
-                    this.default.minLineWeight,
-                    this.default.maxLineWeight,
-                    this.default.lineWeightStep,
-                    function () {
-                        if (self._value.dataPointWeight !== this.value) {
-                            self._value.dataPointWeight = this.value;
-                            d3.selectAll('.point')
-                                .attr('r', self._value.dataPointWeight);
-                        }
-                    },
-                    true
-                );
-
-                knimeService.addMenuItem(
-                    'Data Point Weight',
-                    'dot-circle-o',
-                    dataPointWeightMenuItem,
-                    null,
-                    knimeService.SMALL_ICON
-                );
-
-                var dataPointOpacityMenuItem = knimeService.createMenuNumberField(
-                    'data-point-opacity-menu-item',
-                    this._value.dataPointAlphaVal,
-                    0,
-                    1,
-                    this.default.lineWeightStep,
-                    function () {
-                        if (self._value.dataPointAlphaVal !== this.value) {
-                            self._value.dataPointAlphaVal = this.value;
-                            d3.selectAll('.point')
-                                .attr('fill-opacity', self._value.dataPointAlphaVal);
-                        }
-                    },
-                    true
-                );
-
-                knimeService.addMenuItem(
-                    'Data Point Opacity',
-                    'dot-circle-o',
-                    dataPointOpacityMenuItem,
-                    null,
-                    knimeService.SMALL_ICON
-                );
-
-                knimeService.addMenuDivider();
-            }
-        }
 
         if (this._representation.enableYAxisMarginControls) {
 
@@ -1752,8 +1751,10 @@ window.pdpiceplotNamespace = (function () {
             );
         }
 
-        if (this._representation.enableICEControls || this._representation.enablePDPControls ||
-            this._representation.enableDataPointControls || this._representation.enablePDPMarginControls) {
+        if ((this._representation.enableICEControls || this._representation.enablePDPControls ||
+            this._representation.enableDataPointControls || this._representation.enablePDPMarginControls) &&
+            this._representation.enableAdvancedOptionsControls) {
+            knimeService.addMenuDivider();
             var text = this.showExpandedOptions ? 'Show advanced options' : 'Show advanced options';
             var icon = this.showExpandedOptions ? 'minus' : 'plus';
 
@@ -1776,8 +1777,6 @@ window.pdpiceplotNamespace = (function () {
                 null,
                 knimeService.SMALL_ICON
             );
-
-            knimeService.addMenuDivider();
         }
     };
 
