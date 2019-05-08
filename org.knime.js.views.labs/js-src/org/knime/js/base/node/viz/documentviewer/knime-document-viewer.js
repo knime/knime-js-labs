@@ -255,6 +255,7 @@ window.docViewer = (function () {
     BratDocumentViewer.prototype._dataTableDrawCallback = function () {
         KnimeBaseTableViewer.prototype._dataTableDrawCallback.apply(this);
         $('#knimePagedTable thead').remove();
+        $('#knimePagedTableContainer .dataTables_scrollHead').remove();
         BratDocumentViewer.prototype._setDocumentViewerStyle();
         var infoColsCount = this._infoColsCount;
         var columns = this._dataTableConfig.columns;

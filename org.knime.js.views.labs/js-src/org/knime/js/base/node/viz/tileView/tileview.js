@@ -190,8 +190,8 @@ window.tiles_namespace = (function () {
     // auto-size cell heights
     TileView.prototype._dataTableDrawCallback = function () {
         KnimeBaseTableViewer.prototype._dataTableDrawCallback.apply(this);
-        $("#knimePagedTable thead").remove();
-        $("#knimePagedTableContainer .dataTables_scrollHead").remove();
+        $('#knimePagedTable thead').remove();
+        $('#knimePagedTableContainer .dataTables_scrollHead').remove();
         TileView.prototype._resetTableLayout.apply(this);
         var infoColsCount = this._infoColsCount;
         var columns = this._dataTableConfig.columns;
