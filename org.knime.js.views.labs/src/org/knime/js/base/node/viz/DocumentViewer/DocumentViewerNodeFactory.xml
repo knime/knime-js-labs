@@ -8,11 +8,20 @@
 	</shortDescription>
 	<fullDescription>
 		<intro>
+		  <p>
 			This node visualizes terms and tags of a document using
 			<a href="http://brat.nlplab.org/embed.html">the Brat JS library</a>. 
 			Each term will be highlighted and its corresponding tags will be
 			displayed above it. The highlighting colors are static depending on
 			the tags.
+		  </p>
+		  <p>
+            The node supports custom CSS styling. You can simply put CSS rules
+            into a single string and set it as a flow variable 'customCSS' in
+            the node configuration dialog. You will find the list of available
+            classes and their description on our
+            <a href="https://knime.com/css-styling">documentation page</a>.
+            </p>
 		</intro>
 		<tab name="Options">
 			<description>
