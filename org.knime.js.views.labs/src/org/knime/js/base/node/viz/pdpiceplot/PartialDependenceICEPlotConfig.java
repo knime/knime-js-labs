@@ -63,7 +63,7 @@ import org.knime.core.node.defaultnodesettings.SettingsModelString;
 
 /**
  *
- * @author Ben Laney
+ * @author Ben Laney, KNIME GmbH, Konstanz, Germany
  */
 public final class PartialDependenceICEPlotConfig {
 

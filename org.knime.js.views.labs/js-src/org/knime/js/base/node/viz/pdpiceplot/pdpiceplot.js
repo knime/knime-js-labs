@@ -1,5 +1,4 @@
-/* eslint-disable max-lines */
-/* eslint-disable no-undef */
+/* global d3:false, kt:false */
 window.pdpiceplotNamespace = (function () {
 
     var PDPICEPlot = function () {
@@ -1886,7 +1885,7 @@ window.pdpiceplotNamespace = (function () {
         if (colors.length && rows.length && colors.length === rows.length) {
             rows.forEach(function (row, ind) {
                 var color = colors[ind];
-                if (color === "#404040") {
+                if (color === '#404040') {
                     color = self._value.icecolor;
                     booleanMissingColors = true;
                 }
@@ -1894,9 +1893,9 @@ window.pdpiceplotNamespace = (function () {
             });
         }
         if (booleanMissingColors) {
-            knimeService.setWarningMessage("Some color values were " +
-                "missing from the data table you provided. Please be aware the displayed colors " +
-                "may not accurately represent the color assignments intended.");
+            knimeService.setWarningMessage('Some color values were ' +
+                'missing from the data table you provided. Please be aware the displayed colors ' +
+                'may not accurately represent the color assignments intended.');
         }
         return rows;
     };

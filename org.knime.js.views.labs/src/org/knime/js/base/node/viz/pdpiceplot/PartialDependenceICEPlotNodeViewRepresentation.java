@@ -63,7 +63,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  *
- * @author Ben Laney
+ * @author Ben Laney, KNIME GmbH, Konstanz, Germany
  */
 @JsonAutoDetect
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")

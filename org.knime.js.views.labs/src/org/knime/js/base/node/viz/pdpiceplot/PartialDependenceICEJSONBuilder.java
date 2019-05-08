@@ -26,7 +26,7 @@ import org.knime.js.core.JSONDataTable.JSONDataTableRow;
 import org.knime.js.core.JSONDataTableSpec;
 
 /**
- * @author Ben Laney
+ * @author Ben Laney, KNIME GmbH, Konstanz, Germany
  *
  */
 public class PartialDependenceICEJSONBuilder implements BufferedDataTableHolder {

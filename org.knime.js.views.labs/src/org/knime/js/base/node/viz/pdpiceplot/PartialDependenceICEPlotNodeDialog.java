@@ -84,7 +84,7 @@ import org.knime.core.node.util.DataValueColumnFilter;
 
 /**
  *
- * @author Ben Laney
+ * @author Ben Laney, KNIME GmbH, Konstanz, Germany
  */
 public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
 

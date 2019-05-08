@@ -88,7 +88,7 @@ import org.knime.js.core.node.AbstractSVGWizardNodeModel;
 
 /**
  *
- * @author Ben Laney
+ * @author Ben Laney, KNIME GmbH, Konstanz, Germany
  */
 public class PartialDependenceICEPlotNodeModel extends
     AbstractSVGWizardNodeModel<PartialDependenceICEPlotNodeViewRepresentation, PartialDependenceICEPlotViewValue>

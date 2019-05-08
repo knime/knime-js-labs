@@ -55,7 +55,7 @@ import org.knime.core.node.wizard.WizardNodeFactoryExtension;
 
 /**
  *
- * @author Ben Laney
+ * @author Ben Laney, KNIME GmbH, Konstanz, Germany
  */
 public class PartialDependenceICEPlotNodeFactory
         extends NodeFactory<PartialDependenceICEPlotNodeModel> implements WizardNodeFactoryExtension<PartialDependenceICEPlotNodeModel,
