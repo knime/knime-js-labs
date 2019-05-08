@@ -241,9 +241,6 @@ window.pdpiceplotNamespace = (function () {
             height = self._representation.resizeToFill ? '100%' : self._representation.viewHeight;
         }
 
-        console.log(width)
-        console.log(height)
-
         d3.select('html')
             .style('width', '100%')
             .style('height', '100%');
@@ -281,8 +278,7 @@ window.pdpiceplotNamespace = (function () {
             .attr('x', this.default.marginLeft + this.yAxisWidth)
             .attr('y', this.default.marginTop * 3 + this.titleHeight)
             .attr('width', this.viewportWidth)
-            .attr('height', this.viewportHeight)
-        // .attr('clip-path', 'url(#viewportClip)');
+            .attr('height', this.viewportHeight);
         this.d3Elem.viewport = this.d3Elem.wrapper.append('g')
             .attr('class', 'viewport')
             .attr('x', this.default.marginLeft + this.yAxisWidth)
@@ -419,7 +415,7 @@ window.pdpiceplotNamespace = (function () {
                 .attr('id', 'subtitle')
                 .attr('class', 'knime-subtitle')
                 .attr('x', this.default.marginLeft)
-                .attr('y', this.titleHeight);
+                .attr('y', this.titleHeight - 10);
         }
         this.d3Elem.subtitle.text(this._value.chartSubtitle || '');
     };
@@ -447,7 +443,7 @@ window.pdpiceplotNamespace = (function () {
             .append('g')
             .attr('class', 'axis-wrapper')
             .attr('width', this.viewportWidth + this.totalLeftWidth + 3)
-            .attr('height', this.svgHeight)
+            .attr('height', this.svgHeight);
         // .attr('mask', 'url(#maskAxis)');
 
     };
@@ -1985,10 +1981,20 @@ window.pdpiceplotNamespace = (function () {
      */
     PDPICEPlot.prototype.initZoom = function () {
         var self = this;
+        var transMinY = this.viewportHeight + this.totalTopHeight + this.default.marginTop * 3 + 6;
+        var transMaxY = this.totalTopHeight;
+        if (this._value.chartTitle.length > 0) {
+            transMaxY = this.totalTopHeight - 38;
+            transMinY -= 6;
+        }
+        if (this._value.chartSubtitle.length > 0) {
+            transMaxY -= 10;
+            transMinY -= 8;
+        }
         this.d3Elem.zoom = d3.zoom().scaleExtent([1, 5])
             .translateExtent([
-                [this.totalLeftWidth - this.default.marginRight + 6, this.totalTopHeight],
-                [this.totalLeftWidth + this.viewportWidth, this.viewportHeight + this.totalTopHeight + this.default.marginTop * 3 + 6]
+                [this.totalLeftWidth - this.default.marginRight + 9, transMaxY],
+                [this.totalLeftWidth + this.viewportWidth, transMinY]
             ])
             // eslint-disable-next-line no-empty-function
             .on('start', function () {
@@ -2015,7 +2021,8 @@ window.pdpiceplotNamespace = (function () {
                                     .duration(50).call(
                                         d3El.axis
                                             .x.scale(newScaleX)
-                                    ).attr('stroke-width', .2)
+                                    )
+                                    .attr('stroke-width', .2)
                                     .attr('stroke-opacity', .4);
                             } else {
                                 self.createD3Lines(newScaleX, newScaleY, newRadiusScale);
