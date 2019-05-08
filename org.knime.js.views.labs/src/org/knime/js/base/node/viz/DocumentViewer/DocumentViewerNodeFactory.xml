@@ -2,7 +2,7 @@
 <knimeNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://knime.org/node/v3.1" 
 	xsi:schemaLocation="http://knime.org/node/v3.1 http://knime.org/node/v3.1.xsd"
 	icon="./document_viewer.png" type="Visualizer">
-	<name>Document Viewer (JavaScript)</name>
+	<name>Tagged Document Viewer (JavaScript)</name>
 	<shortDescription>
 		Visualizes documents.
 	</shortDescription>
@@ -48,10 +48,13 @@
 			<option name="Show line numbers">
 				If checked line numbers are shown next to the document.
 			</option>
+			<option name="Display document tags">
+				If checked document tags are shown in the document.
+			</option>
 		</tab>
 		<tab name="Interactivity">
 			<description>
-				The JavaScript Document Viewer allows for several ways of interactivity. Please use the options below to
+				The JavaScript Tagged Document Viewer allows for several ways of interactivity. Please use the options below to
                 configure which features will be activated on the view and further configuration of interactive
                 properties.
 			</description>
@@ -87,13 +90,13 @@
 		</tab>
 			
 	</fullDescription>
-	<interactiveView name="Document View">
+	<interactiveView name="Tagged Document View">
 		Displays the visualization of the
-		documents.
+		tagged documents.
 	</interactiveView>
 	<ports>
-		<inPort name="Documents input table" index="0">
-			The input table containing the documents.
+		<inPort name="Tagged documents input table" index="0">
+			The input table containing the tagged documents.
 		</inPort>
 		<outPort name="Input data and view selection" index="0">
 			Data table containing the input data appended with a column, that

@@ -48,6 +48,7 @@
  */
 package org.knime.js.base.node.viz.DocumentViewer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -174,6 +175,7 @@ final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewe
     public void createDocuments(final ExecutionContext exec, final BufferedDataTable in,
         final DocumentViewerRepresentation viewRepresentation) {
         String documentCol = ((DocumentViewerConfig)m_config).getDocumentCol();
+        Boolean showDocumentTags = ((DocumentViewerConfig)m_config).getShowDocumentTags();
         if (documentCol == null || documentCol == "") {
             throw new IllegalArgumentException("No column selected for the document column.");
         }
@@ -207,7 +209,12 @@ final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewe
                     // get the document
                     final Document doc = ((DocumentValue)docCell).getDocument();
                     // get the indexed terms from the doc
-                    final List<IndexedTerm> terms = DocumentUtil.getIndexedTerms(doc, false, "\n");
+                    List<IndexedTerm> terms;
+                    if(showDocumentTags) {
+                        terms = DocumentUtil.getIndexedTerms(doc, false, "\n");
+                    } else {
+                        terms = new ArrayList<>();
+                    }
                     // set the values in the representation class
                     viewRepresentation.add(doc, terms);
                 } else {

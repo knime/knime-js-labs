@@ -73,8 +73,12 @@ public class DocumentViewerConfig implements TableConfig {
     private TableSettings m_settings = new TableSettings();
 
     static final String CFG_SHOW_LINE_NUMBERS = "showLineNumber";
-    private static final Boolean DEFAULT_SHOW_LINE_NUMBERS = false;
+    private static final boolean DEFAULT_SHOW_LINE_NUMBERS = false;
     private boolean m_showLineNumbers = DEFAULT_SHOW_LINE_NUMBERS;
+
+    static final String CFG_SHOW_DOCUMENT_TAGS = "showDocumentTags";
+    private static final boolean DEFAULT_SHOW_DOCUMENT_TAGS = true;
+    private boolean m_showDocumentTags = DEFAULT_SHOW_DOCUMENT_TAGS;
 
     @SuppressWarnings("javadoc")
     public DocumentViewerConfig() {
@@ -98,12 +102,32 @@ public class DocumentViewerConfig implements TableConfig {
         m_documentCol = documentCol;
     }
 
+    /**
+     * @return boolean if line numbers should be shown
+     */
     public boolean getShowLineNumbers() {
         return m_showLineNumbers;
     }
 
+    /**
+     * @param showLineNumbers true if line numbers should be shown
+     */
     public void setShowLineNumbers(final boolean showLineNumbers) {
         m_showLineNumbers = showLineNumbers;
+    }
+
+    /**
+     * @return boolean if document tags should be shown
+     */
+    public boolean getShowDocumentTags() {
+        return m_showDocumentTags;
+    }
+
+    /**
+     * @param showDocumentTags true if document tags should be shown
+     */
+    public void setShowDocumentTags(final boolean showDocumentTags) {
+        m_showDocumentTags = showDocumentTags;
     }
 
     /**
@@ -130,6 +154,7 @@ public class DocumentViewerConfig implements TableConfig {
         m_settings.saveSettings(settings);
         settings.addString(CFG_DOCUMENT_COL, m_documentCol);
         settings.addBoolean(CFG_SHOW_LINE_NUMBERS, m_showLineNumbers);
+        settings.addBoolean(CFG_SHOW_DOCUMENT_TAGS, m_showDocumentTags);
     }
 
     /**
@@ -146,6 +171,7 @@ public class DocumentViewerConfig implements TableConfig {
         m_settings.loadSettings(settings);
         m_documentCol = settings.getString(CFG_DOCUMENT_COL);
         m_showLineNumbers = settings.getBoolean(CFG_SHOW_LINE_NUMBERS);
+        m_showDocumentTags = settings.getBoolean(CFG_SHOW_DOCUMENT_TAGS);
     }
 
     /**
@@ -156,6 +182,7 @@ public class DocumentViewerConfig implements TableConfig {
     	m_settings.loadSettingsForDialog(settings, spec);
         m_documentCol = settings.getString(CFG_DOCUMENT_COL, DEFAULT_DOCUMENT_COL);
         m_showLineNumbers = settings.getBoolean(CFG_SHOW_LINE_NUMBERS, DEFAULT_SHOW_LINE_NUMBERS);
+        m_showDocumentTags = settings.getBoolean(CFG_SHOW_DOCUMENT_TAGS, DEFAULT_SHOW_DOCUMENT_TAGS);
     }
 
     static void validateConfig(final int initPageSize, final int maxRows,

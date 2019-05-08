@@ -84,6 +84,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
     private ArrayList<BratDocument> m_bratDocuments = new ArrayList<>();
 
     private boolean m_showLineNumbers;
+    private boolean m_showDocumentTags;
 
     private TableRepresentationSettings m_settings = new TableRepresentationSettings();
 
@@ -143,10 +144,24 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
     }
 
     /**
-     * @return if line numbers should be displayed
+     * @return boolean if line numbers should be displayed
      */
     public boolean getShowLineNumbers() {
         return m_showLineNumbers;
+    }
+
+    /**
+     * @param showDocumentTags the boolean if line numbers should be shown
+     */
+    public void setShowDocumentTags(final boolean showDocumentTags) {
+        m_showDocumentTags = showDocumentTags;
+    }
+
+    /**
+     * @return boolean if document tags should be displayed
+     */
+    public boolean getShowDocumentTags() {
+        return m_showDocumentTags;
     }
 
     /**
@@ -191,6 +206,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
         m_settings.saveSettings(settings);
         settings.addString(DocumentViewerConfig.CFG_DOCUMENT_COL, m_documentCol);
         settings.addBoolean(DocumentViewerConfig.CFG_SHOW_LINE_NUMBERS, m_showLineNumbers);
+        settings.addBoolean(DocumentViewerConfig.CFG_SHOW_DOCUMENT_TAGS, m_showDocumentTags);
     }
 
     /**
@@ -201,6 +217,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
         m_settings.loadSettings(settings);
         m_documentCol = settings.getString(DocumentViewerConfig.CFG_DOCUMENT_COL);
         m_showLineNumbers = settings.getBoolean(DocumentViewerConfig.CFG_SHOW_LINE_NUMBERS);
+        m_showDocumentTags = settings.getBoolean(DocumentViewerConfig.CFG_SHOW_DOCUMENT_TAGS);
     }
 
     /**
@@ -223,6 +240,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
                 .append(m_settings, other.getSettings())
                 .append(m_bratDocuments, other.getBratDocuments())
                 .append(m_showLineNumbers, other.getShowLineNumbers())
+                .append(m_showDocumentTags, other.getShowDocumentTags())
                 .isEquals();
     }
 
@@ -235,6 +253,7 @@ public class DocumentViewerRepresentation extends AbstractTableRepresentation {
                 .append(m_settings)
                 .append(m_bratDocuments)
                 .append(m_showLineNumbers)
+                .append(m_showDocumentTags)
                 .toHashCode();
     }
 
