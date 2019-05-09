@@ -81,6 +81,8 @@ import org.knime.core.node.defaultnodesettings.DialogComponentColorChooser;
 import org.knime.core.node.defaultnodesettings.SettingsModelColor;
 import org.knime.core.node.util.ColumnSelectionPanel;
 import org.knime.core.node.util.DataValueColumnFilter;
+import org.knime.core.node.util.filter.column.DataColumnSpecFilterConfiguration;
+import org.knime.core.node.util.filter.column.DataColumnSpecFilterPanel;
 
 /**
  *
@@ -95,6 +97,12 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
     private final JCheckBox m_generateImageCheckBox;
 
     private final JSpinner m_maxNumRowsSpinner;
+
+    private DataColumnSpecFilterConfiguration m_colSpecFilter = null;
+
+    private DataTableSpec m_tableSpec;
+
+    private final DataColumnSpecFilterPanel m_colFilterPanel;
 
     private final ColumnSelectionPanel m_featureColComboBox;
 
@@ -225,12 +233,13 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
     public PartialDependenceICEPlotNodeDialog() {
 
         m_config = new PartialDependenceICEPlotConfig();
-
         m_generateImageCheckBox = new JCheckBox("Create image at outport");
         m_maxNumRowsSpinner = new JSpinner(
             new SpinnerNumberModel(PartialDependenceICEPlotConfig.DEFAULT_MAX_NUM_ROWS, 1, Integer.MAX_VALUE, 1));
         TitledBorder colSelectionBorder = BorderFactory.createTitledBorder("Choose the feature column (model table)");
         DataValueColumnFilter colSelectionFilter = new DataValueColumnFilter(DoubleValue.class, LongValue.class);
+        m_colFilterPanel = new DataColumnSpecFilterPanel();
+        m_colFilterPanel.setBorder(BorderFactory.createTitledBorder("Features sampled by pre-processor"));
         m_featureColComboBox = new ColumnSelectionPanel(colSelectionBorder, colSelectionFilter, false, false);
         colSelectionBorder = BorderFactory.createTitledBorder("Choose the row ID column (model table)");
         colSelectionFilter = new DataValueColumnFilter(StringValue.class);
@@ -449,35 +458,41 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
     private Component initOptionsPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridwidth = 1;
         constraints.insets = new Insets(5, 5, 5, 5);
-        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.anchor = GridBagConstraints.NORTHWEST;
         constraints.gridx = 0;
         constraints.gridy = 0;
         panel.add(m_generateImageCheckBox, constraints);
-        constraints.gridy++;
-        constraints.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("Maximum number of rows: "), constraints);
-        m_maxNumRowsSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
+        JPanel border = new JPanel(new GridBagLayout());
+        border.setPreferredSize(new Dimension(300, 50));
+        border.setBorder(BorderFactory.createTitledBorder("Maximum number of rows:"));
+        GridBagConstraints c2 = new GridBagConstraints();
+        c2.anchor = GridBagConstraints.NORTHWEST;
+        c2.fill = GridBagConstraints.HORIZONTAL;
+        c2.gridx = 0;
+        c2.gridy = 0;
+        m_maxNumRowsSpinner.setPreferredSize(new Dimension(200, TEXT_FIELD_SIZE));
+        border.add(m_maxNumRowsSpinner, c2);
         constraints.anchor = GridBagConstraints.NORTHEAST;
-        panel.add(m_maxNumRowsSpinner, constraints);
+        panel.add(border, constraints);
         constraints.anchor = GridBagConstraints.NORTHWEST;
+        constraints.gridx = 0;
+        constraints.gridy++;
+        panel.add(m_colFilterPanel, constraints);
         constraints.gridx = 0;
         constraints.gridy++;
         Dimension columnSelectionDimension = new Dimension(300, 50);
-        m_featureColComboBox.setPreferredSize(columnSelectionDimension);
-        panel.add(m_featureColComboBox, constraints);
-        constraints.gridx = 0;
-        constraints.gridy++;
+        m_predictionColComboBox.setPreferredSize(columnSelectionDimension);
+        panel.add(m_predictionColComboBox, constraints);
+//        constraints.gridx = 1;
+        constraints.anchor = GridBagConstraints.NORTHEAST;
         m_rowIDColComboBox.setPreferredSize(columnSelectionDimension);
         panel.add(m_rowIDColComboBox, constraints);
         constraints.gridx = 0;
         constraints.gridy++;
-        m_predictionColComboBox.setPreferredSize(columnSelectionDimension);
-        panel.add(m_predictionColComboBox, constraints);
-        constraints.gridx = 0;
-        constraints.gridy++;
         m_origFeatureColComboBox.setPreferredSize(columnSelectionDimension);
-        panel.add(m_origFeatureColComboBox, constraints);
+//        panel.add(m_origFeatureColComboBox, constraints);
         return panel;
     }
 
@@ -955,12 +970,16 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
             m_config.loadSettingsForDialog(settings, specs[0]);
         } catch (InvalidSettingsException e) {
             throw new NotConfigurableException(
-                "There was a problem configuring the PDP/ICE dialog. Please ensure that your data table"
-                    + " has column domains and use a Domain Caculator Node for proprocessing, if necessary.");
+                "There was a problem configuring the PDP/ICE dialog. Please ensure that your input tables"
+                + " are formatted correctly.");
         }
 
         m_generateImageCheckBox.setSelected(m_config.getGenerateImage());
         m_maxNumRowsSpinner.setValue(m_config.getMaxNumRows());
+        m_colSpecFilter = m_config.getSampledFeatureColumns();
+        m_tableSpec = specs[0];
+        m_colFilterPanel.loadConfiguration(m_colSpecFilter, m_tableSpec);
+        // TODO: update col filter panel
         m_featureColComboBox.update(specs[0], m_config.getFeatureCol(), false);
         m_rowIDColComboBox.update(specs[0], m_config.getRowIDCol(), false);
         m_predictionColComboBox.update(specs[0], m_config.getPredictionCol(), false);
@@ -1039,9 +1058,14 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-
         m_config.setGenerateImage(m_generateImageCheckBox.isSelected());
         m_config.setMaxNumRows((int)m_maxNumRowsSpinner.getValue());
+        m_colFilterPanel.saveConfiguration(m_config.getSampledFeatureColumns());
+        final String[] includedColumns = m_config.getSampledFeatureColumns().applyTo(m_tableSpec).getIncludes();
+        if(includedColumns == null || includedColumns.length < 1) {
+            throw new InvalidSettingsException("You must select at least 1 of the columns that were sampled in the "
+                + "preprocessing node.");
+        }
         m_config.setFeatureCol(m_featureColComboBox.getSelectedColumn());
         m_config.setRowIDCol(m_rowIDColComboBox.getSelectedColumn());
         m_config.setPredictionCol(m_predictionColComboBox.getSelectedColumn());

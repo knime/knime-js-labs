@@ -50,7 +50,9 @@ package org.knime.js.base.node.viz.pdpiceplot;
 
 import java.awt.Color;
 
+import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DoubleValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -60,6 +62,8 @@ import org.knime.core.node.defaultnodesettings.SettingsModelDouble;
 import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.core.node.util.filter.InputFilter;
+import org.knime.core.node.util.filter.column.DataColumnSpecFilterConfiguration;
 
 /**
  *
@@ -86,6 +90,8 @@ public final class PartialDependenceICEPlotConfig {
     static final String CFG_GENERATE_IMAGE = "generateImage";
 
     static final String CFG_MAX_NUM_ROWS = "maxNumRows";
+
+    static final String CFG_SAMPLED_FEATURE_COLUMNS = "sampledFeatureColumns";
 
     static final String CFG_FEATURE_COLUMN = "featureColumn";
 
@@ -238,6 +244,18 @@ public final class PartialDependenceICEPlotConfig {
 
     static final int DEFAULT_MAX_NUM_ROWS = 2500;
 
+    static final DataColumnSpecFilterConfiguration DEFAULT_SAMPLED_FEATURE_COLUMNS =
+        new DataColumnSpecFilterConfiguration(CFG_SAMPLED_FEATURE_COLUMNS, new InputFilter<DataColumnSpec>() {
+
+            @Override
+            public boolean include(final DataColumnSpec name) {
+                if (name == null) {
+                    return false;
+                }
+                return name.getType().isCompatible(DoubleValue.class);
+            }
+        });
+
     static final String DEFAULT_FEATURE_COLUMN = "Feature";
 
     static final String DEFAULT_ROW_ID_COLUMN = "RowID";
@@ -380,7 +398,6 @@ public final class PartialDependenceICEPlotConfig {
 
     static final boolean DEFAULT_ENABLE_ADVANCED_OPTIONS_CONTROLS = false;
 
-
     /*
      * Internal Constants
     */
@@ -407,6 +424,8 @@ public final class PartialDependenceICEPlotConfig {
 
     private SettingsModelIntegerBounded m_maxNumRows =
         new SettingsModelIntegerBounded(CFG_MAX_NUM_ROWS, DEFAULT_MAX_NUM_ROWS, 0, Integer.MAX_VALUE);
+
+    private DataColumnSpecFilterConfiguration m_sampledFeatureColumns = DEFAULT_SAMPLED_FEATURE_COLUMNS;
 
     private SettingsModelString m_featureCol = new SettingsModelString(CFG_FEATURE_COLUMN, DEFAULT_FEATURE_COLUMN);
 
@@ -541,51 +560,51 @@ public final class PartialDependenceICEPlotConfig {
         new SettingsModelBoolean(CFG_SHOW_ZOOM_RESET, DEFAULT_SHOW_ZOOM_RESET);
 
     private SettingsModelBoolean m_enableTitleControls =
-            new SettingsModelBoolean(CFG_ENABLE_TITLE_CONTROLS, DEFAULT_ENABLE_TITLE_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_TITLE_CONTROLS, DEFAULT_ENABLE_TITLE_CONTROLS);
 
     private SettingsModelBoolean m_enableAxisLabelControls =
-            new SettingsModelBoolean(CFG_ENABLE_AXIS_LABEL_CONTROLS, DEFAULT_ENABLE_AXIS_LABEL_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_AXIS_LABEL_CONTROLS, DEFAULT_ENABLE_AXIS_LABEL_CONTROLS);
 
     private SettingsModelBoolean m_enablePDPControls =
-            new SettingsModelBoolean(CFG_ENABLE_PDP_CONTROLS, DEFAULT_ENABLE_PDP_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_PDP_CONTROLS, DEFAULT_ENABLE_PDP_CONTROLS);
 
     private SettingsModelBoolean m_enablePDPMarginControls =
-            new SettingsModelBoolean(CFG_ENABLE_PDP_MARGIN_CONTROLS, DEFAULT_ENABLE_PDP_MARGIN_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_PDP_MARGIN_CONTROLS, DEFAULT_ENABLE_PDP_MARGIN_CONTROLS);
 
     private SettingsModelBoolean m_enableICEControls =
-            new SettingsModelBoolean(CFG_ENABLE_ICE_CONTROLS, DEFAULT_ENABLE_ICE_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_ICE_CONTROLS, DEFAULT_ENABLE_ICE_CONTROLS);
 
     private SettingsModelBoolean m_enableStaticLineControls =
-            new SettingsModelBoolean(CFG_ENABLE_STATIC_LINE_CONTROLS, DEFAULT_ENABLE_STATIC_LINE_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_STATIC_LINE_CONTROLS, DEFAULT_ENABLE_STATIC_LINE_CONTROLS);
 
     private SettingsModelBoolean m_enableDataPointControls =
-            new SettingsModelBoolean(CFG_ENABLE_DATA_POINT_CONTROLS, DEFAULT_ENABLE_DATA_POINT_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_DATA_POINT_CONTROLS, DEFAULT_ENABLE_DATA_POINT_CONTROLS);
 
     private SettingsModelBoolean m_enableSelectionFilterControls =
-            new SettingsModelBoolean(CFG_ENABLE_SELECTION_FILTER_CONTROLS, DEFAULT_ENABLE_SELECTION_FILTER_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_SELECTION_FILTER_CONTROLS, DEFAULT_ENABLE_SELECTION_FILTER_CONTROLS);
 
     private SettingsModelBoolean m_enableSelectionControls =
-            new SettingsModelBoolean(CFG_ENABLE_SELECTION_CONTROLS, DEFAULT_ENABLE_SELECTION_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_SELECTION_CONTROLS, DEFAULT_ENABLE_SELECTION_CONTROLS);
 
     private SettingsModelBoolean m_enableYAxisMarginControls =
-            new SettingsModelBoolean(CFG_ENABLE_Y_AXIS_MARGIN_CONTROLS, DEFAULT_ENABLE_Y_AXIS_MARGIN_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_Y_AXIS_MARGIN_CONTROLS, DEFAULT_ENABLE_Y_AXIS_MARGIN_CONTROLS);
 
     private SettingsModelBoolean m_enableSmartZoomControls =
-            new SettingsModelBoolean(CFG_ENABLE_SMART_ZOOM_CONTROLS, DEFAULT_ENABLE_SMART_ZOOM_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_SMART_ZOOM_CONTROLS, DEFAULT_ENABLE_SMART_ZOOM_CONTROLS);
 
     private SettingsModelBoolean m_enableGridControls =
-            new SettingsModelBoolean(CFG_ENABLE_GRID_CONTROLS, DEFAULT_ENABLE_GRID_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_GRID_CONTROLS, DEFAULT_ENABLE_GRID_CONTROLS);
 
     private SettingsModelBoolean m_enableMouseCrosshairControls =
-            new SettingsModelBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS);
 
     private SettingsModelBoolean m_enableAdvancedOptionsControls =
-            new SettingsModelBoolean(CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS, DEFAULT_ENABLE_ADVANCED_OPTIONS_CONTROLS);
+        new SettingsModelBoolean(CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS, DEFAULT_ENABLE_ADVANCED_OPTIONS_CONTROLS);
 
     private SettingsModelString m_customCSS = new SettingsModelString(CFG_CSS_CUSTOM, DEFAULT_CUSTOM_CSS);
 
-    private SettingsModelBoolean m_runningInView = new SettingsModelBoolean(CFG_RUNNING_IN_VIEW, DEFAULT_RUNNING_IN_VIEW);
-
+    private SettingsModelBoolean m_runningInView =
+        new SettingsModelBoolean(CFG_RUNNING_IN_VIEW, DEFAULT_RUNNING_IN_VIEW);
 
     /**
      * @return HideInWizard
@@ -627,6 +646,20 @@ public final class PartialDependenceICEPlotConfig {
      */
     public void setMaxNumRows(final int maxNumRows) {
         this.m_maxNumRows.setIntValue(maxNumRows);
+    }
+
+    /**
+     * @param featCols
+     */
+    public void setSampledFeatureColumns(final DataColumnSpecFilterConfiguration featCols) {
+        m_sampledFeatureColumns = featCols;
+    }
+
+    /**
+     * @return sampledFeatureColumns
+     */
+    public DataColumnSpecFilterConfiguration getSampledFeatureColumns() {
+        return m_sampledFeatureColumns;
     }
 
     /**
@@ -1627,6 +1660,7 @@ public final class PartialDependenceICEPlotConfig {
         m_hideInWizard.saveSettingsTo(settings);
         m_generateImage.saveSettingsTo(settings);
         m_maxNumRows.saveSettingsTo(settings);
+        m_sampledFeatureColumns.saveConfiguration(settings);
         m_featureCol.saveSettingsTo(settings);
         m_rowIDCol.saveSettingsTo(settings);
         m_predictionCol.saveSettingsTo(settings);
@@ -1704,6 +1738,7 @@ public final class PartialDependenceICEPlotConfig {
         setHideInWizard(settings.getBoolean(CFG_HIDE_IN_WIZARD));
         setGenerateImage(settings.getBoolean(CFG_GENERATE_IMAGE));
         setMaxNumRows(settings.getInt(CFG_MAX_NUM_ROWS));
+        m_sampledFeatureColumns.loadConfigurationInModel(settings);
         setFeatureCol(settings.getString(CFG_FEATURE_COLUMN));
         setRowIDCol(settings.getString(CFG_ROW_ID_COLUMN));
         setPredictionCol(settings.getString(CFG_PREDICTION_COLUMN));
@@ -1782,6 +1817,7 @@ public final class PartialDependenceICEPlotConfig {
         throws InvalidSettingsException {
         setGenerateImage(settings.getBoolean(CFG_GENERATE_IMAGE, DEFAULT_GENERATE_IMAGE));
         setMaxNumRows(settings.getInt(CFG_MAX_NUM_ROWS, DEFAULT_MAX_NUM_ROWS));
+        m_sampledFeatureColumns.loadConfigurationInDialog(settings, spec);
         setFeatureCol(settings.getString(CFG_FEATURE_COLUMN, DEFAULT_FEATURE_COLUMN));
         setRowIDCol(settings.getString(CFG_ROW_ID_COLUMN, DEFAULT_ROW_ID_COLUMN));
         setPredictionCol(settings.getString(CFG_PREDICTION_COLUMN, DEFAULT_PREDICTION_COLUMN));
@@ -1836,19 +1872,29 @@ public final class PartialDependenceICEPlotConfig {
         setEnableDragZoom(settings.getBoolean(CFG_ENABLE_DRAG_ZOOM, DEFAULT_ENABLE_DRAG_ZOOM));
         setShowZoomReset(settings.getBoolean(CFG_SHOW_ZOOM_RESET, DEFAULT_SHOW_ZOOM_RESET));
         setEnableTitleControls(settings.getBoolean(CFG_ENABLE_TITLE_CONTROLS, DEFAULT_ENABLE_TITLE_CONTROLS));
-        setEnableAxisLabelControls(settings.getBoolean(CFG_ENABLE_AXIS_LABEL_CONTROLS, DEFAULT_ENABLE_AXIS_LABEL_CONTROLS));
+        setEnableAxisLabelControls(
+            settings.getBoolean(CFG_ENABLE_AXIS_LABEL_CONTROLS, DEFAULT_ENABLE_AXIS_LABEL_CONTROLS));
         setEnablePDPControls(settings.getBoolean(CFG_ENABLE_PDP_CONTROLS, DEFAULT_ENABLE_PDP_CONTROLS));
-        setEnablePDPMarginControls(settings.getBoolean(CFG_ENABLE_PDP_MARGIN_CONTROLS, DEFAULT_ENABLE_PDP_MARGIN_CONTROLS));
+        setEnablePDPMarginControls(
+            settings.getBoolean(CFG_ENABLE_PDP_MARGIN_CONTROLS, DEFAULT_ENABLE_PDP_MARGIN_CONTROLS));
         setEnableICEControls(settings.getBoolean(CFG_ENABLE_ICE_CONTROLS, DEFAULT_ENABLE_ICE_CONTROLS));
-        setEnableStaticLineControls(settings.getBoolean(CFG_ENABLE_STATIC_LINE_CONTROLS, DEFAULT_ENABLE_STATIC_LINE_CONTROLS));
-        setEnableDataPointControls(settings.getBoolean(CFG_ENABLE_DATA_POINT_CONTROLS, DEFAULT_ENABLE_DATA_POINT_CONTROLS));
-        setEnableSelectionFilterControls(settings.getBoolean(CFG_ENABLE_SELECTION_FILTER_CONTROLS, DEFAULT_ENABLE_SELECTION_FILTER_CONTROLS));
-        setEnableSelectionControls(settings.getBoolean(CFG_ENABLE_SELECTION_CONTROLS, DEFAULT_ENABLE_SELECTION_CONTROLS));
-        setEnableYAxisMarginControls(settings.getBoolean(CFG_ENABLE_Y_AXIS_MARGIN_CONTROLS, DEFAULT_ENABLE_Y_AXIS_MARGIN_CONTROLS));
-        setEnableSmartZoomControls(settings.getBoolean(CFG_ENABLE_SMART_ZOOM_CONTROLS, DEFAULT_ENABLE_SMART_ZOOM_CONTROLS));
+        setEnableStaticLineControls(
+            settings.getBoolean(CFG_ENABLE_STATIC_LINE_CONTROLS, DEFAULT_ENABLE_STATIC_LINE_CONTROLS));
+        setEnableDataPointControls(
+            settings.getBoolean(CFG_ENABLE_DATA_POINT_CONTROLS, DEFAULT_ENABLE_DATA_POINT_CONTROLS));
+        setEnableSelectionFilterControls(
+            settings.getBoolean(CFG_ENABLE_SELECTION_FILTER_CONTROLS, DEFAULT_ENABLE_SELECTION_FILTER_CONTROLS));
+        setEnableSelectionControls(
+            settings.getBoolean(CFG_ENABLE_SELECTION_CONTROLS, DEFAULT_ENABLE_SELECTION_CONTROLS));
+        setEnableYAxisMarginControls(
+            settings.getBoolean(CFG_ENABLE_Y_AXIS_MARGIN_CONTROLS, DEFAULT_ENABLE_Y_AXIS_MARGIN_CONTROLS));
+        setEnableSmartZoomControls(
+            settings.getBoolean(CFG_ENABLE_SMART_ZOOM_CONTROLS, DEFAULT_ENABLE_SMART_ZOOM_CONTROLS));
         setEnableGridControls(settings.getBoolean(CFG_ENABLE_GRID_CONTROLS, DEFAULT_ENABLE_GRID_CONTROLS));
-        setEnableMouseCrosshairControls(settings.getBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS));
-        setEnableAdvancedOptionsControls(settings.getBoolean(CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS, DEFAULT_ENABLE_ADVANCED_OPTIONS_CONTROLS));
+        setEnableMouseCrosshairControls(
+            settings.getBoolean(CFG_ENABLE_MOUSE_CROSSHAIR_CONTROLS, DEFAULT_ENABLE_MOUSE_CROSSHAIR_CONTROLS));
+        setEnableAdvancedOptionsControls(
+            settings.getBoolean(CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS, DEFAULT_ENABLE_ADVANCED_OPTIONS_CONTROLS));
         setCustomCSS(settings.getString(CFG_CSS_CUSTOM, DEFAULT_CUSTOM_CSS));
         setRunningInView(settings.getBoolean(CFG_RUNNING_IN_VIEW, DEFAULT_RUNNING_IN_VIEW));
     }

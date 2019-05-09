@@ -75,7 +75,6 @@ window.pdpiceplotNamespace = (function () {
         this.tempSelected = [];
         this.dataPoints = [];
         this.mouseLocationData = [];
-        this.k = 1;
         this.adjYMax = 0;
         this.adjYMin = 0;
         this._filteredData = null;
