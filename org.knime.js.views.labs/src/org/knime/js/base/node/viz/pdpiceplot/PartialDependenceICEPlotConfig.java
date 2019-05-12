@@ -72,7 +72,7 @@ import org.knime.core.node.util.filter.column.DataColumnSpecFilterConfiguration;
 public final class PartialDependenceICEPlotConfig {
 
     /*
-     * Constants unavailable to user
+     * Constants unavailable to user and internal constants
      */
     static final String SELECTED_COLUMN_NAME = "Selected";
 
@@ -81,6 +81,20 @@ public final class PartialDependenceICEPlotConfig {
     static final String CFG_CSS_CUSTOM = "customCSS";
 
     static final String CFG_RUNNING_IN_VIEW = "runningInView";
+
+    static final String DEFAULT_CUSTOM_CSS = "";
+
+    static final int MODEL_OUTPUT_TABLE_INPORT = 0;
+
+    static final int ORIGINAL_DATA_TABLE_INPORT = 1;
+
+    static final int COLOR_TABLE_INPORT = 2;
+
+    static final String COLOR_STRING_PREFIX = "rgba(";
+
+    static final Boolean DEFAULT_RUNNING_IN_VIEW = false;
+
+    static final String CFG_FEATURE_COLUMN_STRINGS = "featureColumnStrings";
 
     /*
      * Execution Static CFG Keys
@@ -93,13 +107,9 @@ public final class PartialDependenceICEPlotConfig {
 
     static final String CFG_SAMPLED_FEATURE_COLUMNS = "sampledFeatureColumns";
 
-    static final String CFG_FEATURE_COLUMN = "featureColumn";
-
     static final String CFG_ROW_ID_COLUMN = "rowIDColumn";
 
     static final String CFG_PREDICTION_COLUMN = "predictionColumn";
-
-    static final String CFG_ORIGINAL_FEATURE_COLUMN = "originalFeatureCol";
 
     /*
      * PDP/ICE Static CFG Keys
@@ -256,13 +266,9 @@ public final class PartialDependenceICEPlotConfig {
             }
         });
 
-    static final String DEFAULT_FEATURE_COLUMN = "Feature";
-
     static final String DEFAULT_ROW_ID_COLUMN = "RowID";
 
     static final String DEFAULT_PREDICTION_COLUMN = "prediction";
-
-    static final String DEFAULT_ORIGINAL_FEATURE_COLUMN = "";
 
     /*
      * PDP/ICE Default Values
@@ -399,21 +405,6 @@ public final class PartialDependenceICEPlotConfig {
     static final boolean DEFAULT_ENABLE_ADVANCED_OPTIONS_CONTROLS = false;
 
     /*
-     * Internal Constants
-    */
-    static final String DEFAULT_CUSTOM_CSS = "";
-
-    static final int MODEL_OUTPUT_TABLE_INPORT = 0;
-
-    static final int ORIGINAL_DATA_TABLE_INPORT = 1;
-
-    static final int COLOR_TABLE_INPORT = 2;
-
-    static final String COLOR_STRING_PREFIX = "rgba(";
-
-    static final Boolean DEFAULT_RUNNING_IN_VIEW = false;
-
-    /*
      * INTERNAL FIELDS
      *
      *
@@ -427,15 +418,10 @@ public final class PartialDependenceICEPlotConfig {
 
     private DataColumnSpecFilterConfiguration m_sampledFeatureColumns = DEFAULT_SAMPLED_FEATURE_COLUMNS;
 
-    private SettingsModelString m_featureCol = new SettingsModelString(CFG_FEATURE_COLUMN, DEFAULT_FEATURE_COLUMN);
-
     private SettingsModelString m_rowIDCol = new SettingsModelString(CFG_ROW_ID_COLUMN, DEFAULT_ROW_ID_COLUMN);
 
     private SettingsModelString m_predictionCol =
         new SettingsModelString(CFG_PREDICTION_COLUMN, DEFAULT_PREDICTION_COLUMN);
-
-    private SettingsModelString m_origFeatureCol =
-        new SettingsModelString(CFG_ORIGINAL_FEATURE_COLUMN, DEFAULT_ORIGINAL_FEATURE_COLUMN);
 
     private SettingsModelBoolean m_showPDP = new SettingsModelBoolean(CFG_SHOW_PDP, DEFAULT_SHOW_PDP);
 
@@ -476,10 +462,6 @@ public final class PartialDependenceICEPlotConfig {
 
     private SettingsModelDoubleBounded m_dataPointAlphaVal =
         new SettingsModelDoubleBounded(CFG_DATA_POINT_ALPHA_VAL, DEFAULT_DATA_POINT_ALPHA_VAL, 0, 1);
-
-    private SettingsModelDouble m_xAxisMin = new SettingsModelDouble(CFG_X_AXIS_MIN, DEFAULT_X_AXIS_MIN);
-
-    private SettingsModelDouble m_xAxisMax = new SettingsModelDouble(CFG_X_AXIS_MAX, DEFAULT_X_AXIS_MAX);
 
     private SettingsModelDouble m_yAxisMin = new SettingsModelDouble(CFG_Y_AXIS_MIN, DEFAULT_Y_AXIS_MIN);
 
@@ -663,20 +645,6 @@ public final class PartialDependenceICEPlotConfig {
     }
 
     /**
-     * @return featureCol
-     */
-    public String getFeatureCol() {
-        return m_featureCol.getStringValue();
-    }
-
-    /**
-     * @param featureCol
-     */
-    public void setFeatureCol(final String featureCol) {
-        this.m_featureCol.setStringValue(featureCol);
-    }
-
-    /**
      * @return rowIDCol
      */
     public String getRowIDCol() {
@@ -702,20 +670,6 @@ public final class PartialDependenceICEPlotConfig {
      */
     public void setPredictionCol(final String predictionCol) {
         this.m_predictionCol.setStringValue(predictionCol);
-    }
-
-    /**
-     * @return origFeatureCol
-     */
-    public String getOrigFeatureCol() {
-        return m_origFeatureCol.getStringValue();
-    }
-
-    /**
-     * @param origFeatureCol
-     */
-    public void setOrigFeatureCol(final String origFeatureCol) {
-        this.m_origFeatureCol.setStringValue(origFeatureCol);
     }
 
     /**
@@ -926,34 +880,6 @@ public final class PartialDependenceICEPlotConfig {
      */
     public void setDataPointAlphaVal(final double dataPointAlphaVal) {
         this.m_dataPointAlphaVal.setDoubleValue(dataPointAlphaVal);
-    }
-
-    /**
-     * @return xAxisMin
-     */
-    public Double getXAxisMin() {
-        return this.m_xAxisMin.getDoubleValue();
-    }
-
-    /**
-     * @param xAxisMin
-     */
-    public void setXAxisMin(final double xAxisMin) {
-        this.m_xAxisMin.setDoubleValue(xAxisMin);
-    }
-
-    /**
-     * @return xAxisMax
-     */
-    public Double getXAxisMax() {
-        return this.m_xAxisMax.getDoubleValue();
-    }
-
-    /**
-     * @param xAxisMax
-     */
-    public void setXAxisMax(final double xAxisMax) {
-        this.m_xAxisMax.setDoubleValue(xAxisMax);
     }
 
     /**
@@ -1661,10 +1587,8 @@ public final class PartialDependenceICEPlotConfig {
         m_generateImage.saveSettingsTo(settings);
         m_maxNumRows.saveSettingsTo(settings);
         m_sampledFeatureColumns.saveConfiguration(settings);
-        m_featureCol.saveSettingsTo(settings);
         m_rowIDCol.saveSettingsTo(settings);
         m_predictionCol.saveSettingsTo(settings);
-        m_origFeatureCol.saveSettingsTo(settings);
         m_showPDP.saveSettingsTo(settings);
         settings.addString(CFG_PDP_COLOR, getRGBAStringFromColor(m_PDPColor.getColorValue()));
         m_PDPLineWeight.saveSettingsTo(settings);
@@ -1680,8 +1604,6 @@ public final class PartialDependenceICEPlotConfig {
         settings.addString(CFG_DATA_POINT_COLOR, getRGBAStringFromColor(m_dataPointColor.getColorValue()));
         m_dataPointWeight.saveSettingsTo(settings);
         m_dataPointAlphaVal.saveSettingsTo(settings);
-        m_xAxisMin.saveSettingsTo(settings);
-        m_xAxisMax.saveSettingsTo(settings);
         m_yAxisMin.saveSettingsTo(settings);
         m_yAxisMax.saveSettingsTo(settings);
         m_xAxisLabel.saveSettingsTo(settings);
@@ -1739,10 +1661,8 @@ public final class PartialDependenceICEPlotConfig {
         setGenerateImage(settings.getBoolean(CFG_GENERATE_IMAGE));
         setMaxNumRows(settings.getInt(CFG_MAX_NUM_ROWS));
         m_sampledFeatureColumns.loadConfigurationInModel(settings);
-        setFeatureCol(settings.getString(CFG_FEATURE_COLUMN));
         setRowIDCol(settings.getString(CFG_ROW_ID_COLUMN));
         setPredictionCol(settings.getString(CFG_PREDICTION_COLUMN));
-        setOrigFeatureCol(settings.getString(CFG_ORIGINAL_FEATURE_COLUMN));
         setShowPDP(settings.getBoolean(CFG_SHOW_PDP));
         setPDPColor(getColorFromString(settings.getString(CFG_PDP_COLOR)));
         setPDPLineWeight(settings.getDouble(CFG_PDP_LINE_WEIGHT));
@@ -1758,8 +1678,6 @@ public final class PartialDependenceICEPlotConfig {
         setDataPointColor(getColorFromString(settings.getString(CFG_DATA_POINT_COLOR)));
         setDataPointWeight(settings.getDouble(CFG_DATA_POINT_WEIGHT));
         setDataPointAlphaVal(settings.getDouble(CFG_DATA_POINT_ALPHA_VAL));
-        setXAxisMin(settings.getDouble(CFG_X_AXIS_MIN));
-        setXAxisMax(settings.getDouble(CFG_X_AXIS_MAX));
         setYAxisMin(settings.getDouble(CFG_Y_AXIS_MIN));
         setYAxisMax(settings.getDouble(CFG_Y_AXIS_MAX));
         setXAxisLabel(settings.getString(CFG_X_AXIS_LABEL));
@@ -1818,10 +1736,8 @@ public final class PartialDependenceICEPlotConfig {
         setGenerateImage(settings.getBoolean(CFG_GENERATE_IMAGE, DEFAULT_GENERATE_IMAGE));
         setMaxNumRows(settings.getInt(CFG_MAX_NUM_ROWS, DEFAULT_MAX_NUM_ROWS));
         m_sampledFeatureColumns.loadConfigurationInDialog(settings, spec);
-        setFeatureCol(settings.getString(CFG_FEATURE_COLUMN, DEFAULT_FEATURE_COLUMN));
         setRowIDCol(settings.getString(CFG_ROW_ID_COLUMN, DEFAULT_ROW_ID_COLUMN));
         setPredictionCol(settings.getString(CFG_PREDICTION_COLUMN, DEFAULT_PREDICTION_COLUMN));
-        setOrigFeatureCol(settings.getString(CFG_ORIGINAL_FEATURE_COLUMN, DEFAULT_ORIGINAL_FEATURE_COLUMN));
         setShowPDP(settings.getBoolean(CFG_SHOW_PDP, DEFAULT_SHOW_PDP));
         setPDPColor(getColorFromString(settings.getString(CFG_PDP_COLOR) == null
             ? getRGBAStringFromColor(DEFAULT_PDP_COLOR) : settings.getString(CFG_PDP_COLOR)));

@@ -48,22 +48,29 @@
  */
 package org.knime.js.base.node.viz.pdpiceplot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.knime.base.data.xml.SvgCell;
 import org.knime.core.data.DataCell;
+import org.knime.core.data.DataColumnDomain;
+import org.knime.core.data.DataColumnDomainCreator;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
-import org.knime.core.data.StringValue;
+import org.knime.core.data.collection.CollectionCellFactory;
+import org.knime.core.data.collection.ListCell;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
+import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.BufferedDataTableHolder;
 import org.knime.core.node.CanceledExecutionException;
@@ -100,17 +107,27 @@ public class PartialDependenceICEPlotNodeModel extends
 
     private final PartialDependenceICEPlotConfig m_config;
 
-    private final PartialDependenceICEJSONBuilder m_jsonBuilder;
-
     private BufferedDataTable m_modelOutputTable;
 
     private BufferedDataTable m_originalDataTable;
 
-    private int m_featureColInd;
+    private String[] m_sampledFeatures;
+
+    private Integer[] m_featureColModelIndicies;
+
+    private Integer[] m_featureColOrigIndicies;
+
+    private Double[][] m_featureColDomains;
+
+    private String m_rowIDColName;
 
     private int m_rowIDColInd;
 
+    private String m_predictionColName;
+
     private int m_predictionColInd;
+
+    private Double[] m_predictionColDomain;
 
     /**
      * @param viewName
@@ -119,7 +136,6 @@ public class PartialDependenceICEPlotNodeModel extends
         super(new PortType[]{BufferedDataTable.TYPE, BufferedDataTable.TYPE},
             new PortType[]{ImagePortObject.TYPE, BufferedDataTable.TYPE}, viewName);
         m_config = new PartialDependenceICEPlotConfig();
-        m_jsonBuilder = new PartialDependenceICEJSONBuilder();
     }
 
     /**
@@ -131,104 +147,126 @@ public class PartialDependenceICEPlotNodeModel extends
         DataTableSpec modelOutputSpec =
             (DataTableSpec)inSpecs[PartialDependenceICEPlotConfig.MODEL_OUTPUT_TABLE_INPORT];
         DataTableSpec originalDataTableSpec =
-                (DataTableSpec)inSpecs[PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT];
+            (DataTableSpec)inSpecs[PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT];
 
-        if(modelOutputSpec == null || originalDataTableSpec == null) {
+        if (modelOutputSpec == null || originalDataTableSpec == null) {
             throw new InvalidSettingsException("One or more tableSpecs is missing from the tables provided."
                 + " Please provide properly formatted data tables to this node.");
         }
 
-        // generic prediction table checking
-        int colIndex = 0;
-        int numNumericColumns = 0;
-        boolean hasPotentialRowIDColumn = false;
-        boolean hasDomains = true;
-        boolean hasFeatureColumn = false;
-        boolean hasRowIDColumn = false;
-        boolean hasPredictionColumn = false;
-        for (DataColumnSpec colSpec : modelOutputSpec) {
-            if (colSpec.getType().isCompatible(DoubleValue.class)) {
-                numNumericColumns++;
-                if(colSpec.getName().equals(m_config.getFeatureCol())) {
-                    if(colSpec.getName().equals("feature")) {
-                        hasFeatureColumn = true;
-                    }
-                    if (colSpec.getDomain() == null) {
-                        hasDomains = false;
-                    }
-                    m_featureColInd = colIndex;
-                }else if(colSpec.getName().equals(m_config.getPredictionCol())) {
-                    if(colSpec.getName().equals("prediction")) {
-                        hasPredictionColumn = true;
-                    }
-                    if (colSpec.getDomain() == null) {
-                        hasDomains = false;
-                    }
-                    m_predictionColInd = colIndex;
-                }
-            } else if (colSpec.getType().isCompatible(StringValue.class)) {
-                hasPotentialRowIDColumn = true;
-                if (colSpec.getName().equals(m_config.getRowIDCol())) {
-                    if(colSpec.getName().equals("RowID")){
-                        hasRowIDColumn = true;
-                    }
-                    m_rowIDColInd = colIndex;
-                }
+        //set internal fields
+        m_sampledFeatures = m_config.getSampledFeatureColumns().applyTo(modelOutputSpec).getIncludes();
+        m_rowIDColName = m_config.getRowIDCol();
+        m_predictionColName = m_config.getPredictionCol();
+        InvalidSettingsException missingDomainException = new InvalidSettingsException("The columns selected "
+            + "do not have domains. Please make sure the Partial Dependence/ICE Plot Pre-processing node was used to"
+            + " before applying the model to the dataset.");
+
+        //check validity of selected "sample" columns
+        if (m_sampledFeatures == null || m_sampledFeatures.length < 1) {
+            throw new InvalidSettingsException("The model output table provided does not contain any numeric columns");
+        }
+
+        int numFeatureCols = m_sampledFeatures.length;
+        m_featureColModelIndicies = new Integer[numFeatureCols];
+        m_featureColOrigIndicies = new Integer[numFeatureCols];
+        m_featureColDomains = new Double[numFeatureCols][2];
+
+        if (m_rowIDColName == null) {
+            throw new InvalidSettingsException("Please choose the correct RowID column from the model output table");
+        }
+
+        if (m_predictionColName == null) {
+            throw new InvalidSettingsException(
+                "Please choose the correct Prediction column from the model output table");
+        }
+
+        m_rowIDColInd = modelOutputSpec.findColumnIndex(m_rowIDColName);
+        m_predictionColInd = modelOutputSpec.findColumnIndex(m_predictionColName);
+
+        //get proper information about EACH chosen "sampled" feature
+        int count = 0;
+
+        for (String sampFeat : m_sampledFeatures) {
+
+            //ensure the prediction column hasn't been chosen for a feature
+            if (sampFeat.equals(m_predictionColName)) {
+                throw new InvalidSettingsException(
+                    "You cannot include the prediction column as a sampled feature. Please "
+                        + "move the prediction column to the excluded panel.");
             }
-            colIndex++;
-        }
 
-        if (numNumericColumns < 2) {
-            throw new InvalidSettingsException(
-                "The processed model table you provided to the node does not appear to have both a"
-                    + " feature and prediction column. Please ensure that you have used the PCP/ICE pre-processor node"
-                    + "and provided the correct output table.");
-        }
+            DataColumnSpec origTableColSpec = originalDataTableSpec.getColumnSpec(sampFeat);
+            int origTableColInd = originalDataTableSpec.findColumnIndex(sampFeat);
 
-        if (!hasPotentialRowIDColumn) {
-            throw new InvalidSettingsException(
-                "The processed model table you provided to the node does not appear to have a"
-                    + " RowID column. Please ensure that you have used the PCP/ICE pre-processor node"
-                    + "and provided the correct output table.");
-        }
+            DataColumnSpec modelTableColSpec = modelOutputSpec.getColumnSpec(sampFeat);
+            int modelTableColInd = modelOutputSpec.findColumnIndex(sampFeat);
+            DataColumnDomain featureDomain = modelTableColSpec.getDomain();
 
-        if (!hasDomains) {
-            throw new InvalidSettingsException(
-                "The processed model table you provided to the node does not appear to have"
-                    + " domains. Please ensure that the table has domains before executing with this node.");
-        }
+            double colLowerBound;
+            double colUpperBound;
 
-        if (!hasFeatureColumn || !hasRowIDColumn || !hasPredictionColumn) {
-            setWarningMessage("Execution will be slower because the data provided does not match the pre-processed format.");
-        }
-
-        if (hasFeatureColumn && hasRowIDColumn && hasPredictionColumn) {
-            m_jsonBuilder.setHasCorrectColumns(true);
-        }
-
-        numNumericColumns = 0;
-        for (DataColumnSpec colSpec : originalDataTableSpec) {
-            if (colSpec.getType().isCompatible(DoubleValue.class)) {
-                numNumericColumns++;
+            //verify no table manipulation has occurred to either table prior to processing
+            if (origTableColSpec == null || origTableColInd < 0) {
+                throw new InvalidSettingsException("The selected features must exist in the original data table. "
+                    + "Please ensure that the model table has not been modified and you have selected the correct "
+                    + "features in the feature selection panel");
             }
+
+            //being strict about domains can catch early signs of improper pre-processing
+            if (featureDomain == null || !featureDomain.hasBounds() || featureDomain.getLowerBound().isMissing()
+                || featureDomain.getUpperBound().isMissing()
+                || !featureDomain.getLowerBound().getType().isCompatible(DoubleValue.class)
+                || !featureDomain.getUpperBound().getType().isCompatible(DoubleValue.class)) {
+                throw missingDomainException;
+            }
+
+            try {
+                colLowerBound = Double.valueOf(featureDomain.getLowerBound().toString());
+                colUpperBound = Double.valueOf(featureDomain.getUpperBound().toString());
+            } catch (NullPointerException e) {
+                throw missingDomainException;
+            }
+
+            //collect proper information for internal fields
+            m_featureColModelIndicies[count] = modelTableColInd;
+            m_featureColOrigIndicies[count] = origTableColInd;
+            m_featureColDomains[count] = new Double[]{colLowerBound, colUpperBound};
+
+            count++;
         }
 
-        if (numNumericColumns < 2) {
-            throw new InvalidSettingsException(
-                "The data table you provided at the InPort 2 to the node does not appear to be correct."
-                    + " Data being processed and visualized by this node should contain two or more numeric columns which correspond to a "
-                    + "feature (x-axis) and a prediction (y-axis). Please check that you are using the same data table as was used to create "
-                    + "the model table at InPort 1.");
+        //get proper information about chosen prediction column
+        DataColumnDomain predictionDomain = modelOutputSpec.getColumnSpec(m_predictionColName).getDomain();
+        double predictionLowerBound;
+        double predictionUpperBound;
+
+        if (predictionDomain == null || !predictionDomain.hasBounds() || predictionDomain.getLowerBound().isMissing()
+            || predictionDomain.getUpperBound().isMissing()
+            || !predictionDomain.getLowerBound().getType().isCompatible(DoubleValue.class)
+            || !predictionDomain.getUpperBound().getType().isCompatible(DoubleValue.class)) {
+            throw missingDomainException;
         }
+
+        try {
+            predictionLowerBound = Double.valueOf(predictionDomain.getLowerBound().toString());
+            predictionUpperBound = Double.valueOf(predictionDomain.getUpperBound().toString());
+        } catch (NullPointerException e) {
+            throw missingDomainException;
+        }
+
+        m_predictionColDomain = new Double[]{predictionLowerBound, predictionUpperBound};
 
         DataTableSpec outTableSpec = originalDataTableSpec;
+        PortObjectSpec imageSpec = InactiveBranchPortObjectSpec.INSTANCE;
 
+        //modify outgoing spec if column will be appended
         if (m_config.getEnableSelection()) {
             ColumnRearranger columnRearranger = createColumnAppender(originalDataTableSpec, null);
             outTableSpec = columnRearranger.createSpec();
         }
 
-        PortObjectSpec imageSpec = InactiveBranchPortObjectSpec.INSTANCE;
+        //modify outgoing spec if image will be generated
         if (generateImage()) {
             imageSpec = new ImagePortObjectSpec(SvgCell.TYPE);
         }
@@ -236,21 +274,22 @@ public class PartialDependenceICEPlotNodeModel extends
         return new PortObjectSpec[]{imageSpec, outTableSpec};
     }
 
-
-
     /**
      * called if selection is enabled to create the "Selected" column
+     *
      * @param spec
      * @param selectionList
      * @return ColumnRearranger
      */
     private ColumnRearranger createColumnAppender(final DataTableSpec spec, final Collection<String> selectionList) {
+
         String selectedColName = PartialDependenceICEPlotConfig.SELECTED_COLUMN_NAME;
         selectedColName = DataTableSpec.getUniqueColumnName(spec, selectedColName);
         DataColumnSpec selectedColumnSpec =
             new DataColumnSpecCreator(selectedColName, DataType.getType(BooleanCell.class)).createSpec();
         ColumnRearranger colRearranger = new ColumnRearranger(spec);
         SingleCellFactory fac = new SingleCellFactory(selectedColumnSpec) {
+
             private int m_rowIndex = 0;
 
             @Override
@@ -266,6 +305,7 @@ public class PartialDependenceICEPlotNodeModel extends
                 return BooleanCell.FALSE;
             }
         };
+
         colRearranger.append(fac);
         return colRearranger;
     }
@@ -304,87 +344,6 @@ public class PartialDependenceICEPlotNodeModel extends
      * {@inheritDoc}
      */
     @Override
-    protected void performExecuteCreateView(final PortObject[] inData, final ExecutionContext exec) throws Exception {
-        synchronized (getLock()) {
-            setInternalTables(new BufferedDataTable[]{
-                (BufferedDataTable)inData[PartialDependenceICEPlotConfig.MODEL_OUTPUT_TABLE_INPORT],
-                (BufferedDataTable)inData[PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT]});
-            PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
-            if (viewRepresentation.getDataTable() == null) {
-                copyConfigToView(m_modelOutputTable.getDataTableSpec());
-                viewRepresentation.setDataTable(createJSONDataTable(exec));
-            }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected PortObject[] performExecuteCreatePortObjects(final PortObject svgImageFromView,
-        final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
-        BufferedDataTable outTable = m_originalDataTable;
-        synchronized (getLock()) {
-            PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
-
-            viewRepresentation.setRunningInView(true);
-            PartialDependenceICEPlotViewValue viewValue = getViewValue();
-            if (m_config.getEnableSelection()) {
-                Collection<String> selectedList = null;
-                if (viewValue != null && viewValue.getSelected() != null) {
-                    selectedList = Arrays.asList(viewValue.getSelected());
-                }
-                ColumnRearranger colRearranger =
-                    createColumnAppender(m_originalDataTable.getDataTableSpec(), selectedList);
-                outTable = exec.createColumnRearrangeTable(m_originalDataTable, colRearranger, exec);
-            }
-        }
-        exec.setProgress(1);
-        return new PortObject[]{svgImageFromView, outTable};
-    }
-
-    /**
-     * @param exec
-     * @return JSONDataTable
-     */
-    private JSONDataTable createJSONDataTable(final ExecutionContext exec) throws CanceledExecutionException {
-
-        if (m_config.getMaxNumRows() < m_originalDataTable.size()) {
-            String message = "Only the first " + m_config.getMaxNumRows() + " rows are displayed.";
-            setWarningMessage(message);
-            if (m_config.getShowWarnings()) {
-                getViewRepresentation().getJSONWarnings().setWarningMessage(message, ROW_LIMITATION_WARNING_ID_STRING);
-            }
-        }
-        JSONDataTable jsonDataTable = null;
-        try {
-            jsonDataTable = m_jsonBuilder.setDataTables(m_originalDataTable, m_modelOutputTable)
-                    .setColumnIndicies(m_featureColInd, m_rowIDColInd, m_predictionColInd)
-                    .setMaxRows(m_config.getMaxNumRows())
-                    .setOrigFeatureColName(m_config.getOrigFeatureCol())
-                    .build(exec);
-            if(jsonDataTable != null && m_jsonBuilder.getWarningMessage().size() > 0) {
-                for(String message : m_jsonBuilder.getWarningMessage()) {
-                    setWarningMessage(message);
-                }
-            }
-        }catch (CanceledExecutionException e){
-            throw new CanceledExecutionException("An error occurred while converting this table to JSON: " + e.getMessage());
-        } catch (Exception e) {
-            LOGGER.info("The table provided from the model was altered before being passed to the Partial Dependence/ICE plot node."
-                    + " Please ensure that the sampled output is ordered by RowID and by sample RowID. If you altered the order of the data"
-                    + " output by the model, this is likely the cause of this failed execution. Please try re-ordering the Data Table or "
-                    + "providing the original output from the model.");
-            throw new CanceledExecutionException("The model output table has been illegally modified prior to execution."
-                    + " Please see KNIME Log for more details.");
-        }
-        return jsonDataTable;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     protected void performReset() {
         m_modelOutputTable = null;
         m_originalDataTable = null;
@@ -401,7 +360,6 @@ public class PartialDependenceICEPlotNodeModel extends
             } catch (InvalidSettingsException e) {
                 setWarningMessage("Your settings may not have been saved: " + e.getMessage());
             }
-
         }
     }
 
@@ -476,7 +434,6 @@ public class PartialDependenceICEPlotNodeModel extends
      */
     @Override
     public ValidationError validateViewValue(final PartialDependenceICEPlotViewValue viewContent) {
-        // needed because of AbstractSVGWizard
         return null;
     }
 
@@ -485,7 +442,7 @@ public class PartialDependenceICEPlotNodeModel extends
      */
     @Override
     public void saveCurrentValue(final NodeSettingsWO content) {
-     // needed because of AbstractSVGWizard
+        // needed because of AbstractSVGWizard
     }
 
     /**
@@ -513,6 +470,120 @@ public class PartialDependenceICEPlotNodeModel extends
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public JSONLayoutViewContent getLayoutTemplate() {
+        JSONLayoutViewContent template = new JSONLayoutViewContent();
+        if (m_config.getResizeToFill()) {
+            template.setResizeMethod(ResizeMethod.ASPECT_RATIO_16by9);
+        } else {
+            template.setResizeMethod(ResizeMethod.VIEW_TAGGED_ELEMENT);
+        }
+        return template;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void performExecuteCreateView(final PortObject[] inData, final ExecutionContext exec) throws Exception {
+        synchronized (getLock()) {
+
+            setInternalTables(new BufferedDataTable[]{
+                (BufferedDataTable)inData[PartialDependenceICEPlotConfig.MODEL_OUTPUT_TABLE_INPORT],
+                (BufferedDataTable)inData[PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT]});
+            PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
+
+            if (viewRepresentation.getDataTable() == null) {
+                copyConfigToView(m_modelOutputTable.getDataTableSpec());
+                viewRepresentation.setDataTable(createJSONDataTable(exec));
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected PortObject[] performExecuteCreatePortObjects(final PortObject svgImageFromView,
+        final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
+
+        BufferedDataTable outTable = m_originalDataTable;
+
+        synchronized (getLock()) {
+
+            PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
+            PartialDependenceICEPlotViewValue viewValue = getViewValue();
+            Collection<String> selectedList = null;
+
+            viewRepresentation.setRunningInView(true);
+
+            if (m_config.getEnableSelection()) {
+
+                if (viewValue != null && viewValue.getSelected() != null) {
+                    selectedList = Arrays.asList(viewValue.getSelected());
+                }
+
+                ColumnRearranger colRearranger =
+                    createColumnAppender(m_originalDataTable.getDataTableSpec(), selectedList);
+
+                outTable = exec.createColumnRearrangeTable(m_originalDataTable, colRearranger, exec);
+            }
+        }
+
+        exec.setProgress(1);
+        return new PortObject[]{svgImageFromView, outTable};
+    }
+
+    /**
+     * @param exec
+     * @return JSONDataTable
+     */
+    private JSONDataTable createJSONDataTable(final ExecutionContext exec) throws CanceledExecutionException {
+
+        if (m_config.getMaxNumRows() < m_originalDataTable.size()) {
+            String message = "Only the first " + m_config.getMaxNumRows() + " rows are displayed.";
+            setWarningMessage(message);
+
+            if (m_config.getShowWarnings()) {
+                getViewRepresentation().getJSONWarnings().setWarningMessage(message, ROW_LIMITATION_WARNING_ID_STRING);
+            }
+        }
+
+        DataTableSpec sampleCollectionsTableSpec = new DataTableSpec(sampleColSpecFactory());
+        BufferedDataTable collectionTable = createCollectionTable(sampleCollectionsTableSpec, exec);
+        BufferedDataTable newDataTable = exec.createJoinedTable(m_originalDataTable, collectionTable, exec);
+
+        JSONDataTable jsonDataTable = JSONDataTable.newBuilder().setDataTable(newDataTable)
+            .setId(getTableId(PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT)).setFirstRow(1)
+            .setMaxRows(m_config.getMaxNumRows()).build(exec);
+
+        return jsonDataTable;
+    }
+
+    private DataColumnSpec[] sampleColSpecFactory() {
+        DataColumnSpec[] colSpecs = new DataColumnSpec[m_sampledFeatures.length];
+
+        for (int i = 0; i < m_sampledFeatures.length; i++) {
+            String newColName = m_sampledFeatures[i] + "_model";
+            DataColumnSpecCreator colSpecCreator = new DataColumnSpecCreator(newColName,
+                ListCell.getCollectionType(ListCell.getCollectionType(DoubleCell.TYPE)));
+            DataColumnDomainCreator colDomainCreator = new DataColumnDomainCreator();
+            DataCell lowerBound = new DoubleCell(m_featureColDomains[i][0]);
+            DataCell upperBound = new DoubleCell(m_featureColDomains[i][1]);
+
+            colDomainCreator.setLowerBound(lowerBound);
+            colDomainCreator.setUpperBound(upperBound);
+            colSpecCreator.setDomain(colDomainCreator.createDomain());
+
+            colSpecs[i] = colSpecCreator.createSpec();
+        }
+
+        return colSpecs;
+    }
+
+    /**
      * applies changes made in the dialog to the ViewRepresentation model and creates the internal settings for the
      * ViewValue model which will be accessible from the interactive view
      */
@@ -520,7 +591,7 @@ public class PartialDependenceICEPlotNodeModel extends
         PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
         viewRepresentation.setMaxNumRows(m_config.getMaxNumRows());
         viewRepresentation.setGenerateImage(m_config.getGenerateImage());
-        viewRepresentation.setFeatureCol(m_config.getFeatureCol());
+        viewRepresentation.setSampledFeatureColumns(m_sampledFeatures);
         viewRepresentation.setRowIDCol(m_config.getRowIDCol());
         viewRepresentation.setPredictionCol(m_config.getPredictionCol());
         viewRepresentation.setViewWidth(m_config.getViewWidth());
@@ -564,7 +635,8 @@ public class PartialDependenceICEPlotNodeModel extends
             viewValue.setICEWeight(m_config.getICEWeight());
             viewValue.setICEAlphaVal(m_config.getICEAlphaVal());
             viewValue.setShowDataPoints(m_config.getShowDataPoints());
-            viewValue.setDataPointColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getDataPointColor()));
+            viewValue
+                .setDataPointColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getDataPointColor()));
             viewValue.setDataPointWeight(m_config.getDataPointWeight());
             viewValue.setDataPointAlphaVal(m_config.getDataPointAlphaVal());
             viewValue.setXAxisLabel(m_config.getXAxisLabel());
@@ -586,10 +658,8 @@ public class PartialDependenceICEPlotNodeModel extends
             viewValue
                 .setDataAreaColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getDataAreaColor()));
             viewValue.setGridColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getGridColor()));
-            viewValue.setXAxisMin(getMinFromCol(spec, m_config.getFeatureCol()));
-            viewValue.setXAxisMax(getMaxFromCol(spec, m_config.getFeatureCol()));
-            viewValue.setYAxisMin(getMinFromCol(spec, m_config.getPredictionCol()));
-            viewValue.setYAxisMax(getMaxFromCol(spec, m_config.getPredictionCol()));
+            viewValue.setYAxisMin(m_predictionColDomain[0]);
+            viewValue.setYAxisMax(m_predictionColDomain[1]);
             viewValue.setYAxisMargin(m_config.getYAxisMargin());
             viewValue.setSelected(new String[0]);
         }
@@ -597,9 +667,10 @@ public class PartialDependenceICEPlotNodeModel extends
 
     /**
      * applies changes made in the interactive view to the internal node settings
+     *
      * @throws InvalidSettingsException
      */
-    private void copyValueToConfig() throws InvalidSettingsException{
+    private void copyValueToConfig() throws InvalidSettingsException {
         PartialDependenceICEPlotViewValue viewValue = getViewValue();
         m_config.setShowPDP(viewValue.getShowPDP());
         m_config.setPDPLineWeight(viewValue.getPDPLineWeight());
@@ -615,9 +686,7 @@ public class PartialDependenceICEPlotNodeModel extends
         m_config.setDataPointAlphaVal(viewValue.getDataPointAlphaVal());
         m_config.setXAxisLabel(viewValue.getXAxisLabel());
         m_config.setYAxisLabel(viewValue.getYAxisLabel());
-        m_config.setXAxisMin(viewValue.getXAxisMin());
-        m_config.setYAxisMax(viewValue.getYAxisMax());
-        m_config.setXAxisMin(viewValue.getXAxisMin());
+        m_config.setYAxisMin(viewValue.getYAxisMin());
         m_config.setYAxisMax(viewValue.getYAxisMax());
         m_config.setYAxisMargin(viewValue.getYAxisMargin());
         m_config.setChartTitle(viewValue.getChartTitle());
@@ -635,7 +704,8 @@ public class PartialDependenceICEPlotNodeModel extends
         try {
             m_config.setPDPColor(PartialDependenceICEPlotConfig.getColorFromString(viewValue.getPDPColor()));
             m_config.setICEColor(PartialDependenceICEPlotConfig.getColorFromString(viewValue.getICEColor()));
-            m_config.setDataPointColor(PartialDependenceICEPlotConfig.getColorFromString(viewValue.getDataPointColor()));
+            m_config
+                .setDataPointColor(PartialDependenceICEPlotConfig.getColorFromString(viewValue.getDataPointColor()));
             m_config
                 .setStaticLineColor(PartialDependenceICEPlotConfig.getColorFromString(viewValue.getStaticLineColor()));
             m_config
@@ -647,51 +717,187 @@ public class PartialDependenceICEPlotNodeModel extends
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public JSONLayoutViewContent getLayoutTemplate() {
-        JSONLayoutViewContent template = new JSONLayoutViewContent();
-        if (m_config.getResizeToFill()) {
-            template.setResizeMethod(ResizeMethod.ASPECT_RATIO_16by9);
-        } else {
-            template.setResizeMethod(ResizeMethod.VIEW_TAGGED_ELEMENT);
-        }
-        return template;
-    }
+    private BufferedDataTable createCollectionTable(final DataTableSpec collectionTableSpec,
+        final ExecutionContext exec) throws CanceledExecutionException {
+        BufferedDataContainer collectionSampleContainer = null; //holds the current rows
+        BufferedDataTable collectionAggregationTable = null; //the data table that is built through joining during the process
+        int numSamples = getNumSamples(); //number of samples per row, calculated in getNumSamples method
+        long numOrigRows = m_originalDataTable.size();
+        boolean samplesMatchFeatures = true;
+        List<DataCell> singleFeatureRowLineList = new ArrayList<DataCell>(); //holds ListCells with two double values
+        DataRow previousRow = null; //last row placeholder used when transitioning between two appended model tables
+        int sampleCount = 0; //current number of samples processed for this row
+        int rowNumber = 0; //current row processed for this sample iteration
+        int currentFeatureInd = -1; //current index of the actual sample feature id from m_featureColModelIndicies
+        int totalIterations = 0; //total iterations through model table rows
+        boolean isMissingFeature = false; //if the feature was sampled and model applied, but not selected, true during "n" iterations
+        int numMissingFeatureIter = 0; //counter for total rows skipped during excluded feature iteration
 
-    /**
-     * @param spec
-     * @param colName
-     * @return column max value
-     */
-    private static Double getMaxFromCol(final DataTableSpec spec, final String colName) {
-        DataColumnSpec colSpec = spec.getColumnSpec(colName);
-        if (colSpec != null) {
-            DataCell maxCell = colSpec.getDomain().getUpperBound();
-            if (maxCell != null && maxCell.getType().isCompatible(DoubleValue.class)
-                && ((DoubleCell)maxCell).getDoubleValue() > Double.MIN_VALUE) {
-                return ((DoubleCell)maxCell).getDoubleValue();
+        if (numSamples * numOrigRows * m_sampledFeatures.length != m_modelOutputTable.size()) {
+            samplesMatchFeatures = false;
+        }
+
+        if (samplesMatchFeatures) {
+            for (DataRow row : m_modelOutputTable) {
+                totalIterations++;
+
+                if(isMissingFeature) {
+                    if(numMissingFeatureIter < numSamples - 1) {
+                        numMissingFeatureIter ++;
+                        continue;
+                    }
+
+                    //TODO: reset after missing feature
+                }
+
+                //code to execute on every 1st sample of a new "table-break" iteration
+                if (previousRow == null) {
+                    previousRow = row;
+                    sampleCount++;
+                    continue;
+                }
+
+                //code to execute on every 2nd sample of a new "table-break" iteration
+                if (currentFeatureInd < 0) {
+
+                    int newFeatureIndex = getCurrentFeature(previousRow, row);
+
+                    //if the current table section is the sampling for a feature that wasn't
+                    //selected, then set isMissingFeature true and initiate "skipping" iterations
+                    if(newFeatureIndex < 0) {
+                        isMissingFeature = true;
+                    }
+
+                    //otherwise set the index of the current column index
+                    currentFeatureInd = newFeatureIndex;
+
+                    //re/initialize the DataContainer
+                    collectionSampleContainer = exec.createDataContainer(
+                        new DataTableSpec(collectionTableSpec.getColumnSpec(currentFeatureInd)), true);
+
+                    //process the previous row
+                    DataCell sampledFeatureCell = previousRow.getCell(m_featureColModelIndicies[currentFeatureInd]);
+                    DataCell predictionCell = previousRow.getCell(m_predictionColInd);
+                    DataCell[] cellArray = new DataCell[]{sampledFeatureCell, predictionCell};
+                    ListCell dataPointCollection = CollectionCellFactory.createListCell(Arrays.asList(cellArray));
+                    singleFeatureRowLineList.add(dataPointCollection);
+                    sampleCount++;
+                }
+
+                //code to execute following the ...
+                if (rowNumber == numOrigRows) {
+
+                    collectionSampleContainer.close();
+
+                    //true when the first aggregation of the first sampled feature is true
+                    if (collectionAggregationTable == null) {
+
+                        collectionAggregationTable = collectionSampleContainer.getTable();
+
+                    } else { //reached on every successive data table joining
+
+                        //update the collectionAggregationTable
+                        BufferedDataTable updatedTable = exec.createJoinedTable(collectionAggregationTable,
+                            collectionSampleContainer.getTable(), exec);
+                        collectionAggregationTable = updatedTable;
+
+                    }
+
+                    //reset the loop internals at "table-break"
+                    singleFeatureRowLineList = new ArrayList<DataCell>();
+                    sampleCount = 1;
+                    rowNumber = 0;
+                    previousRow = row;
+                    currentFeatureInd = -1;
+                    continue;
+                }
+
+                DataCell sampledFeatureCell = row.getCell(m_featureColModelIndicies[currentFeatureInd]);
+                DataCell predictionCell = row.getCell(m_predictionColInd);
+                DataCell[] cellArray = new DataCell[]{sampledFeatureCell, predictionCell};
+                ListCell dataPointCollection = CollectionCellFactory.createListCell(Arrays.asList(cellArray));
+
+                singleFeatureRowLineList.add(dataPointCollection);
+
+                //if still collecting data point for a single sample row, update count, continue
+                if (sampleCount < numSamples) {
+                    sampleCount++;
+                    continue;
+                }
+
+                //else add row
+                ListCell finalSingleFeatureCollectionCell =
+                    CollectionCellFactory.createListCell(singleFeatureRowLineList);
+                final DefaultRow newRow =
+                    new DefaultRow(row.getCell(m_rowIDColInd).toString()
+                        , new DataCell[]{finalSingleFeatureCollectionCell});
+                collectionSampleContainer.addRowToTable(newRow);
+
+                //reset sample count if end of row sampling has been reached
+                sampleCount = 1;
+                rowNumber++;
+                //reset interal ListCell collection
+                singleFeatureRowLineList = new ArrayList<DataCell>();
+
+                //last row of the model table
+                if (totalIterations == numOrigRows * numSamples * m_sampledFeatures.length) {
+                    collectionSampleContainer.close();
+
+                    //update the collectionAggregationTable to final state
+                    BufferedDataTable updatedTable =
+                        exec.createJoinedTable(collectionAggregationTable, collectionSampleContainer.getTable(), exec);
+                    collectionAggregationTable = updatedTable;
+                    return collectionAggregationTable;
+                }
             }
         }
-        return null;
+        throw new CanceledExecutionException("Please select all features selected for sampling");
     }
 
-    /**
-     * @param spec
-     * @param colName
-     * @return column min value
-     */
-    private static Double getMinFromCol(final DataTableSpec spec, final String colName) {
-        DataColumnSpec colSpec = spec.getColumnSpec(colName);
-        if (colSpec != null) {
-            DataCell minCell = colSpec.getDomain().getLowerBound();
-            if (minCell != null && minCell.getType().isCompatible(DoubleValue.class)
-                && ((DoubleCell)minCell).getDoubleValue() < Double.MAX_VALUE) {
-                return ((DoubleCell)minCell).getDoubleValue();
+    private int getNumSamples() {
+        String rowKey = null;
+        int count = 0;
+
+        for (DataRow row : m_modelOutputTable) {
+            String currRowKey = row.getCell(m_rowIDColInd).toString();
+            if (rowKey == null || rowKey.equals(currRowKey)) {
+                rowKey = currRowKey;
+                count++;
+                continue;
             }
+            return count;
         }
-        return null;
+        return 0;
+    }
+
+    private int getCurrentFeature(final DataRow prevRow, final DataRow currRow) {
+        int colCount = 0;
+        boolean correctIndexMissing = true;
+
+        //for each column in the previous row, check to see if the value changed
+        for (int featureColModelIndex : m_featureColModelIndicies) {
+            String currentRowColumnValue = currRow.getCell(featureColModelIndex).toString();
+            String previousRowColumnValue = prevRow.getCell(featureColModelIndex).toString();
+
+            if (currentRowColumnValue.equals(previousRowColumnValue)) {
+                colCount++;
+                continue;
+            }
+
+            correctIndexMissing = false;
+            break;
+        }
+
+        //if none of the selected features columns changed, then handle
+        if (correctIndexMissing) {
+            setWarningMessage("You sampled some features in the Partial Dependence/ICE pre-processing node"
+                + " that were not selected in the PDP/ICE Plot node. They will not be available for selection "
+                + "in the interactive view");
+            return -1;
+            //TODO: check for -1 and skip the processing of the rest of the data table
+        }
+
+        //otherwise set the index of the current column index
+        return colCount;
     }
 }

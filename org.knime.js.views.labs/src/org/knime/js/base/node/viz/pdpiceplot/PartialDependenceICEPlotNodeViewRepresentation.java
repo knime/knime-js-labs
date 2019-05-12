@@ -73,10 +73,9 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 
 	private int m_maxNumRows;
 	private Boolean m_generateImage;
-	private String m_featureCol;
+	private String[] m_sampledFeatureColumns;
 	private String  m_rowIDCol;
 	private String  m_predictionCol;
-	private String m_origFeatureCol;
 	private int m_viewWidth;
 	private int m_viewHeight;
 	private Boolean m_resizeToFill;
@@ -148,17 +147,17 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 	}
 
 	/**
-	 * @return the featureCol
+	 * @return the sampledFeatureColumns
 	 */
-	public String getFeatureCol() {
-		return m_featureCol;
+	public String[] getSampledFeatureColumns() {
+		return m_sampledFeatureColumns;
 	}
 
 	/**
-	 * @param featureCol the featureCol to set
+	 * @param sampledFeatureColumns the sampledFeatureColumns to set
 	 */
-	public void setFeatureCol(final String featureCol) {
-		this.m_featureCol = featureCol;
+	public void setSampledFeatureColumns(final String[] sampledFeatureColumns) {
+		this.m_sampledFeatureColumns = sampledFeatureColumns;
 	}
 
 	/**
@@ -188,20 +187,6 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 	public void setPredictionCol(final String predictionCol) {
 		this.m_predictionCol = predictionCol;
 	}
-
-	   /**
-     * @return the origFeatureCol
-     */
-    public String getOrigFeatureCol() {
-        return m_origFeatureCol;
-    }
-
-    /**
-     * @param origFeatureCol the predictionCol to set
-     */
-    public void setOrigFeatureCol(final String origFeatureCol) {
-        this.m_origFeatureCol = origFeatureCol;
-    }
 
 	/**
 	 * @return the viewWidth
@@ -588,10 +573,9 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 	public void saveToNodeSettings(final NodeSettingsWO settings) {
 		settings.addInt(PartialDependenceICEPlotConfig.CFG_MAX_NUM_ROWS, getMaxNumRows());
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_GENERATE_IMAGE, getGenerateImage());
-		settings.addString(PartialDependenceICEPlotConfig.CFG_FEATURE_COLUMN, getFeatureCol());
+		settings.addStringArray(PartialDependenceICEPlotConfig.CFG_FEATURE_COLUMN_STRINGS, getSampledFeatureColumns());
 		settings.addString(PartialDependenceICEPlotConfig.CFG_ROW_ID_COLUMN, getRowIDCol());
 		settings.addString(PartialDependenceICEPlotConfig.CFG_PREDICTION_COLUMN, getPredictionCol());
-		settings.addString(PartialDependenceICEPlotConfig.CFG_ORIGINAL_FEATURE_COLUMN, getOrigFeatureCol());
 		settings.addInt(PartialDependenceICEPlotConfig.CFG_VIEW_WIDTH, getViewWidth());
 		settings.addInt(PartialDependenceICEPlotConfig.CFG_VIEW_HEIGHT, getViewHeight());
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_RESIZE_TO_FILL, getResizeToFill());
@@ -629,10 +613,9 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 	public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
 		setMaxNumRows(settings.getInt(PartialDependenceICEPlotConfig.CFG_MAX_NUM_ROWS));
 		setGenerateImage(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_GENERATE_IMAGE));
-		setFeatureCol(settings.getString(PartialDependenceICEPlotConfig.CFG_FEATURE_COLUMN));
+		setSampledFeatureColumns(settings.getStringArray(PartialDependenceICEPlotConfig.CFG_FEATURE_COLUMN_STRINGS));
 		setRowIDCol(settings.getString(PartialDependenceICEPlotConfig.CFG_ROW_ID_COLUMN));
 		setPredictionCol(settings.getString(PartialDependenceICEPlotConfig.CFG_PREDICTION_COLUMN));
-		setOrigFeatureCol(settings.getString(PartialDependenceICEPlotConfig.CFG_ORIGINAL_FEATURE_COLUMN));
 		setViewWidth(settings.getInt(PartialDependenceICEPlotConfig.CFG_VIEW_WIDTH));
 		setViewHeight(settings.getInt(PartialDependenceICEPlotConfig.CFG_VIEW_HEIGHT));
 		setResizeToFill(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_RESIZE_TO_FILL));
@@ -682,9 +665,9 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
         		.append(m_table, other.m_table)
         		.append(m_maxNumRows, other.m_maxNumRows)
         		.append(m_generateImage, other.m_generateImage)
+        		.append(m_sampledFeatureColumns, other.m_sampledFeatureColumns)
         		.append(m_rowIDCol, other.m_rowIDCol)
         		.append(m_predictionCol, other.m_predictionCol)
-        		.append(m_origFeatureCol, other.m_origFeatureCol)
         		.append(m_viewWidth, other.m_viewWidth)
         		.append(m_viewHeight, other.m_viewHeight)
         		.append(m_resizeToFill, other.m_resizeToFill)
@@ -724,9 +707,9 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 				.append(m_table)
 				.append(m_maxNumRows)
 				.append(m_generateImage)
+				.append(m_sampledFeatureColumns)
 				.append(m_rowIDCol)
 				.append(m_predictionCol)
-				.append(m_origFeatureCol)
 				.append(m_viewWidth)
 				.append(m_viewHeight)
 				.append(m_resizeToFill)

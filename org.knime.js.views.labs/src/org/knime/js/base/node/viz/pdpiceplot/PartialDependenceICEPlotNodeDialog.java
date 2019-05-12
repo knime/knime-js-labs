@@ -104,13 +104,9 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
 
     private final DataColumnSpecFilterPanel m_colFilterPanel;
 
-    private final ColumnSelectionPanel m_featureColComboBox;
-
     private final ColumnSelectionPanel m_rowIDColComboBox;
 
     private final ColumnSelectionPanel m_predictionColComboBox;
-
-    private final ColumnSelectionPanel m_origFeatureColComboBox;
 
     private final JCheckBox m_showPDPCheckBox;
 
@@ -240,7 +236,6 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         DataValueColumnFilter colSelectionFilter = new DataValueColumnFilter(DoubleValue.class, LongValue.class);
         m_colFilterPanel = new DataColumnSpecFilterPanel();
         m_colFilterPanel.setBorder(BorderFactory.createTitledBorder("Features sampled by pre-processor"));
-        m_featureColComboBox = new ColumnSelectionPanel(colSelectionBorder, colSelectionFilter, false, false);
         colSelectionBorder = BorderFactory.createTitledBorder("Choose the row ID column (model table)");
         colSelectionFilter = new DataValueColumnFilter(StringValue.class);
         m_rowIDColComboBox = new ColumnSelectionPanel(colSelectionBorder, colSelectionFilter, false, false);
@@ -249,7 +244,6 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_predictionColComboBox = new ColumnSelectionPanel(colSelectionBorder, colSelectionFilter, false, false);
         colSelectionBorder = BorderFactory.createTitledBorder("Choose the feature column (original table)");
         colSelectionFilter = new DataValueColumnFilter(DoubleValue.class, LongValue.class);
-        m_origFeatureColComboBox = new ColumnSelectionPanel(colSelectionBorder, colSelectionFilter, false, false);
         m_showPDPCheckBox = new JCheckBox("Show partial dependence plot");
         m_PDPColorChooserComponent =
             new DialogComponentColorChooser(new SettingsModelColor(PartialDependenceICEPlotConfig.CFG_PDP_COLOR,
@@ -465,16 +459,16 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         constraints.gridy = 0;
         panel.add(m_generateImageCheckBox, constraints);
         JPanel border = new JPanel(new GridBagLayout());
-        border.setPreferredSize(new Dimension(300, 50));
+        border.setPreferredSize(new Dimension(150, 50));
         border.setBorder(BorderFactory.createTitledBorder("Maximum number of rows:"));
         GridBagConstraints c2 = new GridBagConstraints();
         c2.anchor = GridBagConstraints.NORTHWEST;
         c2.fill = GridBagConstraints.HORIZONTAL;
         c2.gridx = 0;
         c2.gridy = 0;
-        m_maxNumRowsSpinner.setPreferredSize(new Dimension(200, TEXT_FIELD_SIZE));
+        m_maxNumRowsSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
         border.add(m_maxNumRowsSpinner, c2);
-        constraints.anchor = GridBagConstraints.NORTHEAST;
+        constraints.gridy ++;
         panel.add(border, constraints);
         constraints.anchor = GridBagConstraints.NORTHWEST;
         constraints.gridx = 0;
@@ -485,14 +479,11 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         Dimension columnSelectionDimension = new Dimension(300, 50);
         m_predictionColComboBox.setPreferredSize(columnSelectionDimension);
         panel.add(m_predictionColComboBox, constraints);
-//        constraints.gridx = 1;
         constraints.anchor = GridBagConstraints.NORTHEAST;
         m_rowIDColComboBox.setPreferredSize(columnSelectionDimension);
         panel.add(m_rowIDColComboBox, constraints);
         constraints.gridx = 0;
         constraints.gridy++;
-        m_origFeatureColComboBox.setPreferredSize(columnSelectionDimension);
-//        panel.add(m_origFeatureColComboBox, constraints);
         return panel;
     }
 
@@ -980,10 +971,8 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_tableSpec = specs[0];
         m_colFilterPanel.loadConfiguration(m_colSpecFilter, m_tableSpec);
         // TODO: update col filter panel
-        m_featureColComboBox.update(specs[0], m_config.getFeatureCol(), false);
         m_rowIDColComboBox.update(specs[0], m_config.getRowIDCol(), false);
         m_predictionColComboBox.update(specs[0], m_config.getPredictionCol(), false);
-        m_origFeatureColComboBox.update(specs[1], m_config.getOrigFeatureCol(), false);
         m_showPDPCheckBox.setSelected(m_config.getShowPDP());
         m_PDPColorChooserComponent.setColor(m_config.getPDPColor());
         m_PDPLineWeightSpinner.setValue(m_config.getPDPLineWeight());
@@ -1066,10 +1055,8 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
             throw new InvalidSettingsException("You must select at least 1 of the columns that were sampled in the "
                 + "preprocessing node.");
         }
-        m_config.setFeatureCol(m_featureColComboBox.getSelectedColumn());
         m_config.setRowIDCol(m_rowIDColComboBox.getSelectedColumn());
         m_config.setPredictionCol(m_predictionColComboBox.getSelectedColumn());
-        m_config.setOrigFeatureCol(m_origFeatureColComboBox.getSelectedColumn());
         m_config.setShowPDP(m_showPDPCheckBox.isSelected());
         m_config.setPDPColor(m_PDPColorChooserComponent.getColor());
         m_config.setPDPLineWeight((double)m_PDPLineWeightSpinner.getValue());
