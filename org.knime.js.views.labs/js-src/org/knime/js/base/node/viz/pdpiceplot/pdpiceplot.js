@@ -71,22 +71,30 @@ window.pdpiceplotNamespace = (function () {
         this.pdpLineX = [];
         this.pdpMarginTop = [];
         this.pdpMarginBottom = [];
-        this.iceRows = [];
-        this.tempSelected = [];
         this.dataPoints = [];
         this.mouseLocationData = [];
         this.adjYMax = 0;
         this.adjYMin = 0;
         this._filteredData = null;
+        this._currentFeatureInd = null;
+        this._currentPredictionInd = null;
+        this._featureIndicies = [];
+        this._featureNames = [];
+        this._originalColIndicies = [];
         this.onSelectionChange = this.onSelectionChange.bind(this);
         this.onFilterChange = this.onFilterChange.bind(this);
         this.getCorrectData = this.getCorrectData.bind(this);
-        this.showOnlySelected = false;
+        this.xaxisMin;
+        this.xaxisMax;
+        this.yaxisMin;
+        this.yaxisMax;
 
         // view only settings
+        this.showOnlySelected = false;
         this.mouseMode = false;
+        this.smartZoom = true;
         this.showExpandedOptions = false;
-        this.counter = 0;
+        this.lastFilterEvent = null;
     };
 
     /**
@@ -103,9 +111,10 @@ window.pdpiceplotNamespace = (function () {
         }
         this._representation = representation;
         this._value = value || {};
-        // this._value.selected = value.selected || [];
         this._table = new kt();
         this._table.setDataTable(representation.dataTable);
+        this._tableId = representation.dataTable.id;
+        this._representation.dataTable = null;
         this.toggleSubscribeToSelection();
         this.toggleSubscribeToFilter();
         this.render(true);
@@ -131,9 +140,6 @@ window.pdpiceplotNamespace = (function () {
         this.pdpLineX = [];
         this.pdpMarginTop = [];
         this.pdpMarginBottom = [];
-        this.iceRows = [];
-        this.tempSelected = [];
-        this.dataPoints = [];
     };
 
     /**
@@ -166,14 +172,14 @@ window.pdpiceplotNamespace = (function () {
     PDPICEPlot.prototype.render = function (firstCall) {
         this.drawSVG();
         this.drawTitle();
+        this.getProperDomain();
         this.updateScales();
 
         if (firstCall) {
-            var data = this._filteredData
+            this._filteredData = this._filteredData
                 ? this.getCorrectData(this._filteredData)
                 : this.getCorrectData(this.getColoredRows());
-            this.createPDPLine(data);
-            this.createICELines(data);
+            this.createPDPLine();
             if (this._representation.enableInteractiveCtrls &&
                 !document.getElementById('knime-service-menu')
             ) {
@@ -196,11 +202,14 @@ window.pdpiceplotNamespace = (function () {
      * @return {null}
      */
     PDPICEPlot.prototype.redrawData = function () {
-        var data = this._filteredData
-            ? this.getCorrectData(this._filteredData)
-            : this.getCorrectData(this.getColoredRows());
-        this.createPDPLine(data);
-        this.createICELines(data);
+
+        if (this._filteredData && this._value.selected.length <
+            this._filteredData[this._currentFeatureInd].length) {
+            this._filteredData = this.getCorrectData(this._filteredData);
+        } else {
+            this._filteredData = this.getCorrectData(this.getColoredRows());
+        }
+        this.createPDPLine();
         this.drawICELine();
         this.drawPDPLine();
         this.drawStaticLine();
@@ -213,16 +222,30 @@ window.pdpiceplotNamespace = (function () {
      */
     PDPICEPlot.prototype.getCorrectData = function (data) {
         var self = this;
+        var newData = data;
         if (this.showOnlySelected) {
-            return data.filter(function (row) {
-                if (self._value.selected) {
-                    return self._value.selected.indexOf(row.rowKey) > -1;
-                } else {
-                    return false;
-                }
+            newData = [];
+            data.forEach(function (featSet, featInd) {
+                newData.push(featSet.filter(function (row) {
+                    if (self._value.selected) {
+                        return self._value.selected.indexOf(row.rowKey) > -1;
+                    } else {
+                        return false;
+                    }
+                }));
             });
         }
-        return data;
+
+        if (this._value.subscribeToFilters && this.lastFilterEvent) {
+            newData.forEach(function (featureSet, featureInd) {
+                self._filteredData[featureInd] = featureSet.filter(function (row) {
+                    return self._table.isRowIncludedInFilter(
+                        row.rowKey, self.lastFilterEvent
+                    );
+                });
+            });
+        }
+        return newData;
     };
 
     /**
@@ -235,8 +258,14 @@ window.pdpiceplotNamespace = (function () {
         var height = self._representation.viewHeight;
 
         if (this._representation.runningInView) {
-            width = self._representation.resizeToFill ? '100%' : self._representation.viewWidth;
-            height = self._representation.resizeToFill ? '100%' : self._representation.viewHeight;
+
+            width = self._representation.resizeToFill ? '100%'
+                : self._representation.viewWidth;
+            height = self._representation.resizeToFill ? '100%'
+                : self._representation.viewHeight;
+        } else {
+            this._currentFeatureInd = this._value.featureInd;
+            this._currentPredictionInd = this._value.predictionInd;
         }
 
         d3.select('html')
@@ -335,7 +364,21 @@ window.pdpiceplotNamespace = (function () {
         this.totalTopHeight = this.titleHeight;
         this.totalLeftWidth = this.yLabelWidth + this.yAxisWidth + this.default.marginLeft - 2;
         this.viewportWidth = this.svgWidth - this.totalLeftWidth - this.default.marginRight;
-        this.viewportHeight = this.svgHeight - this.totalTopHeight - this.xAxisHeight - this.xLabelHeight;
+        this.viewportHeight = this.svgHeight - this.totalTopHeight
+            - this.xAxisHeight - this.xLabelHeight;
+    };
+
+    PDPICEPlot.prototype.getProperDomain = function () {
+
+        if (this._representation.runningInView) {
+            this._currentFeatureInd = this._currentFeatureInd || 0;
+            this._currentPredictionInd = this._currentPredictionInd || 0;
+        }
+        this.xaxisMin = this._representation.featureDomains[this._currentFeatureInd][0];
+        this.xaxisMax = this._representation.featureDomains[this._currentFeatureInd][1];
+        this.yaxisMin = this._representation.predictionDomains[this._currentPredictionInd][0];
+        this.yaxisMax = this._representation.predictionDomains[this._currentPredictionInd][1];
+
     };
 
     /**
@@ -345,12 +388,12 @@ window.pdpiceplotNamespace = (function () {
     PDPICEPlot.prototype.updateScales = function () {
 
         this.d3Elem.xScale = d3.scaleLinear()
-            .domain([this._value.xaxisMin, this._value.xaxisMax])
+            .domain([this.xaxisMin, this.xaxisMax])
             .range([this.totalLeftWidth, this.totalLeftWidth + this.viewportWidth]);
         // .clamp(true);
-        var domainAdj = this._value.yaxisMax - this._value.yaxisMin;
-        this.adjYMin = this._value.yaxisMin - Math.abs(domainAdj * this._value.yaxisMargin);
-        this.adjYMax = this._value.yaxisMax + Math.abs(domainAdj * this._value.yaxisMargin);
+        var domainAdj = this.yaxisMax - this.yaxisMin;
+        this.adjYMin = this.yaxisMin - Math.abs(domainAdj * this._value.yaxisMargin);
+        this.adjYMax = this.yaxisMax + Math.abs(domainAdj * this._value.yaxisMargin);
         this.d3Elem.yScale = d3.scaleLinear()
             .domain([this.adjYMin, this.adjYMax])
             .range([this.viewportHeight + this.totalTopHeight, this.totalTopHeight]);
@@ -366,6 +409,14 @@ window.pdpiceplotNamespace = (function () {
         var self = this;
         d3.select('#dataArea')
             .remove();
+        d3.select('#ice-target')
+            .remove();
+        d3.select('#pdp-target')
+            .remove();
+        d3.select('#data-point-target')
+            .remove();
+        d3.select('#static-line-target')
+            .remove();
 
         this.d3Elem.dataArea = d3.line()
             .x(function (d) {
@@ -376,10 +427,10 @@ window.pdpiceplotNamespace = (function () {
             });
 
         var data = [
-            [this._value.xaxisMin, this.adjYMin],
-            [this._value.xaxisMin, this.adjYMax],
-            [this._value.xaxisMax, this.adjYMax],
-            [this._value.xaxisMax, this.adjYMin]
+            [this.xaxisMin, this.adjYMin],
+            [this.xaxisMin, this.adjYMax],
+            [this.xaxisMax, this.adjYMax],
+            [this.xaxisMax, this.adjYMin]
         ];
 
         this.d3Elem.viewport
@@ -388,6 +439,22 @@ window.pdpiceplotNamespace = (function () {
             .attr('d', this.d3Elem.dataArea)
             .attr('id', 'dataArea')
             .attr('fill', d3.color(this._value.dataAreaColor).toString());
+
+        this.d3Elem.viewport
+            .append('g')
+            .attr('id', 'ice-target');
+
+        this.d3Elem.viewport
+            .append('g')
+            .attr('id', 'pdp-target');
+
+        this.d3Elem.viewport
+            .append('g')
+            .attr('id', 'data-point-target');
+
+        this.d3Elem.viewport
+            .append('g')
+            .attr('id', 'static-line-target');
 
     };
 
@@ -494,7 +561,8 @@ window.pdpiceplotNamespace = (function () {
             .call(axis)
             .attr('stroke-width', .2)
             .attr('stroke-opacity', .4)
-            .attr('transform', 'translate( 0 ' + (this.viewportHeight + this.totalTopHeight) + ')')
+            .attr('transform', 'translate( 0 ' + (this.viewportHeight +
+                this.totalTopHeight) + ')')
             .selectAll('text')
             .attr('class', 'x')
             .attr('font-weight', 'normal')
@@ -557,6 +625,10 @@ window.pdpiceplotNamespace = (function () {
                     .attr('text-anchor', 'middle')
                     .attr('font-weight', 'bold');
             }
+            if (!this._representation.enableAxisLabelControls) {
+                xLab = this._representation
+                    .sampledFeatureColumns[this._currentFeatureInd];
+            }
             this.d3Elem.xAxisLabel.text(xLab);
         } else {
             // eslint-disable-next-line no-lonely-if
@@ -577,6 +649,10 @@ window.pdpiceplotNamespace = (function () {
                     .attr('font-weight', 'bold')
                     .attr('transform', 'matrix(0,-1,1,0,12,' +
                         this.svgHeight / 2 + ')');
+            }
+            if (!this._representation.enableAxisLabelControls) {
+                yLab = this._representation
+                    .predictionColumns[this._currentPredictionInd];
             }
             this.d3Elem.yAxisLabel.text(yLab);
         } else {
@@ -651,11 +727,11 @@ window.pdpiceplotNamespace = (function () {
             });
 
         this.d3Elem.cx = function (d) {
-            return xScale(d.data[0]);
+            return xScale(d.data[0][0]);
         };
 
         this.d3Elem.cy = function (d) {
-            return yScale(d.data[1]);
+            return yScale(d.data[0][1]);
         };
 
         this.d3Elem.r = function (radius) {
@@ -672,89 +748,70 @@ window.pdpiceplotNamespace = (function () {
      * @param  {Array} data
      * @return {null}
      */
-    PDPICEPlot.prototype.createPDPLine = function (data) {
+    PDPICEPlot.prototype.createPDPLine = function () {
+
         this.resetInternalData();
         var selfValue = this._value;
+        var self = this;
+        var data = this._filteredData;
         var pdpXVals = this.pdpLineX;
         var pdpYVals = this.pdpLineY;
         var pdpMarginTopVals = this.pdpMarginTop;
         var pdpMarginBottomVals = this.pdpMarginBottom;
         var sumDataVals = [];
-        var numDataPoints = [];
-        var calcMarginValues = [];
+        var numRows = 0;
+        var numSamples = 0;
+        var varianceValues = [];
 
         var needsReset = true;
-        data.forEach(function (row) {
-            if (needsReset) {
-                row.data[1].forEach(function (pointCoord, ind) {
-                    pdpXVals[ind] = 0;
+        data[this._currentFeatureInd].forEach(function (row, rowInd) {
+
+            row.data[1][0].forEach(function (pointCoord, ind) {
+
+                if (needsReset) {
+                    pdpXVals[ind] = row.data[1][0][ind][0][0];
                     pdpYVals[ind] = 0;
                     pdpMarginTopVals[ind] = 0;
                     pdpMarginBottomVals[ind] = 0;
                     sumDataVals[ind] = 0;
-                    numDataPoints[ind] = 0;
-                    calcMarginValues[ind] = 0;
-                });
-            }
-            row.data[1].forEach(function (pointCoord, ind) {
-                if (pdpXVals[ind] !== pointCoord[0]) {
-                    pdpXVals[ind] = pointCoord[0];
+                    varianceValues[ind] = 0;
+                    numSamples++;
                 }
-                sumDataVals[ind] += pointCoord[1];
-                numDataPoints[ind]++;
+                sumDataVals[ind] += pointCoord[1][self._currentPredictionInd];
             });
+            numRows++;
             needsReset = false;
         });
 
-        var rowIndex = 0;
-        sumDataVals.forEach(function (sumVal, ind) {
-            var mean = sumVal / numDataPoints[ind];
-            pdpYVals[ind] = mean;
-            if (selfValue.showPDPMargin) {
-                var sum = 0;
-                data.forEach(function (row) {
-                    sum += Math.pow(row.data[1][rowIndex][1] - mean, 2);
-                });
+        data[self._currentFeatureInd].forEach(function (row, rowInd) {
+            var yValsSet = false;
+            row.data[1][0].forEach(function (samp, sampInd) {
+                var mean = sumDataVals[sampInd] / numRows;
+                if (!yValsSet) {
+                    pdpYVals[sampInd] = mean;
+                }
+                varianceValues[sampInd] += Math.pow(samp[1]
+                [self._currentPredictionInd] - mean, 2);
+            });
+            var yValsSet = true;
+        });
+
+        if (selfValue.showPDPMargin) {
+            for (var i = 0; i < numSamples; i++) {
                 // eslint-disable-next-line no-warning-comments
                 // square root is more accurate when computed with ln
                 // ALSO- using Bessel's Sample Correction
-                var variance = sum / (numDataPoints[ind] - 1);
+                var variance = varianceValues[i] / (numRows - 1);
                 if (selfValue.pdpmarginType.toLowerCase() === 'standard deviation') {
                     var stdDev = Math.pow(Math.E, Math.log(variance) / 2);
-                    calcMarginValues[ind] = stdDev;
-                    pdpMarginTopVals[ind] = pdpYVals[ind] + stdDev * selfValue.pdpmarginMultiplier;
-                    pdpMarginBottomVals[ind] = pdpYVals[ind] - stdDev * selfValue.pdpmarginMultiplier;
+                    pdpMarginTopVals[i] = pdpYVals[i] + stdDev * selfValue.pdpmarginMultiplier;
+                    pdpMarginBottomVals[i] = pdpYVals[i] - stdDev * selfValue.pdpmarginMultiplier;
                 } else if (selfValue.pdpmarginType.toLowerCase() === 'variance') {
-                    calcMarginValues[ind] = variance;
-                    pdpMarginTopVals[ind] = pdpYVals[ind] + variance * selfValue.pdpmarginMultiplier;
-                    pdpMarginBottomVals[ind] = pdpYVals[ind] - variance * selfValue.pdpmarginMultiplier;
+                    pdpMarginTopVals[i] = pdpYVals[i] + variance * selfValue.pdpmarginMultiplier;
+                    pdpMarginBottomVals[i] = pdpYVals[i] - variance * selfValue.pdpmarginMultiplier;
                 }
             }
-            rowIndex++;
-        });
-    };
-
-    /**
-     * takes in the current array of rows and calculates ICE values
-     * @param  {Array} data
-     * @return {null}
-     */
-    PDPICEPlot.prototype.createICELines = function (data) {
-        var iceRows = this.iceRows;
-        data.forEach(function (row, ind) {
-            var rowData = {
-                rowKey: row.rowKey,
-                rowXVal: [],
-                rowYVal: [],
-                color: row.color ? d3.color(row.color).toString() : d3.color(self._value.icecolor).toString(),
-                featureVal: row.data[0]
-            };
-            row.data[1].forEach(function (pointCoord, rowInd) {
-                rowData.rowXVal[rowInd] = pointCoord[0];
-                rowData.rowYVal[rowInd] = pointCoord[1];
-            });
-            iceRows[ind] = rowData;
-        });
+        }
     };
 
     /**
@@ -765,34 +822,27 @@ window.pdpiceplotNamespace = (function () {
      */
     PDPICEPlot.prototype.drawICELine = function () {
         var self = this;
-        this.dataPoints = [];
-        var dataPoints = this.dataPoints;
         d3.selectAll('.ice-line').remove();
-        this.iceRows.forEach(function (row, rowInd) {
+
+        this._filteredData[this._currentFeatureInd].forEach(function (row, rowInd) {
             var data = [];
-            var prevXVal = 0;
-            var prevYVal = 0;
-            var actualXVal = 0;
-            var actualYVal = 0;
-            row.rowXVal.forEach(function (xVal, xInd) {
-                var yVal = row.rowYVal[xInd];
-                var featVal = parseFloat(row.featureVal);
-                data[xInd] = [xVal, yVal];
+            var prevXVal = -Number.MAX_VALUE;
+            var prevYVal = -Number.MAX_VALUE;
+            var closestYVal = 0;
+            var featureValue = row.data[0][0];
+            row.data[1][0].forEach(function (pointCoord, pointInd) {
+                var yVal = pointCoord[1][self._currentPredictionInd];
+                var xVal = pointCoord[0][0];
+                data[pointInd] = [xVal, yVal];
                 // eslint-disable-next-line no-warning-comments
                 // Currently using closest neighbor for points
-                if (prevXVal < featVal && featVal <= xVal) {
-                    actualXVal = featVal;
-                    if (row.featureVal === xVal) {
-                        actualYVal = yVal;
+                if (prevXVal < featureValue && featureValue <= xVal) {
+                    if (featureValue === xVal) {
+                        closestYVal = yVal;
+                    } else if (featureValue - prevXVal > row.featureVal - xVal) {
+                        closestYVal = yVal;
                     } else {
-                        // average between last two points seems to be inaccurate
-                        // actualYVal = (prevYVal + yVal) / 2;
-                        // eslint-disable-next-line no-lonely-if
-                        if (row.featureVal - prevXVal > row.featureVal - xVal) {
-                            actualYVal = yVal;
-                        } else {
-                            actualYVal = prevYVal;
-                        }
+                        closestYVal = prevYVal;
                     }
                 }
                 prevXVal = xVal;
@@ -803,16 +853,13 @@ window.pdpiceplotNamespace = (function () {
             if (self._value.selected && self._value.selected.indexOf(row.rowKey) > -1) {
                 selectedClassValue = self.default.iceClassSelected;
             }
-            var dataPoint = {
-                data: [actualXVal, actualYVal],
-                color: row.color
-            };
-            dataPoints.push(dataPoint);
+            self._filteredData[self._currentFeatureInd][rowInd].data[0][1] = closestYVal;
+
             if (self._value.showICE) {
                 self.d3Elem.viewport
-                    .append('path')
+                    .insert('path', '#ice-target')
                     .data([data])
-                    .attr('class', selectedClassValue)
+                    .attr('class', selectedClassValue + 'ice-line')
                     .attr('id', row.rowKey)
                     .attr('d', self.d3Elem.iceLineTemplate)
                     .attr('fill', 'none')
@@ -832,7 +879,8 @@ window.pdpiceplotNamespace = (function () {
                             this.setAttribute('stroke', altColor);
                         }
                     })
-                    .on('click', function (e) {
+                    .on('mousedown', function (e) {
+                        d3.event.stopImmediatePropagation();
                         if (window.event.shiftKey || self.mouseMode) {
                             if (!self._value.selected) {
                                 self._value.selected = [];
@@ -857,10 +905,15 @@ window.pdpiceplotNamespace = (function () {
                                 }
                             }
                         } else {
-                            self._value.selected = [this.getAttribute('id')];
+                            if (self._value.selected.indexOf(this.getAttribute('id')) > -1) {
+                                self._value.selected = [];
+
+                            } else {
+                                self._value.selected = [this.getAttribute('id')];
+                            }
                             knimeService.setSelectedRows(
                                 self._table.getTableId(),
-                                [this.getAttribute('id')]
+                                self._value.selected
                             );
                         }
                         if (self.showOnlySelected) {
@@ -881,22 +934,20 @@ window.pdpiceplotNamespace = (function () {
      * @return {null}
      */
     PDPICEPlot.prototype.drawDataPoints = function () {
-
         var self = this;
-        var dataPoints = this.dataPoints;
 
         self.d3Elem.viewport
             .selectAll('.point')
             .remove();
 
-        if (dataPoints.length > 0 && this._value.showDataPoints) {
+        if (this._value.showDataPoints) {
             self.d3Elem.viewport
                 .selectAll('.dataPoints')
-                .data(dataPoints)
+                .data(this._filteredData[this._currentFeatureInd])
                 .enter()
-                .append('circle')
+                .insert('circle', '#data-point-target')
                 .attr('fill', function (d) {
-                    return d3.color(d.color || this._value.dataPointColor).darker().toString();
+                    return d3.color(d.color || this._value.dataPointColor).toString();
                 })
                 .attr('fill-opacity', this._value.dataPointAlphaVal)
                 .attr('stroke', 'none')
@@ -913,7 +964,6 @@ window.pdpiceplotNamespace = (function () {
      * @return {null}
      */
     PDPICEPlot.prototype.drawPDPLine = function () {
-
         var self = this;
         var pdpData = [];
         var color = d3.color(this._value.pdpcolor);
@@ -943,8 +993,9 @@ window.pdpiceplotNamespace = (function () {
         });
 
         if (this._value.showPDP) {
-            this.d3Elem.viewport
-                .append('path')
+            this.d3Elem.viewport;
+            self.d3Elem.viewport
+                .insert('path', '#pdp-target')
                 .data([pdpData])
                 .attr('class', 'line transformer pdp-line')
                 .attr('id', 'pdp-line')
@@ -965,6 +1016,27 @@ window.pdpiceplotNamespace = (function () {
             });
 
             this.d3Elem.viewport
+                .insert('path', '#pdp-target')
+                .data([pdpMarginTop])
+                .attr('class', 'line  transformer pdp-margin')
+                .attr('id', 'pdp-line-top')
+                .attr('d', this.d3Elem.pdpLineTop)
+                .attr('fill', color.toString())
+                .attr('fill-opacity', this._value.pdpmarginAlphaVal);
+
+            this.d3Elem.viewport
+                .insert('path', '#pdp-target')
+                .data([pdpMarginBottom])
+                .attr('class', 'line transformer pdp-margin')
+                .attr('id', 'pdp-line-bottom')
+                .attr('d', this.d3Elem.pdpLineBottom)
+                .attr('fill', color.toString())
+                .attr('fill-opacity', this._value.pdpmarginAlphaVal);
+        }
+
+        // optional re-implementation of top and bottom lines for PDP margin
+        if (false) {
+            this.d3Elem.viewport
                 .append('path')
                 .data([pdpMarginTop])
                 .attr('class', 'line transformer pdp-line')
@@ -983,24 +1055,6 @@ window.pdpiceplotNamespace = (function () {
                 .attr('fill', 'none')
                 .attr('stroke', color.toString())
                 .attr('stroke-width', this._value.pdplineWeight);
-
-            this.d3Elem.viewport
-                .append('path')
-                .data([pdpMarginTop])
-                .attr('class', 'line  transformer pdp-margin')
-                .attr('id', 'pdp-line-top')
-                .attr('d', this.d3Elem.pdpLineTop)
-                .attr('fill', color.toString())
-                .attr('fill-opacity', this._value.pdpmarginAlphaVal);
-
-            this.d3Elem.viewport
-                .append('path')
-                .data([pdpMarginBottom])
-                .attr('class', 'line transformer pdp-margin')
-                .attr('id', 'pdp-line-bottom')
-                .attr('d', this.d3Elem.pdpLineBottom)
-                .attr('fill', color.toString())
-                .attr('fill-opacity', this._value.pdpmarginAlphaVal);
         }
     };
 
@@ -1013,9 +1067,9 @@ window.pdpiceplotNamespace = (function () {
         d3.select('#static-line')
             .remove();
         if (this._value.showStaticLine) {
-            var data = [[this._value.xaxisMin, this._value.xaxisMax]];
+            var data = [[this.xaxisMin, this.xaxisMax]];
             this.d3Elem.viewport
-                .append('path')
+                .insert('path', '#static-line-target')
                 .data(data)
                 .attr('class', 'line')
                 .attr('id', 'static-line')
@@ -1048,7 +1102,8 @@ window.pdpiceplotNamespace = (function () {
             knimeService.addNavSpacer();
         }
 
-        if (this._representation.enableSelection && this._representation.enableSelectionControls) {
+        if (this._representation.enableSelection &&
+            this._representation.enableSelectionControls) {
 
             var selectionButtonClicked = function () {
                 var button = document.getElementById('pdpice-selection-mode');
@@ -1063,7 +1118,8 @@ window.pdpiceplotNamespace = (function () {
                 selectionButtonClicked
             );
 
-            if (this._representation.enableSelection && !this._representation.enablePanning) {
+            if (this._representation.enableSelection &&
+                !this._representation.enablePanning) {
                 selectionButtonClicked();
             }
 
@@ -1074,7 +1130,10 @@ window.pdpiceplotNamespace = (function () {
                 function () {
                     self._value.selected = [];
                     if (self._value.publishSelection) {
-                        knimeService.setSelectedRows(self._representation.dataTable.id, self._value.selected);
+                        knimeService.setSelectedRows(
+                            self._tableId,
+                            self._value.selected
+                        );
                     }
                     self.redrawData();
                 }
@@ -1082,7 +1141,8 @@ window.pdpiceplotNamespace = (function () {
 
             // eslint-disable-next-line no-warning-comments
             // TODO: IMPLEMENT FILTER CREATION
-            // if (this._value.subscribeToFilters && this._representation.enableSelectionFilterControls) {
+            // if (this._value.subscribeToFilters &&
+            // this._representation.enableSelectionFilterControls) {
 
             //     knimeService.addButton(
             //         'pdpice-create-filter-button',
@@ -1110,11 +1170,12 @@ window.pdpiceplotNamespace = (function () {
             );
         }
 
-        if (this._representation.enablePanning && this._representation.enableSmartZoomControls) {
+        if (this._representation.enablePanning &&
+            this._representation.enableSmartZoomControls) {
             var zoomModeClicked = function () {
                 var button = document.getElementById('pdpice-smart-zoom');
                 button.classList.toggle('active');
-                self._value.smartZoom = button.getAttribute('class').includes('active');
+                self.smartZoom = button.getAttribute('class').includes('active');
                 self.resetZoom();
             };
 
@@ -1137,7 +1198,9 @@ window.pdpiceplotNamespace = (function () {
                 function () {
                     var button = document.getElementById('mouse-crosshair-button');
                     button.classList.toggle('active');
-                    self._value.enableMouseCrosshair = button.getAttribute('class').includes('active');
+                    self._value.enableMouseCrosshair = button
+                        .getAttribute('class')
+                        .includes('active');
                     self.initMouseCrosshair();
                 }
             );
@@ -1156,7 +1219,9 @@ window.pdpiceplotNamespace = (function () {
                 function () {
                     var button = document.getElementById('show-grid-button');
                     button.classList.toggle('active');
-                    self._value.showGrid = button.getAttribute('class').includes('active');
+                    self._value.showGrid = button
+                        .getAttribute('class')
+                        .includes('active');
                     self.drawAxis();
                 }
             );
@@ -1254,6 +1319,58 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuDivider();
 
+        }
+
+        if (this._representation.sampledFeatureColumns.length > 1) {
+            var featureSelection = knimeService.createMenuSelect(
+                'feature-selection-menu-item',
+                self._currentFeatureInd || 0,
+                this._representation.sampledFeatureColumns,
+                function () {
+                    var currentInd = self._representation.sampledFeatureColumns
+                        .indexOf(this.value);
+                    if (self._currentFeatureInd !== currentInd) {
+                        self._currentFeatureInd = currentInd;
+                        self.reset();
+                        self.render(true);
+                        self.styleSelected();
+                    }
+                }
+            );
+
+            knimeService.addMenuItem(
+                'Feature',
+                'table',
+                featureSelection
+            );
+
+            knimeService.addMenuDivider();
+        }
+
+        if (this._representation.predictionColumns.length > 1) {
+            var predictionSelection = knimeService.createMenuSelect(
+                'prediction-menu-item',
+                self._currentPredictionInd || 0,
+                this._representation.predictionColumns,
+                function () {
+                    var currentInd = self._representation.predictionColumns
+                        .indexOf(this.value);
+                    if (self._currentPredictionInd !== currentInd) {
+                        self._currentPredictionInd = currentInd;
+                        self.reset();
+                        self.render(true);
+                        self.styleSelected();
+                    }
+                }
+            );
+
+            knimeService.addMenuItem(
+                'Prediction',
+                'binoculars',
+                predictionSelection
+            );
+
+            knimeService.addMenuDivider();
         }
 
         if (this._representation.enablePDPControls) {
@@ -1600,8 +1717,8 @@ window.pdpiceplotNamespace = (function () {
             var staticLineYValMenuItem = knimeService.createMenuNumberField(
                 'static-line-y-val-menu-item',
                 this._value.staticLineYValue,
-                this._value.yaxisMin,
-                this._value.yaxisMax,
+                this.yaxisMin,
+                this.yaxisMax,
                 this.default.lineWeightStep,
                 function () {
                     if (self._value.staticLineYValue !== this.value) {
@@ -1696,7 +1813,8 @@ window.pdpiceplotNamespace = (function () {
 
                 knimeService.addMenuItem(
                     'Publish Selection',
-                    knimeService.createStackedIcon('check-square-o', 'angle-right', 'faded left sm', 'right bold'),
+                    knimeService.createStackedIcon('check-square-o',
+                        'angle-right', 'faded left sm', 'right bold'),
                     publishSelectionCheckbox,
                     null,
                     knimeService.SMALL_ICON
@@ -1718,7 +1836,8 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Subscribe to Selection',
-                knimeService.createStackedIcon('check-square-o', 'angle-double-right', 'faded right sm', 'left bold'),
+                knimeService.createStackedIcon('check-square-o',
+                    'angle-double-right', 'faded right sm', 'left bold'),
                 subscribeToSelectionCheckbox,
                 null,
                 knimeService.SMALL_ICON
@@ -1738,18 +1857,22 @@ window.pdpiceplotNamespace = (function () {
 
             knimeService.addMenuItem(
                 'Subscribe to Filter',
-                knimeService.createStackedIcon('filter', 'angle-double-right', 'faded right sm', 'left bold'),
+                knimeService.createStackedIcon('filter',
+                    'angle-double-right', 'faded right sm', 'left bold'),
                 subscribeToFilterCheckbox,
                 null,
                 knimeService.SMALL_ICON
             );
         }
 
-        if ((this._representation.enableICEControls || this._representation.enablePDPControls ||
-            this._representation.enableDataPointControls || this._representation.enablePDPMarginControls) &&
+        if ((this._representation.enableICEControls ||
+            this._representation.enablePDPControls ||
+            this._representation.enableDataPointControls ||
+            this._representation.enablePDPMarginControls) &&
             this._representation.enableAdvancedOptionsControls) {
             knimeService.addMenuDivider();
-            var text = this.showExpandedOptions ? 'Show advanced options' : 'Show advanced options';
+            var text = this.showExpandedOptions ? 'Show advanced options'
+                : 'Show advanced options';
             var icon = this.showExpandedOptions ? 'minus' : 'plus';
 
             var extendedOptionsCheckbox = knimeService.createMenuCheckbox(
@@ -1822,7 +1945,9 @@ window.pdpiceplotNamespace = (function () {
             this._value.selected = [];
         }
         if (data.reevaluate) {
-            this._value.selected = knimeService.getAllRowsForSelection(this._table.getTableId());
+            this._value.selected = knimeService.getAllRowsForSelection(
+                this._table.getTableId()
+            );
         } else if (data.changeSet) {
             if (data.changeSet.added) {
                 data.changeSet.added.forEach(function (rowId) {
@@ -1851,10 +1976,19 @@ window.pdpiceplotNamespace = (function () {
      */
     PDPICEPlot.prototype.onFilterChange = function (data) {
         var self = this;
-        this._filteredData = this.getColoredRows().filter(function (row) {
-            return self._table.isRowIncludedInFilter(row.rowKey, data);
+        this.lastFilterEvent = data;
+
+        this.getColoredRows().forEach(function (featureSet, featureInd) {
+            self._filteredData[featureInd] = featureSet.filter(function (row) {
+                return self._table.isRowIncludedInFilter(row.rowKey, self.lastFilterEvent);
+            });
         });
-        this.redrawData();
+
+        this._filteredData = this.getCorrectData(this._filteredData);
+        this.createPDPLine();
+        this.drawICELine();
+        this.drawPDPLine();
+        this.drawStaticLine();
         this.styleSelected();
     };
 
@@ -1879,24 +2013,48 @@ window.pdpiceplotNamespace = (function () {
     PDPICEPlot.prototype.getColoredRows = function () {
         var self = this;
         var rows = this._table.getRows();
+        var columns = this._table.getColumnNames();
         var colors = this._table.getRowColors();
-        var booleanMissingColors = false;
+        this._featureIndicies = [];
+        this._featureNames = [];
+        this._originalColIndicies = [];
+        var currFeatureIndex = 0;
+
         if (colors.length && rows.length && colors.length === rows.length) {
-            rows.forEach(function (row, ind) {
-                var color = colors[ind];
-                if (color === '#404040') {
-                    color = self._value.icecolor;
-                    booleanMissingColors = true;
+            columns.forEach(function (colName, colInd) {
+                var colArr = colName.split('_model');
+                if (colArr.length > 1) {
+                    self._featureIndicies.push(colInd);
+                    self._featureNames.push(colArr[0]);
+                    self._originalColIndicies.push(columns.indexOf(colArr[0]));
+                    if (colArr[0] === self._featureNames[self._currentFeatureInd]) {
+                        currFeatureIndex = colInd;
+                    }
                 }
-                row.color = color;
+            });
+
+            var rowData = [];
+            self._featureIndicies.forEach(function (x, currInd) {
+                rowData[currInd] = [];
+            });
+
+            rows.forEach(function (row, rowInd) {
+
+                self._featureIndicies.forEach(function (featInd, currInd) {
+                    var rowObj = {
+                        data: [[], []],
+                        color: colors[rowInd] || self._value.icecolor,
+                        rowKey: row.rowKey
+                    };
+
+                    var parsedData = JSON.parse(row.data[featInd]);
+                    rowObj.data[0].push(row.data[self._originalColIndicies[currInd]]);
+                    rowObj.data[1].push(parsedData);
+                    rowData[currInd].push(rowObj);
+                });
             });
         }
-        if (booleanMissingColors) {
-            knimeService.setWarningMessage('Some color values were ' +
-                'missing from the data table you provided. Please be aware the displayed colors ' +
-                'may not accurately represent the color assignments intended.');
-        }
-        return rows;
+        return rowData;
     };
 
     /**
@@ -1911,6 +2069,9 @@ window.pdpiceplotNamespace = (function () {
         this.initMouseCrosshair();
         d3.select('.viewport')
             .call(this.d3Elem.zoom);
+
+        var button = document.getElementById('pdpice-smart-zoom');
+        button.classList.toggle('active');
 
         window.addEventListener('resize', function () {
             clearTimeout(resizeDebouncer);
@@ -1931,20 +2092,26 @@ window.pdpiceplotNamespace = (function () {
      */
     PDPICEPlot.prototype.styleSelected = function () {
         var self = this;
-        var nodeList = d3.selectAll('.selected')._groups[0];
+        var nodeList = d3.selectAll('.ice-line')._groups[0];
         nodeList.forEach(function (node) {
             d3.select(node)
                 .attr('stroke-width', self._value.iceweight)
                 .attr('class', self.default.iceClassDef)
-                .attr('stroke', node.getAttribute('alt-stroke'));
+                .attr('stroke', d3.color(node.getAttribute('alt-stroke')))
+                .attr('stroke-opacity', self._value.selected.length ? .1
+                    : self._value.icealphaVal);
         });
         if (this._value.selected && this._value.selected.length && this._value.showICE) {
             this._value.selected.forEach(function (rowKey) {
                 var lineWeight = self._value.iceweight > .5 ? self._value.iceweight * 1.5 : 1;
                 var selectedNode = d3.select('#' + rowKey).node();
-                selectedNode.setAttribute('class', self.default.iceClassSelected);
-                selectedNode.setAttribute('stroke', d3.color(selectedNode.getAttribute('alt-stroke')).darker(2));
-                selectedNode.setAttribute('stroke-width', lineWeight);
+                if (selectedNode !== null) {
+                    selectedNode.setAttribute('class', self.default.iceClassSelected);
+                    selectedNode.setAttribute('stroke',
+                        d3.color(selectedNode.getAttribute('alt-stroke')));
+                    selectedNode.setAttribute('stroke-width', lineWeight);
+                    selectedNode.setAttribute('stroke-opacity', 1);
+                }
             });
         }
     };
@@ -1979,7 +2146,8 @@ window.pdpiceplotNamespace = (function () {
      */
     PDPICEPlot.prototype.initZoom = function () {
         var self = this;
-        var transMinY = this.viewportHeight + this.totalTopHeight + this.default.marginTop * 3 + 6;
+        var transMinY = this.viewportHeight + this.totalTopHeight +
+            this.default.marginTop * 3 + 6;
         var transMaxY = this.totalTopHeight;
         if (this._value.chartTitle.length > 0) {
             transMaxY = this.totalTopHeight - 38;
@@ -1999,9 +2167,11 @@ window.pdpiceplotNamespace = (function () {
 
             })
             .on('zoom', function () {
-                if (self._representation.enablePanning && self._representation.enableScrollZoom) {
-                    if (d3.event.sourceEvent && (d3.event.sourceEvent.type === 'wheel' ||
-                        d3.event.sourceEvent.type === 'mousemove')) {
+                if (self._representation.enablePanning &&
+                    self._representation.enableScrollZoom) {
+                    if (d3.event.sourceEvent &&
+                        (d3.event.sourceEvent.type === 'wheel' ||
+                            d3.event.sourceEvent.type === 'mousemove')) {
                         if (window.event.ctrlKey) {
                             // eslint-disable-next-line no-warning-comments
                             // TODO: additional options
@@ -2010,7 +2180,7 @@ window.pdpiceplotNamespace = (function () {
                             var newScaleX = d3.event.transform.rescaleX(d3El.xScale);
                             var newScaleY = d3.event.transform.rescaleY(d3El.yScale);
                             var newRadiusScale = d3.event.transform.k;
-                            if (self._value.smartZoom &&
+                            if (self.smartZoom &&
                                 self._representation.enableDragZoom) {
                                 self.createD3Lines(newScaleX, null, null);
                                 d3.selectAll('.x')
@@ -2041,6 +2211,14 @@ window.pdpiceplotNamespace = (function () {
                             self.redrawData();
                             self.styleSelected();
                         }
+                    } else if (d3.event.sourceEvent &&
+                        d3.event.sourceEvent.type === 'mousedown') {
+                        self._value.selected = [];
+                        knimeService.setSelectedRows(
+                            self._table.getTableId(),
+                            []
+                        );
+                        self.styleSelected();
                     }
                 }
                 // eslint-disable-next-line no-empty-function

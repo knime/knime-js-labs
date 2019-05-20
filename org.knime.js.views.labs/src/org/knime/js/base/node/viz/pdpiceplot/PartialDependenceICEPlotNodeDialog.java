@@ -70,6 +70,7 @@ import javax.swing.event.ChangeListener;
 
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
+import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.node.InvalidSettingsException;
@@ -96,17 +97,23 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
 
     private final JCheckBox m_generateImageCheckBox;
 
+    private final ColumnSelectionPanel m_featureIndexColumnSelectionPanel;
+
+    private final ColumnSelectionPanel m_predictionIndexColumnSelectionPanel;
+
     private final JSpinner m_maxNumRowsSpinner;
 
     private DataColumnSpecFilterConfiguration m_colSpecFilter = null;
 
+    private DataColumnSpecFilterConfiguration m_predictionColFilter = null;
+
     private DataTableSpec m_tableSpec;
 
-    private final DataColumnSpecFilterPanel m_colFilterPanel;
+    private final DataColumnSpecFilterPanel m_featColFilterPanel;
+
+    private final DataColumnSpecFilterPanel m_predictionColFilterPanel;
 
     private final ColumnSelectionPanel m_rowIDColComboBox;
-
-    private final ColumnSelectionPanel m_predictionColComboBox;
 
     private final JCheckBox m_showPDPCheckBox;
 
@@ -230,20 +237,23 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
 
         m_config = new PartialDependenceICEPlotConfig();
         m_generateImageCheckBox = new JCheckBox("Create image at outport");
+        DataValueColumnFilter colSelectionFilter = new DataValueColumnFilter(DoubleValue.class,
+            IntValue.class, LongValue.class);
+        TitledBorder featureSelectionBorder = BorderFactory.createTitledBorder("Choose the feature for the SVG image");
+        m_featureIndexColumnSelectionPanel = new ColumnSelectionPanel(featureSelectionBorder, colSelectionFilter,
+            false, false);
+        TitledBorder predictionSelectionBorder = BorderFactory.createTitledBorder("Choose the prediction for the SVG image");
+        m_predictionIndexColumnSelectionPanel = new ColumnSelectionPanel(predictionSelectionBorder, colSelectionFilter,
+            false, false);
         m_maxNumRowsSpinner = new JSpinner(
             new SpinnerNumberModel(PartialDependenceICEPlotConfig.DEFAULT_MAX_NUM_ROWS, 1, Integer.MAX_VALUE, 1));
-        TitledBorder colSelectionBorder = BorderFactory.createTitledBorder("Choose the feature column (model table)");
-        DataValueColumnFilter colSelectionFilter = new DataValueColumnFilter(DoubleValue.class, LongValue.class);
-        m_colFilterPanel = new DataColumnSpecFilterPanel();
-        m_colFilterPanel.setBorder(BorderFactory.createTitledBorder("Features sampled by pre-processor"));
-        colSelectionBorder = BorderFactory.createTitledBorder("Choose the row ID column (model table)");
+        m_featColFilterPanel = new DataColumnSpecFilterPanel();
+        m_featColFilterPanel.setBorder(BorderFactory.createTitledBorder("Features sampled by pre-processor"));
+        m_predictionColFilterPanel = new DataColumnSpecFilterPanel();
+        m_predictionColFilterPanel.setBorder(BorderFactory.createTitledBorder("Prediction Columns"));
+        TitledBorder colSelectionBorder = BorderFactory.createTitledBorder("Choose the row ID column (model table)");
         colSelectionFilter = new DataValueColumnFilter(StringValue.class);
         m_rowIDColComboBox = new ColumnSelectionPanel(colSelectionBorder, colSelectionFilter, false, false);
-        colSelectionBorder = BorderFactory.createTitledBorder("Choose the prediction column (model table)");
-        colSelectionFilter = new DataValueColumnFilter(DoubleValue.class, LongValue.class);
-        m_predictionColComboBox = new ColumnSelectionPanel(colSelectionBorder, colSelectionFilter, false, false);
-        colSelectionBorder = BorderFactory.createTitledBorder("Choose the feature column (original table)");
-        colSelectionFilter = new DataValueColumnFilter(DoubleValue.class, LongValue.class);
         m_showPDPCheckBox = new JCheckBox("Show partial dependence plot");
         m_PDPColorChooserComponent =
             new DialogComponentColorChooser(new SettingsModelColor(PartialDependenceICEPlotConfig.CFG_PDP_COLOR,
@@ -334,6 +344,14 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_enableGridControlsCheckBox = new JCheckBox("Enable grid controls");
         m_enableMouseCrosshairControlsCheckBox = new JCheckBox("Enable mouse-crosshairs controls");
         m_enableAdvancedOptionsCheckBox = new JCheckBox("Enable advanced view options");
+
+        m_generateImageCheckBox.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                toggleGenerateImageControls();
+            }
+        });
 
         m_showPDPCheckBox.addChangeListener(new ChangeListener() {
 
@@ -457,7 +475,6 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         constraints.anchor = GridBagConstraints.NORTHWEST;
         constraints.gridx = 0;
         constraints.gridy = 0;
-        panel.add(m_generateImageCheckBox, constraints);
         JPanel border = new JPanel(new GridBagLayout());
         border.setPreferredSize(new Dimension(150, 50));
         border.setBorder(BorderFactory.createTitledBorder("Maximum number of rows:"));
@@ -468,22 +485,42 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         c2.gridy = 0;
         m_maxNumRowsSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
         border.add(m_maxNumRowsSpinner, c2);
-        constraints.gridy ++;
         panel.add(border, constraints);
-        constraints.anchor = GridBagConstraints.NORTHWEST;
-        constraints.gridx = 0;
-        constraints.gridy++;
-        panel.add(m_colFilterPanel, constraints);
-        constraints.gridx = 0;
-        constraints.gridy++;
-        Dimension columnSelectionDimension = new Dimension(300, 50);
-        m_predictionColComboBox.setPreferredSize(columnSelectionDimension);
-        panel.add(m_predictionColComboBox, constraints);
         constraints.anchor = GridBagConstraints.NORTHEAST;
+        Dimension columnSelectionDimension = new Dimension(300, 50);
         m_rowIDColComboBox.setPreferredSize(columnSelectionDimension);
         panel.add(m_rowIDColComboBox, constraints);
         constraints.gridx = 0;
         constraints.gridy++;
+        constraints.anchor = GridBagConstraints.NORTHWEST;
+        panel.add(m_featColFilterPanel, constraints);
+        constraints.gridx = 0;
+        constraints.gridy++;
+        panel.add(m_predictionColFilterPanel, constraints);
+        constraints.gridx = 0;
+        constraints.gridy++;
+        JPanel imagePanel = new JPanel(new GridBagLayout());
+        imagePanel.setPreferredSize(new Dimension(710, 100));
+        imagePanel.setBorder(BorderFactory.createTitledBorder("SVG Image Options"));
+        GridBagConstraints constraints2 = new GridBagConstraints();
+        constraints2.insets = new Insets(1, 1, 1, 1);
+//        constraints2.anchor = GridBagConstraints.CENTER;
+        constraints2.anchor = GridBagConstraints.NORTHWEST;
+        constraints2.fill = GridBagConstraints.HORIZONTAL;
+        constraints2.gridwidth = 2;
+        constraints2.gridx = 0;
+        constraints2.gridy = 0;
+        imagePanel.add(m_generateImageCheckBox, constraints2);
+        constraints2.gridy ++;
+        m_featureIndexColumnSelectionPanel.setPreferredSize(columnSelectionDimension);
+        imagePanel.add(m_featureIndexColumnSelectionPanel, constraints2);
+        constraints2.anchor = GridBagConstraints.NORTHEAST;
+        constraints2.gridx = 2;
+        m_predictionIndexColumnSelectionPanel.setPreferredSize(columnSelectionDimension);
+        imagePanel.add(m_predictionIndexColumnSelectionPanel, constraints2);
+        panel.add(imagePanel, constraints);
+//        constraints.anchor = GridBagConstraints.NORTHEAST;
+
         return panel;
     }
 
@@ -827,6 +864,15 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
     }
 
     /**
+     * toggle enabled Image Column Feature swing components
+     */
+    private void toggleGenerateImageControls() {
+        boolean isEnabled = m_generateImageCheckBox.isSelected();
+        m_featureIndexColumnSelectionPanel.setEnabled(isEnabled);
+        m_predictionIndexColumnSelectionPanel.setEnabled(isEnabled);
+    }
+
+    /**
      * toggle enabled PDP swing components
      */
     private void togglePDPControls() {
@@ -968,11 +1014,23 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_generateImageCheckBox.setSelected(m_config.getGenerateImage());
         m_maxNumRowsSpinner.setValue(m_config.getMaxNumRows());
         m_colSpecFilter = m_config.getSampledFeatureColumns();
+        m_predictionColFilter = m_config.getPredictionColumns();
         m_tableSpec = specs[0];
-        m_colFilterPanel.loadConfiguration(m_colSpecFilter, m_tableSpec);
-        // TODO: update col filter panel
+        String[] featureNames = m_tableSpec.getColumnNames();
+        int featureInd = 0;
+        if(featureNames.length-1 >= m_config.getFeatureInd()) {
+            featureInd = m_config.getFeatureInd();
+        }
+        String[] predictionNames = m_tableSpec.getColumnNames();
+        int predictionInd = 0;
+        if(predictionNames.length - 1 >= m_config.getPredictionInd()) {
+            predictionInd = m_config.getPredictionInd();
+        }
+        m_featColFilterPanel.loadConfiguration(m_colSpecFilter, m_tableSpec);
+        m_predictionColFilterPanel.loadConfiguration(m_predictionColFilter, m_tableSpec);
+        m_featureIndexColumnSelectionPanel.update(specs[1], featureNames[featureInd], false);
+        m_predictionIndexColumnSelectionPanel.update(specs[0], predictionNames[predictionInd], false);
         m_rowIDColComboBox.update(specs[0], m_config.getRowIDCol(), false);
-        m_predictionColComboBox.update(specs[0], m_config.getPredictionCol(), false);
         m_showPDPCheckBox.setSelected(m_config.getShowPDP());
         m_PDPColorChooserComponent.setColor(m_config.getPDPColor());
         m_PDPLineWeightSpinner.setValue(m_config.getPDPLineWeight());
@@ -1040,6 +1098,7 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         toggleZoomControls();
         toggleInteractiveControls();
         toggleSelectionControls();
+        toggleGenerateImageControls();
     }
 
     /**
@@ -1049,14 +1108,34 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         m_config.setGenerateImage(m_generateImageCheckBox.isSelected());
         m_config.setMaxNumRows((int)m_maxNumRowsSpinner.getValue());
-        m_colFilterPanel.saveConfiguration(m_config.getSampledFeatureColumns());
-        final String[] includedColumns = m_config.getSampledFeatureColumns().applyTo(m_tableSpec).getIncludes();
-        if(includedColumns == null || includedColumns.length < 1) {
-            throw new InvalidSettingsException("You must select at least 1 of the columns that were sampled in the "
-                + "preprocessing node.");
+        m_featColFilterPanel.saveConfiguration(m_config.getSampledFeatureColumns());
+        final String[] includedFeatColumns = m_config.getSampledFeatureColumns().applyTo(m_tableSpec).getIncludes();
+        m_predictionColFilterPanel.saveConfiguration(m_config.getPredictionColumns());
+        final String[] includedPredictionColumns = m_config.getPredictionColumns().applyTo(m_tableSpec).getIncludes();
+        if(includedFeatColumns == null || includedPredictionColumns == null ||
+                includedFeatColumns.length < 1 || includedPredictionColumns.length < 1) {
+            throw new InvalidSettingsException("You must select at least 1 of column as the feature and 1 column as "
+                + "the prediction.");
         }
+        int featureInd = 0;
+//        int count = 0;
+        for(String featName : includedFeatColumns) {
+            if(featName.equals(m_featureIndexColumnSelectionPanel.getSelectedColumn())) {
+                featureInd = m_tableSpec.findColumnIndex(featName);
+            }
+//            count ++;
+        }
+        int predictionInd = 0;
+//        count = 0;
+        for(String predName : includedPredictionColumns) {
+            if(predName.equals(m_predictionIndexColumnSelectionPanel.getSelectedColumn())) {
+                predictionInd = m_tableSpec.findColumnIndex(predName);
+            }
+//            count ++;
+        }
+        m_config.setFeatureInd(featureInd);
+        m_config.setPredictionInd(predictionInd);
         m_config.setRowIDCol(m_rowIDColComboBox.getSelectedColumn());
-        m_config.setPredictionCol(m_predictionColComboBox.getSelectedColumn());
         m_config.setShowPDP(m_showPDPCheckBox.isSelected());
         m_config.setPDPColor(m_PDPColorChooserComponent.getColor());
         m_config.setPDPLineWeight((double)m_PDPLineWeightSpinner.getValue());

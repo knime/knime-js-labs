@@ -75,7 +75,10 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 	private Boolean m_generateImage;
 	private String[] m_sampledFeatureColumns;
 	private String  m_rowIDCol;
-	private String  m_predictionCol;
+	private String[] m_predictionColumns;
+	private double[][] m_featureDomains;
+	private double[][] m_predictionDomains;
+	private int[] m_predictionIndicies;
 	private int m_viewWidth;
 	private int m_viewHeight;
 	private Boolean m_resizeToFill;
@@ -174,19 +177,61 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 		this.m_rowIDCol = rowIDCol;
 	}
 
-	/**
-	 * @return the predictionCol
-	 */
-	public String getPredictionCol() {
-		return m_predictionCol;
-	}
+    /**
+     * @return the predictionColumns
+     */
+    public String[] getPredictionColumns() {
+        return m_predictionColumns;
+    }
 
-	/**
-	 * @param predictionCol the predictionCol to set
-	 */
-	public void setPredictionCol(final String predictionCol) {
-		this.m_predictionCol = predictionCol;
-	}
+    /**
+     * @param predictionColumns the predictionColumns to set
+     */
+    public void setPredictionColumns(final String[] predictionColumns) {
+        this.m_predictionColumns = predictionColumns;
+    }
+
+    /**
+     * @return the predictionIndicies
+     */
+    public int[] getPredictionIndicies() {
+        return m_predictionIndicies;
+    }
+
+    /**
+     * @return featureDomains
+     */
+    public double[][] getFeatureDomains() {
+        return m_featureDomains;
+    }
+
+    /**
+     * @param featureDomains
+     */
+    public void setFeatureDomains(final double[][] featureDomains) {
+        this.m_featureDomains = featureDomains;
+    }
+
+    /**
+     * @return predictionDomains
+     */
+    public double[][] getPredictionDomains() {
+        return m_predictionDomains;
+    }
+
+    /**
+     * @param predictionDomains
+     */
+    public void setPredictionDomains(final double[][] predictionDomains) {
+        this.m_predictionDomains = predictionDomains;
+    }
+
+    /**
+     * @param predictionIndicies the predictionIndicies to set
+     */
+    public void setPredictionIndicies(final int[] predictionIndicies) {
+        this.m_predictionIndicies = predictionIndicies;
+    }
 
 	/**
 	 * @return the viewWidth
@@ -575,7 +620,8 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_GENERATE_IMAGE, getGenerateImage());
 		settings.addStringArray(PartialDependenceICEPlotConfig.CFG_FEATURE_COLUMN_STRINGS, getSampledFeatureColumns());
 		settings.addString(PartialDependenceICEPlotConfig.CFG_ROW_ID_COLUMN, getRowIDCol());
-		settings.addString(PartialDependenceICEPlotConfig.CFG_PREDICTION_COLUMN, getPredictionCol());
+		settings.addStringArray(PartialDependenceICEPlotConfig.CFG_PREDICTION_COLUMNS, getPredictionColumns());
+		settings.addIntArray(PartialDependenceICEPlotConfig.CFG_PREDICTION_INDICIES, getPredictionIndicies());
 		settings.addInt(PartialDependenceICEPlotConfig.CFG_VIEW_WIDTH, getViewWidth());
 		settings.addInt(PartialDependenceICEPlotConfig.CFG_VIEW_HEIGHT, getViewHeight());
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_RESIZE_TO_FILL, getResizeToFill());
@@ -604,6 +650,17 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 		settings.addBoolean(PartialDependenceICEPlotConfig.CFG_RUNNING_IN_VIEW, getRunningInView());
 		m_table.saveJSONToNodeSettings(settings);
 		m_JSONwarnings.saveToNodeSettings(settings);
+        settings.addInt(PartialDependenceICEPlotConfig.CFG_NUM_FEATURE_DOMAINS, getFeatureDomains().length);
+        int count = 0;
+        for (double[] featDomain : m_featureDomains) {
+            settings.addDoubleArray(PartialDependenceICEPlotConfig.CFG_FEATURE_DOMAINS + count, featDomain);
+        }
+
+        settings.addInt(PartialDependenceICEPlotConfig.CFG_NUM_PREDICTION_DOMAINS, getPredictionDomains().length);
+        count = 0;
+        for (double[] predDomain : m_predictionDomains) {
+            settings.addDoubleArray(PartialDependenceICEPlotConfig.CFG_PREDICTION_DOMAINS + count, predDomain);
+        }
 	}
 
 	/**
@@ -615,7 +672,8 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 		setGenerateImage(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_GENERATE_IMAGE));
 		setSampledFeatureColumns(settings.getStringArray(PartialDependenceICEPlotConfig.CFG_FEATURE_COLUMN_STRINGS));
 		setRowIDCol(settings.getString(PartialDependenceICEPlotConfig.CFG_ROW_ID_COLUMN));
-		setPredictionCol(settings.getString(PartialDependenceICEPlotConfig.CFG_PREDICTION_COLUMN));
+		setPredictionColumns(settings.getStringArray(PartialDependenceICEPlotConfig.CFG_PREDICTION_COLUMNS));
+		setPredictionIndicies(settings.getIntArray(PartialDependenceICEPlotConfig.CFG_PREDICTION_INDICIES));
 		setViewWidth(settings.getInt(PartialDependenceICEPlotConfig.CFG_VIEW_WIDTH));
 		setViewHeight(settings.getInt(PartialDependenceICEPlotConfig.CFG_VIEW_HEIGHT));
 		setResizeToFill(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_RESIZE_TO_FILL));
@@ -644,6 +702,18 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 		setDataTable(JSONDataTable.loadFromNodeSettings(settings));
 		m_JSONwarnings.loadFromNodeSettings(settings);
 		setRunningInView(settings.getBoolean(PartialDependenceICEPlotConfig.CFG_RUNNING_IN_VIEW));
+        int numFeatDomains = settings.getInt(PartialDependenceICEPlotConfig.CFG_NUM_FEATURE_DOMAINS);
+        double[][] featDomains = new double[numFeatDomains][2];
+        for (int x = 0; x < numFeatDomains; x++) {
+            featDomains[x] = settings.getDoubleArray(PartialDependenceICEPlotConfig.CFG_FEATURE_DOMAINS + x, new double[0]);
+        }
+        setFeatureDomains(featDomains);
+        int numPredDomains = settings.getInt(PartialDependenceICEPlotConfig.CFG_NUM_PREDICTION_DOMAINS);
+        double[][] predDomains = new double[numPredDomains][2];
+        for (int x = 0; x < numPredDomains; x++) {
+            predDomains[x] = settings.getDoubleArray(PartialDependenceICEPlotConfig.CFG_PREDICTION_DOMAINS + x, new double[0]);
+        }
+        setPredictionDomains(predDomains);
 	}
 
 	/**
@@ -667,7 +737,10 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
         		.append(m_generateImage, other.m_generateImage)
         		.append(m_sampledFeatureColumns, other.m_sampledFeatureColumns)
         		.append(m_rowIDCol, other.m_rowIDCol)
-        		.append(m_predictionCol, other.m_predictionCol)
+        		.append(m_predictionColumns, other.m_predictionColumns)
+        		.append(m_predictionIndicies, other.m_predictionIndicies)
+        		.append(m_featureDomains, other.m_featureDomains)
+        		.append(m_predictionDomains, other.m_predictionDomains)
         		.append(m_viewWidth, other.m_viewWidth)
         		.append(m_viewHeight, other.m_viewHeight)
         		.append(m_resizeToFill, other.m_resizeToFill)
@@ -709,7 +782,10 @@ public class PartialDependenceICEPlotNodeViewRepresentation extends JSONViewCont
 				.append(m_generateImage)
 				.append(m_sampledFeatureColumns)
 				.append(m_rowIDCol)
-				.append(m_predictionCol)
+				.append(m_predictionColumns)
+				.append(m_predictionIndicies)
+				.append(m_featureDomains)
+				.append(m_featureDomains)
 				.append(m_viewWidth)
 				.append(m_viewHeight)
 				.append(m_resizeToFill)

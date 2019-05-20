@@ -44,31 +44,44 @@
 		    <description>
                 General node options.
             </description>
-			<option name="Create image at outport">
-				Select this option to create an SVG image of the chart at outport 1.
-			</option>
 			<option name="Maximum number of rows">
 				Use this option to filter out the input data to a fixed number of 
 				rows from the original data table (inport 2). This number 
 				corresponds to the maximum number of ICE lines to be displayed.
-			</option>
-			<option name="Choose the feature column (model table)">
-				Select the column of sampled feature values from the model output at
-				inport 1.
 			</option>
 			<option name="Choose the row ID column (model table)">
 				Select the column of Row ID's corresponding to the original Row ID's
 				from the training data. This column is chosen from the model output 
 				table at inport 1.
 			</option>
-			<option name="Choose the prediction column (model table)">
-				Select the column of model predictions from the model output table at
-				inport 1.
+			<option name="Features  sampled by pre-processor">
+				Select one or more features that were sampled BEFORE being scored by the 
+				model. You can select all of the features sampled previously, or just one.
+				The node will send you a warning if you didn't select all the sampled features
+				but will execute properly. It will fail during execution if you select a column
+				that was not sampled prior to model application. These features will represent
+				the X-Axis in the view and, if you select more than one, you will be able to change
+				between them from inside the view.
 			</option>
-			<option name="Choose the feature columnd (original table)">
-				Select the column corresponding to the feature that was sampled and
-				processed by the model from the columns of the original data table at
-				inport 2.
+			<option name="Prediction Columns">
+				Select one or more prediction columns from the model output. Choose columns
+				that represent the model scoring output. These columns must be unique from the feature
+				columns chosen in the other column selection panel. If they are not, you will not be able 
+				to execute the node. These predictions will represent the Y-Axis in the view and, if you 
+				select more than one, you will be able to change between them from inside the view.
+			</option>
+			<option name="Create image at outport">
+				Select this option to create an SVG image of the chart at outport 1.
+			</option>
+			<option name="Choose the feature for the SVG image">
+				Select the feature coluumn for the X-Axis in the generated SVG image. If this 
+				feature column doesn't exist in the selected feature columns, the image will use the 
+				first available feature column by default.
+			</option>
+			<option name="Choose the prediction for the SVG image">
+				Select the prediction column for the Y-Axis in the generated SVG image. If this 
+				prediction column doesn't exist in the selected prediction columns, the image will use the 
+				first available prediction column by default.
 			</option>
 		</tab>
 		<tab name="PDP/ICE">
