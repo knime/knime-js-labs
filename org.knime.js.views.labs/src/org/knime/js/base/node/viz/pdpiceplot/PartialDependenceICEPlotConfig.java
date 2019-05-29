@@ -70,7 +70,7 @@ import org.knime.core.node.util.filter.column.DataColumnSpecFilterConfiguration;
  *
  * @author Ben Laney, KNIME GmbH, Konstanz, Germany
  */
-public final class PartialDependenceICEPlotConfig {
+public class PartialDependenceICEPlotConfig {
 
     /*
      * Constants unavailable to user and internal constants
@@ -1597,28 +1597,28 @@ public final class PartialDependenceICEPlotConfig {
         this.m_runningInView.setBooleanValue(runningInView);
     }
 
-    /**
-     * @return featureDomains
-     */
-    public double[][] getFeatureDomains() {
-        return m_featureDomains;
-    }
-
-    /**
-     * @return predictionDomains
-     */
-    public double[][] getPredictionDomains() {
-        return m_predictionDomains;
-    }
-
-    /**
-     * @param featureDomains
-     * @param predictionDomains
-     */
-    public void setColumnDomains(final double[][] featureDomains, final double[][] predictionDomains) {
-        this.m_featureDomains = featureDomains;
-        this.m_predictionDomains = predictionDomains;
-    }
+//    /**
+//     * @return featureDomains
+//     */
+//    public double[][] getFeatureDomains() {
+//        return m_featureDomains;
+//    }
+//
+//    /**
+//     * @return predictionDomains
+//     */
+//    public double[][] getPredictionDomains() {
+//        return m_predictionDomains;
+//    }
+//
+//    /**
+//     * @param featureDomains
+//     * @param predictionDomains
+//     */
+//    public void setColumnDomains(final double[][] featureDomains, final double[][] predictionDomains) {
+//        this.m_featureDomains = featureDomains;
+//        this.m_predictionDomains = predictionDomains;
+//    }
 
     /**
      * @param color
@@ -1746,17 +1746,19 @@ public final class PartialDependenceICEPlotConfig {
         m_enableAdvancedOptionsControls.saveSettingsTo(settings);
         m_customCSS.saveSettingsTo(settings);
         m_runningInView.saveSettingsTo(settings);
-        settings.addInt(CFG_NUM_FEATURE_DOMAINS, getFeatureDomains().length);
-        int count = 0;
-        for (double[] featDomain : m_featureDomains) {
-            settings.addDoubleArray(CFG_FEATURE_DOMAINS + count, featDomain);
-        }
-
-        settings.addInt(CFG_NUM_PREDICTION_DOMAINS, getPredictionDomains().length);
-        count = 0;
-        for (double[] predDomain : m_predictionDomains) {
-            settings.addDoubleArray(CFG_PREDICTION_DOMAINS + count, predDomain);
-        }
+//        settings.addInt(CFG_NUM_FEATURE_DOMAINS, getFeatureDomains().length);
+//        int count = 0;
+//        for (double[] featDomain : m_featureDomains) {
+//            settings.addDoubleArray(CFG_FEATURE_DOMAINS + count, featDomain);
+//            count++;
+//        }
+//
+//        settings.addInt(CFG_NUM_PREDICTION_DOMAINS, getPredictionDomains().length);
+//        count = 0;
+//        for (double[] predDomain : m_predictionDomains) {
+//            settings.addDoubleArray(CFG_PREDICTION_DOMAINS + count, predDomain);
+//            count++;
+//        }
     }
 
     /**
@@ -1833,17 +1835,17 @@ public final class PartialDependenceICEPlotConfig {
         setEnableAdvancedOptionsControls(settings.getBoolean(CFG_ENABLE_ADVANCED_OPTIONS_CONTROLS));
         setCustomCSS(settings.getString(CFG_CSS_CUSTOM));
         setRunningInView(settings.getBoolean(CFG_RUNNING_IN_VIEW));
-        int numFeatDomains = settings.getInt(CFG_NUM_FEATURE_DOMAINS);
-        double[][] featDomains = new double[numFeatDomains][2];
-        for (int x = 0; x < numFeatDomains; x++) {
-            featDomains[x] = settings.getDoubleArray(CFG_FEATURE_DOMAINS + x, new double[0]);
-        }
-        int numPredDomains = settings.getInt(CFG_NUM_PREDICTION_DOMAINS);
-        double[][] predDomains = new double[numPredDomains][2];
-        for (int x = 0; x < numPredDomains; x++) {
-            predDomains[x] = settings.getDoubleArray(CFG_PREDICTION_DOMAINS + x, new double[0]);
-        }
-        setColumnDomains(featDomains, predDomains);
+//        int numFeatDomains = settings.getInt(CFG_NUM_FEATURE_DOMAINS);
+//        double[][] featDomains = new double[numFeatDomains][2];
+//        for (int x = 0; x < numFeatDomains; x++) {
+//            featDomains[x] = settings.getDoubleArray(CFG_FEATURE_DOMAINS + x, new double[0]);
+//        }
+//        int numPredDomains = settings.getInt(CFG_NUM_PREDICTION_DOMAINS);
+//        double[][] predDomains = new double[numPredDomains][2];
+//        for (int x = 0; x < numPredDomains; x++) {
+//            predDomains[x] = settings.getDoubleArray(CFG_PREDICTION_DOMAINS + x, new double[0]);
+//        }
+//        setColumnDomains(featDomains, predDomains);
     }
 
     /**

@@ -70,6 +70,18 @@ public class PartialDependenceICEPlotViewValue extends JSONViewContent {
 
     static final String IMAGE = "image";
 
+    static final String SMART_ZOOM_ENABLED = "smartZoomEnabled";
+
+    static final String ZOOM_K = "zoomK";
+
+    static final String ZOOM_X = "zoomX";
+
+    static final String ZOOM_Y = "zoomY";
+
+    static final String CURRENT_FEATURE = "currentFeature";
+
+    static final String CURRENT_PREDICTION = "currentPrediction";
+
     private Boolean m_showPDP;
 
     private String m_PDPColor;
@@ -149,6 +161,18 @@ public class PartialDependenceICEPlotViewValue extends JSONViewContent {
     private int m_featureInd;
 
     private int m_predictionInd;
+
+    private boolean m_smartZoomEnabled = true;
+
+    private double m_zoomK = 1;
+
+    private double m_zoomX = 0;
+
+    private double m_zoomY = 0;
+
+    private String m_currentFeature = "";
+
+    private String m_currentPrediction = "";
 
     /**
      * @return the showPDP
@@ -711,6 +735,91 @@ public class PartialDependenceICEPlotViewValue extends JSONViewContent {
     }
 
     /**
+     * @return m_smartZoomEnabled
+     */
+    public boolean getSmartZoomEnabled() {
+        return m_smartZoomEnabled;
+    }
+
+    /**
+     * @param smartZoomEnabled
+     */
+    public void setSmartZoomEnabled(final boolean smartZoomEnabled) {
+        this.m_smartZoomEnabled = smartZoomEnabled;
+    }
+
+    /**
+     * @return the zoomK
+     */
+    public double getZoomK() {
+        return m_zoomK;
+    }
+
+    /**
+     * @param zoomK the zoomK to set
+     */
+    public void setZoomK(final double zoomK) {
+        this.m_zoomK = zoomK;
+    }
+
+    /**
+     * @return the zoomX
+     */
+    public double getZoomX() {
+        return m_zoomX;
+    }
+
+    /**
+     * @param zoomX the zoomX to set
+     */
+    public void setZoomX(final double zoomX) {
+        this.m_zoomX = zoomX;
+    }
+
+    /**
+     * @return the zoomY
+     */
+    public double getZoomY() {
+        return m_zoomY;
+    }
+
+    /**
+     * @param zoomY the zoomY to set
+     */
+    public void setZoomY(final double zoomY) {
+        this.m_zoomY = zoomY;
+    }
+
+    /**
+     * @param currentFeature the currentFeature to set
+     */
+    public void setCurrentFeature(final String currentFeature) {
+        this.m_currentFeature = currentFeature;
+    }
+
+    /**
+     * @return the currentFeature
+     */
+    public String getCurrentFeature() {
+        return m_currentFeature;
+    }
+
+    /**
+     * @param currentPrediction the currentPrediction to set
+     */
+    public void setCurrentPrediction(final String currentPrediction) {
+        this.m_currentPrediction = currentPrediction;
+    }
+
+    /**
+     * @return the currentPrediction
+     */
+    public String getCurrentPrediction() {
+        return m_currentPrediction;
+    }
+
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -755,6 +864,12 @@ public class PartialDependenceICEPlotViewValue extends JSONViewContent {
         settings.addString(PartialDependenceICEPlotViewValue.IMAGE, m_image);
         settings.addInt(PartialDependenceICEPlotConfig.CFG_FEATURE_INDEX, m_featureInd);
         settings.addInt(PartialDependenceICEPlotConfig.CFG_PREDICTION_INDEX, m_predictionInd);
+        settings.addBoolean(PartialDependenceICEPlotViewValue.SMART_ZOOM_ENABLED, m_smartZoomEnabled);
+        settings.addDouble(PartialDependenceICEPlotViewValue.ZOOM_K, m_zoomK);
+        settings.addDouble(PartialDependenceICEPlotViewValue.ZOOM_X, m_zoomX);
+        settings.addDouble(PartialDependenceICEPlotViewValue.ZOOM_Y, m_zoomY);
+        settings.addString(PartialDependenceICEPlotViewValue.CURRENT_FEATURE, m_currentFeature);
+        settings.addString(PartialDependenceICEPlotViewValue.CURRENT_PREDICTION, m_currentPrediction);
     }
 
     /**
@@ -802,6 +917,13 @@ public class PartialDependenceICEPlotViewValue extends JSONViewContent {
         setImage(settings.getString(PartialDependenceICEPlotViewValue.IMAGE));
         setFeatureInd(settings.getInt(PartialDependenceICEPlotConfig.CFG_FEATURE_INDEX));
         setPredictionInd(settings.getInt(PartialDependenceICEPlotConfig.CFG_PREDICTION_INDEX));
+        setSmartZoomEnabled(settings.getBoolean(PartialDependenceICEPlotViewValue.SMART_ZOOM_ENABLED));
+        setZoomK(settings.getDouble(PartialDependenceICEPlotViewValue.ZOOM_K));
+        setZoomX(settings.getDouble(PartialDependenceICEPlotViewValue.ZOOM_X));
+        setZoomY(settings.getDouble(PartialDependenceICEPlotViewValue.ZOOM_Y));
+        setCurrentFeature(settings.getString(PartialDependenceICEPlotViewValue.CURRENT_FEATURE));
+        setCurrentPrediction(settings.getString(PartialDependenceICEPlotViewValue.CURRENT_PREDICTION));
+
     }
 
     /**
@@ -840,6 +962,8 @@ public class PartialDependenceICEPlotViewValue extends JSONViewContent {
             .append(m_backgroundColor, other.m_backgroundColor).append(m_dataAreaColor, other.m_dataAreaColor)
             .append(m_gridColor, other.m_gridColor).append(m_image, other.m_image).append(m_selected, other.m_selected)
             .append(m_featureInd, other.m_featureInd).append(m_predictionInd, other.m_predictionInd)
+            .append(m_smartZoomEnabled, other.m_smartZoomEnabled).append(m_zoomK, other.m_zoomK).append(m_zoomX, other.m_zoomX)
+            .append(m_zoomY, other.m_zoomY).append(m_currentFeature, other.m_currentFeature).append(m_currentPrediction, other.m_currentPrediction)
             .isEquals();
     }
 
@@ -858,6 +982,8 @@ public class PartialDependenceICEPlotViewValue extends JSONViewContent {
             .append(m_showStaticLine).append(m_staticLineColor).append(m_staticLineWeight).append(m_staticLineYValue)
             .append(m_enableMouseCrosshair).append(m_backgroundColor).append(m_dataAreaColor).append(m_gridColor)
             .append(m_image).append(m_selected).append(m_featureInd).append(m_predictionInd)
+            .append(m_smartZoomEnabled).append(m_zoomK).append(m_zoomX)
+            .append(m_zoomY).append(m_currentFeature).append(m_currentPrediction)
             .toHashCode();
     }
 }

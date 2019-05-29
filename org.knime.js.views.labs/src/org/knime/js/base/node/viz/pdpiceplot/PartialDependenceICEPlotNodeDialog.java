@@ -254,6 +254,7 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         TitledBorder colSelectionBorder = BorderFactory.createTitledBorder("Choose the row ID column (model table)");
         colSelectionFilter = new DataValueColumnFilter(StringValue.class);
         m_rowIDColComboBox = new ColumnSelectionPanel(colSelectionBorder, colSelectionFilter, false, false);
+        m_rowIDColComboBox.setPreferredSize(new Dimension(300, 50));
         m_showPDPCheckBox = new JCheckBox("Show partial dependence plot");
         m_PDPColorChooserComponent =
             new DialogComponentColorChooser(new SettingsModelColor(PartialDependenceICEPlotConfig.CFG_PDP_COLOR,
@@ -476,18 +477,18 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         constraints.gridx = 0;
         constraints.gridy = 0;
         JPanel border = new JPanel(new GridBagLayout());
-        border.setPreferredSize(new Dimension(150, 50));
+        border.setPreferredSize(new Dimension(300, 50));
         border.setBorder(BorderFactory.createTitledBorder("Maximum number of rows:"));
         GridBagConstraints c2 = new GridBagConstraints();
         c2.anchor = GridBagConstraints.NORTHWEST;
         c2.fill = GridBagConstraints.HORIZONTAL;
         c2.gridx = 0;
         c2.gridy = 0;
-        m_maxNumRowsSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
+        m_maxNumRowsSpinner.setPreferredSize(new Dimension(250, TEXT_FIELD_SIZE));
         border.add(m_maxNumRowsSpinner, c2);
         panel.add(border, constraints);
         constraints.anchor = GridBagConstraints.NORTHEAST;
-        Dimension columnSelectionDimension = new Dimension(300, 50);
+        Dimension columnSelectionDimension = new Dimension(345, 50);
         m_rowIDColComboBox.setPreferredSize(columnSelectionDimension);
         panel.add(m_rowIDColComboBox, constraints);
         constraints.gridx = 0;
@@ -504,7 +505,6 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         imagePanel.setBorder(BorderFactory.createTitledBorder("SVG Image Options"));
         GridBagConstraints constraints2 = new GridBagConstraints();
         constraints2.insets = new Insets(1, 1, 1, 1);
-//        constraints2.anchor = GridBagConstraints.CENTER;
         constraints2.anchor = GridBagConstraints.NORTHWEST;
         constraints2.fill = GridBagConstraints.HORIZONTAL;
         constraints2.gridwidth = 2;
@@ -519,7 +519,6 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
         m_predictionIndexColumnSelectionPanel.setPreferredSize(columnSelectionDimension);
         imagePanel.add(m_predictionIndexColumnSelectionPanel, constraints2);
         panel.add(imagePanel, constraints);
-//        constraints.anchor = GridBagConstraints.NORTHEAST;
 
         return panel;
     }
@@ -1118,20 +1117,16 @@ public class PartialDependenceICEPlotNodeDialog extends NodeDialogPane {
                 + "the prediction.");
         }
         int featureInd = 0;
-//        int count = 0;
         for(String featName : includedFeatColumns) {
             if(featName.equals(m_featureIndexColumnSelectionPanel.getSelectedColumn())) {
                 featureInd = m_tableSpec.findColumnIndex(featName);
             }
-//            count ++;
         }
         int predictionInd = 0;
-//        count = 0;
         for(String predName : includedPredictionColumns) {
             if(predName.equals(m_predictionIndexColumnSelectionPanel.getSelectedColumn())) {
                 predictionInd = m_tableSpec.findColumnIndex(predName);
             }
-//            count ++;
         }
         m_config.setFeatureInd(featureInd);
         m_config.setPredictionInd(predictionInd);

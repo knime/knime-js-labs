@@ -84,6 +84,8 @@ window.pdpiceplotNamespace = (function () {
         this.onSelectionChange = this.onSelectionChange.bind(this);
         this.onFilterChange = this.onFilterChange.bind(this);
         this.getCorrectData = this.getCorrectData.bind(this);
+        this.onZoom = this.onZoom.bind(this);
+        this.resetZoom = this.resetZoom.bind(this);
         this.xaxisMin;
         this.xaxisMax;
         this.yaxisMin;
@@ -115,9 +117,24 @@ window.pdpiceplotNamespace = (function () {
         this._table.setDataTable(representation.dataTable);
         this._tableId = representation.dataTable.id;
         this._representation.dataTable = null;
+
+        if (this._value.currentFeature && this._value.currentFeature.length) {
+            this._currentFeatureInd = this._representation.sampledFeatureColumns
+                .indexOf(this._value.currentFeature);
+        }
+        if (this._value.currentPrediction && this._value.currentPrediction.length) {
+            this._currentPredictionInd = this._representation.predictionColumns
+                .indexOf(this._value.currentPrediction);
+        }
+
+        this.smartZoom = this._value.smartZoomEnabled || true;
+
         this.toggleSubscribeToSelection();
         this.toggleSubscribeToFilter();
         this.render(true);
+        if (this._value.selected && this._value.selected.length > 0) {
+            this.styleSelected();
+        }
     };
 
 
@@ -258,14 +275,23 @@ window.pdpiceplotNamespace = (function () {
         var height = self._representation.viewHeight;
 
         if (this._representation.runningInView) {
+            width = self._representation.resizeToFill ? '100%' : self._representation.viewWidth;
+            height = self._representation.resizeToFill ? '100%' : self._representation.viewHeight;
+        } else if (!this._value.currentFeature && !this._value.currentPrediction &&
+            !this._value.currentFeature.length && !this._value.currentPrediction.length) {
 
-            width = self._representation.resizeToFill ? '100%'
-                : self._representation.viewWidth;
-            height = self._representation.resizeToFill ? '100%'
-                : self._representation.viewHeight;
-        } else {
-            this._currentFeatureInd = this._value.featureInd;
-            this._currentPredictionInd = this._value.predictionInd;
+            this._currentFeatureInd = this._currentFeatureInd || this._value.featureInd;
+            this._currentPredictionInd = this._currentPredictionInd || this._value.predictionInd;
+            this._value.featureInd = this._currentFeatureInd;
+            this._value.predictionInd = this._currentFeatureInd;
+        }
+
+        if (!this._currentFeatureInd) {
+            this._currentFeatureInd = 0;
+        }
+
+        if (!this._currentPredictionInd) {
+            this._currentPredictionInd = 0;
         }
 
         d3.select('html')
@@ -358,8 +384,8 @@ window.pdpiceplotNamespace = (function () {
             this.yAxisWidth = this.default.yAxisWidth;
         }
         var svgDim = d3.select('svg').node().getClientRects()[0];
-        this.svgWidth = svgDim.width;
-        this.svgHeight = svgDim.height;
+        this.svgWidth = this._representation.runningInView ? svgDim.width : this._representation.viewWidth;
+        this.svgHeight = this._representation.runningInView ? svgDim.height : this._representation.viewHeight;
         this.xAxisHeight = this.default.xAxisHeight;
         this.totalTopHeight = this.titleHeight;
         this.totalLeftWidth = this.yLabelWidth + this.yAxisWidth + this.default.marginLeft - 2;
@@ -370,10 +396,9 @@ window.pdpiceplotNamespace = (function () {
 
     PDPICEPlot.prototype.getProperDomain = function () {
 
-        if (this._representation.runningInView) {
-            this._currentFeatureInd = this._currentFeatureInd || 0;
-            this._currentPredictionInd = this._currentPredictionInd || 0;
-        }
+        this._currentFeatureInd = this._currentFeatureInd || 0;
+        this._currentPredictionInd = this._currentPredictionInd || 0;
+
         this.xaxisMin = this._representation.featureDomains[this._currentFeatureInd][0];
         this.xaxisMax = this._representation.featureDomains[this._currentFeatureInd][1];
         this.yaxisMin = this._representation.predictionDomains[this._currentPredictionInd][0];
@@ -390,14 +415,12 @@ window.pdpiceplotNamespace = (function () {
         this.d3Elem.xScale = d3.scaleLinear()
             .domain([this.xaxisMin, this.xaxisMax])
             .range([this.totalLeftWidth, this.totalLeftWidth + this.viewportWidth]);
-        // .clamp(true);
         var domainAdj = this.yaxisMax - this.yaxisMin;
         this.adjYMin = this.yaxisMin - Math.abs(domainAdj * this._value.yaxisMargin);
         this.adjYMax = this.yaxisMax + Math.abs(domainAdj * this._value.yaxisMargin);
         this.d3Elem.yScale = d3.scaleLinear()
             .domain([this.adjYMin, this.adjYMax])
             .range([this.viewportHeight + this.totalTopHeight, this.totalTopHeight]);
-        // .clamp(true).nice();
 
     };
 
@@ -509,7 +532,6 @@ window.pdpiceplotNamespace = (function () {
             .attr('class', 'axis-wrapper')
             .attr('width', this.viewportWidth + this.totalLeftWidth + 3)
             .attr('height', this.svgHeight);
-        // .attr('mask', 'url(#maskAxis)');
 
     };
 
@@ -683,7 +705,6 @@ window.pdpiceplotNamespace = (function () {
             .y(function (d) {
                 return yScale(d[1]);
             });
-        // .curve(d3.curveCatmullRom.alpha(0.0));
 
         this.d3Elem.pdpLineTop = d3.area()
             .x(function (d) {
@@ -695,7 +716,6 @@ window.pdpiceplotNamespace = (function () {
             .y0(function (d) {
                 return yScale(d[2]);
             });
-        // .curve(d3.curveCatmullRom.alpha(0.0));
 
         this.d3Elem.pdpLineBottom = d3.area()
             .x(function (d) {
@@ -707,7 +727,6 @@ window.pdpiceplotNamespace = (function () {
             .y0(function (d) {
                 return yScale(d[1]);
             });
-        // .curve(d3.curveCatmullRom.alpha(0.0));
 
         this.d3Elem.iceLineTemplate = d3.line()
             .x(function (d) {
@@ -716,7 +735,6 @@ window.pdpiceplotNamespace = (function () {
             .y(function (d) {
                 return yScale(d[1]);
             });
-        // .curve(d3.curveCatmullRom.alpha(0.0));
 
         this.d3Elem.staticLine = d3.line()
             .x(function (d) {
@@ -783,8 +801,8 @@ window.pdpiceplotNamespace = (function () {
             needsReset = false;
         });
 
+        var yValsSet = false;
         data[self._currentFeatureInd].forEach(function (row, rowInd) {
-            var yValsSet = false;
             row.data[1][0].forEach(function (samp, sampInd) {
                 var mean = sumDataVals[sampInd] / numRows;
                 if (!yValsSet) {
@@ -793,7 +811,7 @@ window.pdpiceplotNamespace = (function () {
                 varianceValues[sampInd] += Math.pow(samp[1]
                 [self._currentPredictionInd] - mean, 2);
             });
-            var yValsSet = true;
+            yValsSet = true;
         });
 
         if (selfValue.showPDPMargin) {
@@ -1032,29 +1050,27 @@ window.pdpiceplotNamespace = (function () {
                 .attr('d', this.d3Elem.pdpLineBottom)
                 .attr('fill', color.toString())
                 .attr('fill-opacity', this._value.pdpmarginAlphaVal);
-        }
 
-        // optional re-implementation of top and bottom lines for PDP margin
-        if (false) {
-            this.d3Elem.viewport
-                .append('path')
-                .data([pdpMarginTop])
-                .attr('class', 'line transformer pdp-line')
-                .attr('id', 'pdp-line-margin-top')
-                .attr('d', this.d3Elem.pdpLine)
-                .attr('fill', 'none')
-                .attr('stroke', color.toString())
-                .attr('stroke-width', this._value.pdplineWeight);
+            // optional re-implementation of top and bottom lines for PDP margin
+            //     this.d3Elem.viewport
+            //         .append('path')
+            //         .data([pdpMarginTop])
+            //         .attr('class', 'line transformer pdp-line')
+            //         .attr('id', 'pdp-line-margin-top')
+            //         .attr('d', this.d3Elem.pdpLine)
+            //         .attr('fill', 'none')
+            //         .attr('stroke', color.toString())
+            //         .attr('stroke-width', this._value.pdplineWeight);
 
-            this.d3Elem.viewport
-                .append('path')
-                .data([pdpMarginBottom])
-                .attr('class', 'line  transformer  pdp-line')
-                .attr('id', 'pdp-line-margin-bottom')
-                .attr('d', this.d3Elem.pdpLine)
-                .attr('fill', 'none')
-                .attr('stroke', color.toString())
-                .attr('stroke-width', this._value.pdplineWeight);
+            //     this.d3Elem.viewport
+            //         .append('path')
+            //         .data([pdpMarginBottom])
+            //         .attr('class', 'line  transformer  pdp-line')
+            //         .attr('id', 'pdp-line-margin-bottom')
+            //         .attr('d', this.d3Elem.pdpLine)
+            //         .attr('fill', 'none')
+            //         .attr('stroke', color.toString())
+            //         .attr('stroke-width', this._value.pdplineWeight);
         }
     };
 
@@ -1174,8 +1190,15 @@ window.pdpiceplotNamespace = (function () {
             this._representation.enableSmartZoomControls) {
             var zoomModeClicked = function () {
                 var button = document.getElementById('pdpice-smart-zoom');
-                button.classList.toggle('active');
-                self.smartZoom = button.getAttribute('class').includes('active');
+                if (self.smartZoom) {
+                    button.classList.add('active');
+                    self.smartZoom = false;
+                    self._value.smartZoomEnabled = false;
+                } else {
+                    button.classList.remove('active');
+                    self.smartZoom = true;
+                    self._value.smartZoomEnabled = true;
+                }
                 self.resetZoom();
             };
 
@@ -1331,6 +1354,7 @@ window.pdpiceplotNamespace = (function () {
                         .indexOf(this.value);
                     if (self._currentFeatureInd !== currentInd) {
                         self._currentFeatureInd = currentInd;
+                        self._value.currentFeature = this.value;
                         self.reset();
                         self.render(true);
                         self.styleSelected();
@@ -1357,6 +1381,7 @@ window.pdpiceplotNamespace = (function () {
                         .indexOf(this.value);
                     if (self._currentPredictionInd !== currentInd) {
                         self._currentPredictionInd = currentInd;
+                        self._value.currentPrediction = this.value;
                         self.reset();
                         self.render(true);
                         self.styleSelected();
@@ -1736,8 +1761,8 @@ window.pdpiceplotNamespace = (function () {
                 null,
                 knimeService.SMALL_ICON
             );
+            knimeService.addMenuDivider();
         }
-        knimeService.addMenuDivider();
 
         if (this._representation.enableYAxisMarginControls) {
 
@@ -1763,10 +1788,11 @@ window.pdpiceplotNamespace = (function () {
                 null,
                 knimeService.SMALL_ICON
             );
+            knimeService.addMenuDivider();
+
         }
 
         if (this._representation.enableSelectionFilterControls) {
-            knimeService.addMenuDivider();
 
             if (this._representation.enableSelection &&
                 this._representation.enableSelectionControls) {
@@ -2121,11 +2147,15 @@ window.pdpiceplotNamespace = (function () {
      * @return {null}
      */
     PDPICEPlot.prototype.resetZoom = function () {
-        this.updateScales();
-        this.createD3Lines(this.d3Elem.xScale, this.d3Elem.yScale);
-        this.drawAxis();
-        this.redrawData();
-        this.styleSelected();
+        var self = this;
+
+        self._value.zoomK = 1;
+        self._value.zoomX = 0;
+        self._value.zoomY = 0;
+
+        self.reset();
+        self.render(true);
+        self.styleSelected();
     };
 
     /**
@@ -2147,84 +2177,121 @@ window.pdpiceplotNamespace = (function () {
     PDPICEPlot.prototype.initZoom = function () {
         var self = this;
         var transMinY = this.viewportHeight + this.totalTopHeight +
-            this.default.marginTop * 3 + 6;
+            this.default.marginTop * 3 + 20;
         var transMaxY = this.totalTopHeight;
-        if (this._value.chartTitle.length > 0) {
-            transMaxY = this.totalTopHeight - 38;
-            transMinY -= 6;
-        }
-        if (this._value.chartSubtitle.length > 0) {
-            transMaxY -= 10;
-            transMinY -= 8;
+        var transMaxX = this.totalLeftWidth - this.default.marginRight + 20;
+        var transMinX = this.totalLeftWidth + this.viewportWidth - 10;
+        if (this._representation.runningInView) {
+            if (this._value.chartTitle.length > 0) {
+                transMaxY -= 38;
+                transMinY -= 6;
+            }
+            if (this._value.chartSubtitle.length > 0) {
+                transMaxY -= 10;
+                transMinY -= 8;
+            }
+        } else {
+            transMinY = d3.select('svg').node().getClientRects()[0].height;
+            transMaxY = this.totalTopHeight;
+            transMinX = d3.select('svg').node().getClientRects()[0].width;
+            transMaxX = this.totalLeftWidth;
         }
         this.d3Elem.zoom = d3.zoom().scaleExtent([1, 5])
             .translateExtent([
-                [this.totalLeftWidth - this.default.marginRight + 9, transMaxY],
-                [this.totalLeftWidth + this.viewportWidth, transMinY]
+                [transMaxX, transMaxY],
+                [transMinX, transMinY]
             ])
             // eslint-disable-next-line no-empty-function
             .on('start', function () {
 
             })
-            .on('zoom', function () {
-                if (self._representation.enablePanning &&
-                    self._representation.enableScrollZoom) {
-                    if (d3.event.sourceEvent &&
-                        (d3.event.sourceEvent.type === 'wheel' ||
-                            d3.event.sourceEvent.type === 'mousemove')) {
-                        if (window.event.ctrlKey) {
-                            // eslint-disable-next-line no-warning-comments
-                            // TODO: additional options
-                        } else {
-                            var d3El = self.d3Elem;
-                            var newScaleX = d3.event.transform.rescaleX(d3El.xScale);
-                            var newScaleY = d3.event.transform.rescaleY(d3El.yScale);
-                            var newRadiusScale = d3.event.transform.k;
-                            if (self.smartZoom &&
-                                self._representation.enableDragZoom) {
-                                self.createD3Lines(newScaleX, null, null);
-                                d3.selectAll('.x')
-                                    .remove();
-                                d3.select('.knime-x').transition()
-                                    .duration(50).call(
-                                        d3El.axis
-                                            .x.scale(newScaleX)
-                                    )
-                                    .attr('stroke-width', .2)
-                                    .attr('stroke-opacity', .4);
-                            } else {
-                                self.createD3Lines(newScaleX, newScaleY, newRadiusScale);
-                                d3.selectAll('.x')
-                                    .remove();
-                                d3.select('.knime-x').transition()
-                                    .duration(50).call(
-                                        d3El.axis.x.scale(newScaleX)
-                                    ).attr('stroke-width', .2);
-                                d3.selectAll('.y')
-                                    .remove();
-                                d3.select('.knime-y').transition()
-                                    .duration(50).call(
-                                        d3El.axis.y.scale(newScaleY)
-                                    ).attr('stroke-width', .2)
-                                    .attr('stroke-opacity', .4);
-                            }
-                            self.redrawData();
-                            self.styleSelected();
-                        }
-                    } else if (d3.event.sourceEvent &&
-                        d3.event.sourceEvent.type === 'mousedown') {
-                        self._value.selected = [];
-                        knimeService.setSelectedRows(
-                            self._table.getTableId(),
-                            []
-                        );
-                        self.styleSelected();
-                    }
-                }
+            .on('zoom', this.onZoom
                 // eslint-disable-next-line no-empty-function
-            }).on('end', function () {
+            ).on('end', function () {
 
             });
+
+
+        if (this._representation.runningInView) {
+            this.onZoom({ x: self._value.zoomX, y: self._value.zoomY, k: self._value.zoomK });
+        }
+    };
+
+    /**
+     * functionality for zooming based on the current zoom settings
+     * also used with a custom event to intitialize zoom from a previous state
+     * @return {null}
+     */
+    PDPICEPlot.prototype.onZoom = function (zoomEvent) {
+        var self = this;
+        if (zoomEvent) {
+            d3.event = {
+                transform: d3.zoomTransform(d3.select('.pdpiceplot').node())
+            };
+            d3.event.transform.x = zoomEvent.x;
+            d3.event.transform.y = zoomEvent.y;
+            d3.event.transform.k = zoomEvent.k;
+            this.smartZoom = this._value.smartZoomEnabled;
+        }
+        if (self._representation.enablePanning &&
+            self._representation.enableScrollZoom) {
+            if ((d3.event.sourceEvent &&
+                (d3.event.sourceEvent.type === 'wheel' ||
+                    d3.event.sourceEvent.type === 'mousemove')) || zoomEvent) {
+                if (!zoomEvent && window.event.ctrlKey) {
+                    // eslint-disable-next-line no-warning-comments
+                    // TODO: additional options
+                } else {
+                    var d3El = self.d3Elem;
+                    var newScaleX = d3.event.transform.rescaleX(d3El.xScale);
+                    var newScaleY = d3.event.transform.rescaleY(d3El.yScale);
+                    var newRadiusScale = d3.event.transform.k;
+                    if (self._representation.runningInView) {
+                        self._value.zoomK = d3.event.transform.k;
+                        self._value.zoomX = d3.event.transform.x;
+                        self._value.zoomY = d3.event.transform.y;
+                    }
+                    if (self.smartZoom &&
+                        self._representation.enableDragZoom) {
+                        self.createD3Lines(newScaleX, null, null);
+                        d3.selectAll('.x')
+                            .remove();
+                        d3.select('.knime-x').transition()
+                            .duration(50).call(
+                                d3El.axis
+                                    .x.scale(newScaleX)
+                            )
+                            .attr('stroke-width', .2)
+                            .attr('stroke-opacity', .4);
+                    } else {
+                        self.createD3Lines(newScaleX, newScaleY, newRadiusScale);
+                        d3.selectAll('.x')
+                            .remove();
+                        d3.select('.knime-x').transition()
+                            .duration(50).call(
+                                d3El.axis.x.scale(newScaleX)
+                            ).attr('stroke-width', .2);
+                        d3.selectAll('.y')
+                            .remove();
+                        d3.select('.knime-y').transition()
+                            .duration(50).call(
+                                d3El.axis.y.scale(newScaleY)
+                            ).attr('stroke-width', .2)
+                            .attr('stroke-opacity', .4);
+                    }
+                    self.redrawData();
+                    self.styleSelected();
+                }
+            } else if (d3.event.sourceEvent &&
+                d3.event.sourceEvent.type === 'mousedown') {
+                self._value.selected = [];
+                knimeService.setSelectedRows(
+                    self._table.getTableId(),
+                    []
+                );
+                self.styleSelected();
+            }
+        }
     };
 
     /**

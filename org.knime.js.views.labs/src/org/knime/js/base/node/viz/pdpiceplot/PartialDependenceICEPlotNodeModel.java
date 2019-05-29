@@ -125,6 +125,8 @@ public class PartialDependenceICEPlotNodeModel extends
 
     private int m_rowIDColInd;
 
+    private boolean m_isApplyingSettings = false;
+
     /**
      * @param viewName
      */
@@ -144,12 +146,9 @@ public class PartialDependenceICEPlotNodeModel extends
             (DataTableSpec)inSpecs[PartialDependenceICEPlotConfig.MODEL_OUTPUT_TABLE_INPORT];
         DataTableSpec originalDataTableSpec =
             (DataTableSpec)inSpecs[PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT];
-        InvalidSettingsException duplicateColumnException = new InvalidSettingsException("The columns selected "
-            + "cannot be duplicated as both features AND prediction columns. Please correct your selections in"
-            + " the column selection panels.");
 
         if (modelOutputSpec == null || originalDataTableSpec == null) {
-            throw new InvalidSettingsException("One or more tableSpecs is missing from the tables provided."
+            throw new InvalidSettingsException("One or more tableSpecs is missing from the tables provided.\n"
                 + " Please provide properly formatted data tables to this node.");
         }
 
@@ -190,7 +189,10 @@ public class PartialDependenceICEPlotNodeModel extends
 
             //ensure the prediction column hasn't been chosen for a feature
             if (predictionSet.contains(sampFeat)) {
-                throw duplicateColumnException;
+                throw new InvalidSettingsException("The columns selected "
+                    + "cannot be duplicated as both features AND prediction columns.\nPlease correct your selections in"
+                    + " the column selection panels.");
+                //                throw duplicateColumnException;
             }
 
             int origTableColInd = originalDataTableSpec.findColumnIndex(sampFeat);
@@ -203,9 +205,9 @@ public class PartialDependenceICEPlotNodeModel extends
             //initialize min/max values for each feature column domain
             m_featureDomains[count] = new double[]{Double.MAX_VALUE, -Double.MAX_VALUE};
 
-            if(generateImage()) {
-//                String chosenFeature = originalDataTableSpec.getColumnSpec(m_config.getFeatureInd()).getName();
-                if(modelTableColInd == m_config.getFeatureInd()) {
+            if (generateImage()) {
+                //                String chosenFeature = originalDataTableSpec.getColumnSpec(m_config.getFeatureInd()).getName();
+                if (modelTableColInd == m_config.getFeatureInd()) {
                     m_config.setFeatureInd(origTableColInd);
                     svgFeature = true;
                 }
@@ -221,7 +223,10 @@ public class PartialDependenceICEPlotNodeModel extends
 
             //ensure the prediction column hasn't been chosen for a feature
             if (featureSet.contains(predCol)) {
-                throw duplicateColumnException;
+                throw new InvalidSettingsException("The columns selected "
+                    + "cannot be duplicated as both features AND prediction columns.\nPlease correct your selections in"
+                    + " the column selection panels.");
+                //                throw duplicateColumnException;
             }
 
             int modelTableColInd = modelOutputSpec.findColumnIndex(predCol);
@@ -232,9 +237,9 @@ public class PartialDependenceICEPlotNodeModel extends
             //initialize min/max values for each prediction column domain
             m_predictionDomains[count] = new double[]{Double.MAX_VALUE, -Double.MAX_VALUE};
 
-            if(generateImage()) {
-//                String chosenPrediction = modelOutputSpec.getColumnSpec(modelTableColInd).getName();
-                if(modelTableColInd == m_config.getPredictionInd()) {
+            if (generateImage()) {
+                //                String chosenPrediction = modelOutputSpec.getColumnSpec(modelTableColInd).getName();
+                if (modelTableColInd == m_config.getPredictionInd()) {
                     m_config.setPredictionInd(count);
                     svgPrediction = true;
                 }
@@ -256,11 +261,12 @@ public class PartialDependenceICEPlotNodeModel extends
         if (generateImage()) {
             imageSpec = new ImagePortObjectSpec(SvgCell.TYPE);
 
-            if(!svgFeature || !svgPrediction) {
-                setWarningMessage("The SVG feature and/or prediction columns you chose could not be matched "
-                    + "with the available columns. The SVG image will have default columns chosen. Please "
-                    + "review your choices if you are not satisfied with the image output.");
-            }
+            //Possible warning if the SVG display columns have been changed from the user input columns
+//            if (!svgFeature || !svgPrediction) {
+//                setWarningMessage("The SVG feature and/or prediction columns you chose could not be matched \n"
+//                    + "with the available columns. The SVG image will have default columns chosen.\nPlease "
+//                    + "review your choices if you are not satisfied with the image output.");
+//            }
 
         }
 
@@ -326,8 +332,16 @@ public class PartialDependenceICEPlotNodeModel extends
     public PartialDependenceICEPlotNodeViewRepresentation getViewRepresentation() {
         PartialDependenceICEPlotNodeViewRepresentation rep = super.getViewRepresentation();
         synchronized (getLock()) {
-            if (rep.getDataTable() != null) {
-                rep.getDataTable().setId(getTableId(PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT));
+            if (rep.getDataTable() == null && m_originalDataTable != null) {
+                m_isApplyingSettings = false;
+                try {
+                    final JSONDataTable jT = createJSONDataTable(null);
+                    rep.setDataTable(jT);
+                } catch (Exception e) {
+                    //                    setWarningMessage("Could not create JSON table: " + e.getMessage());
+                }
+            } else {
+                m_isApplyingSettings = true;
             }
         }
         return rep;
@@ -481,19 +495,107 @@ public class PartialDependenceICEPlotNodeModel extends
      */
     @Override
     protected void performExecuteCreateView(final PortObject[] inData, final ExecutionContext exec) throws Exception {
+
+        setInternalTables(
+            new BufferedDataTable[]{(BufferedDataTable)inData[PartialDependenceICEPlotConfig.MODEL_OUTPUT_TABLE_INPORT],
+                (BufferedDataTable)inData[PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT]});
+
         synchronized (getLock()) {
 
-            setInternalTables(new BufferedDataTable[]{
-                (BufferedDataTable)inData[PartialDependenceICEPlotConfig.MODEL_OUTPUT_TABLE_INPORT],
-                (BufferedDataTable)inData[PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT]});
             PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
 
-            if (viewRepresentation.getDataTable() == null) {
-                copyConfigToView(m_modelOutputTable.getDataTableSpec());
+            if (m_predictionColumns == null) {
+                //TODO: handle hard resets with missing settings if it becomes an issue
+            }
+
+            if (!m_isApplyingSettings) {
+                //fields that need to be set without dialog config
+                viewRepresentation.setPredictionColumns(m_predictionColumns);
                 viewRepresentation.setPredictionIndicies(m_predictionColModelIndicies);
-                viewRepresentation.setDataTable(createJSONDataTable(exec));
+                viewRepresentation.setSampledFeatureColumns(m_sampledFeatures);
+                viewRepresentation.setPredictionColumns(m_predictionColumns);
+
+                viewRepresentation.setMaxNumRows(m_config.getMaxNumRows());
+                viewRepresentation.setGenerateImage(m_config.getGenerateImage());
+                viewRepresentation.setRowIDCol(m_config.getRowIDCol());
+                viewRepresentation.setViewWidth(m_config.getViewWidth());
+                viewRepresentation.setViewHeight(m_config.getViewHeight());
+                viewRepresentation.setResizeToFill(m_config.getResizeToFill());
+                viewRepresentation.setFullscreenButton(m_config.getFullscreenButton());
+                viewRepresentation.setEnablePanning(m_config.getEnablePanning());
+                viewRepresentation.setEnableScrollZoom(m_config.getEnableScrollZoom());
+                viewRepresentation.setEnableDragZoom(m_config.getEnableDragZoom());
+                viewRepresentation.setShowZoomReset(m_config.getShowZoomReset());
+                viewRepresentation.setEnableSelection(m_config.getEnableSelection());
+                viewRepresentation.setEnableInteractiveCtrls(m_config.getEnableInteractiveCtrls());
+                viewRepresentation.setShowWarnings(m_config.getShowWarnings());
+                viewRepresentation.setEnableTitleControls(m_config.getEnableTitleControls());
+                viewRepresentation.setEnableAxisLabelControls(m_config.getEnableAxisLabelControls());
+                viewRepresentation.setEnablePDPControls(m_config.getEnablePDPControls());
+                viewRepresentation.setEnablePDPMarginControls(m_config.getEnablePDPMarginControls());
+                viewRepresentation.setEnableICEControls(m_config.getEnableICEControls());
+                viewRepresentation.setEnableStaticLineControls(m_config.getEnableStaticLineControls());
+                viewRepresentation.setEnableDataPointControls(m_config.getEnableDataPointControls());
+                viewRepresentation.setEnableSelectionFilterControls(m_config.getEnableSelectionFilterControls());
+                viewRepresentation.setEnableSelectionControls(m_config.getEnableSelectionControls());
+                viewRepresentation.setEnableYAxisMarginControls(m_config.getEnableYAxisMarginControls());
+                viewRepresentation.setEnableSmartZoomControls(m_config.getEnableSmartZoomControls());
+                viewRepresentation.setEnableGridControls(m_config.getEnableGridControls());
+                viewRepresentation.setEnableMouseCrosshairControls(m_config.getEnableMouseCrosshairControls());
+                viewRepresentation.setEnableAdvancedOptionsControls(m_config.getEnableAdvancedOptionsControls());
+
+                final JSONDataTable jsonTable = createJSONDataTable(exec);
+                viewRepresentation.setDataTable(jsonTable);
+
                 viewRepresentation.setFeatureDomains(m_featureDomains);
                 viewRepresentation.setPredictionDomains(m_predictionDomains);
+            }
+
+            viewRepresentation.setRunningInView(false);
+
+            PartialDependenceICEPlotViewValue viewValue = getViewValue();
+            if (isViewValueEmpty()) {
+                viewValue.setShowPDP(m_config.getShowPDP());
+                viewValue.setPDPColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getPDPColor()));
+                viewValue.setPDPLineWeight(m_config.getPDPLineWeight());
+                viewValue.setShowPDPMargin(m_config.getShowPDPMargin());
+                viewValue.setPDPMarginType(m_config.getPDPMarginType());
+                viewValue.setPDPMarginMultiplier(m_config.getPDPMarginMultiplier());
+                viewValue.setPDPMarginAlphaVal(m_config.getPDPMarginAlphaVal());
+                viewValue.setShowICE(m_config.getShowICE());
+                viewValue.setICEColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getICEColor()));
+                viewValue.setICEWeight(m_config.getICEWeight());
+                viewValue.setICEAlphaVal(m_config.getICEAlphaVal());
+                viewValue.setShowDataPoints(m_config.getShowDataPoints());
+                viewValue.setDataPointColor(
+                    PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getDataPointColor()));
+                viewValue.setDataPointWeight(m_config.getDataPointWeight());
+                viewValue.setDataPointAlphaVal(m_config.getDataPointAlphaVal());
+                viewValue.setXAxisLabel(m_config.getXAxisLabel());
+                viewValue.setYAxisLabel(m_config.getYAxisLabel());
+                viewValue.setChartTitle(m_config.getChartTitle());
+                viewValue.setChartSubtitle(m_config.getChartSubtitle());
+                viewValue.setShowGrid(m_config.getShowGrid());
+                viewValue.setSubscribeToSelection(m_config.getSubscribeToSelection());
+                viewValue.setPublishSelection(m_config.getPublishSelection());
+                viewValue.setSubscribeToFilters(m_config.getSubscribeToFilters());
+                viewValue.setShowStaticLine(m_config.getShowStaticLine());
+                viewValue.setStaticLineColor(
+                    PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getStaticLineColor()));
+                viewValue.setStaticLineWeight(m_config.getStaticLineWeight());
+                viewValue.setStaticLineYValue(m_config.getStaticLineYValue());
+                viewValue.setEnableMouseCrosshair(m_config.getEnableMouseCrosshair());
+                viewValue.setBackgroundColor(
+                    PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getBackgroundColor()));
+                viewValue.setDataAreaColor(
+                    PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getDataAreaColor()));
+                viewValue.setGridColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getGridColor()));
+                viewValue.setYAxisMin(m_config.getYAxisMin());
+                viewValue.setYAxisMax(m_config.getYAxisMax());
+                viewValue.setYAxisMargin(m_config.getYAxisMargin());
+                viewValue.setSelected(new String[0]);
+                viewValue.setFeatureInd(m_config.getFeatureInd());
+                viewValue.setPredictionInd(m_config.getPredictionInd());
             }
         }
     }
@@ -510,12 +612,13 @@ public class PartialDependenceICEPlotNodeModel extends
         synchronized (getLock()) {
 
             PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
-            PartialDependenceICEPlotViewValue viewValue = getViewValue();
+
             Collection<String> selectedList = null;
 
             viewRepresentation.setRunningInView(true);
 
             if (m_config.getEnableSelection()) {
+                PartialDependenceICEPlotViewValue viewValue = getViewValue();
 
                 if (viewValue != null && viewValue.getSelected() != null) {
                     selectedList = Arrays.asList(viewValue.getSelected());
@@ -556,6 +659,8 @@ public class PartialDependenceICEPlotNodeModel extends
             .setId(getTableId(PartialDependenceICEPlotConfig.ORIGINAL_DATA_TABLE_INPORT)).setFirstRow(1)
             .setMaxRows(m_config.getMaxNumRows()).build(exec);
 
+        //        m_config.setColumnDomains(m_featureDomains, m_predictionDomains);
+
         return jsonDataTable;
     }
 
@@ -581,85 +686,85 @@ public class PartialDependenceICEPlotNodeModel extends
      * ViewValue model which will be accessible from the interactive view
      */
     private void copyConfigToView(final DataTableSpec spec) {
-        PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
-        viewRepresentation.setMaxNumRows(m_config.getMaxNumRows());
-        viewRepresentation.setGenerateImage(m_config.getGenerateImage());
-        viewRepresentation.setSampledFeatureColumns(m_sampledFeatures);
-        viewRepresentation.setFeatureDomains(m_featureDomains);
-        viewRepresentation.setPredictionDomains(m_predictionDomains);
-        viewRepresentation.setRowIDCol(m_config.getRowIDCol());
-        viewRepresentation.setPredictionColumns(m_predictionColumns);
-        viewRepresentation.setViewWidth(m_config.getViewWidth());
-        viewRepresentation.setViewHeight(m_config.getViewHeight());
-        viewRepresentation.setResizeToFill(m_config.getResizeToFill());
-        viewRepresentation.setFullscreenButton(m_config.getFullscreenButton());
-        viewRepresentation.setEnablePanning(m_config.getEnablePanning());
-        viewRepresentation.setEnableScrollZoom(m_config.getEnableScrollZoom());
-        viewRepresentation.setEnableDragZoom(m_config.getEnableDragZoom());
-        viewRepresentation.setShowZoomReset(m_config.getShowZoomReset());
-        viewRepresentation.setEnableSelection(m_config.getEnableSelection());
-        viewRepresentation.setEnableInteractiveCtrls(m_config.getEnableInteractiveCtrls());
-        viewRepresentation.setShowWarnings(m_config.getShowWarnings());
-        viewRepresentation.setEnableTitleControls(m_config.getEnableTitleControls());
-        viewRepresentation.setEnableAxisLabelControls(m_config.getEnableAxisLabelControls());
-        viewRepresentation.setEnablePDPControls(m_config.getEnablePDPControls());
-        viewRepresentation.setEnablePDPMarginControls(m_config.getEnablePDPMarginControls());
-        viewRepresentation.setEnableICEControls(m_config.getEnableICEControls());
-        viewRepresentation.setEnableStaticLineControls(m_config.getEnableStaticLineControls());
-        viewRepresentation.setEnableDataPointControls(m_config.getEnableDataPointControls());
-        viewRepresentation.setEnableSelectionFilterControls(m_config.getEnableSelectionFilterControls());
-        viewRepresentation.setEnableSelectionControls(m_config.getEnableSelectionControls());
-        viewRepresentation.setEnableYAxisMarginControls(m_config.getEnableYAxisMarginControls());
-        viewRepresentation.setEnableSmartZoomControls(m_config.getEnableSmartZoomControls());
-        viewRepresentation.setEnableGridControls(m_config.getEnableGridControls());
-        viewRepresentation.setEnableMouseCrosshairControls(m_config.getEnableMouseCrosshairControls());
-        viewRepresentation.setEnableAdvancedOptionsControls(m_config.getEnableAdvancedOptionsControls());
-        viewRepresentation.setRunningInView(m_config.getRunningInView());
+        //        PartialDependenceICEPlotNodeViewRepresentation viewRepresentation = getViewRepresentation();
+        //        viewRepresentation.setMaxNumRows(m_config.getMaxNumRows());
+        //        viewRepresentation.setGenerateImage(m_config.getGenerateImage());
+        //        viewRepresentation.setSampledFeatureColumns(m_sampledFeatures);
+        //        viewRepresentation.setFeatureDomains(m_featureDomains);
+        //        viewRepresentation.setPredictionDomains(m_predictionDomains);
+        //        viewRepresentation.setRowIDCol(m_config.getRowIDCol());
+        //        viewRepresentation.setPredictionColumns(m_predictionColumns);
+        //        viewRepresentation.setViewWidth(m_config.getViewWidth());
+        //        viewRepresentation.setViewHeight(m_config.getViewHeight());
+        //        viewRepresentation.setResizeToFill(m_config.getResizeToFill());
+        //        viewRepresentation.setFullscreenButton(m_config.getFullscreenButton());
+        //        viewRepresentation.setEnablePanning(m_config.getEnablePanning());
+        //        viewRepresentation.setEnableScrollZoom(m_config.getEnableScrollZoom());
+        //        viewRepresentation.setEnableDragZoom(m_config.getEnableDragZoom());
+        //        viewRepresentation.setShowZoomReset(m_config.getShowZoomReset());
+        //        viewRepresentation.setEnableSelection(m_config.getEnableSelection());
+        //        viewRepresentation.setEnableInteractiveCtrls(m_config.getEnableInteractiveCtrls());
+        //        viewRepresentation.setShowWarnings(m_config.getShowWarnings());
+        //        viewRepresentation.setEnableTitleControls(m_config.getEnableTitleControls());
+        //        viewRepresentation.setEnableAxisLabelControls(m_config.getEnableAxisLabelControls());
+        //        viewRepresentation.setEnablePDPControls(m_config.getEnablePDPControls());
+        //        viewRepresentation.setEnablePDPMarginControls(m_config.getEnablePDPMarginControls());
+        //        viewRepresentation.setEnableICEControls(m_config.getEnableICEControls());
+        //        viewRepresentation.setEnableStaticLineControls(m_config.getEnableStaticLineControls());
+        //        viewRepresentation.setEnableDataPointControls(m_config.getEnableDataPointControls());
+        //        viewRepresentation.setEnableSelectionFilterControls(m_config.getEnableSelectionFilterControls());
+        //        viewRepresentation.setEnableSelectionControls(m_config.getEnableSelectionControls());
+        //        viewRepresentation.setEnableYAxisMarginControls(m_config.getEnableYAxisMarginControls());
+        //        viewRepresentation.setEnableSmartZoomControls(m_config.getEnableSmartZoomControls());
+        //        viewRepresentation.setEnableGridControls(m_config.getEnableGridControls());
+        //        viewRepresentation.setEnableMouseCrosshairControls(m_config.getEnableMouseCrosshairControls());
+        //        viewRepresentation.setEnableAdvancedOptionsControls(m_config.getEnableAdvancedOptionsControls());
+        //        viewRepresentation.setRunningInView(m_config.getRunningInView());
 
-        PartialDependenceICEPlotViewValue viewValue = getViewValue();
-        if (isViewValueEmpty()) {
-            viewValue.setShowPDP(m_config.getShowPDP());
-            viewValue.setPDPColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getPDPColor()));
-            viewValue.setPDPLineWeight(m_config.getPDPLineWeight());
-            viewValue.setShowPDPMargin(m_config.getShowPDPMargin());
-            viewValue.setPDPMarginType(m_config.getPDPMarginType());
-            viewValue.setPDPMarginMultiplier(m_config.getPDPMarginMultiplier());
-            viewValue.setPDPMarginAlphaVal(m_config.getPDPMarginAlphaVal());
-            viewValue.setShowICE(m_config.getShowICE());
-            viewValue.setICEColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getICEColor()));
-            viewValue.setICEWeight(m_config.getICEWeight());
-            viewValue.setICEAlphaVal(m_config.getICEAlphaVal());
-            viewValue.setShowDataPoints(m_config.getShowDataPoints());
-            viewValue
-                .setDataPointColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getDataPointColor()));
-            viewValue.setDataPointWeight(m_config.getDataPointWeight());
-            viewValue.setDataPointAlphaVal(m_config.getDataPointAlphaVal());
-            viewValue.setXAxisLabel(m_config.getXAxisLabel());
-            viewValue.setYAxisLabel(m_config.getYAxisLabel());
-            viewValue.setChartTitle(m_config.getChartTitle());
-            viewValue.setChartSubtitle(m_config.getChartSubtitle());
-            viewValue.setShowGrid(m_config.getShowGrid());
-            viewValue.setSubscribeToSelection(m_config.getSubscribeToSelection());
-            viewValue.setPublishSelection(m_config.getPublishSelection());
-            viewValue.setSubscribeToFilters(m_config.getSubscribeToFilters());
-            viewValue.setShowStaticLine(m_config.getShowStaticLine());
-            viewValue.setStaticLineColor(
-                PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getStaticLineColor()));
-            viewValue.setStaticLineWeight(m_config.getStaticLineWeight());
-            viewValue.setStaticLineYValue(m_config.getStaticLineYValue());
-            viewValue.setEnableMouseCrosshair(m_config.getEnableMouseCrosshair());
-            viewValue.setBackgroundColor(
-                PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getBackgroundColor()));
-            viewValue
-                .setDataAreaColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getDataAreaColor()));
-            viewValue.setGridColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getGridColor()));
-            viewValue.setYAxisMin(m_config.getYAxisMin());
-            viewValue.setYAxisMax(m_config.getYAxisMax());
-            viewValue.setYAxisMargin(m_config.getYAxisMargin());
-            viewValue.setSelected(new String[0]);
-            viewValue.setFeatureInd(m_config.getFeatureInd());
-            viewValue.setPredictionInd(m_config.getPredictionInd());
-        }
+        //        PartialDependenceICEPlotViewValue viewValue = getViewValue();
+        //        if (isViewValueEmpty()) {
+        //            viewValue.setShowPDP(m_config.getShowPDP());
+        //            viewValue.setPDPColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getPDPColor()));
+        //            viewValue.setPDPLineWeight(m_config.getPDPLineWeight());
+        //            viewValue.setShowPDPMargin(m_config.getShowPDPMargin());
+        //            viewValue.setPDPMarginType(m_config.getPDPMarginType());
+        //            viewValue.setPDPMarginMultiplier(m_config.getPDPMarginMultiplier());
+        //            viewValue.setPDPMarginAlphaVal(m_config.getPDPMarginAlphaVal());
+        //            viewValue.setShowICE(m_config.getShowICE());
+        //            viewValue.setICEColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getICEColor()));
+        //            viewValue.setICEWeight(m_config.getICEWeight());
+        //            viewValue.setICEAlphaVal(m_config.getICEAlphaVal());
+        //            viewValue.setShowDataPoints(m_config.getShowDataPoints());
+        //            viewValue
+        //                .setDataPointColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getDataPointColor()));
+        //            viewValue.setDataPointWeight(m_config.getDataPointWeight());
+        //            viewValue.setDataPointAlphaVal(m_config.getDataPointAlphaVal());
+        //            viewValue.setXAxisLabel(m_config.getXAxisLabel());
+        //            viewValue.setYAxisLabel(m_config.getYAxisLabel());
+        //            viewValue.setChartTitle(m_config.getChartTitle());
+        //            viewValue.setChartSubtitle(m_config.getChartSubtitle());
+        //            viewValue.setShowGrid(m_config.getShowGrid());
+        //            viewValue.setSubscribeToSelection(m_config.getSubscribeToSelection());
+        //            viewValue.setPublishSelection(m_config.getPublishSelection());
+        //            viewValue.setSubscribeToFilters(m_config.getSubscribeToFilters());
+        //            viewValue.setShowStaticLine(m_config.getShowStaticLine());
+        //            viewValue.setStaticLineColor(
+        //                PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getStaticLineColor()));
+        //            viewValue.setStaticLineWeight(m_config.getStaticLineWeight());
+        //            viewValue.setStaticLineYValue(m_config.getStaticLineYValue());
+        //            viewValue.setEnableMouseCrosshair(m_config.getEnableMouseCrosshair());
+        //            viewValue.setBackgroundColor(
+        //                PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getBackgroundColor()));
+        //            viewValue
+        //                .setDataAreaColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getDataAreaColor()));
+        //            viewValue.setGridColor(PartialDependenceICEPlotConfig.getRGBAStringFromColor(m_config.getGridColor()));
+        //            viewValue.setYAxisMin(m_config.getYAxisMin());
+        //            viewValue.setYAxisMax(m_config.getYAxisMax());
+        //            viewValue.setYAxisMargin(m_config.getYAxisMargin());
+        //            viewValue.setSelected(new String[0]);
+        //            viewValue.setFeatureInd(m_config.getFeatureInd());
+        //            viewValue.setPredictionInd(m_config.getPredictionInd());
+        //        }
     }
 
     /**
@@ -739,13 +844,13 @@ public class PartialDependenceICEPlotNodeModel extends
         boolean wereMissingFeatures = false; //if features were samples that were not selected, set to true and issue warning after iter.
         int numMissingFeatureIter = 0; //counter for total rows skipped during excluded feature iteration
         int totalTablesCreated = 0; //counter for total sub-tables created during execution
-        Exception featureMismatchException =
-            new Exception("One or more of the selected columns was not sampled in the pre-processing node."
-                + " Please review your column selection and make sure all selected columns were properly sampled upstream.");
+        //        Exception featureMismatchException =
+        //            new Exception("One or more of the selected columns was not sampled in the pre-processing node."
+        //                + " Please review your column selection and make sure all selected columns were properly sampled upstream.");
 
         if (numSamples == 0 || numOrigRows == m_modelOutputTable.size()) {
             throw new Exception(
-                "The model table (top inport) was not properly sampled by the preprocessor node. Please "
+                "The model table (top inport) was not properly sampled by the preprocessor node. \nPlease "
                     + "make sure the data was output by the preprocessor node before (upstream) the model was applied.");
         }
 
@@ -807,18 +912,22 @@ public class PartialDependenceICEPlotNodeModel extends
                     samplePredictionValues.add(predictionCell);
 
                     //check prediction domains
-                    m_predictionDomains[count][0] =
-                        Math.min(Double.valueOf(predictionCell.toString()), m_predictionDomains[count][0]);
-                    m_predictionDomains[count][1] =
-                        Math.max(Double.valueOf(predictionCell.toString()), m_predictionDomains[count][1]);
+                    double pNewMin =
+                        Math.min(Double.parseDouble(predictionCell.toString()), m_predictionDomains[count][0]);
+                    m_predictionDomains[count][0] = pNewMin;
+                    double pNewMax =
+                        Math.max(Double.parseDouble(predictionCell.toString()), m_predictionDomains[count][1]);
+                    m_predictionDomains[count][1] = pNewMax;
                     count++;
                 }
 
                 //check feature domains
-                m_featureDomains[currentFeatureInd][0] =
-                    Math.min(Double.valueOf(sampledFeatureCell.toString()), m_featureDomains[currentFeatureInd][0]);
-                m_featureDomains[currentFeatureInd][1] =
-                    Math.max(Double.valueOf(sampledFeatureCell.toString()), m_featureDomains[currentFeatureInd][1]);
+                double newMin =
+                    Math.min(Double.parseDouble(sampledFeatureCell.toString()), m_featureDomains[currentFeatureInd][0]);
+                m_featureDomains[currentFeatureInd][0] = newMin;
+                double newMax =
+                    Math.max(Double.parseDouble(sampledFeatureCell.toString()), m_featureDomains[currentFeatureInd][1]);
+                m_featureDomains[currentFeatureInd][1] = newMax;
 
                 ListCell predictionCollection = CollectionCellFactory.createListCell(samplePredictionValues);
                 ListCell singleCellCollection = CollectionCellFactory.createListCell(new ArrayList<DataCell>() {
@@ -869,18 +978,21 @@ public class PartialDependenceICEPlotNodeModel extends
                 samplePredictionValues.add(predictionCell);
 
                 //check prediction domains
-                m_predictionDomains[count][0] =
-                    Math.min(Double.valueOf(predictionCell.toString()), m_predictionDomains[count][0]);
-                m_predictionDomains[count][1] =
-                    Math.max(Double.valueOf(predictionCell.toString()), m_predictionDomains[count][1]);
+                double pNewMin = Math.min(Double.parseDouble(predictionCell.toString()), m_predictionDomains[count][0]);
+                m_predictionDomains[count][0] = pNewMin;
+                double pNewMax = Math.max(Double.parseDouble(predictionCell.toString()), m_predictionDomains[count][1]);
+                m_predictionDomains[count][1] = pNewMax;
+
                 count++;
             }
 
             //check feature domains
-            m_featureDomains[currentFeatureInd][0] =
-                Math.min(Double.valueOf(sampledFeatureCell.toString()), m_featureDomains[currentFeatureInd][0]);
-            m_featureDomains[currentFeatureInd][1] =
-                Math.max(Double.valueOf(sampledFeatureCell.toString()), m_featureDomains[currentFeatureInd][1]);
+            double newMin =
+                Math.min(Double.parseDouble(sampledFeatureCell.toString()), m_featureDomains[currentFeatureInd][0]);
+            m_featureDomains[currentFeatureInd][0] = newMin;
+            double newMax =
+                Math.max(Double.parseDouble(sampledFeatureCell.toString()), m_featureDomains[currentFeatureInd][1]);
+            m_featureDomains[currentFeatureInd][1] = newMax;
 
             ListCell predictionCollection = CollectionCellFactory.createListCell(samplePredictionValues);
             ListCell singleCellCollection = CollectionCellFactory.createListCell(new ArrayList<DataCell>() {
@@ -914,7 +1026,7 @@ public class PartialDependenceICEPlotNodeModel extends
 
         //if a sampled feature was skipped, notify the user
         if (wereMissingFeatures) {
-            setWarningMessage("You sampled some features in the Partial Dependence/ICE pre-processing node"
+            setWarningMessage("You sampled some features in the Partial Dependence/ICE pre-processing node \n"
                 + " that were not selected in the PDP/ICE Plot node. You will not be able to toggle between features "
                 + "that were not selected in the View Dialog.");
         }
@@ -926,23 +1038,34 @@ public class PartialDependenceICEPlotNodeModel extends
             collectionSampleContainer.close();
             totalTablesCreated++;
         } catch (NullPointerException e) {
-            throw featureMismatchException;
+            throw new Exception("One or more of the selected columns was not sampled in the pre-processing node.\n"
+                + " Please review your column selection and make sure all selected columns were properly sampled upstream.");
+            //            throw featureMismatchException;
         }
 
         //if a column was selected, but no samples for that column were found, fail with descriptive msg
         if (totalTablesCreated < m_sampledFeatures.length) {
-            throw featureMismatchException;
+            throw new Exception("One or more of the selected columns was not sampled in the pre-processing node.\n"
+                + " Please review your column selection and make sure all selected columns were properly sampled upstream.");
+            //            throw featureMismatchException;
         }
 
         //we only need to join the last table if there was more than 1 total sampled feature
-        if (m_sampledFeatures.length > 1 && !isMissingFeature) {
+        //        if (m_sampledFeatures.length > 1 && !isMissingFeature) {
+        if (totalTablesCreated > 1 && !isMissingFeature) {
 
-            //update the collectionAggregationTable to final state
-            BufferedDataTable updatedTable =
-                exec.createJoinedTable(collectionAggregationTable, collectionSampleContainer.getTable(), exec);
-            collectionAggregationTable = updatedTable;
+            try {
+                //update the collectionAggregationTable to final state
+                BufferedDataTable updatedTable =
+                    exec.createJoinedTable(collectionAggregationTable, collectionSampleContainer.getTable(), exec);
+                collectionAggregationTable = updatedTable;
+            } catch (NullPointerException e) {
+                throw new Exception("One or more of the selected columns was not sampled in the pre-processing node.\n"
+                    + " Please review your column selection and make sure all selected columns were properly sampled upstream.");
+            }
 
-        } else if (m_sampledFeatures.length == 1) {
+            //        } else if (m_sampledFeatures.length == 1) {
+        } else if (totalTablesCreated == 1) {
 
             //if only one sampled feature was chosen, just close the table
             collectionAggregationTable = collectionSampleContainer.getTable();
