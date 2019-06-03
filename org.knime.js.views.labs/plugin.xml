@@ -50,7 +50,7 @@
       <node
             category-path="/labs/js-views"
             deprecated="false"
-            factory-class="org.knime.js.base.node.viz.DocumentViewer.DocumentViewerNodeFactory">
+            factory-class="org.knime.js.base.node.viz.documentViewer.DocumentViewerNodeFactory">
       </node>
    </extension>
    <extension

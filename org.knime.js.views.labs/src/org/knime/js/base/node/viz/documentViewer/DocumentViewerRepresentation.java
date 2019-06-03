@@ -46,7 +46,7 @@
  * History
  *   Oct 25, 2018 (dewi): created
  */
-package org.knime.js.base.node.viz.DocumentViewer;
+package org.knime.js.base.node.viz.documentViewer;
 
 import java.awt.Color;
 import java.util.ArrayList;

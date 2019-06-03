@@ -46,60 +46,98 @@
  * History
  *   Oct 25, 2018 (dewi): created
  */
-package org.knime.js.base.node.viz.DocumentViewer;
+package org.knime.js.base.node.viz.documentViewer;
 
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
-import org.knime.core.node.wizard.WizardNodeFactoryExtension;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeSettingsRO;
+import org.knime.core.node.NodeSettingsWO;
+import org.knime.js.core.node.table.AbstractTableValue;
+import org.knime.js.core.settings.table.TableValueSettings;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
- * The {@link NodeFactory} for the Brat Document Viewer node.
+ * The Value class for the Brat Document Viewer node. The values can be changed in the view. Currently this class is
+ * empty.
  *
  * @author Daniel Bogenrieder, KNIME GmbH, Konstanz, Germany
  */
-public final class DocumentViewerNodeFactory extends NodeFactory<DocumentViewerNodeModel> implements
-    WizardNodeFactoryExtension<DocumentViewerNodeModel, DocumentViewerRepresentation, DocumentViewerValue> {
+@JsonAutoDetect
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+public final class DocumentViewerValue extends AbstractTableValue {
 
+
+    private TableValueSettings m_settings = new TableValueSettings();
     /**
-     * {@inheritDoc}
+     * @return the settings
      */
     @Override
-    public DocumentViewerNodeModel createNodeModel() {
-        return new DocumentViewerNodeModel(getInteractiveViewName());
+    @JsonUnwrapped
+    public TableValueSettings getSettings() {
+        return m_settings;
+    }
+
+    /**
+     * @param settings the settings to set
+     */
+    @Override
+    @JsonUnwrapped
+    public void setSettings(final TableValueSettings settings) {
+        m_settings = settings;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected int getNrNodeViews() {
-        return 0;
+    @JsonIgnore
+    public void saveToNodeSettings(final NodeSettingsWO settings) {
+        m_settings.saveSettings(settings);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public NodeView<DocumentViewerNodeModel> createNodeView(final int viewIndex,
-        final DocumentViewerNodeModel nodeModel) {
-        return null;
+    @JsonIgnore
+    public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_settings.loadSettings(settings);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected boolean hasDialog() {
-        return true;
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        final DocumentViewerValue other = (DocumentViewerValue)obj;
+        return new EqualsBuilder()
+                .append(m_settings, other.m_settings)
+                .isEquals();
     }
+
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected NodeDialogPane createNodeDialogPane() {
-        return new DocumentViewerNodeDialog();
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(m_settings)
+                .toHashCode();
     }
 
 }

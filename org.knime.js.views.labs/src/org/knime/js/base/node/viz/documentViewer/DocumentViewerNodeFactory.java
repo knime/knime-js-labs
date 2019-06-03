@@ -46,98 +46,60 @@
  * History
  *   Oct 25, 2018 (dewi): created
  */
-package org.knime.js.base.node.viz.DocumentViewer;
+package org.knime.js.base.node.viz.documentViewer;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeSettingsRO;
-import org.knime.core.node.NodeSettingsWO;
-import org.knime.js.core.node.table.AbstractTableValue;
-import org.knime.js.core.settings.table.TableValueSettings;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeView;
+import org.knime.core.node.wizard.WizardNodeFactoryExtension;
 
 /**
- * The Value class for the Brat Document Viewer node. The values can be changed in the view. Currently this class is
- * empty.
+ * The {@link NodeFactory} for the Brat Document Viewer node.
  *
  * @author Daniel Bogenrieder, KNIME GmbH, Konstanz, Germany
  */
-@JsonAutoDetect
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public final class DocumentViewerValue extends AbstractTableValue {
-
-
-    private TableValueSettings m_settings = new TableValueSettings();
-    /**
-     * @return the settings
-     */
-    @Override
-    @JsonUnwrapped
-    public TableValueSettings getSettings() {
-        return m_settings;
-    }
+public final class DocumentViewerNodeFactory extends NodeFactory<DocumentViewerNodeModel> implements
+    WizardNodeFactoryExtension<DocumentViewerNodeModel, DocumentViewerRepresentation, DocumentViewerValue> {
 
     /**
-     * @param settings the settings to set
+     * {@inheritDoc}
      */
     @Override
-    @JsonUnwrapped
-    public void setSettings(final TableValueSettings settings) {
-        m_settings = settings;
+    public DocumentViewerNodeModel createNodeModel() {
+        return new DocumentViewerNodeModel(getInteractiveViewName());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @JsonIgnore
-    public void saveToNodeSettings(final NodeSettingsWO settings) {
-        m_settings.saveSettings(settings);
+    protected int getNrNodeViews() {
+        return 0;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @JsonIgnore
-    public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_settings.loadSettings(settings);
+    public NodeView<DocumentViewerNodeModel> createNodeView(final int viewIndex,
+        final DocumentViewerNodeModel nodeModel) {
+        return null;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(final Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        final DocumentViewerValue other = (DocumentViewerValue)obj;
-        return new EqualsBuilder()
-                .append(m_settings, other.m_settings)
-                .isEquals();
+    protected boolean hasDialog() {
+        return true;
     }
-
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-                .append(m_settings)
-                .toHashCode();
+    protected NodeDialogPane createNodeDialogPane() {
+        return new DocumentViewerNodeDialog();
     }
 
 }
