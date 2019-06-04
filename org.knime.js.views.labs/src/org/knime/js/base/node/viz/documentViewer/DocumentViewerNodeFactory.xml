@@ -2,7 +2,7 @@
 <knimeNode xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://knime.org/node/v3.1" 
 	xsi:schemaLocation="http://knime.org/node/v3.1 http://knime.org/node/v3.1.xsd"
 	icon="./document_viewer.png" type="Visualizer">
-	<name>Tagged Document Viewer (JavaScript)</name>
+	<name>Tagged Document Viewer</name>
 	<shortDescription>
 		Visualizes documents.
 	</shortDescription>

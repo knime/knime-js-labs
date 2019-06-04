@@ -3,7 +3,7 @@
 	xmlns="http://knime.org/node/v3.1"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://knime.org/node/v3.1 http://knime.org/node/v3.1.xsd">
-	<name>Hierarchical Cluster Assigner (JavaScript)</name>
+	<name>Hierarchical Cluster Assigner</name>
 	<shortDescription>
 		Creates an interactive JavaScript which displays the results of hierarchical clustering and enables cluster assignment.
 	</shortDescription>
