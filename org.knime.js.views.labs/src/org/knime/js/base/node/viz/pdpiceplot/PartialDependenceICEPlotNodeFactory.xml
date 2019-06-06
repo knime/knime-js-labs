@@ -325,8 +325,7 @@
 	</interactiveView>
 	<ports>
 		<inPort name="Model output table" index="0">
-			Prediction model output table or Partial Dependence/ICE Plot pre-
-			processing node output table.
+			Prediction model output table or table created by the Partial Dependence/ICE Plot pre-processing node.
 		</inPort>
 		<inPort name="Original data table" index="1">
 			Original data table which was fed into the prediction model.
