@@ -45,11 +45,6 @@
       <node
             category-path="/labs/js-views"
             deprecated="false"
-            factory-class="org.knime.js.base.node.viz.pdpiceplot.PartialDependenceICEPlotNodeFactory">
-      </node>
-      <node
-            category-path="/labs/js-views"
-            deprecated="false"
             factory-class="org.knime.js.base.node.viz.documentViewer.DocumentViewerNodeFactory">
       </node>
    </extension>
@@ -279,34 +274,6 @@
                webResourceBundleID="renderQueue_1.0.0">
          </webDependency>
       </webResourceBundle>
-      <webResourceBundle
-            debug="true"
-            name="Partial-Dependence/ICE Plot"
-            usesDefine="false"
-            version="1.0.0"
-            webResourceBundleID="org.knime.js.base.node.viz.pdpiceplot.bundle">
-         <webResource
-               relativePathSource="js-src/org/knime/js/base/node/viz/pdpiceplot/"
-               relativePathTarget="/org/knime/js/base/node/viz/pdpiceplot/">
-         </webResource>
-         <importResource
-               relativePath="/org/knime/js/base/node/viz/pdpiceplot/pdpiceplot.js"
-               type="JAVASCRIPT">
-         </importResource>
-         <importResource
-               relativePath="/org/knime/js/base/node/viz/pdpiceplot/styles.css"
-               type="CSS">
-         </importResource>
-         <webDependency
-               webResourceBundleID="D3_4.13.0">
-         </webDependency>
-         <webDependency
-               webResourceBundleID="KnimeTable_1.0.0">
-         </webDependency>
-         <webDependency
-               webResourceBundleID="renderQueue_1.0.0">
-         </webDependency>
-      </webResourceBundle>
        <webResourceBundle
              debug="false"
              name="Brat_1.3"
@@ -485,16 +452,6 @@
             javascriptComponentID="org.knime.js.base.node.viz.heatmap"
             name="Heatmap"
             namespace="heatmapNamespace"
-            setValidationError-method-name="setValidationError"
-            validate-method-name="validate">
-      </javascriptComponent>
-      <javascriptComponent
-            getComponentValue-method-name="getComponentValue"
-            implementationBundleID="org.knime.js.base.node.viz.pdpiceplot.bundle"
-            init-method-name="init"
-            javascriptComponentID="org.knime.js.base.node.viz.pdpiceplot"
-            name="PartialDependenceICEPlot"
-            namespace="pdpiceplotNamespace"
             setValidationError-method-name="setValidationError"
             validate-method-name="validate">
       </javascriptComponent>
