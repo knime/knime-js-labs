@@ -100,7 +100,7 @@
 	<interactiveView name="Data Explorer View">
 	<p>The interactive view consists of three tabs: a Statistics tab, a Nominal tab, and a Data Preview tab.  The Statistics and Nominal tabs sum up the information in each column. The user can then decide which columns to include in further analysis.</p>
 
-	<p>The <b>Statistics</b> tab shows the main statistical properties of the numerical data, such as minimum, maximum, median (optional), standard deviation, variance, skewness, kurtosis, overall sum, number of zero values, number of missing values, number of not-an-object values, as well as positive and negative infinity values.  For each column, the node also calculates a histogram showing the value distribution.</p>
+	<p>The <b>Numeric</b> tab shows the main statistical properties of the numerical data, such as minimum, maximum, median (optional), standard deviation, variance, skewness, kurtosis, overall sum, number of zero values, number of missing values, number of not-an-object values, as well as positive and negative infinity values.  For each column, the node also calculates a histogram showing the value distribution.</p>
 	 
 	<p>The <b>Nominal</b> tab lists the main properties of the nominal values, such as the number of missing values, unique values, and top n most frequent and infrequent values.  In addition, for each data column there is a histogram showing the frequencies with which values occur in this column.</p>
 	
