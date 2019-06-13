@@ -124,6 +124,11 @@ window.docViewer = (function () {
         // Translates escaped newline signs into actual newline signs
         text = text.replace(new RegExp(/\\n/g), '\n');
 
+        // If Title should be shown, then append title to the actual text
+        if(_representation.showTitleInDocument) {
+            text = _representation.bratDocuments[id].docTitle + "\n" + text;
+        }
+
         var tagsUnique = tags.filter(function (item, i, ar) {
             return ar.indexOf(item) === i;
         });
@@ -145,10 +150,12 @@ window.docViewer = (function () {
             entities: []
         };
         for (var i = 0; i < terms.length; i++) {
-            obj = [ids[i], tags[i]];
-            var idx = [[startIdx[i], stopIdx[i]]];
-            obj.push(idx);
-            docData.entities.push(obj);
+            if(startIdx[i]>=0) {
+                obj = [ids[i], tags[i]];
+                var idx = [[startIdx[i], stopIdx[i]]];
+                obj.push(idx);
+                docData.entities.push(obj);
+            }
         }
         var dispatcher = Util.embed(id, $.extend({}, collData), $.extend({}, docData), showLineNumbers);
         // Delete the loading text and show the svg when the svg creation is finished.
@@ -159,6 +166,13 @@ window.docViewer = (function () {
             }
             dispatchCounter++;
             if (dispatchCounter === $('#knimePagedTable')[0].childNodes[0].childNodes.length) {
+                // If the title should be shown, then assign knime class and set font to bold
+                if(_representation.showTitleInDocument) {
+                    $('.text').children().first().attr('class','knime-document-inner-title');
+                    $('.text').children().first().css('font-weight','Bold');
+                }
+                // Remove banded rows
+                $('.background').children().attr('class','background0');
                 checkScrollPosition();
                 dispatchCounter = 0;
             }

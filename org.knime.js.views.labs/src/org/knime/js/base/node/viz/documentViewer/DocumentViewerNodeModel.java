@@ -203,7 +203,7 @@ final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewe
                 // get the indexed terms from the doc
                 List<IndexedTerm> terms;
                 if (showDocumentTags) {
-                    terms = DocumentUtil.getIndexedTerms(doc, false, "\n");
+                    terms = DocumentUtil.getIndexedTerms(doc, ((DocumentViewerConfig)m_config).isShowTitleInDocument(), "\n");
                 } else {
                     terms = new ArrayList<>();
                 }
@@ -246,6 +246,7 @@ final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewe
             // Use setSettingsFromDialog, it ensures the table that got set on the representation settings is preserved
             viewRepresentation.setSettingsFromDialog(m_config.getSettings().getRepresentationSettings());
             viewRepresentation.setShowLineNumbers(conf.getShowLineNumbers());
+            viewRepresentation.setShowTitleInDocument(conf.isShowTitleInDocument());
 
             final DocumentViewerValue viewValue = getViewValue();
             if (isViewValueEmpty()) {

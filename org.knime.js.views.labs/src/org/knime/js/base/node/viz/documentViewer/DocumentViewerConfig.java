@@ -80,6 +80,10 @@ public class DocumentViewerConfig implements TableConfig {
     private static final boolean DEFAULT_SHOW_DOCUMENT_TAGS = true;
     private boolean m_showDocumentTags = DEFAULT_SHOW_DOCUMENT_TAGS;
 
+    static final String CFG_SHOW_TITLE_IN_DOCUMENT = "showTitleInDocuments";
+    private static final boolean DEFAULT_SHOW_TITLE_IN_DOCUMENTS = true;
+    private boolean m_showTitleInDocument = DEFAULT_SHOW_TITLE_IN_DOCUMENTS;
+
     @SuppressWarnings("javadoc")
     public DocumentViewerConfig() {
         super();
@@ -107,6 +111,20 @@ public class DocumentViewerConfig implements TableConfig {
      */
     public boolean getShowLineNumbers() {
         return m_showLineNumbers;
+    }
+
+    /**
+     * @param showTitleInDocument true if the title should be shown in the document
+     */
+    public void setShowDocumentInTitle(final boolean showTitleInDocument) {
+        m_showTitleInDocument = showTitleInDocument;
+    }
+
+    /**
+     * @return boolean if title should be shown in the document
+     */
+    public boolean isShowTitleInDocument() {
+        return m_showTitleInDocument;
     }
 
     /**
@@ -155,6 +173,7 @@ public class DocumentViewerConfig implements TableConfig {
         settings.addString(CFG_DOCUMENT_COL, m_documentCol);
         settings.addBoolean(CFG_SHOW_LINE_NUMBERS, m_showLineNumbers);
         settings.addBoolean(CFG_SHOW_DOCUMENT_TAGS, m_showDocumentTags);
+        settings.addBoolean(CFG_SHOW_TITLE_IN_DOCUMENT, m_showTitleInDocument);
     }
 
     /**
@@ -172,6 +191,7 @@ public class DocumentViewerConfig implements TableConfig {
         m_documentCol = settings.getString(CFG_DOCUMENT_COL);
         m_showLineNumbers = settings.getBoolean(CFG_SHOW_LINE_NUMBERS);
         m_showDocumentTags = settings.getBoolean(CFG_SHOW_DOCUMENT_TAGS);
+        m_showTitleInDocument = settings.getBoolean(CFG_SHOW_TITLE_IN_DOCUMENT);
     }
 
     /**
@@ -183,6 +203,7 @@ public class DocumentViewerConfig implements TableConfig {
         m_documentCol = settings.getString(CFG_DOCUMENT_COL, DEFAULT_DOCUMENT_COL);
         m_showLineNumbers = settings.getBoolean(CFG_SHOW_LINE_NUMBERS, DEFAULT_SHOW_LINE_NUMBERS);
         m_showDocumentTags = settings.getBoolean(CFG_SHOW_DOCUMENT_TAGS, DEFAULT_SHOW_DOCUMENT_TAGS);
+        m_showTitleInDocument = settings.getBoolean(CFG_SHOW_TITLE_IN_DOCUMENT, DEFAULT_SHOW_TITLE_IN_DOCUMENTS);
     }
 
     static void validateConfig(final int initPageSize, final int maxRows,

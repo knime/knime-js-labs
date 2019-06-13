@@ -60,6 +60,10 @@
 			<option name="Display document tags">
 				If checked document tags are shown in the document.
 			</option>
+			<option name="Show title in document">
+				If checked the title of each document is additionally rendered into each document.
+				This is useful, if the title itself has tags.
+			</option>
 		</tab>
 		<tab name="Interactivity">
 			<description>

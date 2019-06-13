@@ -103,6 +103,8 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
     private JRadioButton m_alignRightRadioButton;
     private JRadioButton m_alignCenterRadioButton;
     private JCheckBox m_showLineNumbers;
+    private JCheckBox m_showDocumentTags;
+    private JCheckBox m_showTitleInDocument;
 
     // Interactivity copied from table view dialog
     private JCheckBox m_enablePagingCheckBox;
@@ -118,7 +120,7 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
     private JCheckBox m_hideUnselectedCheckbox;
     private JCheckBox m_publishFilterCheckBox;
     private JCheckBox m_subscribeFilterCheckBox;
-    private JCheckBox m_showDocumentTags;
+
 
 
     // warnings
@@ -166,6 +168,7 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
 
         m_showLineNumbers = new JCheckBox("Show line numbers");
         m_showDocumentTags = new JCheckBox("Display document tags");
+        m_showTitleInDocument = new JCheckBox("Show title in document");
 
         final JSpinner initSpin =  m_initialPageSizeSpinner.getSpinner();
         final Dimension spinnerDim = new Dimension(TEXT_FIELD_SIZE, 20);
@@ -215,6 +218,7 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         m_config.setDocumentCol(m_documentColumnSelectionPanel.getSelectedColumn());
         m_config.setShowLineNumbers(m_showLineNumbers.isSelected());
         m_config.setShowDocumentTags(m_showDocumentTags.isSelected());
+        m_config.setShowDocumentInTitle(m_showTitleInDocument.isSelected());
         // end
 
         m_config.saveSettings(settings);
@@ -256,6 +260,7 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
 
         m_showLineNumbers.setSelected(m_config.getShowLineNumbers());
         m_showDocumentTags.setSelected(m_config.getShowDocumentTags());
+        m_showTitleInDocument.setSelected(m_config.isShowTitleInDocument());
 
         enableSelectionFields();
         setNumberOfFilters(inSpec);
@@ -306,6 +311,9 @@ public class DocumentViewerNodeDialog extends NodeDialogPane {
         gbcG.gridx = 0;
         gbcG.gridy++;
         generalPanel.add(m_showDocumentTags, gbcG);
+        gbcG.gridx = 0;
+        gbcG.gridy++;
+        generalPanel.add(m_showTitleInDocument, gbcG);
 
 
         // end
