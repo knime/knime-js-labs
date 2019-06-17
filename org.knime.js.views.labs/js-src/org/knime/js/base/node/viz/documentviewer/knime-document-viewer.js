@@ -125,8 +125,8 @@ window.docViewer = (function () {
         text = text.replace(new RegExp(/\\n/g), '\n');
 
         // If Title should be shown, then append title to the actual text
-        if(_representation.showTitleInDocument) {
-            text = _representation.bratDocuments[id].docTitle + "\n" + text;
+        if (_representation.showTitleInDocument) {
+            text = _representation.bratDocuments[id].docTitle + '\n' + text;
         }
 
         var tagsUnique = tags.filter(function (item, i, ar) {
@@ -150,7 +150,7 @@ window.docViewer = (function () {
             entities: []
         };
         for (var i = 0; i < terms.length; i++) {
-            if(startIdx[i]>=0) {
+            if (startIdx[i] >= 0) {
                 obj = [ids[i], tags[i]];
                 var idx = [[startIdx[i], stopIdx[i]]];
                 obj.push(idx);
@@ -165,14 +165,18 @@ window.docViewer = (function () {
                 $('#' + id)[0].removeChild($('#' + id)[0].childNodes[0]);
             }
             dispatchCounter++;
+            // If the title should be shown, then assign knime class and set font to bold
+            if (_representation.showTitleInDocument) {
+                $('.text').each(function (index, elem) {
+                    if (_representation.bratDocuments[index].docTitle !== '') {
+                        $(elem).children().first().attr('class', 'knime-document-inner-title');
+                        $(elem).children().first().css('font-weight', 'Bold');
+                    }
+                });
+            }
+            // Remove banded rows
+            $('.background').children().attr('class', 'background0');
             if (dispatchCounter === $('#knimePagedTable')[0].childNodes[0].childNodes.length) {
-                // If the title should be shown, then assign knime class and set font to bold
-                if(_representation.showTitleInDocument) {
-                    $('.text').children().first().attr('class','knime-document-inner-title');
-                    $('.text').children().first().css('font-weight','Bold');
-                }
-                // Remove banded rows
-                $('.background').children().attr('class','background0');
                 checkScrollPosition();
                 dispatchCounter = 0;
             }
