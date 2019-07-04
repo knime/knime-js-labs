@@ -30,21 +30,6 @@
 			<option name="Document Column">
 				The column containing the documents to show.
 			</option>
-			<option name="Enable pagination">
-				Enable or disable the pagination feature globally. When disabled the table is rendered whole on one
-                page. When enabled use the options below to further refine the pagination settings.
-			</option>
-			<option name="Initial page size">
-				Set the page size to be used on initial layout. A page size is defined as the number of documents the view
-                displays on one page. If the page size change control is enabled the page length can be changed in the
-                view.
-			</option>
-			<option name="Enable page size change control">
-				Enable or disable the control to change the page size interactively in the view.
-			</option>
-			<option name="Selectable page sizes">
-				Define a comma-separated list of allowed page sizes for the page size control.
-			</option>
 			<option name="No. of rows to display">
 				Use this numerical value to restrict the number of rows used for this visualization.
 			</option>
@@ -71,6 +56,21 @@
                 configure which features will be activated on the view and further configuration of interactive
                 properties.
 			</description>
+			<option name="Enable pagination">
+				Enable or disable the pagination feature globally. When disabled the table is rendered whole on one
+                page. When enabled use the options below to further refine the pagination settings.
+			</option>
+			<option name="Initial page size">
+				Set the page size to be used on initial layout. A page size is defined as the number of documents the view
+                displays on one page. If the page size change control is enabled the page length can be changed in the
+                view.
+			</option>
+			<option name="Enable page size change control">
+				Enable or disable the control to change the page size interactively in the view.
+			</option>
+			<option name="Selectable page sizes">
+				Define a comma-separated list of allowed page sizes for the page size control.
+			</option>
 			<option name="Enable selection">
                 If checked a checkbox is rendered in the top left corner of each document. The selection, when applied,
                 will be represented in the output table as a new boolean column.
