@@ -48,7 +48,7 @@ window.docViewer = (function () {
             $('.knime-table-row').each(function (index, element) {
                 tempHeights.push(element.children[1].children[1].children[0].style.height);
             });
-            var rows = $('#knimePagedTable').DataTable().rows(); // eslint-disable-line new-cap
+            var rows = this._getJQueryTable().DataTable().rows(); // eslint-disable-line new-cap
             // invalidate data to clear all the documents
             rows.invalidate('data');
             // measure the width of the unoccupied document to detect the width which should be used by the brat
@@ -82,10 +82,16 @@ window.docViewer = (function () {
         // super call
         KnimeBaseTableViewer.prototype.init.call(this, options, value);
         
+        var self = this;
         // eslint-disable-next-line new-cap
-        $('#knimePagedTable').DataTable().on('page.dt', function () {
-            doneResizing();
+        this._getJQueryTable().DataTable().on('page.dt', function () {
+            doneResizing.call(self);
         });
+    };
+    
+    BratDocumentViewer.prototype._createHtmlTableContainer = function () {
+        KnimeBaseTableViewer.prototype._createHtmlTableContainer.apply(this);
+        this._getJQueryTableContainer().addClass('knime-document-viewer');
     };
     
     
@@ -158,6 +164,7 @@ window.docViewer = (function () {
             }
         }
         var dispatcher = Util.embed(id, $.extend({}, collData), $.extend({}, docData), showLineNumbers);
+        var self = this;
         // Delete the loading text and show the svg when the svg creation is finished.
         dispatcher.on('doneRendering', function () {
             if ($('#' + id)[0].childNodes[0].nodeType === Node.TEXT_NODE) {
@@ -176,7 +183,7 @@ window.docViewer = (function () {
             }
             // Remove banded rows
             $('.background').children().attr('class', 'background0');
-            if (dispatchCounter === $('#knimePagedTable')[0].childNodes[0].childNodes.length) {
+            if (dispatchCounter === self._getJQueryTable()[0].childNodes[0].childNodes.length) {
                 checkScrollPosition();
                 dispatchCounter = 0;
             }
@@ -272,25 +279,26 @@ window.docViewer = (function () {
     // auto-size cell heights
     BratDocumentViewer.prototype._dataTableDrawCallback = function () {
         KnimeBaseTableViewer.prototype._dataTableDrawCallback.apply(this);
-        $('#knimePagedTable thead').remove();
-        $('#knimePagedTableContainer .dataTables_scrollHead').remove();
-        BratDocumentViewer.prototype._setDocumentViewerStyle();
+        this._getJQueryTable().find('thead').remove();
+        this._getJQueryTableContainer().find('.dataTables_scrollHead').remove();
+        BratDocumentViewer.prototype._setDocumentViewerStyle.call(this);
         var infoColsCount = this._infoColsCount;
         var columns = this._dataTableConfig.columns;
         for (var colIndex = infoColsCount; colIndex < columns.length; colIndex++) {
-            var cells = Array.prototype.slice.call(document
-                .querySelectorAll('#knimePagedTable .knime-table-cell:nth-child(' + (colIndex + 1) + ')'));
-            cells.forEach(function (cell) {
-                BratDocumentViewer.prototype._renderBratDocument(cell.children[1].id);
+            var cells = this._getJQueryTable().find('.knime-table-cell:nth-child(' + (colIndex + 1) + ')');
+            var self = this;
+            cells.each(function () {
+                BratDocumentViewer.prototype._renderBratDocument.call(self, this.children[1].id);
             });
         }
     };
 
     BratDocumentViewer.prototype._setDocumentViewerStyle = function () {
-        $('#knimePagedTable').removeClass('table-striped');
-        $('#knimePagedTable').removeClass('table-bordered');
-        $('.dt-body-center.knime-table-cell').css('border-top', '0px');
-        $('.knime-table-cell.knime-string').css('border-top', '0px');
+        var table = this._getJQueryTable();
+        table.removeClass('table-striped');
+        table.removeClass('table-bordered');
+        table.find('.dt-body-center.knime-table-cell').css('border-top', '0px');
+        table.find('.knime-table-cell.knime-string').css('border-top', '0px');
     };
 
     BratDocumentViewer.prototype._cellMouseDownHandler = function () {

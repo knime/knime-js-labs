@@ -1,10 +1,12 @@
-table#knimePagedTable .knime-table-cell.knime-document-title {
+.knime-document-viewer table.knime-table .knime-table-cell.knime-document-title {
     font-weight: bold;
     font-size: 120%;
 }
-table#knimePagedTable .knime-table-cell.selection-cell {
+
+.knime-document-viewer table.knime-table .knime-table-cell.selection-cell {
     position: absolute;
 }
-table#knimePagedTable .knime-document-title.knime-table-cell {
+
+.knime-document-viewer table.knime-table .knime-document-title.knime-table-cell {
 	padding-left: 20px;
 }
