@@ -125,7 +125,7 @@ window.docViewer = (function () {
         text = text.replace(new RegExp(/\\n/g), '\n');
 
         // If Title should be shown, then append title to the actual text
-        if (_representation.showTitleInDocument) {
+        if (_representation.showTitleInDocument && _representation.bratDocuments[id].docTitle.length > 0) {
             text = _representation.bratDocuments[id].docTitle + '\n' + text;
         }
 
