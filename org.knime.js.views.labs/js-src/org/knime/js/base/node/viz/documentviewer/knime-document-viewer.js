@@ -48,7 +48,7 @@ window.docViewer = (function () {
             $('.knime-table-row').each(function (index, element) {
                 tempHeights.push(element.children[1].children[1].children[0].style.height);
             });
-            var rows = this._getJQueryTable().DataTable().rows(); // eslint-disable-line new-cap
+            var rows = this.docViewer._getJQueryTable().DataTable().rows(); // eslint-disable-line new-cap
             // invalidate data to clear all the documents
             rows.invalidate('data');
             // measure the width of the unoccupied document to detect the width which should be used by the brat
@@ -93,7 +93,6 @@ window.docViewer = (function () {
         KnimeBaseTableViewer.prototype._createHtmlTableContainer.apply(this);
         this._getJQueryTableContainer().addClass('knime-document-viewer');
     };
-    
     
     $(window).resize(function (event) {
         clearTimeout(updateTimer);
