@@ -170,7 +170,6 @@ window.docViewer = (function () {
                 $('.text').each(function (index, elem) {
                     if (_representation.bratDocuments[index].docTitle !== '') {
                         $(elem).children().first().attr('class', 'knime-document-inner-title');
-                        $(elem).children().first().css('font-weight', 'Bold');
                     }
                 });
             }
