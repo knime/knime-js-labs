@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.knime.features.js.views.labs_3.8.0.qualifier.jar" id="org.knime.features.js.views.labs" version="3.8.0.qualifier"/>
+   <feature id="org.knime.features.js.views.labs" version="0.0.0">
+      <category name="knime-js-labs"/>
+   </feature>
+   <feature id="org.knime.features.js.views.labs.source" version="0.0.0">
+      <category name="knime-js-labs"/>
+   </feature>
+
+   <category-def name="knime-js-labs" label="Build artifacts from knime-js-labs">
+       <description>Build artifacts from knime-js-labs</description>
+   </category-def>
 </site>
