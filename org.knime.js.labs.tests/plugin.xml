@@ -7,5 +7,5 @@
             TestcaseCollector="org.knime.js.labs.testing.JSTestcaseCollector">
       </TestcaseCollector>
    </extension>
-
+<!-- test with then remove -->
 </plugin>

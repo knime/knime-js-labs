@@ -25,6 +25,7 @@
 
 	<modules>
         <module>org.knime.js.views.labs</module>
+        <module>org.knime.js.labs.tests</module>
         <module>org.knime.features.js.views.labs</module>
         <module>org.knime.update.js.views.labs</module>
 	</modules>

@@ -13,6 +13,17 @@ properties([
 
 try {
     knimetools.defaultTychoBuild('org.knime.update.js.views.labs')
+
+    workflowTests.runTests(
+        dependencies: [
+            repositories: ['knime-js-labs']
+        ]
+    )
+
+    stage('Sonarqube analysis') {
+        env.lastStage = env.STAGE_NAME
+        workflowTests.runSonar()
+    }
 } catch (ex) {
     currentBuild.result = 'FAILED'
     throw ex

@@ -46,7 +46,7 @@
  * History
  *   11.11.2016 (thor): created
  */
-package org.knime.js.labs.testing;
+package org.knime.js.labs.tests;
 
 import org.knime.testing.core.AbstractTestcaseCollector;
 
