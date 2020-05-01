@@ -16,7 +16,9 @@ try {
 
     workflowTests.runTests(
         dependencies: [
-            repositories: ['knime-js-labs']
+            repositories: ['knime-js-labs', 'knime-js-core', 'knime-chromium', 'knime-timeseries',
+                'knime-r', 'knime-xml', 'knime-jep', 'knime-datageneration', 'knime-textprocessing',
+                'knime-chemistry']
         ]
     )
 
