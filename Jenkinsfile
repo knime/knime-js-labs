@@ -5,7 +5,7 @@ library "knime-pipeline@$BN"
 
 properties([
     pipelineTriggers([
-        upstream('knime-base/' + env.BRANCH_NAME.replaceAll('/', '%2F'))
+        upstream('knime-js-base/' + env.BRANCH_NAME.replaceAll('/', '%2F'))
     ]),
     buildDiscarder(logRotator(numToKeepStr: '5')),
     disableConcurrentBuilds()
@@ -27,7 +27,7 @@ try {
         workflowTests.runSonar()
     }
 } catch (ex) {
-    currentBuild.result = 'FAILED'
+    currentBuild.result = 'FAILURE'
     throw ex
 } finally {
     notifications.notifyBuild(currentBuild.result)
