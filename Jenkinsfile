@@ -18,7 +18,7 @@ try {
         dependencies: [
             repositories: ['knime-js-labs', 'knime-js-core', 'knime-chromium', 'knime-timeseries',
                 'knime-r', 'knime-xml', 'knime-jep', 'knime-datageneration', 'knime-textprocessing',
-                'knime-chemistry', 'knime-js-base', 'knime-distance', 'knime-stats', 'knime-dl4j'
+                'knime-chemistry', 'knime-js-base', 'knime-distance', 'knime-stats', 'knime-dl4j',
                 'knime-jfreechart']
         ]
     )
