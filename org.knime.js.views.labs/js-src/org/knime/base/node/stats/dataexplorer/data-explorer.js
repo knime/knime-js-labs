@@ -1157,6 +1157,7 @@ dataExplorerNamespace = function() {
 				if (colType == 'number') {
                     if (previewTable.getKnimeColumnTypes()[i].indexOf('double') > -1) {
                         colDef.className += ' knime-double';
+                        colDef.type = 'num';
                         if (_representation.enableGlobalNumberFormat) {
                             colDef.render = function (data, type, full, meta) {
                                 if (!$.isNumeric(data)) {
@@ -1167,6 +1168,7 @@ dataExplorerNamespace = function() {
                         }
                     } else {
                         colDef.className += ' knime-integer';
+                        colDef.type = 'num';
                     }
                 }
                 if (colType == 'png') {
@@ -1195,7 +1197,6 @@ dataExplorerNamespace = function() {
             var firstChunk = getDataSlice(0, _representation.initialPageSize, previewTable);
             
             var searchEnabled = _representation.enableSearching || (knimeService && knimeService.isInteractivityAvailable());
-            
             previewDataTable = $('#knimePreview').DataTable( {
                 'columns': colArray,
 				'columnDefs': colDefs,
