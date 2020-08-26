@@ -54,7 +54,9 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.knime.core.data.DataCell;
+import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
+import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.container.filter.TableFilter;
 import org.knime.core.node.BufferedDataTable;
@@ -64,6 +66,8 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.port.PortObject;
+import org.knime.core.node.port.PortObjectSpec;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.ext.textprocessing.data.Document;
 import org.knime.ext.textprocessing.data.DocumentValue;
 import org.knime.ext.textprocessing.data.IndexedTerm;
@@ -109,6 +113,27 @@ final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewe
     @Override
     public String getJavascriptObjectID() {
         return "org.knime.js.base.node.viz.documentviewer";
+    }
+
+    @Override
+    protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
+        final DocumentViewerConfig cfg = (DocumentViewerConfig)m_config;
+        final DataTableSpec inSpec = (DataTableSpec)inSpecs[0];
+        if (cfg.getDocumentCol() == null) {
+            cfg.setDocumentCol(inSpec.stream()//
+                .filter(cSpec -> cSpec.getType().isCompatible(DocumentValue.class))//
+                .findFirst()//
+                .map(DataColumnSpec::getName)//
+                .orElseThrow(() -> new InvalidSettingsException(
+                    "The input does not contain any column compatible to 'DocumentValue'"))//
+            );
+            setWarningMessage(String.format("Auto guessing: Using column '%s'.", cfg.getDocumentCol()));
+        }
+        CheckUtils.checkSetting(inSpec.containsName(cfg.getDocumentCol()),
+            "The selected document column '%s' is not part of the input", cfg.getDocumentCol());
+        CheckUtils.checkSetting(inSpec.getColumnSpec(cfg.getDocumentCol()).getType().isCompatible(DocumentValue.class),
+            "The selected document '%s' column is not of type 'Document'", cfg.getDocumentCol());
+        return super.configure(inSpecs);
     }
 
     /**
@@ -203,7 +228,8 @@ final class DocumentViewerNodeModel extends AbstractTableNodeModel<DocumentViewe
                 // get the indexed terms from the doc
                 List<IndexedTerm> terms;
                 if (showDocumentTags) {
-                    terms = DocumentUtil.getIndexedTerms(doc, ((DocumentViewerConfig)m_config).isShowTitleInDocument(), "\n");
+                    terms = DocumentUtil.getIndexedTerms(doc, ((DocumentViewerConfig)m_config).isShowTitleInDocument(),
+                        "\n");
                 } else {
                     terms = new ArrayList<>();
                 }
