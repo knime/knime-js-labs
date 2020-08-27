@@ -11,7 +11,7 @@ window.docViewer = (function () {
     var scrollBarWidth = 51;
     var svgOffset = $(window).width() - scrollBarWidth;
     var dispatchCounter = 0;
-    
+
     // time after which the resizing should happen.
     var updateInterval = 200;
 
@@ -38,28 +38,31 @@ window.docViewer = (function () {
 
     BratDocumentViewer.prototype = Object.create(KnimeBaseTableViewer.prototype);
     BratDocumentViewer.prototype.constructor = BratDocumentViewer;
-    
+
     function doneResizing() {
+        var rowClasses = 'knime-table-cell knime-string';
         if (Math.abs(lastWidthWhenUpdating - window.innerWidth) > 10) {
             tempScrollTop = $(window).scrollTop();
             tempScrollHeight = $(document).height() - $(window).height();
             var tempHeights = [];
             // save all of the heights from each visible document
             $('.knime-table-row').each(function (index, element) {
-                tempHeights.push(element.children[1].children[1].children[0].style.height);
+                tempHeights.push(element.getElementsByClassName(rowClasses)[0]
+                    .children[1].children[0].style.height);
             });
-            var rows = this.docViewer._getJQueryTable().DataTable().rows(); // eslint-disable-line new-cap
+            var rows = window.docViewer._getJQueryTable().DataTable().rows(); // eslint-disable-line new-cap
             // invalidate data to clear all the documents
             rows.invalidate('data');
             // measure the width of the unoccupied document to detect the width which should be used by the brat
             // Document
-            svgOffset = $('.knime-table-row')[0].children[1].children[1].clientWidth - 10;
+            svgOffset = $('.knime-table-row')[0].getElementsByClassName(rowClasses)[0].children[1].clientWidth - 10;
             // create the documents
             rows.draw(false);
             // set each of the rows to the previous saved height to make the transition smooth
             $('.knime-table-row').each(function (index, element) {
-                element.children[1].children[1].style.height = tempHeights[index];
-                element.children[1].children[1].children[0].style.height = tempHeights[index];
+                element.getElementsByClassName(rowClasses)[0].children[1].style.height = tempHeights[index];
+                element.getElementsByClassName(rowClasses)[0]
+                    .children[1].children[0].style.height = tempHeights[index];
             });
 
             lastWidthWhenUpdating = window.innerWidth;
@@ -78,28 +81,28 @@ window.docViewer = (function () {
             singleSelection: false,
             displayRowColors: false
         };
-        
+
         // ideally we would use Object.assign() to create a copy, but this does not work in IE11 (AP-12725)
         var options = representation;
         for (var key in overrides) {
             options[key] = overrides[key];
         }
-        
+
         // super call
         KnimeBaseTableViewer.prototype.init.call(this, options, value);
-        
+
         var self = this;
         // eslint-disable-next-line new-cap
         this._getJQueryTable().DataTable().on('page.dt', function () {
             doneResizing.call(self);
         });
     };
-    
+
     BratDocumentViewer.prototype._createHtmlTableContainer = function () {
         KnimeBaseTableViewer.prototype._createHtmlTableContainer.apply(this);
         this._getJQueryTableContainer().addClass('knime-document-viewer');
     };
-    
+
     $(window).resize(function (event) {
         clearTimeout(updateTimer);
         updateTimer = setTimeout(doneResizing, updateInterval);
@@ -110,7 +113,7 @@ window.docViewer = (function () {
         this._representation.subscriptionFilterIds = this._knimeTable.getFilterIds();
         KnimeBaseTableViewer.prototype._buildMenu.apply(this);
     };
-    
+
     function checkScrollPosition() {
         var scrollRatio = tempScrollTop / tempScrollHeight;
         // amount of pixels to allow moving and still scrolling to the bottom when resizing.
@@ -131,7 +134,7 @@ window.docViewer = (function () {
         var stopIdx = _representation.bratDocuments[id].stopIndexes;
         var colors = _representation.bratDocuments[id].colors;
         var showLineNumbers = _representation.showLineNumbers;
-        
+
         // Translates escaped newline signs into actual newline signs
         text = text.replace(new RegExp(/\\n/g), '\n');
 
@@ -192,7 +195,7 @@ window.docViewer = (function () {
                 dispatchCounter = 0;
             }
         });
-        
+
         // Set the visibility to hidden until the svg creation is finished
         if ($('#' + id)[0].childNodes[1]) {
             $('#' + id)[0].childNodes[1].style.visibility = 'hidden';
@@ -292,7 +295,9 @@ window.docViewer = (function () {
             var cells = this._getJQueryTable().find('.knime-table-cell:nth-child(' + (colIndex + 1) + ')');
             var self = this;
             cells.each(function () {
-                BratDocumentViewer.prototype._renderBratDocument.call(self, this.children[1].id);
+                if (this.children[1]) {
+                    BratDocumentViewer.prototype._renderBratDocument.call(self, this.children[1].id);
+                }
             });
         }
     };
