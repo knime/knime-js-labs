@@ -1,7 +1,7 @@
 #!groovy
 def BN = BRANCH_NAME == "master" || BRANCH_NAME.startsWith("releases/") ? BRANCH_NAME : "master"
 
-library "knime-pipeline@$BN"
+library "knime-pipeline@$BRANCH_NAME"
 
 properties([
     pipelineTriggers([
@@ -19,7 +19,7 @@ try {
         dependencies: [
             repositories: ['knime-js-labs', 'knime-js-core', 'knime-chromium', 'knime-timeseries',
                 'knime-r', 'knime-xml', 'knime-jep', 'knime-datageneration', 'knime-textprocessing',
-                'knime-chemistry', 'knime-js-base', 'knime-distance', 'knime-stats', 'knime-dl4j',
+                'knime-chemistry', 'knime-js-base', 'knime-distance', 'knime-stats',
                 'knime-jfreechart', 'knime-database', 'knime-kerberos', 'knime-filehandling']
         ]
     )
