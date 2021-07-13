@@ -20,7 +20,8 @@ try {
             repositories: ['knime-js-labs', 'knime-js-core', 'knime-chromium', 'knime-timeseries',
                 'knime-r', 'knime-xml', 'knime-jep', 'knime-datageneration', 'knime-textprocessing',
                 'knime-chemistry', 'knime-js-base', 'knime-distance', 'knime-stats', 
-                'knime-jfreechart', 'knime-database', 'knime-kerberos', 'knime-filehandling']
+                'knime-jfreechart', 'knime-database', 'knime-kerberos', 'knime-filehandling'],
+            ius: [ 'org.knime.features.chem.types.feature.group' ]
         ]
     )
 
