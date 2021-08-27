@@ -244,15 +244,16 @@
             for (var j = 0; j < confusionMatrixWithRates[i].length - 1; j++) {
                 rowSum += confusionMatrixWithRates[i][j];
             }
-            confusionMatrixWithRates[i][confusionMatrixWithRates.length - 1] = confusionMatrixWithRates[i][i] / rowSum;
+            confusionMatrixWithRates[i][confusionMatrixWithRates.length - 1] =
+                rowSum != 0 ? confusionMatrixWithRates[i][i] / rowSum : 0;
         }
         for (var i = 0; i < confusionMatrixWithRates.length - 1; i++) {
             var columnSum = 0;
             for (var j = 0; j < confusionMatrixWithRates.length - 1; j++) {
                 columnSum += confusionMatrixWithRates[j][i];
             }
-            confusionMatrixWithRates[confusionMatrixWithRates.length - 1][i] = confusionMatrixWithRates[i][i]
-                    / columnSum;
+            confusionMatrixWithRates[confusionMatrixWithRates.length - 1][i] =
+                columnSum != 0 ? confusionMatrixWithRates[i][i] / columnSum : 0;
         }
         return confusionMatrixWithRates;
     }
