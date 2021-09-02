@@ -16,6 +16,9 @@
     var confusionTable;
 
     function formatValueAsPercent(value) {
+        if (isNaN(value)) {
+            return "undefined"
+        }
         // create percentage variable for better readability
         var percent = value * 100;
         /*
@@ -35,6 +38,9 @@
     }
 
     function formatValueAsFloat(value) {
+        if (isNaN(value)) {
+            return "undefined"
+        }
         if (value >= 0.9995 && value < 1) {
             return '>\xa00.999';
         } else if (value < 0.0005 && value > 0) {
@@ -153,7 +159,7 @@
         table.appendChild(tHeader);
 
         var tBody = document.createElement('tbody');
-        var rateCellDescription = 'This is the the correct prediction on this row (or column) divided by the sum of all values on this line.';
+        var rateCellDescription = 'Number of correct predictions for row (or column) divided by total number of predictions in row (or column).';
         for (var row = 0; row < confusionMatrix.getNumRows(); row++) {
             tRow = document.createElement('tr');
             tRow.setAttribute('class', 'knime-table-row');
@@ -244,16 +250,15 @@
             for (var j = 0; j < confusionMatrixWithRates[i].length - 1; j++) {
                 rowSum += confusionMatrixWithRates[i][j];
             }
-            confusionMatrixWithRates[i][confusionMatrixWithRates.length - 1] =
-                rowSum != 0 ? confusionMatrixWithRates[i][i] / rowSum : 0;
+            confusionMatrixWithRates[i][confusionMatrixWithRates.length - 1] = confusionMatrixWithRates[i][i] / rowSum;
         }
         for (var i = 0; i < confusionMatrixWithRates.length - 1; i++) {
             var columnSum = 0;
             for (var j = 0; j < confusionMatrixWithRates.length - 1; j++) {
                 columnSum += confusionMatrixWithRates[j][i];
             }
-            confusionMatrixWithRates[confusionMatrixWithRates.length - 1][i] =
-                columnSum != 0 ? confusionMatrixWithRates[i][i] / columnSum : 0;
+            confusionMatrixWithRates[confusionMatrixWithRates.length - 1][i] = confusionMatrixWithRates[i][i]
+                    / columnSum;
         }
         return confusionMatrixWithRates;
     }
