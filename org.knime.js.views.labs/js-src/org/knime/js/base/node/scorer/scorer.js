@@ -404,13 +404,12 @@
         for (var col = 0; col < overallStatistics.getNumColumns(); col++) {
             var td = document.createElement('td');
             var cellValue = overallStatistics.getCell(0, col);
-            if (cellValue == null) {
+            if (cellValue === null) {
                 // Missing values in KNIME data tables are mapped to JavaScript's null value. Missing values
                 // may appear here when the value of some measure is undefined (see AP-17274, AP-17410).
-                addTextToElement(td, "undefined");
-                td.setAttribute("class", "knime-table-cell")
-            }
-            else if (columnNames[col] === 'Correctly Classified' || columnNames[col] === 'Incorrectly Classified') {
+                addTextToElement(td, 'undefined');
+                td.setAttribute('class', 'knime-table-cell')
+            } else if (columnNames[col] === 'Correctly Classified' || columnNames[col] === 'Incorrectly Classified') {
                 // cellValue is an integer
                 addTextToElement(td, cellValue);
                 td.setAttribute('class', 'knime-table-cell knime-integer');
