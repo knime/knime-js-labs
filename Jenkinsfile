@@ -19,7 +19,7 @@ try {
         dependencies: [
             repositories: ['knime-js-labs', 'knime-js-core', 'knime-chromium', 'knime-timeseries',
                 'knime-r', 'knime-xml', 'knime-jep', 'knime-datageneration', 'knime-textprocessing',
-                'knime-chemistry', 'knime-python', 'knime-conda', 'knime-js-base', 'knime-distance', 'knime-stats', 
+                'knime-chemistry', 'knime-python', 'knime-js-base', 'knime-distance', 'knime-stats', 
                 'knime-jfreechart', 'knime-database', 'knime-kerberos', 'knime-filehandling'],
             ius: [ 'org.knime.features.chem.types.feature.group' ]
         ]
