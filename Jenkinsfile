@@ -17,11 +17,30 @@ try {
 
     workflowTests.runTests(
         dependencies: [
-            repositories: ['knime-js-labs', 'knime-js-core', 'knime-timeseries',
-                'knime-r', 'knime-xml', 'knime-jep', 'knime-datageneration', 'knime-textprocessing',
-                'knime-chemistry', 'knime-python', 'knime-js-base', 'knime-distance', 'knime-stats', 
-                'knime-jfreechart', 'knime-database', 'knime-kerberos', 'knime-filehandling', 'knime-cef'],
-            ius: [ 'org.knime.features.chem.types.feature.group', 'org.knime.features.browser.cef.feature.group' ]
+            repositories: [
+                'knime-cef',
+                'knime-chemistry',
+                'knime-database',
+                'knime-datageneration',
+                'knime-distance',
+                'knime-filehandling',
+                'knime-jep',
+                'knime-jfreechart',
+                'knime-js-base',
+                'knime-js-core',
+                'knime-js-labs',
+                'knime-kerberos',
+                'knime-python',
+                'knime-r',
+                'knime-stats', 
+                'knime-textprocessing',
+                'knime-timeseries',
+                'knime-xml'
+            ],
+            ius: [
+                'org.knime.features.browser.cef.feature.group',
+                'org.knime.features.chem.types.feature.group'
+            ]
         ]
     )
 
