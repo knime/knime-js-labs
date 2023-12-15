@@ -1,4 +1,10 @@
-# ![Image](https://www.knime.com/files/knime_logo_github_40x40_4layers.png) KNIME® JS Labs
+# KNIME® JS Labs
+
+[![Jenkins](https://jenkins.knime.com/buildStatus/icon?job=knime-js-labs%2Fmaster)](https://jenkins.knime.com/job/knime-js-labs/job/master/)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=KNIME_knime-js-labs&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=KNIME_knime-js-labs)
+
+This repository is maintained by the [KNIME UI Extensions Development Team](mailto:team-ui-extensions@knime.com).
+
 This repository contains the source code of [KNIME Analytics Platform](http://www.knime.org) JavaScript Labs Nodes. This repository gives the possibility to preview new KNIME JavaScript nodes, which are still under development. The nodes provided here are not (yet) part of the stable KNIME version because the functionality and/or API may not be finalized.  
 
 We hope to get you involved by reporting bugs and helping us generating examples and documentation.
