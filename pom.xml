@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>5.8.0</revision>
+        <revision>5.9.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <feature-branch-extension.branchListProperty>git.branch</feature-branch-extension.branchListProperty>
         <feature-branch-extension.appendArtifactoryProperties>false</feature-branch-extension.appendArtifactoryProperties>
@@ -23,6 +23,7 @@
 
 	<modules>
         <module>org.knime.js.views.labs</module>
+        <module>org.knime.js.views.labs.tests</module>
         <module>org.knime.js.labs.tests</module>
         <module>org.knime.features.js.views.labs</module>
         <module>org.knime.update.js.views.labs</module>
