@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.knime.org/2008/09/XMLConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.knime.org/2008/09/XMLConfig http://www.knime.org/XMLConfig_2008_09.xsd" key="test">
+    <entry key="enableFreqValDisplay" type="xboolean" value="true"/>
+    <entry key="freqValuesNumber" type="xint" value="5"/>
+    <entry key="showMedian" type="xboolean" value="false"/>
+    <entry key="displayRowIDs" type="xboolean" value="true"/>
+    <entry key="missingValuesInHist" type="xboolean" value="false"/>
+    <entry key="adaptNumberOfHistogramBars" type="xboolean" value="false"/>
+    <entry key="numberOfHistogramBars" type="xint" value="10"/>
+    <entry key="title" type="xstring" value=""/>
+    <entry key="subtitle" type="xstring" value=""/>
+    <entry key="enableGlobalNumberFormat" type="xboolean" value="true"/>
+    <entry key="globalNumberFormatDecimals" type="xint" value="3"/>
+    <entry key="maxNominalValues" type="xint" value="1000"/>
+    <entry key="displayFullscreenButton" type="xboolean" value="true"/>
+    <entry key="enableSelection" type="xboolean" value="true"/>
+    <entry key="enableSearching" type="xboolean" value="true"/>
+    <entry key="enableSorting" type="xboolean" value="true"/>
+    <entry key="enableClearSortButton" type="xboolean" value="false"/>
+    <entry key="displayRowNumber" type="xint" value="100"/>
+    <entry key="enablePaging" type="xboolean" value="false"/>
+    <entry key="initialPageSize" type="xint" value="10"/>
+    <entry key="enablePageSizeChange" type="xboolean" value="true"/>
+    <config key="allowedPageSizes">
+        <entry key="array-size" type="xint" value="4"/>
+        <entry key="0" type="xint" value="10"/>
+        <entry key="1" type="xint" value="25"/>
+        <entry key="2" type="xint" value="50"/>
+        <entry key="3" type="xint" value="100"/>
+    </config>
+    <entry key="enableShowAll" type="xboolean" value="false"/>
+    <entry key="enableJumpToPage" type="xboolean" value="false"/>
+    <entry key="customCSS" type="xstring" value=""/>
+    <entry key="hideInWizard" type="xboolean" value="false"/>
+    <entry key="displayColumnHeaders" type="xboolean" value="true"/>
+    <entry key="fixedHeaders" type="xboolean" value="false"/>
+</config>

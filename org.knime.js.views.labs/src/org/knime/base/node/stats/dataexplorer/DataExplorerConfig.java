@@ -86,15 +86,15 @@ public class DataExplorerConfig {
     static final String DEFAULT_OTHER_ERROR_VALUES_NOTATION = "[...]!";
 
     static final String CFG_HIDE_IN_WIZARD = "hideInWizard";
-    private static final boolean DEFAULT_HIDE_IN_WIZARD = false;
+    static final boolean DEFAULT_HIDE_IN_WIZARD = false;
     private boolean m_hideInWizard = DEFAULT_HIDE_IN_WIZARD;
 
     static final String CFG_SHOW_MEDIAN = "showMedian";
-    private static final boolean DEFAULT_SHOW_MEDIAN = false;
+    static final boolean DEFAULT_SHOW_MEDIAN = false;
     private boolean m_showMedian = DEFAULT_SHOW_MEDIAN;
 
     final static String CFG_ENABLE_PAGING = "enablePaging";
-    private final static boolean DEFAULT_ENABLE_PAGING = false;
+    final static boolean DEFAULT_ENABLE_PAGING = false;
     private boolean m_enablePaging = DEFAULT_ENABLE_PAGING;
 
     final static String CFG_INITIAL_PAGE_SIZE = "initialPageSize";
@@ -102,27 +102,27 @@ public class DataExplorerConfig {
     private int m_initialPageSize = DEFAULT_INITIAL_PAGE_SIZE;
 
     final static String CFG_ENABLE_PAGE_SIZE_CHANGE = "enablePageSizeChange";
-    private final static boolean DEFAULT_ENABLE_PAGE_SIZE_CHANGE = true;
+    final static boolean DEFAULT_ENABLE_PAGE_SIZE_CHANGE = true;
     private boolean m_enablePageSizeChange = DEFAULT_ENABLE_PAGE_SIZE_CHANGE;
 
     final static String CFG_PAGE_SIZES = "allowedPageSizes";
-    private final static int[] DEFAULT_PAGE_SIZES = new int[]{10, 25, 50, 100};
+    final static int[] DEFAULT_PAGE_SIZES = new int[]{10, 25, 50, 100};
     private int[] m_allowedPageSizes = DEFAULT_PAGE_SIZES;
 
     final static String CFG_PAGE_SIZE_SHOW_ALL = "enableShowAll";
-    private final static boolean DEFAULT_PAGE_SIZE_SHOW_ALL = false;
+    final static boolean DEFAULT_PAGE_SIZE_SHOW_ALL = false;
     private boolean m_pageSizeShowAll = DEFAULT_PAGE_SIZE_SHOW_ALL;
 
     final static String CFG_ENABLE_JUMP_TO_PAGE = "enableJumpToPage";
-    private final static boolean DEFAULT_ENABLE_JUMP_TO_PAGE = false;
+    final static boolean DEFAULT_ENABLE_JUMP_TO_PAGE = false;
     private boolean m_enableJumpToPage = DEFAULT_ENABLE_JUMP_TO_PAGE;
 
     final static String CFG_DISPLAY_ROW_IDS = "displayRowIDs";
-    private final static boolean DEFAULT_DISPLAY_ROW_IDS = true;
+    final static boolean DEFAULT_DISPLAY_ROW_IDS = true;
     private boolean m_displayRowIds = DEFAULT_DISPLAY_ROW_IDS;
 
     final static String CFG_DISPLAY_COLUMN_HEADERS = "displayColumnHeaders";
-    private final static boolean DEFAULT_DISPLAY_COLUMN_HEADERS = true;
+    final static boolean DEFAULT_DISPLAY_COLUMN_HEADERS = true;
     private boolean m_displayColumnHeaders = DEFAULT_DISPLAY_COLUMN_HEADERS;
 
     final static String CFG_DISPLAY_FULLSCREEN_BUTTON = "displayFullscreenButton";
@@ -130,15 +130,15 @@ public class DataExplorerConfig {
     private boolean m_displayFullscreenButton = DEFAULT_DISPLAY_FULLSCREEN_BUTTON;
 
     final static String CFG_FIXED_HEADERS = "fixedHeaders";
-    private final static boolean DEFAULT_FIXED_HEADERS = false;
+    final static boolean DEFAULT_FIXED_HEADERS = false;
     private boolean m_fixedHeaders = DEFAULT_FIXED_HEADERS;
 
     final static String CFG_TITLE = "title";
-    private final static String DEFAULT_TITLE = "";
+    final static String DEFAULT_TITLE = "";
     private String m_title = DEFAULT_TITLE;
 
     final static String CFG_SUBTITLE = "subtitle";
-    private final static String DEFAULT_SUBTITLE = "";
+    final static String DEFAULT_SUBTITLE = "";
     private String m_subtitle = DEFAULT_SUBTITLE;
 
     final static String CFG_ENABLE_SELECTION = "enableSelection";
@@ -146,23 +146,23 @@ public class DataExplorerConfig {
     private boolean m_enableSelection = DEFAULT_ENABLE_SELECTION;
 
     final static String CFG_ENABLE_SEARCHING = "enableSearching";
-    private final static boolean DEFAULT_ENABLE_SEARCHING = true;
+    final static boolean DEFAULT_ENABLE_SEARCHING = true;
     private boolean m_enableSearching = DEFAULT_ENABLE_SEARCHING;
 
     final static String CFG_ENABLE_SORTING = "enableSorting";
-    private final static boolean DEFAULT_ENABLE_SORTING = true;
+    final static boolean DEFAULT_ENABLE_SORTING = true;
     private boolean m_enableSorting = DEFAULT_ENABLE_SORTING;
 
     final static String CFG_ENABLE_CLEAR_SORT_BUTTON = "enableClearSortButton";
-    private final static boolean DEFAULT_ENABLE_CLEAR_SORT_BUTTON = false;
+    final static boolean DEFAULT_ENABLE_CLEAR_SORT_BUTTON = false;
     private boolean m_enableClearSortButton = DEFAULT_ENABLE_CLEAR_SORT_BUTTON;
 
     final static String CFG_ENABLE_GLOBAL_NUMBER_FORMAT = "enableGlobalNumberFormat";
-    private final static boolean DEFAULT_ENABLE_GLOBAL_NUMBER_FORMAT = true;
+    final static boolean DEFAULT_ENABLE_GLOBAL_NUMBER_FORMAT = true;
     private boolean m_enableGlobalNumberFormat = DEFAULT_ENABLE_GLOBAL_NUMBER_FORMAT;
 
     final static String CFG_GLOBAL_NUMBER_FORMAT_DECIMALS = "globalNumberFormatDecimals";
-    private final static int DEFAULT_GLOBAL_NUMBER_FORMAT_DECIMALS = 3;
+    final static int DEFAULT_GLOBAL_NUMBER_FORMAT_DECIMALS = 3;
     private int m_globalNumberFormatDecimals = DEFAULT_GLOBAL_NUMBER_FORMAT_DECIMALS;
 
     final static String CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK = "displayMissingValueAsQuestionMark";
@@ -202,7 +202,7 @@ public class DataExplorerConfig {
     private String[] m_maxNomValueReached = DEFAULT_MAX_NOMINAL_VALUE_REACHED;
 
     final static String CFG_CUSTOM_CSS = "customCSS";
-    private final static String DEFAULT_CUSTOM_CSS = "";
+    final static String DEFAULT_CUSTOM_CSS = "";
     private String m_customCSS = DEFAULT_CUSTOM_CSS;
 
 

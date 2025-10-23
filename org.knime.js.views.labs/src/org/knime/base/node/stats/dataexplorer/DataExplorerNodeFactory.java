@@ -48,56 +48,127 @@
  */
 package org.knime.base.node.stats.dataexplorer;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 import org.knime.core.node.wizard.WizardNodeFactoryExtension;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
+ * Node factory for the Data Explorer node.
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
+@SuppressWarnings("restriction")
 public class DataExplorerNodeFactory extends NodeFactory<DataExplorerNodeModel> implements
-    WizardNodeFactoryExtension<DataExplorerNodeModel, DataExplorerNodeRepresentation, DataExplorerNodeValue> {
+    WizardNodeFactoryExtension<DataExplorerNodeModel, DataExplorerNodeRepresentation, DataExplorerNodeValue>,
+    NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public DataExplorerNodeModel createNodeModel() {
         return new DataExplorerNodeModel(getInteractiveViewName());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected int getNrNodeViews() {
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NodeView<DataExplorerNodeModel> createNodeView(final int viewIndex, final DataExplorerNodeModel nodeModel) {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected boolean hasDialog() {
         return true;
     }
 
+    private static final String NODE_NAME = "Data Explorer";
+    private static final String NODE_ICON = "./data_explorer.png";
+
+    private static final String SHORT_DESCRIPTION = """
+            The Data Explorer node offers a range of options for displaying properties of the input data in an
+                interactive view.
+            """;
+
+    private static final String FULL_DESCRIPTION = """
+            <p> The Data Explorer node offers a range of options for displaying properties of the input data in an
+                interactive view. </p> <p> The node supports custom CSS styling. You can simply put CSS rules into a
+                single string and set it in the node configuration dialog. You will find
+                the list of available classes and their description on our <a
+                href="https://knime.com/css-styling">documentation page</a>. </p>
+            """;
+
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Table", """
+                Table from which to compute statistics.
+                """)
+    );
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("Filtered Table", """
+                A table with filtered out by user columns, chosen in the interactive view.
+                """)
+    );
+
     /**
-     * {@inheritDoc}
+     * @since 5.9
      */
     @Override
-    protected NodeDialogPane createNodeDialogPane() {
-        return new DataExplorerNodeDialog();
+    public NodeDialogPane createNodeDialogPane() {
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, DataExplorerNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            DataExplorerNodeParameters.class,
+            null,
+            NodeType.Visualizer,
+            List.of(),
+            null
+        );
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, DataExplorerNodeParameters.class));
     }
 
 }

@@ -1,0 +1,667 @@
+{
+  "data" : {
+    "model" : {
+      "enableFreqValDisplay" : true,
+      "freqValuesNumber" : 5,
+      "showMedian" : false,
+      "displayRowIds" : true,
+      "missingValuesInHist" : false,
+      "adaptNumberOfHistogramBars" : false,
+      "numberOfHistogramBars" : 10,
+      "title" : "",
+      "subtitle" : "",
+      "enableGlobalNumberFormat" : true,
+      "globalNumberFormatDecimals" : 3,
+      "maxNominalValues" : 1000,
+      "displayFullscreenButton" : true,
+      "enableSelection" : true,
+      "enableSearching" : true,
+      "enableSorting" : true,
+      "enableClearSortButton" : false,
+      "displayRowNumber" : 100,
+      "enablePaging" : false,
+      "initialPageSize" : 10,
+      "enablePageSizeChange" : true,
+      "allowedPageSizesString" : "10, 25, 50, 100",
+      "pageSizeShowAll" : false,
+      "enableJumpToPage" : false,
+      "customCSS" : "",
+      "hideInWizard" : false,
+      "displayColumnHeaders" : true,
+      "fixedHeaders" : false
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "adaptNumberOfHistogramBars" : {
+            "type" : "boolean",
+            "title" : "Enable automatic number of histogram bars",
+            "description" : "If you check this option, the Numeric tab of the interactive view will adjust the number of\nhistogram bar of each numeric data column depending on the values occurring in the column. If you\nuncheck this option, you will be able to enter a number of histogram bars used for all columns.\n",
+            "default" : false
+          },
+          "allowedPageSizesString" : {
+            "type" : "string",
+            "title" : "Selectable page sizes",
+            "description" : "Determines the page sizes you can select in the interactive view. Values need to be\ncomma-separated.\n",
+            "default" : "10, 25, 50, 100"
+          },
+          "customCSS" : {
+            "type" : "string",
+            "default" : ""
+          },
+          "displayColumnHeaders" : {
+            "type" : "boolean",
+            "default" : true
+          },
+          "displayFullscreenButton" : {
+            "type" : "boolean",
+            "title" : "Display fullscreen button",
+            "description" : "If you check this option, the interactive view will enable option to enlarge the interactive\nview.\n",
+            "default" : true
+          },
+          "displayRowIds" : {
+            "type" : "boolean",
+            "title" : "Display Row ID in Data Preview",
+            "description" : "If you check this option, the Data Preview tab of the interactive view will create a column with\nRow ID of the data values.\n",
+            "default" : true
+          },
+          "displayRowNumber" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Number of rows for data preview",
+            "description" : "Determines the total number of rows displayed on the Data Preview tab of the interactive view.\n",
+            "default" : 100
+          },
+          "enableClearSortButton" : {
+            "type" : "boolean",
+            "title" : "Enable \"Clear Sorting\" button",
+            "description" : "Enables undoing any sorting by clicking on the \"Clear Sorting\" button.\n",
+            "default" : false
+          },
+          "enableFreqValDisplay" : {
+            "type" : "boolean",
+            "title" : "Show most frequent/infrequent nominal values",
+            "description" : "If you check this option, the Nominal tab of the interactive view will create a column with the n\nmost frequent nominal values and another column with the n most infrequent nominal values, for\nsome number n that you select. If the selected number is equal to the total number of distinct\nvalues in a column, only one column with all values will be created. In all cases values are\nlisted in decreasing order of frequency.\n",
+            "default" : true
+          },
+          "enableGlobalNumberFormat" : {
+            "type" : "boolean",
+            "title" : "Enable global number format (double cells)",
+            "description" : "Enables the same number format for all double values in the interactive view.\n",
+            "default" : true
+          },
+          "enableJumpToPage" : {
+            "type" : "boolean",
+            "title" : "Display field to jump to a page directly",
+            "description" : "Enables jumping to a specific page in the interactive view.\n",
+            "default" : false
+          },
+          "enablePageSizeChange" : {
+            "type" : "boolean",
+            "title" : "Enable page size change control",
+            "description" : "Enables changing the number of rows per page in the interactive view.\n",
+            "default" : true
+          },
+          "enablePaging" : {
+            "type" : "boolean",
+            "title" : "Enable pagination",
+            "description" : "Enables spreading the table over several pages of the interactive view.\n",
+            "default" : false
+          },
+          "enableSearching" : {
+            "type" : "boolean",
+            "title" : "Enable searching",
+            "description" : "Enables searching the data table.",
+            "default" : true
+          },
+          "enableSelection" : {
+            "type" : "boolean",
+            "title" : "Enable selection",
+            "description" : "Enables selection of the data columns to be excluded from further analysis.\n",
+            "default" : true
+          },
+          "enableSorting" : {
+            "type" : "boolean",
+            "title" : "Enable sorting on columns",
+            "description" : "Enables sorting of columns.",
+            "default" : true
+          },
+          "fixedHeaders" : {
+            "type" : "boolean",
+            "default" : false
+          },
+          "freqValuesNumber" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Number of most freq./infreq. values",
+            "description" : "For any number n you select, the Nominal tab of the interactive view will list the n most\nfrequent and the n most infrequent nominal values in separate columns.\n",
+            "default" : 5
+          },
+          "globalNumberFormatDecimals" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Decimal places",
+            "description" : "Specifies the number of decimal places for all values in the interactive view.\n",
+            "default" : 3
+          },
+          "hideInWizard" : {
+            "type" : "boolean",
+            "default" : false
+          },
+          "initialPageSize" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Initial page size",
+            "description" : "Determines the number of rows per page in the interactive view.\n",
+            "default" : 10
+          },
+          "maxNominalValues" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Max number of nominal values",
+            "description" : "Specifies the maximum number of unique values considered in one nominal column.\n",
+            "default" : 1000
+          },
+          "missingValuesInHist" : {
+            "type" : "boolean",
+            "title" : "Show missing values in histograms",
+            "description" : "If you check this option, the Nominal tab of the interactive view will show missing values as an\nadditional bar in the histograms.\n",
+            "default" : false
+          },
+          "numberOfHistogramBars" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Number of numeric histogram bars",
+            "description" : "Number of histogram bars used for all numeric columns when automatic adjustment is disabled.\n",
+            "default" : 10
+          },
+          "pageSizeShowAll" : {
+            "type" : "boolean",
+            "title" : "Add \"All\" option to page sizes",
+            "description" : "Adds the option of having all rows on one page to the page sizes you can select in the\ninteractive view.\n",
+            "default" : false
+          },
+          "showMedian" : {
+            "type" : "boolean",
+            "title" : "Show median (computationally expensive)",
+            "description" : "If you check this option, the interactive view will show the median of the numerical values in\nthe input data set.\n",
+            "default" : false
+          },
+          "subtitle" : {
+            "type" : "string",
+            "title" : "Subtitle",
+            "description" : "Adds a subtitle to the interactive view.",
+            "default" : ""
+          },
+          "title" : {
+            "type" : "string",
+            "title" : "Title",
+            "description" : "Adds a title to the interactive view.",
+            "default" : ""
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "label" : "Columns",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enableFreqValDisplay",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/freqValuesNumber",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 1.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 1.0
+              }
+            }
+          }
+        },
+        "rule" : {
+          "effect" : "ENABLE",
+          "condition" : {
+            "scope" : "#/properties/model/properties/enableFreqValDisplay",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/showMedian",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/displayRowIds",
+        "options" : {
+          "format" : "checkbox"
+        }
+      } ]
+    }, {
+      "label" : "Histograms",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/missingValuesInHist",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/adaptNumberOfHistogramBars",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/numberOfHistogramBars",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 1.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 1.0
+              }
+            }
+          }
+        },
+        "rule" : {
+          "effect" : "ENABLE",
+          "condition" : {
+            "scope" : "#/properties/model/properties/adaptNumberOfHistogramBars",
+            "schema" : {
+              "const" : false
+            }
+          }
+        }
+      } ]
+    }, {
+      "label" : "Titles",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/title"
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/subtitle"
+      } ]
+    }, {
+      "label" : "Number Formatter",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enableGlobalNumberFormat",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/globalNumberFormatDecimals",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 0.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 0.0
+              }
+            }
+          }
+        },
+        "rule" : {
+          "effect" : "ENABLE",
+          "condition" : {
+            "scope" : "#/properties/model/properties/enableGlobalNumberFormat",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      } ]
+    }, {
+      "label" : "Nominal Values",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/maxNominalValues",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 1.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 1.0
+              }
+            }
+          }
+        }
+      } ]
+    }, {
+      "label" : "Rows",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/displayRowNumber",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 1.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 1.0
+              }
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enablePaging",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/initialPageSize",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 1.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 1.0
+              }
+            }
+          }
+        },
+        "rule" : {
+          "effect" : "ENABLE",
+          "condition" : {
+            "scope" : "#/properties/model/properties/enablePaging",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enablePageSizeChange",
+        "options" : {
+          "format" : "checkbox"
+        },
+        "rule" : {
+          "effect" : "ENABLE",
+          "condition" : {
+            "scope" : "#/properties/model/properties/enablePaging",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/allowedPageSizesString",
+        "options" : {
+          "validation" : {
+            "pattern" : {
+              "errorMessage" : "Please enter a valid page selection (comma-separated positive integers).",
+              "parameters" : {
+                "pattern" : "^\\d+(?:\\s*,\\s*\\d+)*$"
+              }
+            }
+          }
+        },
+        "rule" : {
+          "effect" : "ENABLE",
+          "condition" : {
+            "type" : "AND",
+            "conditions" : [ {
+              "scope" : "#/properties/model/properties/enablePaging",
+              "schema" : {
+                "const" : true
+              }
+            }, {
+              "scope" : "#/properties/model/properties/enablePageSizeChange",
+              "schema" : {
+                "const" : true
+              }
+            } ]
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/pageSizeShowAll",
+        "options" : {
+          "format" : "checkbox"
+        },
+        "rule" : {
+          "effect" : "ENABLE",
+          "condition" : {
+            "type" : "AND",
+            "conditions" : [ {
+              "scope" : "#/properties/model/properties/enablePaging",
+              "schema" : {
+                "const" : true
+              }
+            }, {
+              "scope" : "#/properties/model/properties/enablePageSizeChange",
+              "schema" : {
+                "const" : true
+              }
+            } ]
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enableJumpToPage",
+        "options" : {
+          "format" : "checkbox"
+        },
+        "rule" : {
+          "effect" : "ENABLE",
+          "condition" : {
+            "scope" : "#/properties/model/properties/enablePaging",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      } ]
+    }, {
+      "label" : "Interactivity",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/displayFullscreenButton",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enableSelection",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enableSearching",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enableSorting",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enableClearSortButton",
+        "options" : {
+          "format" : "checkbox"
+        },
+        "rule" : {
+          "effect" : "ENABLE",
+          "condition" : {
+            "scope" : "#/properties/model/properties/enableSorting",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "enableFreqValDisplay" : {
+            "configKey" : "enableFreqValDisplay"
+          },
+          "freqValuesNumber" : {
+            "configKey" : "freqValuesNumber"
+          },
+          "showMedian" : {
+            "configKey" : "showMedian"
+          },
+          "displayRowIds" : {
+            "configKey" : "displayRowIDs"
+          },
+          "missingValuesInHist" : {
+            "configKey" : "missingValuesInHist"
+          },
+          "adaptNumberOfHistogramBars" : {
+            "configKey" : "adaptNumberOfHistogramBars"
+          },
+          "numberOfHistogramBars" : {
+            "configKey" : "numberOfHistogramBars"
+          },
+          "title" : {
+            "configKey" : "title"
+          },
+          "subtitle" : {
+            "configKey" : "subtitle"
+          },
+          "enableGlobalNumberFormat" : {
+            "configKey" : "enableGlobalNumberFormat"
+          },
+          "globalNumberFormatDecimals" : {
+            "configKey" : "globalNumberFormatDecimals"
+          },
+          "maxNominalValues" : {
+            "configKey" : "maxNominalValues"
+          },
+          "displayFullscreenButton" : {
+            "configKey" : "displayFullscreenButton"
+          },
+          "enableSelection" : {
+            "configKey" : "enableSelection"
+          },
+          "enableSearching" : {
+            "configKey" : "enableSearching"
+          },
+          "enableSorting" : {
+            "configKey" : "enableSorting"
+          },
+          "enableClearSortButton" : {
+            "configKey" : "enableClearSortButton"
+          },
+          "displayRowNumber" : {
+            "configKey" : "displayRowNumber"
+          },
+          "enablePaging" : {
+            "configKey" : "enablePaging"
+          },
+          "initialPageSize" : {
+            "configKey" : "initialPageSize"
+          },
+          "enablePageSizeChange" : {
+            "configKey" : "enablePageSizeChange"
+          },
+          "allowedPageSizesString" : {
+            "configPaths" : [ [ "allowedPageSizes" ] ]
+          },
+          "pageSizeShowAll" : {
+            "configKey" : "enableShowAll"
+          },
+          "enableJumpToPage" : {
+            "configKey" : "enableJumpToPage"
+          },
+          "customCSS" : {
+            "configKey" : "customCSS"
+          },
+          "hideInWizard" : {
+            "configKey" : "hideInWizard"
+          },
+          "displayColumnHeaders" : {
+            "configKey" : "displayColumnHeaders"
+          },
+          "fixedHeaders" : {
+            "configKey" : "fixedHeaders"
+          }
+        }
+      }
+    }
+  }
+}
