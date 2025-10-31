@@ -111,8 +111,7 @@ public class DataExplorerNodeFactory extends NodeFactory<DataExplorerNodeModel> 
 
     private static final String FULL_DESCRIPTION = """
             <p> The Data Explorer node offers a range of options for displaying properties of the input data in an
-                interactive view. </p> <p> The node supports custom CSS styling. You can simply put CSS rules into a
-                single string and set it in the node configuration dialog. </p>
+                interactive view. </p>
             """;
 
     private static final List<PortDescription> INPUT_PORTS = List.of(
