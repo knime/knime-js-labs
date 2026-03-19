@@ -1,7 +1,7 @@
 # KNIME® JS Labs
 
 [![Jenkins](https://jenkins.knime.com/buildStatus/icon?job=knime-js-labs%2Fmaster)](https://jenkins.knime.com/job/knime-js-labs/job/master/)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=KNIME_knime-js-labs&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=KNIME_knime-js-labs)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=knime_knime-js-labs&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=knime_knime-js-labs)
 
 This repository is maintained by the [KNIME UI Extensions Development Team](mailto:team-ui-extensions@knime.com).
 
